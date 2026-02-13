@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "982496113403",
+    "project_id": "friendsheet-app",
+    "storage_bucket": "friendsheet-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:982496113403:android:3b650cfe9493e7c64eb65e",
+        "android_client_info": {
+          "package_name": "com.friendsheet.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3TFRIw_ZrYRhkVCOCZiIp2plOaEJg16c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
