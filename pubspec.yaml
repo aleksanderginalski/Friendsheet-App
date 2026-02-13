@@ -1,0 +1,60 @@
+name: friendsheet
+description: Track your meetings with friends and generate insightful statistics
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+# Dependencies - packages that the app needs to run
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase Core - required for all Firebase services
+  firebase_core: ^2.24.2
+  
+  # Firebase Authentication - for user login/registration
+  firebase_auth: ^4.16.0
+  
+  # Cloud Firestore - NoSQL database
+  cloud_firestore: ^4.14.0
+  
+  # State Management - choose one (Provider recommended for beginners)
+  provider: ^6.1.1
+  
+  # Date formatting utilities
+  intl: ^0.18.1
+  
+  # UI Icons
+  cupertino_icons: ^1.0.6
+
+# Development dependencies - only used during development
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Linting rules for code quality
+  flutter_lints: ^3.0.1
+  
+  # Testing utilities
+  mockito: ^5.4.4
+  
+  # Code generation for mocks
+  build_runner: ^2.4.7
+
+# Flutter configuration
+flutter:
+  uses-material-design: true
+
+  # Add assets here when needed
+  # assets:
+  #   - images/
+  #   - icons/
+
+  # Add custom fonts here when needed
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: fonts/Roboto-Regular.ttf

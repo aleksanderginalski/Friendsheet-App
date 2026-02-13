@@ -1,0 +1,58 @@
+# This file configures the static analysis tool used by Flutter
+# Documentation: https://dart.dev/guides/language/analysis-options
+
+# Include recommended Flutter lints
+include: package:flutter_lints/flutter.yaml
+
+# Additional lint rules for better code quality
+linter:
+  rules:
+    # Style rules
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - prefer_const_declarations
+    - prefer_final_fields
+    - prefer_final_locals
+    
+    # Best practices
+    - avoid_print
+    - avoid_unnecessary_containers
+    - avoid_empty_else
+    - prefer_single_quotes
+    - use_key_in_widget_constructors
+    - sized_box_for_whitespace
+    
+    # Error prevention
+    - always_declare_return_types
+    - avoid_returning_null_for_void
+    - cancel_subscriptions
+    - close_sinks
+    
+    # Code organization
+    - directives_ordering
+    - prefer_relative_imports
+    - sort_child_properties_last
+
+# Analyzer configuration
+analyzer:
+  # Exclude generated files from analysis
+  exclude:
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+    - '**/generated/**'
+  
+  # Treat certain issues as errors
+  errors:
+    # Missing return types should be errors
+    always_declare_return_types: error
+    
+    # Missing required parameters should be errors
+    missing_required_param: error
+    
+    # Invalid assignments should be errors
+    invalid_assignment: error
+  
+  # Language features
+  language:
+    strict-casts: true
+    strict-raw-types: true
