@@ -1,14 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart'; // CRITICAL: Import firebase_options.dart
 
 void main() async {
   print('🚀 Starting Friendsheet...');
-  
+
   // Ensure Flutter is initialized before Firebase
   WidgetsFlutterBinding.ensureInitialized();
   print('✅ Flutter binding initialized');
-  
+
   try {
     print('🔥 Initializing Firebase...');
     // CRITICAL: Use firebase_options.dart configuration
@@ -19,7 +19,7 @@ void main() async {
   } catch (e) {
     print('❌ Firebase initialization error: $e');
   }
-  
+
   // Run the app
   runApp(const FriendsheetApp());
 }
