@@ -10,7 +10,6 @@
 
 Friendsheet is a mobile application that helps you track meetings with friends and analyze your social patterns. Built with Flutter and Firebase, it offers a simple and intuitive way to remember who you spend time with and what activities you enjoy together.
 
-**Current Status:** ✅ Sprint 1 - US-001 & US-002 Complete | 🔄 US-003 Next
 
 ## ✨ Features
 
@@ -100,32 +99,6 @@ e. Create `lib/firebase_options.dart` with your Firebase configuration
 flutter run
 ```
 
-### Project Setup Checklist
-
-**US-001: Initialize Flutter Project**
-- [x] Flutter project initialized
-- [x] Clean Architecture folder structure created
-- [x] Dependencies configured in pubspec.yaml
-- [x] Linting rules configured (analysis_options.yaml)
-- [x] Code passes all analysis checks
-- [x] Widget tests created and passing
-- [x] Project runs on Android emulator
-- [x] Documentation updated
-
-**US-002: Setup Firebase**
-- [x] Firebase project created
-- [x] Android app registered in Firebase
-- [x] google-services.json configured
-- [x] firebase_options.dart generated
-- [x] Firebase initialized in main.dart
-- [x] Firestore database enabled
-- [x] Security rules configured
-- [x] Firebase connection tested
-
-**US-003: Git & CI/CD (Next)**
-- [ ] Git repository initialized
-- [ ] GitHub repository created
-- [ ] CI/CD pipeline configured
 
 ## 🧪 Testing
 ```powershell
@@ -148,13 +121,12 @@ flutter format --set-exit-if-changed .
 ✅ No linting issues
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
+✅ CI/CD pipeline operational
 ```
 
 ## 📱 Supported Platforms
 
 - ✅ **Android** - API 21+ (Android 5.0) - Current focus
-- ⏳ **iOS** - Planned for future release
-- ⏳ **Web** - Planned for future release
 
 ## 🗂️ Project Structure
 ```
@@ -199,20 +171,6 @@ This project follows Flutter's official style guide and uses `flutter_lints` for
 - Keep files focused and under 300 lines
 - Document public APIs with /// comments
 
-## 📈 Development Progress
-
-| Sprint | Focus | Status | Story Points |
-|--------|-------|--------|--------------|
-| Sprint 1 | Project Setup & Auth | 🔄 In Progress | 21 pts |
-| └─ US-001 | Initialize Flutter Project | ✅ Complete | 5 pts |
-| └─ US-002 | Setup Firebase | ✅ Complete | 5 pts |
-| └─ US-003 | Configure Git & CI/CD | ⏳ Next | 3 pts |
-| └─ US-004 | User Registration | ⏳ Planned | 8 pts |
-| Sprint 2 | Auth & Data Models | ⏳ Planned | 21 pts |
-| Sprint 3 | Core UI | ⏳ Planned | 18 pts |
-| Sprint 4 | Add Meeting Feature | ⏳ Planned | 21 pts |
-| Sprint 5 | Testing & Polish | ⏳ Planned | 13 pts |
-
 ## 🤝 Contributing
 
 This is currently a learning project. Contributions, issues, and feature requests are welcome!
@@ -245,6 +203,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.2.0 - Sprint 1, US-003 (February 14, 2026)
+- ✅ Git repository configured
+- ✅ GitHub repository created with branch protection
+- ✅ CI/CD pipeline with GitHub Actions
+- ✅ Automated testing on Pull Requests
+- ✅ Code quality checks (format, analyze, test)
 
 ### v1.1.0 - Sprint 1, US-002 (February 14, 2026)
 - ✅ Firebase project created and configured
