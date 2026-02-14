@@ -1,29 +1,29 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // CRITICAL: Import firebase_options.dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import 'firebase_options.dart';
 
 void main() async {
-  print('🚀 Starting Friendsheet...');
-
-  // Ensure Flutter is initialized before Firebase
   WidgetsFlutterBinding.ensureInitialized();
-  print('✅ Flutter binding initialized');
 
   try {
-    print('🔥 Initializing Firebase...');
-    // CRITICAL: Use firebase_options.dart configuration
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('✅ Firebase initialized successfully!');
+    if (kDebugMode) {
+      print('✅ Firebase initialized successfully');
+    }
   } catch (e) {
-    print('❌ Firebase initialization error: $e');
+    if (kDebugMode) {
+      print('❌ Firebase initialization error: $e');
+    }
   }
 
-  // Run the app
   runApp(const FriendsheetApp());
 }
 
+// Rest of the file stays the same...
 class FriendsheetApp extends StatelessWidget {
   const FriendsheetApp({super.key});
 
@@ -52,24 +52,18 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
-              Icons.people,
-              size: 100,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Welcome to Friendsheet!',
+            Text(
+              '🎯 Friendsheet MVP',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
-            const Text(
-              'Firebase Connected ✅',
-              style: TextStyle(fontSize: 16, color: Colors.green),
+            SizedBox(height: 20),
+            Text(
+              'Ready for US-003: Git & CI/CD Setup',
+              style: TextStyle(fontSize: 16),
             ),
           ],
         ),
