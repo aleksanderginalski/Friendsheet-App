@@ -16,10 +16,10 @@ void main() {
 
     // Verify that app title is displayed
     expect(find.text('Friendsheet'), findsWidgets);
-    
+
     // Verify that subtitle is displayed
     expect(find.text('Track your meetings with friends'), findsOneWidget);
-    
+
     // Verify that development badge is displayed
     expect(find.text('🚧 MVP in Development'), findsOneWidget);
   });
