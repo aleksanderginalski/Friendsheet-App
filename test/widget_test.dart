@@ -11,7 +11,7 @@ void main() {
     // Verify that our placeholder UI is displayed
     expect(find.text('🎯 Friendsheet MVP'), findsOneWidget);
     expect(find.text('Ready for US-003: Git & CI/CD Setup'), findsOneWidget);
-    
+
     // Verify app title in AppBar
     expect(find.text('Friendsheet - Track Your Meetings'), findsOneWidget);
   });
