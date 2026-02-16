@@ -1,8 +1,10 @@
 // lib/presentation/screens/login_screen.dart
 
 import 'package:flutter/material.dart';
+
 import '../../data/services/auth_service.dart';
-import 'home_screen.dart';
+import '../../presentation/screens/home_screen.dart';
+
 
 /// Login screen with Google Sign-In button
 
@@ -17,47 +19,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   bool _isLoading = false;
 
-  /// Handle Google Sign-In button press
+/// Handle Google Sign-In button press
+Future<void> _handleGoogleSignIn() async {
+  // Prevent double-tap
+  if (_isLoading) return;
+  
+  setState(() {
+    _isLoading = true;
+  });
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
+  try {
+    final user = await _authService.signInWithGoogle();
 
-    try {
-      final user = await _authService.signInWithGoogle();
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      if (user != null) {
-        // Success! Navigate to home screen
-
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      } else {
-        // User cancelled or error occurred
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      // Show error message
+    if (user != null) {
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to sign in: $e'),
-          backgroundColor: Colors.red,
-        ),
+      // Navigate to HomeScreen
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false, // Remove all previous routes
       );
-
+    } else {
+      // User cancelled
       setState(() {
         _isLoading = false;
       });
     }
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to sign in: $e'),
+        backgroundColor: Colors.red,
+      ),
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Color(0xFF4CAF50),
                       )
                     : ElevatedButton.icon(
-                        onPressed: _handleGoogleSignIn,
+                        onPressed: _isLoading ? null : _handleGoogleSignIn,  // Disable button while loading
                         icon: Image.asset(
                           'assets/google_logo.png',
                           height: 24,
