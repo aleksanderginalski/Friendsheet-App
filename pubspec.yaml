@@ -18,6 +18,9 @@ dependencies:
   # Firebase Authentication - for user login/registration
   firebase_auth: ^4.16.0
   
+  # SSO Signing - for user login/registration
+  google_sign_in: ^6.2.1
+ 
   # Cloud Firestore - NoSQL database
   cloud_firestore: ^4.14.0
   
