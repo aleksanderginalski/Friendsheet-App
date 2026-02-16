@@ -12,7 +12,20 @@
           "package_name": "com.friendsheet.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "982496113403-eqinhgtt57sukskp13br7b4r5bmkk7g5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.friendsheet.app",
+            "certificate_hash": "6dd4280209dfcf0f5446205db4c2a5eee126ae71"
+          }
+        },
+        {
+          "client_id": "982496113403-tnqo80d2pka2e7uht81a76oejh7t6es5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD3TFRIw_ZrYRhkVCOCZiIp2plOaEJg16c"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "982496113403-tnqo80d2pka2e7uht81a76oejh7t6es5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
