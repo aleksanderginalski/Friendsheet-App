@@ -14,10 +14,12 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 ## ✨ Features
 
 ### MVP (Current Development)
-- ✅ **Complete:** Project setup and Clean Architecture structure
+- ✅ **Complete:** Project setup and Clean Architecture structure (US-001)
 - ✅ **Complete:** Firebase integration (US-002)
-- ⏳ **Next:** Git & CI/CD configuration (US-003)
-- ⏳ **Planned:** User authentication (Firebase Auth)
+- ✅ **Complete:** Git & CI/CD configuration (US-003)
+- ✅ **Complete:** Google Sign-In authentication (US-004)
+- ⏳ **Next:** User logout functionality (US-006)
+- ⏳ **Planned:** Data models (Meeting, Person, Activity)
 - ⏳ **Planned:** Add meetings with participants and activities
 - ⏳ **Planned:** Meeting weight system (Fibonacci scale: 1, 2, 3, 5, 8, 13, 21)
 
@@ -203,6 +205,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.2.1 - Sprint 1, US-004 (February 16, 2026)
+- ✅ Google Sign-In authentication implemented
+- ✅ AuthService with Singleton pattern
+- ✅ LoginScreen with Google Sign-In button
+- ✅ HomeScreen with user info and logout
+- ✅ AuthWrapper for automatic auth state management
+- ✅ Manual navigation after successful login
+- ✅ Firebase packages updated to latest compatible versions
 
 ### v1.2.0 - Sprint 1, US-003 (February 14, 2026)
 - ✅ Git repository configured
