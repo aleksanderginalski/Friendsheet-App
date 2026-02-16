@@ -206,7 +206,7 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
-### v1.2.0 - Sprint 1, US-004 (February 16, 2026)
+### v1.2.1 - Sprint 1, US-004 (February 16, 2026)
 - ✅ Google Sign-In authentication implemented
 - ✅ AuthService with Singleton pattern
 - ✅ LoginScreen with Google Sign-In button
