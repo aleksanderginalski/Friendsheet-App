@@ -1,66 +1,63 @@
 // lib/presentation/screens/login_screen.dart
 
 import 'package:flutter/material.dart';
-
 import '../../data/services/auth_service.dart';
-import '../../presentation/screens/home_screen.dart';
-
 
 /// Login screen with Google Sign-In button
-
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  // AuthService injected from outside - not hardcoded inside
+  final AuthService authService;
+
+  const LoginScreen({
+    super.key,
+    required this.authService,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
-/// Handle Google Sign-In button press
-Future<void> _handleGoogleSignIn() async {
-  // Prevent double-tap
-  if (_isLoading) return;
-  
-  setState(() {
-    _isLoading = true;
-  });
+  /// Handle Google Sign-In button press
+  Future<void> _handleGoogleSignIn() async {
+    // Prevent double-tap
+    if (_isLoading) return;
 
-  try {
-    final user = await _authService.signInWithGoogle();
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (!mounted) return;
+    try {
+      // Use injected AuthService instead of creating new instance
+      final user = await widget.authService.signInWithGoogle();
 
-    if (user != null) {
-      
-      // Navigate to HomeScreen
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        (route) => false, // Remove all previous routes
+      if (!mounted) return;
+
+      if (user == null) {
+        // User cancelled - just reset loading state
+        // AuthWrapper will handle navigation automatically
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      // If user != null, AuthWrapper stream will automatically navigate to HomeScreen
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to sign in: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
-    } else {
-      // User cancelled
+
       setState(() {
         _isLoading = false;
       });
     }
-  } catch (e) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Failed to sign in: $e'),
-        backgroundColor: Colors.red,
-      ),
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +71,6 @@ Future<void> _handleGoogleSignIn() async {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // App branding
-                
                 const Icon(
                   Icons.people_alt,
                   size: 80,
@@ -101,18 +97,16 @@ Future<void> _handleGoogleSignIn() async {
                 const SizedBox(height: 64),
 
                 // Google Sign-In button
-                
                 _isLoading
                     ? const CircularProgressIndicator(
                         color: Color(0xFF4CAF50),
                       )
                     : ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _handleGoogleSignIn,  // Disable button while loading
+                        onPressed: _isLoading ? null : _handleGoogleSignIn,
                         icon: Image.asset(
                           'assets/google_logo.png',
                           height: 24,
                           errorBuilder: (context, error, stackTrace) {
-                            // Fallback if image not found
                             return const Icon(
                               Icons.login,
                               color: Colors.white,
@@ -127,7 +121,7 @@ Future<void> _handleGoogleSignIn() async {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4285F4), // Google Blue
+                          backgroundColor: const Color(0xFF4285F4),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,

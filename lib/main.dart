@@ -11,10 +11,8 @@ import 'presentation/screens/login_screen.dart';
 
 /// Main entry point of the application
 void main() async {
-  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -35,36 +33,37 @@ class FriendsheetApp extends StatelessWidget {
         primaryColor: const Color(0xFF4CAF50),
         useMaterial3: true,
       ),
-      home: const AuthWrapper(),
+      // Inject real AuthService in production
+      // 🎨 METAPHOR: Connect real water supply to the coffee machine
+      home: AuthWrapper(authService: AuthService()),
     );
   }
 }
 
-/// Wrapper widget that handles authentication state
+/// AuthWrapper widget that handles authentication state routing
+///
+/// Accepts AuthService as a parameter (Dependency Injection pattern)
+/// This makes the widget testable - in tests we can inject a mock service
+/// In production we inject the real AuthService
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
+  // AuthService injected from outside - not hardcoded inside
+  final AuthService authService;
+
+  const AuthWrapper({
+    super.key,
+    required this.authService,
+  });
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  final AuthService _authService = AuthService();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Check current user on each build
-    
     return StreamBuilder<User?>(
-      stream: _authService.authStateChanges,
+      stream: widget.authService.authStateChanges,
       builder: (context, snapshot) {
-      
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
@@ -75,12 +74,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        final bool isAuthenticated = snapshot.hasData && snapshot.data != null;
+        final bool isAuthenticated =
+            snapshot.hasData && snapshot.data != null;
 
         if (isAuthenticated) {
-          return const HomeScreen();
+          return HomeScreen(authService: widget.authService);
         } else {
-          return const LoginScreen();
+          return LoginScreen(authService: widget.authService);
         }
       },
     );
