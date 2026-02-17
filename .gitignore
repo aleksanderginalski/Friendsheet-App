@@ -57,3 +57,9 @@ ios/firebase_app_id_file.json
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Firebase CLI local config
+firebase.json
+
+# macOS - out of MVP scope
+macos/
