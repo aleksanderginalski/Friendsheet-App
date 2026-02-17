@@ -1,15 +1,19 @@
+// lib/presentation/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
-import 'login_screen.dart';
 
 /// Home screen shown to authenticated users
-
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  // AuthService injected from outside - not hardcoded inside
+  final AuthService authService;
+
+  const HomeScreen({
+    super.key,
+    required this.authService,
+  });
 
   /// Handle logout button press
-
   Future<void> _handleLogout(BuildContext context) async {
     // Show confirmation dialog
     final bool? confirmed = await showDialog<bool>(
@@ -34,19 +38,12 @@ class HomeScreen extends StatelessWidget {
     );
 
     // If user confirmed, proceed with logout
+    // AuthWrapper stream will automatically navigate to LoginScreen
     if (confirmed == true && context.mounted) {
       try {
-        final AuthService authService = AuthService();
         await authService.signOut();
-
-        if (context.mounted) {
-          // Navigate to login screen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
-        }
+        // No manual navigation needed - AuthWrapper handles it automatically
       } catch (e) {
-        // Show error if logout fails
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -61,7 +58,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthService authService = AuthService();
     final String userName = authService.userDisplayName ?? 'Friend';
     final String userEmail = authService.userEmail ?? '';
 
@@ -71,7 +67,6 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
-          // Logout button in app bar
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log Out',
@@ -85,7 +80,6 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Welcome message
               Text(
                 'Welcome back, $userName! 👋',
                 style: const TextStyle(
@@ -95,7 +89,6 @@ class HomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-
               Text(
                 userEmail,
                 style: const TextStyle(
@@ -104,8 +97,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-
-              // Add meeting button (placeholder for future feature)
               ElevatedButton.icon(
                 onPressed: () {
                   // TODO: Navigate to Add Meeting screen (US-010)
