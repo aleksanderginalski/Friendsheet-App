@@ -53,10 +53,10 @@ void main() {
         (_) => Stream.value(mockUser),
       );
       // Tell mock what to return when HomeScreen asks for user data
-    
+
       when(mockAuthService.userDisplayName).thenReturn('Test User');
       when(mockAuthService.userEmail).thenReturn('test@example.com');
-      
+
       // Act: Build widget with injected mock
       await tester.pumpWidget(
         MaterialApp(

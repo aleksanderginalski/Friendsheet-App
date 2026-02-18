@@ -7,7 +7,7 @@ void main() {
   group('Meeting Model Tests', () {
     // Sample test data
     final testDate = DateTime(2026, 2, 18);
-    
+
     final validMeeting = Meeting(
       id: 'meeting-1',
       userId: 'user-123',
@@ -60,7 +60,7 @@ void main() {
 
     test('copyWith creates new instance with updated fields', () {
       final updated = validMeeting.copyWith(name: 'Updated Meeting');
-      
+
       expect(updated.name, 'Updated Meeting');
       expect(updated.id, validMeeting.id); // Other fields unchanged
       expect(updated.weight, validMeeting.weight);
@@ -96,7 +96,7 @@ void main() {
 
     test('toFirestore converts to correct Map', () {
       final map = validMeeting.toFirestore();
-      
+
       expect(map['userId'], 'user-123');
       expect(map['name'], 'Coffee with Anna');
       expect(map['weight'], 8);
@@ -107,10 +107,10 @@ void main() {
     test('JSON serialization works', () {
       // Convert to JSON
       final json = validMeeting.toJson();
-      
+
       // Convert back from JSON
       final fromJson = Meeting.fromJson(json);
-      
+
       expect(fromJson.id, validMeeting.id);
       expect(fromJson.name, validMeeting.name);
       expect(fromJson.weight, validMeeting.weight);

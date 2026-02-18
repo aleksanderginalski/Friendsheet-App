@@ -7,15 +7,15 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   // Singleton pattern - only one instance of AuthService exists
   static final AuthService _instance = AuthService._internal();
-  
+
   factory AuthService() {
     return _instance;
   }
   AuthService._internal();
- 
+
   // Firebase Authentication instance
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   // Google Sign-In instance
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
@@ -37,39 +37,32 @@ class AuthService {
   /// Sign in with Google
   Future<User?> signInWithGoogle() async {
     try {
-      
       // Step 1: Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       // If user cancelled sign-in, return null
       if (googleUser == null) {
-        
         return null;
       }
 
-    
       // Step 2: Obtain auth details from Google account
-      final GoogleSignInAuthentication googleAuth = 
+      final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      
+
       // Step 3: Create Firebase credential from Google credentials
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-     
+
       // Step 4: Sign in to Firebase with Google credential
-      final UserCredential userCredential = 
+      final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      
 
       // Return the authenticated user
-      
-     
-      return userCredential.user;
 
+      return userCredential.user;
     } catch (e) {
-     
       return null;
     }
   }
@@ -79,10 +72,9 @@ class AuthService {
     try {
       // Sign out from Google Sign-In
       await _googleSignIn.signOut();
-      
+
       // Sign out from Firebase
       await _auth.signOut();
-      
     } catch (e) {
       // Re-throw error to be handled by UI layer
       rethrow;
