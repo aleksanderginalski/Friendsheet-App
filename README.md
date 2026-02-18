@@ -206,6 +206,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v1.4.0 - Sprint 2, US-007 (February 18, 2026)
+- ✅ Meeting Model implemented with Freezed
+- ✅ Freezed + json_serializable integration
+- ✅ Data models structure in lib/data/models/
+- ✅ 12 unit tests for Meeting model (100% coverage)
+- ✅ Build runner configuration
+- ✅ Firestore and JSON serialization patterns established
+
 ### v1.3.0 - Sprint 1, US-006 (February 17, 2026)
 - ✅ User logout implemented (Google + Firebase sign out)
 - ✅ Dependency Injection introduced for AuthService
