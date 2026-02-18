@@ -9,13 +9,13 @@ part 'meeting.freezed.dart';
 part 'meeting.g.dart';
 
 /// Meeting model representing a social gathering with friends
-/// 
+///
 /// This model uses Freezed for immutability and code generation.
 /// Valid weight values follow Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21
 @freezed
 class Meeting with _$Meeting {
   const Meeting._(); // Private constructor for custom methods
-  
+
   const factory Meeting({
     required String id,
     required String userId,
@@ -34,7 +34,7 @@ class Meeting with _$Meeting {
   /// Creates Meeting from Firestore document
   factory Meeting.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     return Meeting(
       id: doc.id,
       userId: data['userId'] ?? '',
@@ -49,7 +49,7 @@ class Meeting with _$Meeting {
   }
 
   /// Creates Meeting from JSON
-  factory Meeting.fromJson(Map<String, dynamic> json) => 
+  factory Meeting.fromJson(Map<String, dynamic> json) =>
       _$MeetingFromJson(json);
 
   /// Converts Meeting to Firestore map
@@ -69,9 +69,9 @@ class Meeting with _$Meeting {
   /// Validates meeting data
   bool isValid() {
     return name.isNotEmpty &&
-           name.length <= 50 &&
-           validWeights.contains(weight) &&
-           participantIds.isNotEmpty &&
-           activityIds.isNotEmpty;
+        name.length <= 50 &&
+        validWeights.contains(weight) &&
+        participantIds.isNotEmpty &&
+        activityIds.isNotEmpty;
   }
 }
