@@ -34,15 +34,19 @@ class Meeting with _$Meeting {
   /// Creates Meeting from Firestore document
   factory Meeting.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-
+  
     return Meeting(
-      id: doc.id,
-      userId: data['userId'] ?? '',
-      name: data['name'] ?? '',
+     id: doc.id,
+      userId: (data['userId'] ?? '') as String,
+      name: (data['name'] ?? '') as String,
       date: (data['date'] as Timestamp).toDate(),
-      weight: data['weight'] ?? 1,
-      participantIds: List<String>.from(data['participantIds'] ?? []),
-      activityIds: List<String>.from(data['activityIds'] ?? []),
+      weight: (data['weight'] ?? 1) as int,
+      participantIds: List<String>.from(
+        (data['participantIds'] ?? []) as List<dynamic>,
+      ),
+      activityIds: List<String>.from(
+        (data['activityIds'] ?? []) as List<dynamic>,
+      ),
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
