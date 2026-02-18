@@ -96,10 +96,26 @@ e. Create `lib/firebase_options.dart` with your Firebase configuration
 
 **Note:** `google-services.json` and `firebase_options.dart` are gitignored for security. You must create your own Firebase project.
 
-4. **Run the app**
-```powershell
-flutter run
+5.  **Create firebase_options.dart**
+
+You need to create your own Firebase configuration:
+
+a. If using FlutterFire CLI (recommended):
+```bash
+flutterfire configure
 ```
+
+b. Or copy the example template and fill in your credentials:
+```bash
+# Copy template
+cp lib/firebase_options.example.dart lib/firebase_options.dart
+
+# Edit lib/firebase_options.dart with your Firebase project details
+```
+
+**Note:** The `firebase_options.example.dart` file contains mock credentials for CI/CD. Never commit your real `firebase_options.dart` file.
+
+5. **Run the app**
 
 
 ## 🧪 Testing
@@ -259,6 +275,9 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 **Important:** The following files contain sensitive information and are gitignored:
 - `android/app/google-services.json` - Firebase configuration
-- `lib/firebase_options.dart` - Firebase API keys
+- `lib/firebase_options.dart` - Firebase API keys (your real credentials)
 
-**Never commit these files to version control!** Each developer must create their own Firebase project and configuration files.
+**Mock files for CI (safe to commit):**
+- `lib/firebase_options.example.dart` - Template with fake credentials for CI/CD
+
+**Never commit your real firebase_options.dart!** Each developer must create their own Firebase project and configuration files.
