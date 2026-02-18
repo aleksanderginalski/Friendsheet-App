@@ -21,20 +21,30 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.0'
-          channel: 'stable'
+          channel: 'stable' 
       
-      # Step 3: Get dependencies
+      # Step 3: Setup Flutter environment
+
+      - name: Setup Firebase options for CI
+        run: |
+          if (!(Test-Path lib/firebase_options.dart)) {
+            Copy-Item lib/firebase_options.example.dart lib/firebase_options.dart
+            Write-Host "Created firebase_options.dart from example template for CI"
+          }
+        shell: pwsh
+
+      # Step 4: Get dependencies
       - name: Install dependencies
         run: flutter pub get
       
-      # Step 4: Verify formatting
+      # Step 5: Verify formatting
       - name: Check formatting
         run: dart format --set-exit-if-changed .
       
-      # Step 5: Analyze code
+      # Step 6: Analyze code
       - name: Analyze code
         run: flutter analyze
       
-      # Step 6: Run tests
+      # Step 7: Run tests
       - name: Run tests
         run: flutter test

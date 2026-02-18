@@ -74,8 +74,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        final bool isAuthenticated =
-            snapshot.hasData && snapshot.data != null;
+        final bool isAuthenticated = snapshot.hasData && snapshot.data != null;
 
         if (isAuthenticated) {
           return HomeScreen(authService: widget.authService);
