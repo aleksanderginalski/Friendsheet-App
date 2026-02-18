@@ -1,0 +1,12 @@
+# build.yaml
+targets:
+  $default:
+    builders:
+      json_serializable:
+        enabled: true
+        options:
+          # More strict JSON serialization
+          checked: true
+          # Only generate what we need
+          any_map: false
+          explicit_to_json: true

@@ -49,6 +49,7 @@ app.*.map.json
 # Each developer must create their own Firebase project
 android/app/google-services.json
 lib/firebase_options.dart
+# firebase_options.example.dart is NOT ignored - it's a template for CI
 ios/Runner/GoogleService-Info.plist
 ios/firebase_app_id_file.json
 
