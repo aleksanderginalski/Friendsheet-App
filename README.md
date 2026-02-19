@@ -24,7 +24,7 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 - ✅ **Complete:** Activity Model (US-009)
 - ✅ **Complete:** Add Meeting Screen UI with Provider scaffold (US-010)
 - ✅ **Complete:** Meeting Name & Date Input with validation (US-011)
-- ⏳ **Planned:** Meeting weight system (Fibonacci scale: 1, 2, 3, 5, 8, 13, 21)
+- ✅ **Complete:** Meeting weight selector - Fibonacci stepper (US-012)
 
 
 ### Planned (Future Phases)
@@ -225,6 +225,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.9.0 - Sprint 2, US-012 (February 19, 2026)
+- ✅ MeetingWeightStepper widget with +/− buttons
+- ✅ Fibonacci values only (1,2,3,5,8,13,21) via index-based navigation
+- ✅ Buttons disabled at min (1) and max (21) boundaries
+- ✅ AddMeetingProvider refactored from raw int to index-based weight
+- ✅ 15 new tests (5 widget + 10 provider), 77 total tests
 
 ### v1.8.0 - Sprint 2, US-011 (February 19, 2026)
 - ✅ MeetingNameField widget with character counter (X/50)
