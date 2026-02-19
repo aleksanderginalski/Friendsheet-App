@@ -10,6 +10,9 @@ class AddMeetingProvider extends ChangeNotifier {
   final List<String> _participantIds = [];
   final List<String> _activityIds = [];
 
+  // --- Validation errors ---
+  String? _nameError;
+
   // --- Loading / error state ---
   bool _isLoading = false;
   String? _errorMessage;
@@ -20,14 +23,18 @@ class AddMeetingProvider extends ChangeNotifier {
   int get weight => _weight;
   List<String> get participantIds => List.unmodifiable(_participantIds);
   List<String> get activityIds => List.unmodifiable(_activityIds);
+  String? get nameError => _nameError;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // --- Setters (will be expanded in US-011 to US-014) ---
-
+  // --- Setters ---
   void setName(String value) {
     _name = value;
-    notifyListeners();
+    // Clear error while user is typing
+    if (_nameError != null) {
+      _nameError = null;
+      notifyListeners();
+    }
   }
 
   void setDate(DateTime value) {
@@ -40,14 +47,28 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Validation (basic, will be expanded later) ---
+  // --- Validation ---
+  /// Validates name on focus loss. Returns true if valid.
+  bool validateName() {
+    if (_name.isEmpty) {
+      _nameError = 'Meeting name is required';
+    } else if (_name.length > 50) {
+      _nameError = 'Name cannot exceed 50 characters';
+    } else {
+      _nameError = null;
+    }
+    notifyListeners();
+    return _nameError == null;
+  }
 
   /// Returns true if the form has minimum required data.
   bool get isFormValid =>
-      _name.isNotEmpty && _participantIds.isNotEmpty && _activityIds.isNotEmpty;
+      _name.isNotEmpty &&
+      _name.length <= 50 &&
+      _participantIds.isNotEmpty &&
+      _activityIds.isNotEmpty;
 
   // --- Reset ---
-
   /// Resets all form fields to their default values.
   void reset() {
     _name = '';
@@ -55,6 +76,7 @@ class AddMeetingProvider extends ChangeNotifier {
     _weight = 3;
     _participantIds.clear();
     _activityIds.clear();
+    _nameError = null;
     _isLoading = false;
     _errorMessage = null;
     notifyListeners();
