@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
+import '../widgets/activity_autocomplete.dart';
 import '../widgets/meeting_date_field.dart';
 import '../widgets/meeting_name_field.dart';
 import '../widgets/meeting_weight_stepper.dart';
@@ -45,6 +46,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
       final userId = widget.userId;
       if (userId != null) {
         context.read<AddMeetingProvider>().loadPersons(userId);
+        context.read<AddMeetingProvider>().loadActivities(userId);
       }
     });
   }
@@ -91,7 +93,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
             // --- Activities ---
             const _SectionHeader(title: 'Activities * (min. 1)'),
             const SizedBox(height: 8),
-            const _ActivitiesPlaceholder(),
+            const ActivityAutocomplete(),
             const SizedBox(height: 32),
 
             // --- Save Button ---
@@ -136,22 +138,6 @@ class _SectionHeader extends StatelessWidget {
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
-    );
-  }
-}
-
-class _ActivitiesPlaceholder extends StatelessWidget {
-  const _ActivitiesPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const TextField(
-      enabled: false,
-      decoration: InputDecoration(
-        hintText: 'Add activity... (coming in US-014)',
-        prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(),
-      ),
     );
   }
 }
