@@ -16,29 +16,33 @@ class AddMeetingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userId = AuthService().currentUser?.uid;
     return ChangeNotifierProvider(
       create: (_) => AddMeetingProvider(),
-      child: const _AddMeetingView(),
+      child: AddMeetingScreenView(userId: userId),
     );
   }
 }
 
 /// Internal view widget that consumes [AddMeetingProvider].
 /// StatefulWidget is required to trigger loadPersons on init.
-class _AddMeetingView extends StatefulWidget {
-  const _AddMeetingView();
+/// [userId] is passed explicitly to allow testing without Firebase.
+class AddMeetingScreenView extends StatefulWidget {
+  final String? userId;
+
+  const AddMeetingScreenView({super.key, this.userId});
 
   @override
-  State<_AddMeetingView> createState() => _AddMeetingViewState();
+  State<AddMeetingScreenView> createState() => _AddMeetingScreenViewState();
 }
 
-class _AddMeetingViewState extends State<_AddMeetingView> {
+class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
   @override
   void initState() {
     super.initState();
     // Load persons after first frame so Provider is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = AuthService().currentUser?.uid;
+      final userId = widget.userId;
       if (userId != null) {
         context.read<AddMeetingProvider>().loadPersons(userId);
       }

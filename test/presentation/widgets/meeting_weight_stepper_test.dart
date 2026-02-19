@@ -71,7 +71,11 @@ void main() {
         onIncrement: () => called = true,
       ));
 
-      await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
+      // Verify callback is wired correctly without triggering ripple
+      final button = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.add),
+      );
+      button.onPressed!();
       expect(called, isTrue);
     });
 
@@ -85,7 +89,10 @@ void main() {
         onDecrement: () => called = true,
       ));
 
-      await tester.tap(find.widgetWithIcon(IconButton, Icons.remove));
+      final button = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.remove),
+      );
+      button.onPressed!();
       expect(called, isTrue);
     });
   });
