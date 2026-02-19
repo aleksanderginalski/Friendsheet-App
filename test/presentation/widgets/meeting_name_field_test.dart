@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 import 'package:friendsheet/presentation/widgets/meeting_name_field.dart';
+import 'package:mockito/annotations.dart';
 import 'package:provider/provider.dart';
 
+import 'meeting_name_field_test.mocks.dart';
+
+@GenerateMocks([PersonRepository])
 void main() {
+  late MockPersonRepository mockRepository;
+
+  setUp(() {
+    mockRepository = MockPersonRepository();
+  });
+
   Widget buildTestWidget() {
     return MaterialApp(
       home: Scaffold(
         body: ChangeNotifierProvider(
-          create: (_) => AddMeetingProvider(),
+          create: (_) => AddMeetingProvider(personRepository: mockRepository),
           child: const MeetingNameField(),
         ),
       ),
@@ -37,10 +48,8 @@ void main() {
     testWidgets('shows error when field is empty and loses focus',
         (tester) async {
       await tester.pumpWidget(buildTestWidget());
-      // Focus the field
       await tester.tap(find.byType(TextField));
       await tester.pump();
-      // Simulate focus loss programmatically
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pump();
       expect(find.text('Meeting name is required'), findsOneWidget);
@@ -48,13 +57,11 @@ void main() {
 
     testWidgets('clears error when user starts typing', (tester) async {
       await tester.pumpWidget(buildTestWidget());
-      // Trigger error first
       await tester.tap(find.byType(TextField));
       await tester.pump();
       FocusManager.instance.primaryFocus?.unfocus();
       await tester.pump();
       expect(find.text('Meeting name is required'), findsOneWidget);
-      // Now type something
       await tester.enterText(find.byType(TextField), 'Coffee');
       await tester.pump();
       expect(find.text('Meeting name is required'), findsNothing);
