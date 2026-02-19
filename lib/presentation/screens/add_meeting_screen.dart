@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/add_meeting_provider.dart';
 import '../widgets/meeting_date_field.dart';
 import '../widgets/meeting_name_field.dart';
+import '../widgets/meeting_weight_stepper.dart';
 
 /// Screen for adding a new meeting.
 /// Provides [AddMeetingProvider] scoped to this screen only.
@@ -24,6 +25,8 @@ class _AddMeetingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AddMeetingProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Meeting'),
@@ -44,7 +47,13 @@ class _AddMeetingView extends StatelessWidget {
             // --- Meeting Weight ---
             const _SectionHeader(title: 'Meeting Weight *'),
             const SizedBox(height: 8),
-            _WeightStepperPlaceholder(),
+            MeetingWeightStepper(
+              value: provider.weight,
+              canDecrement: provider.canDecrement,
+              canIncrement: provider.canIncrement,
+              onDecrement: provider.decrementWeight,
+              onIncrement: provider.incrementWeight,
+            ),
             const SizedBox(height: 24),
 
             // --- Participants ---
@@ -101,35 +110,6 @@ class _SectionHeader extends StatelessWidget {
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
-    );
-  }
-}
-
-class _WeightStepperPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-        ),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            onPressed: null, // implemented in US-012
-            icon: Icon(Icons.remove),
-          ),
-          Text('3', style: TextStyle(fontSize: 20)),
-          IconButton(
-            onPressed: null, // implemented in US-012
-            icon: Icon(Icons.add),
-          ),
-        ],
-      ),
     );
   }
 }

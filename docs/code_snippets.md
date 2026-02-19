@@ -856,3 +856,51 @@ InkWell(
   ),
 )
 ```
+
+## 14. Index-based Stepper Pattern (US-012)
+
+Pattern for navigating a fixed set of values using index instead of raw value.
+Used for Meeting Weight to ensure only valid Fibonacci values are selectable.
+
+### Provider side — index-based state:
+```dart
+static const List<int> weightValues = [1, 2, 3, 5, 8, 13, 21];
+
+// Default index 2 → value 3
+int _weightIndex = 2;
+
+int get weight => weightValues[_weightIndex];
+bool get canDecrement => _weightIndex > 0;
+bool get canIncrement => _weightIndex < weightValues.length - 1;
+
+void incrementWeight() {
+  if (canIncrement) {
+    _weightIndex++;
+    notifyListeners();
+  }
+}
+
+void decrementWeight() {
+  if (canDecrement) {
+    _weightIndex--;
+    notifyListeners();
+  }
+}
+```
+
+### Widget side — stateless, driven by provider:
+```dart
+MeetingWeightStepper(
+  value: provider.weight,
+  canDecrement: provider.canDecrement,
+  canIncrement: provider.canIncrement,
+  onDecrement: provider.decrementWeight,
+  onIncrement: provider.incrementWeight,
+)
+```
+
+Why index-based over raw value:
+- Invalid values are impossible at the provider level
+- No validation needed in the form
+- Widget stays stateless and reusable
+- Boundary checks are simple boolean comparisons

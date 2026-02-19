@@ -22,12 +22,13 @@
 - lib/main.dart - App entry point, Firebase initialization, AuthWrapper
 
 ## lib/presentation/
-- lib/presentation/providers/add_meeting_provider.dart - State for Add Meeting screen
+- lib/presentation/providers/add_meeting_provider.dart - State for Add Meeting screen (name, date, weight)
 - lib/presentation/screens/add_meeting_screen.dart - Add Meeting screen
 - lib/presentation/screens/home_screen.dart - Home screen with logout
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
 - lib/presentation/widgets/meeting_date_field.dart - Date picker widget (US-011)
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget (US-011)
+- lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 
 ## test/data/
 - test/data/models/activity_test.dart - Activity model tests (13 tests)
@@ -35,9 +36,11 @@
 - test/data/models/person_test.dart - Person model tests (11 tests)
 
 ## test/presentation/
+- test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests (10 tests)
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
+- test/presentation/widgets/meeting_weight_stepper_test.dart - MeetingWeightStepper tests (5 tests)
 
 ## test/
 - test/widget_test.dart - AuthWrapper tests

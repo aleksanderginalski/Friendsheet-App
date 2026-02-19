@@ -3,10 +3,14 @@ import 'package:flutter/foundation.dart';
 /// Manages the state for the Add Meeting screen.
 /// Holds form data and notifies listeners on changes.
 class AddMeetingProvider extends ChangeNotifier {
+  // --- Constants ---
+  static const List<int> weightValues = [1, 2, 3, 5, 8, 13, 21];
+
   // --- Form fields ---
   String _name = '';
   DateTime _date = DateTime.now();
-  int _weight = 3;
+  // Default index 2 → value 3
+  int _weightIndex = 2;
   final List<String> _participantIds = [];
   final List<String> _activityIds = [];
 
@@ -20,7 +24,9 @@ class AddMeetingProvider extends ChangeNotifier {
   // --- Getters ---
   String get name => _name;
   DateTime get date => _date;
-  int get weight => _weight;
+  int get weight => weightValues[_weightIndex];
+  bool get canDecrement => _weightIndex > 0;
+  bool get canIncrement => _weightIndex < weightValues.length - 1;
   List<String> get participantIds => List.unmodifiable(_participantIds);
   List<String> get activityIds => List.unmodifiable(_activityIds);
   String? get nameError => _nameError;
@@ -42,9 +48,18 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setWeight(int value) {
-    _weight = value;
-    notifyListeners();
+  void incrementWeight() {
+    if (canIncrement) {
+      _weightIndex++;
+      notifyListeners();
+    }
+  }
+
+  void decrementWeight() {
+    if (canDecrement) {
+      _weightIndex--;
+      notifyListeners();
+    }
   }
 
   // --- Validation ---
@@ -73,7 +88,7 @@ class AddMeetingProvider extends ChangeNotifier {
   void reset() {
     _name = '';
     _date = DateTime.now();
-    _weight = 3;
+    _weightIndex = 2;
     _participantIds.clear();
     _activityIds.clear();
     _nameError = null;
