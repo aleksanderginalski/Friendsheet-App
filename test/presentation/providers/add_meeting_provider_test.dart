@@ -1,11 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 
+import 'add_meeting_provider_test.mocks.dart';
+
+@GenerateMocks([PersonRepository])
 void main() {
   late AddMeetingProvider provider;
+  late MockPersonRepository mockRepository;
 
   setUp(() {
-    provider = AddMeetingProvider();
+    mockRepository = MockPersonRepository();
+    provider = AddMeetingProvider(personRepository: mockRepository);
   });
 
   group('AddMeetingProvider - weight', () {
@@ -32,7 +41,6 @@ void main() {
     });
 
     test('canDecrement is false at minimum value 1', () {
-      // Navigate to minimum
       for (int i = 0; i < 10; i++) {
         provider.decrementWeight();
       }
@@ -41,7 +49,6 @@ void main() {
     });
 
     test('canIncrement is false at maximum value 21', () {
-      // Navigate to maximum
       for (int i = 0; i < 10; i++) {
         provider.incrementWeight();
       }
@@ -70,6 +77,87 @@ void main() {
       provider.incrementWeight();
       provider.reset();
       expect(provider.weight, equals(3));
+    });
+  });
+
+  group('AddMeetingProvider - participants', () {
+    final person1 = Person(
+      id: '1',
+      userId: 'user1',
+      firstName: 'Anna',
+      lastName: 'Kowalska',
+      createdAt: DateTime(2024),
+    );
+
+    final person2 = Person(
+      id: '2',
+      userId: 'user1',
+      firstName: 'Marek',
+      lastName: 'Nowak',
+      createdAt: DateTime(2024),
+    );
+
+    test('selectedPersons is empty by default', () {
+      expect(provider.selectedPersons, isEmpty);
+    });
+
+    test('selectPerson adds person to selectedPersons', () {
+      provider.addNewPerson(person1);
+      expect(provider.selectedPersons, contains(person1));
+    });
+
+    test('selectPerson prevents duplicates', () {
+      provider.addNewPerson(person1);
+      provider.selectPerson(person1);
+      expect(provider.selectedPersons.length, equals(1));
+    });
+
+    test('removePerson removes person from selectedPersons', () {
+      provider.addNewPerson(person1);
+      provider.removePerson(person1);
+      expect(provider.selectedPersons, isEmpty);
+    });
+
+    test('searchPersons returns matching persons', () {
+      provider.addNewPerson(person1);
+      provider.addNewPerson(person2);
+      provider.removePerson(person1);
+      provider.removePerson(person2);
+      final results = provider.searchPersons('anna');
+      expect(results, contains(person1));
+      expect(results, isNot(contains(person2)));
+    });
+
+    test('searchPersons excludes already selected persons', () {
+      provider.addNewPerson(person1);
+      provider.addNewPerson(person2);
+      provider.removePerson(person2);
+      final results = provider.searchPersons('a');
+      expect(results, isNot(contains(person1)));
+    });
+
+    test('searchPersons returns empty list for empty query', () {
+      provider.addNewPerson(person1);
+      provider.removePerson(person1);
+      expect(provider.searchPersons(''), isEmpty);
+    });
+
+    test('validateParticipants returns false when no participants', () {
+      expect(provider.validateParticipants(), isFalse);
+      expect(provider.participantsError, isNotNull);
+    });
+
+    test('validateParticipants returns true when at least one participant', () {
+      provider.addNewPerson(person1);
+      expect(provider.validateParticipants(), isTrue);
+      expect(provider.participantsError, isNull);
+    });
+
+    test('reset clears selectedPersons and availablePersons', () {
+      provider.addNewPerson(person1);
+      provider.reset();
+      expect(provider.selectedPersons, isEmpty);
+      expect(provider.availablePersons, isEmpty);
     });
   });
 }
