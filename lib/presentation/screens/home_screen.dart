@@ -1,5 +1,4 @@
-// lib/presentation/screens/home_screen.dart
-
+import 'add_meeting_screen.dart';
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
 
@@ -99,23 +98,19 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 48),
               ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: Navigate to Add Meeting screen (US-010)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Add Meeting feature coming in US-010!'),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddMeetingScreen(),
                     ),
                   );
                 },
                 icon: const Icon(Icons.add),
                 label: const Text('ADD NEW MEETING'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 16,
                   ),
-                  minimumSize: const Size(200, 56),
                 ),
               ),
             ],

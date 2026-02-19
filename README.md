@@ -21,7 +21,7 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 - ✅ **Complete:** User logout with Dependency Injection refactor (US-006)
 - ✅ **Complete:** Meeting Model (US-007)
 - ✅ **Complete:** Person Model (US-008)
-- ⏳ **Planned:** Activity Model
+- ✅ **Complete:** Activity Model (US-009)
 - ⏳ **Planned:** Add meetings with participants and activities
 - ⏳ **Planned:** Meeting weight system (Fibonacci scale: 1, 2, 3, 5, 8, 13, 21)
 
@@ -223,6 +223,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.6.0 - Sprint 2, US-009 (February 19, 2026)
+- ✅ Activity Model implemented with Freezed
+- ✅ Global/private activity pattern (isGlobal + userId: null)
+- ✅ categoryId field as String? (foundation for US-019 categories)
+- ✅ Firestore and JSON serialization
+- ✅ 13 unit tests (100% coverage)
+- ✅ Architecture updated: activity_categories collection designed
+- ✅ Scope split: US-019 (categories) + US-020 (global library) created
 
 ### v1.5.0 - Sprint 2, US-008 (February 18, 2026)
 - ✅ Person Model implemented with Freezed
