@@ -3,10 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
+import 'package:friendsheet/data/models/activity.dart' as _i3;
 import 'package:friendsheet/data/models/person.dart' as _i2;
-import 'package:friendsheet/data/repositories/person_repository.dart' as _i3;
+import 'package:friendsheet/data/repositories/activity_repository.dart' as _i6;
+import 'package:friendsheet/data/repositories/person_repository.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -33,36 +35,93 @@ class _FakePerson_0 extends _i1.SmartFake implements _i2.Person {
         );
 }
 
+class _FakeActivity_1 extends _i1.SmartFake implements _i3.Activity {
+  _FakeActivity_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [PersonRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPersonRepository extends _i1.Mock implements _i3.PersonRepository {
+class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
   MockPersonRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<List<_i2.Person>> getPersonsByUser(String? userId) =>
+  _i5.Future<List<_i2.Person>> getPersonsByUser(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getPersonsByUser,
           [userId],
         ),
-        returnValue: _i4.Future<List<_i2.Person>>.value(<_i2.Person>[]),
-      ) as _i4.Future<List<_i2.Person>>);
+        returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
+      ) as _i5.Future<List<_i2.Person>>);
 
   @override
-  _i4.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
+  _i5.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
         Invocation.method(
           #addPerson,
           [person],
         ),
-        returnValue: _i4.Future<_i2.Person>.value(_FakePerson_0(
+        returnValue: _i5.Future<_i2.Person>.value(_FakePerson_0(
           this,
           Invocation.method(
             #addPerson,
             [person],
           ),
         )),
-      ) as _i4.Future<_i2.Person>);
+      ) as _i5.Future<_i2.Person>);
+}
+
+/// A class which mocks [ActivityRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockActivityRepository extends _i1.Mock
+    implements _i6.ActivityRepository {
+  MockActivityRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<List<_i3.Activity>> getActivitiesByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getActivitiesByUser,
+          [userId],
+        ),
+        returnValue: _i5.Future<List<_i3.Activity>>.value(<_i3.Activity>[]),
+      ) as _i5.Future<List<_i3.Activity>>);
+
+  @override
+  _i5.Future<_i3.Activity> addActivity({
+    required String? userId,
+    required String? name,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addActivity,
+          [],
+          {
+            #userId: userId,
+            #name: name,
+          },
+        ),
+        returnValue: _i5.Future<_i3.Activity>.value(_FakeActivity_1(
+          this,
+          Invocation.method(
+            #addActivity,
+            [],
+            {
+              #userId: userId,
+              #name: name,
+            },
+          ),
+        )),
+      ) as _i5.Future<_i3.Activity>);
 }
