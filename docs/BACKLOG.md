@@ -470,20 +470,20 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** select meeting importance using a weight scale  
 **So that** I can indicate how significant the meeting was
-
+**Status:** ✅ COMPLETED (February 19, 2026)
 **Acceptance Criteria:**
-- [ ] Custom stepper widget created
-- [ ] Only allows Fibonacci values (1,2,3,5,8,13,21)
-- [ ] Plus/minus buttons
-- [ ] Current value displayed prominently
-- [ ] Buttons disabled at min/max values
-- [ ] Default value is 3
+- [x] Custom stepper widget created
+- [x] Only allows Fibonacci values (1,2,3,5,8,13,21)
+- [x] Plus/minus buttons
+- [x] Current value displayed prominently
+- [x] Buttons disabled at min/max values
+- [x] Default value is 3
 
 **Tasks:**
-- [ ] **TASK-067:** Create MeetingWeightStepper widget - 2h
-- [ ] **TASK-068:** Implement increment/decrement logic - 1h
-- [ ] **TASK-069:** Style and visual feedback - 1h
-- [ ] **TASK-070:** Write widget tests - 1h
+- [x] **TASK-067:** Create MeetingWeightStepper widget - 2h
+- [x] **TASK-068:** Implement increment/decrement logic - 1h
+- [x] **TASK-069:** Style and visual feedback - 1h
+- [x] **TASK-070:** Write widget tests - 1h
 
 **Definition of Done:**
 - Widget works as designed
