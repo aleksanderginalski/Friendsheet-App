@@ -66,3 +66,5 @@ firebase.json
 
 # macOS - out of MVP scope
 macos/
+# Private Claude instructions
+docs/Instrukcja_*
