@@ -532,26 +532,27 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** add activities to my meeting  
 **So that** I can remember what we did
+**Status:** ✅ COMPLETED (February 19, 2026)
 
 **Story Points:** 8  
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Autocomplete for existing activities
-- [ ] "Add new activity" option
-- [ ] Dialog to create new activity
-- [ ] Selected activities shown as chips
-- [ ] Remove activity option
-- [ ] Minimum 1 activity required
-- [ ] No duplicate activities
+- [x] Autocomplete for existing activities
+- [x] "Add new activity" option
+- [x] Dialog to create new activity
+- [x] Selected activities shown as chips
+- [x] Remove activity option
+- [x] Minimum 1 activity required
+- [x] No duplicate activities
 
 **Tasks:**
-- [ ] **TASK-077:** Create ActivityRepository - 2h
-- [ ] **TASK-078:** Implement ActivityAutocomplete - 2h
-- [ ] **TASK-079:** Create AddActivityDialog - 1h
-- [ ] **TASK-080:** Display chips - 1h
-- [ ] **TASK-081:** Add validation - 1h
-- [ ] **TASK-082:** Write tests - 1h
+- [x] **TASK-077:** Create ActivityRepository - 2h
+- [x] **TASK-078:** Implement ActivityAutocomplete - 2h
+- [x] **TASK-079:** Create AddActivityDialog - 1h
+- [x] **TASK-080:** Display chips - 1h
+- [x] **TASK-081:** Add validation - 1h
+- [x] **TASK-082:** Write tests - 1h
 
 **Definition of Done:**
 - Autocomplete works
