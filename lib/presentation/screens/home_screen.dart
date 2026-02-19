@@ -1,6 +1,6 @@
-import 'add_meeting_screen.dart';
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
+import 'add_meeting_screen.dart';
 
 /// Home screen shown to authenticated users
 class HomeScreen extends StatelessWidget {
