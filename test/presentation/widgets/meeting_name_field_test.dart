@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:friendsheet/presentation/widgets/meeting_name_field.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
+import 'package:friendsheet/presentation/widgets/meeting_name_field.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   Widget buildTestWidget() {
