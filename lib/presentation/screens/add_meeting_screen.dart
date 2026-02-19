@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/add_meeting_provider.dart';
-import '../widgets/meeting_name_field.dart';
 import '../widgets/meeting_date_field.dart';
+import '../widgets/meeting_name_field.dart';
 
 /// Screen for adding a new meeting.
 /// Provides [AddMeetingProvider] scoped to this screen only.
