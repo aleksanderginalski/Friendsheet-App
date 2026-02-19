@@ -22,6 +22,7 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 - ✅ **Complete:** Meeting Model (US-007)
 - ✅ **Complete:** Person Model (US-008)
 - ✅ **Complete:** Activity Model (US-009)
+- ✅ **Complete:** Add Meeting Screen UI with Provider scaffold (US-010)
 - ⏳ **Planned:** Add meetings with participants and activities
 - ⏳ **Planned:** Meeting weight system (Fibonacci scale: 1, 2, 3, 5, 8, 13, 21)
 
@@ -223,6 +224,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.7.0 - Sprint 2, US-010 (February 19, 2026)
+- ✅ AddMeetingScreen UI with ScrollView layout
+- ✅ All form sections as placeholders (Name, Date, Weight, Participants, Activities)
+- ✅ AddMeetingProvider with ChangeNotifier scaffold
+- ✅ Navigation from HomeScreen to AddMeetingScreen
+- ✅ Save button disabled with user info until US-015
+- ✅ 5 widget tests (100% passing)
 
 ### v1.6.0 - Sprint 2, US-009 (February 19, 2026)
 - ✅ Activity Model implemented with Freezed
