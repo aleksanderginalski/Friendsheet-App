@@ -25,6 +25,7 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 - ✅ **Complete:** Add Meeting Screen UI with Provider scaffold (US-010)
 - ✅ **Complete:** Meeting Name & Date Input with validation (US-011)
 - ✅ **Complete:** Meeting weight selector - Fibonacci stepper (US-012)
+- ✅ **Complete:** Participant Management - autocomplete, chips, add new person (US-013)
 
 
 ### Planned (Future Phases)
@@ -225,6 +226,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.10.0 - Sprint 2, US-013 (February 19, 2026)
+- ✅ PersonRepository with getPersonsByUser and addPerson methods
+- ✅ AddMeetingProvider extended with participant state management
+- ✅ PersonAutocomplete widget with search suggestions and chip display
+- ✅ AddPersonDialog with automatic first/last name split
+- ✅ AddMeetingScreen migrated to StatefulWidget for loadPersons on init
+- ✅ Fix: full name input split into firstName/lastName on dialog open
+- ✅ MockPersonRepository injected in tests to avoid Firebase dependency
+- ✅ 20 provider tests (100% passing), 97 total tests
 
 ### v1.9.0 - Sprint 2, US-012 (February 19, 2026)
 - ✅ MeetingWeightStepper widget with +/− buttons
