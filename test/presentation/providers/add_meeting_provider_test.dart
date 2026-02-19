@@ -1,9 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
+import 'package:mockito/annotations.dart';
 
 import 'add_meeting_provider_test.mocks.dart';
 
