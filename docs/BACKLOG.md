@@ -442,21 +442,21 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** enter meeting name and select date  
 **So that** I can specify when and what the meeting was
-
+**Status:** ✅ COMPLETED (February 19, 2026)
 **Acceptance Criteria:**
-- [ ] Name TextField with 50 character limit
-- [ ] Character counter displayed (X/50)
-- [ ] Date picker integrated
-- [ ] Default date is today
+- [x] Name TextField with 50 character limit
+- [x] Character counter displayed (X/50)
+- [x] Date picker integrated
+- [x] Default date is today
 - [ ] Validation: name required, date required
 - [ ] Error messages for invalid input
 
 **Tasks:**
-- [ ] **TASK-062:** Implement name TextField - 1h
-- [ ] **TASK-063:** Add character counter - 30min
-- [ ] **TASK-064:** Integrate date picker - 1h
-- [ ] **TASK-065:** Add validation logic - 30min
-- [ ] **TASK-066:** Write widget tests - 1h
+- [x] **TASK-062:** Implement name TextField - 1h
+- [x] **TASK-063:** Add character counter - 30min
+- [x] **TASK-064:** Integrate date picker - 1h
+- [x] **TASK-065:** Add validation logic - 30min
+- [x] **TASK-066:** Write widget tests - 1h
 
 **Definition of Done:**
 - Inputs work correctly
@@ -498,26 +498,26 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** add participants to my meeting  
 **So that** I can track who I met with
-
+**Status:** ✅ COMPLETED (February 19, 2026)
 **Story Points:** 8  
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Autocomplete field for searching existing persons
-- [ ] "Add new person" option when no match
-- [ ] Dialog to add new person (firstName, lastName)
-- [ ] Selected persons displayed as chips
-- [ ] Ability to remove selected person (X button)
-- [ ] Minimum 1 participant required
-- [ ] No duplicate participants allowed
+- [x] Autocomplete field for searching existing persons
+- [x] "Add new person" option when no match
+- [x] Dialog to add new person (firstName, lastName)
+- [x] Selected persons displayed as chips
+- [x] Ability to remove selected person (X button)
+- [x] Minimum 1 participant required
+- [x] No duplicate participants allowed
 
 **Tasks:**
-- [ ] **TASK-071:** Create PersonRepository with search - 2h
-- [ ] **TASK-072:** Implement PersonAutocomplete widget - 2h
-- [ ] **TASK-073:** Create AddPersonDialog - 1h
-- [ ] **TASK-074:** Implement chip display for selected persons - 1h
-- [ ] **TASK-075:** Add validation and duplicate check - 1h
-- [ ] **TASK-076:** Write tests - 1h
+- [x] **TASK-071:** Create PersonRepository with search - 2h
+- [x] **TASK-072:** Implement PersonAutocomplete widget - 2h
+- [x] **TASK-073:** Create AddPersonDialog - 1h
+- [x] **TASK-074:** Implement chip display for selected persons - 1h
+- [x] **TASK-075:** Add validation and duplicate check - 1h
+- [x] **TASK-076:** Write tests - 1h
 
 **Definition of Done:**
 - Autocomplete functional
