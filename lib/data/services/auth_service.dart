@@ -34,6 +34,9 @@ class AuthService {
   /// Get user's photo URL (from Google account)
   String? get userPhotoUrl => _auth.currentUser?.photoURL;
 
+  /// Get current user's UID
+  String? get currentUserId => _auth.currentUser?.uid;
+
   /// Sign in with Google
   Future<User?> signInWithGoogle() async {
     try {

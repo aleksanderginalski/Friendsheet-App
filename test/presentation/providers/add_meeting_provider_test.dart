@@ -2,24 +2,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/activity_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
 import 'add_meeting_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, ActivityRepository])
+@GenerateMocks(
+    [PersonRepository, ActivityRepository, MeetingRepository, AuthService])
 void main() {
   late AddMeetingProvider provider;
   late MockPersonRepository mockRepository;
   late MockActivityRepository mockActivityRepository;
+  late MockMeetingRepository mockMeetingRepository;
+  late MockAuthService mockAuthService;
 
   setUp(() {
     mockRepository = MockPersonRepository();
     mockActivityRepository = MockActivityRepository();
+    mockMeetingRepository = MockMeetingRepository();
+    mockAuthService = MockAuthService();
     provider = AddMeetingProvider(
       personRepository: mockRepository,
       activityRepository: mockActivityRepository,
+      meetingRepository: mockMeetingRepository,
+      authService: mockAuthService,
     );
   });
 
@@ -247,6 +257,131 @@ void main() {
       provider.reset();
       expect(provider.selectedActivities, isEmpty);
       expect(provider.availableActivities, isEmpty);
+    });
+  });
+
+  group('AddMeetingProvider - saveMeeting', () {
+    final person1 = Person(
+      id: 'p1',
+      userId: 'user1',
+      firstName: 'Anna',
+      lastName: 'Kowalska',
+      createdAt: DateTime(2024),
+    );
+
+    final activity1 = Activity(
+      id: 'a1',
+      userId: null,
+      name: 'Kawusia',
+      isGlobal: true,
+      categoryId: null,
+      createdAt: DateTime(2024),
+    );
+
+    // Sets up provider with valid form state ready to save
+    void setupValidForm() {
+      provider.setName('Coffee with Anna');
+      provider.addNewPerson(person1);
+      provider.addNewActivity(activity1);
+    }
+
+    test('saveMeeting returns false when name is empty', () async {
+      provider.addNewPerson(person1);
+      provider.addNewActivity(activity1);
+      when(mockAuthService.currentUserId).thenReturn('user1');
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isFalse);
+      expect(provider.nameError, isNotNull);
+    });
+
+    test('saveMeeting returns false when no participants', () async {
+      provider.setName('Coffee with Anna');
+      provider.addNewActivity(activity1);
+      when(mockAuthService.currentUserId).thenReturn('user1');
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isFalse);
+      expect(provider.participantsError, isNotNull);
+    });
+
+    test('saveMeeting returns false when no activities', () async {
+      provider.setName('Coffee with Anna');
+      provider.addNewPerson(person1);
+      when(mockAuthService.currentUserId).thenReturn('user1');
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isFalse);
+      expect(provider.activitiesError, isNotNull);
+    });
+
+    test('saveMeeting returns false when user is not authenticated', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn(null);
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isFalse);
+    });
+
+    test('saveMeeting returns true on success', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn('user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenAnswer((_) async => 'meeting-id-123');
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isTrue);
+    });
+
+    test('saveMeeting calls repository with correct userId', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn('user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenAnswer((_) async => 'meeting-id-123');
+
+      await provider.saveMeeting();
+
+      final captured =
+          verify(mockMeetingRepository.saveMeeting(captureAny)).captured.first;
+      expect(captured.userId, equals('user1'));
+    });
+
+    test('saveMeeting returns false when repository throws', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn('user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenThrow(Exception('Firestore error'));
+
+      final result = await provider.saveMeeting();
+
+      expect(result, isFalse);
+    });
+
+    test('isSaving is false after successful save', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn('user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenAnswer((_) async => 'meeting-id-123');
+
+      await provider.saveMeeting();
+
+      expect(provider.isSaving, isFalse);
+    });
+
+    test('isSaving is false after failed save', () async {
+      setupValidForm();
+      when(mockAuthService.currentUserId).thenReturn('user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenThrow(Exception('Firestore error'));
+
+      await provider.saveMeeting();
+
+      expect(provider.isSaving, isFalse);
     });
   });
 }
