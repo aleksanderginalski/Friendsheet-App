@@ -2,19 +2,28 @@
 
 import 'package:flutter/foundation.dart';
 import '../../data/models/activity.dart';
+import '../../data/models/meeting.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/activity_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/services/auth_service.dart';
 
 class AddMeetingProvider extends ChangeNotifier {
   final PersonRepository _personRepository;
   final ActivityRepository _activityRepository;
+  final MeetingRepository _meetingRepository;
+  final AuthService _authService;
 
   AddMeetingProvider({
     PersonRepository? personRepository,
     ActivityRepository? activityRepository,
+    MeetingRepository? meetingRepository,
+    AuthService? authService,
   })  : _personRepository = personRepository ?? PersonRepository(),
-        _activityRepository = activityRepository ?? ActivityRepository();
+        _activityRepository = activityRepository ?? ActivityRepository(),
+        _meetingRepository = meetingRepository ?? MeetingRepository(),
+        _authService = authService ?? AuthService();
 
   // --- Name & Date ---
   String _name = '';
@@ -36,6 +45,9 @@ class AddMeetingProvider extends ChangeNotifier {
   final List<Activity> _selectedActivities = [];
   bool _isLoadingActivities = false;
   String? _activitiesError;
+
+  // --- Save state ---
+  bool _isSaving = false;
 
   // --- Name & Date getters ---
   String get name => _name;
@@ -60,6 +72,9 @@ class AddMeetingProvider extends ChangeNotifier {
       List.unmodifiable(_selectedActivities);
   bool get isLoadingActivities => _isLoadingActivities;
   String? get activitiesError => _activitiesError;
+
+  // --- Save getters ---
+  bool get isSaving => _isSaving;
 
   // --- Name & Date methods ---
   void setName(String value) {
@@ -219,6 +234,47 @@ class AddMeetingProvider extends ChangeNotifier {
     return true;
   }
 
+  // Validates all fields and saves the meeting to Firestore.
+  // Returns true on success, false if validation fails or save throws.
+  Future<bool> saveMeeting() async {
+    final isNameValid = validateName();
+    final isParticipantsValid = validateParticipants();
+    final isActivitiesValid = validateActivities();
+
+    if (!isNameValid || !isParticipantsValid || !isActivitiesValid) {
+      return false;
+    }
+
+    final userId = _authService.currentUserId;
+    if (userId == null) return false;
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      final now = DateTime.now();
+      final meeting = Meeting(
+        id: '',
+        userId: userId,
+        name: _name,
+        date: _date,
+        weight: weight,
+        participantIds: _selectedPersons.map((p) => p.id).toList(),
+        activityIds: _selectedActivities.map((a) => a.id).toList(),
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      await _meetingRepository.saveMeeting(meeting);
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
   // Resets the entire form to initial state
   void reset() {
     _name = '';
@@ -233,6 +289,7 @@ class AddMeetingProvider extends ChangeNotifier {
     _selectedActivities.clear();
     _isLoadingActivities = false;
     _activitiesError = null;
+    _isSaving = false;
     notifyListeners();
   }
 }
