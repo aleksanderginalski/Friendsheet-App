@@ -5,11 +5,16 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
+import 'package:firebase_auth/firebase_auth.dart' as _i11;
 import 'package:friendsheet/data/models/activity.dart' as _i3;
+import 'package:friendsheet/data/models/meeting.dart' as _i8;
 import 'package:friendsheet/data/models/person.dart' as _i2;
 import 'package:friendsheet/data/repositories/activity_repository.dart' as _i6;
+import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i7;
 import 'package:friendsheet/data/repositories/person_repository.dart' as _i4;
+import 'package:friendsheet/data/services/auth_service.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -124,4 +129,62 @@ class MockActivityRepository extends _i1.Mock
           ),
         )),
       ) as _i5.Future<_i3.Activity>);
+}
+
+/// A class which mocks [MeetingRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockMeetingRepository extends _i1.Mock implements _i7.MeetingRepository {
+  MockMeetingRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<String> saveMeeting(_i8.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #saveMeeting,
+          [meeting],
+        ),
+        returnValue: _i5.Future<String>.value(_i9.dummyValue<String>(
+          this,
+          Invocation.method(
+            #saveMeeting,
+            [meeting],
+          ),
+        )),
+      ) as _i5.Future<String>);
+}
+
+/// A class which mocks [AuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthService extends _i1.Mock implements _i10.AuthService {
+  MockAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Stream<_i11.User?> get authStateChanges => (super.noSuchMethod(
+        Invocation.getter(#authStateChanges),
+        returnValue: _i5.Stream<_i11.User?>.empty(),
+      ) as _i5.Stream<_i11.User?>);
+
+  @override
+  _i5.Future<_i11.User?> signInWithGoogle() => (super.noSuchMethod(
+        Invocation.method(
+          #signInWithGoogle,
+          [],
+        ),
+        returnValue: _i5.Future<_i11.User?>.value(),
+      ) as _i5.Future<_i11.User?>);
+
+  @override
+  _i5.Future<void> signOut() => (super.noSuchMethod(
+        Invocation.method(
+          #signOut,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

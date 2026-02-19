@@ -26,6 +26,8 @@ Friendsheet is a mobile application that helps you track meetings with friends a
 - ✅ **Complete:** Meeting Name & Date Input with validation (US-011)
 - ✅ **Complete:** Meeting weight selector - Fibonacci stepper (US-012)
 - ✅ **Complete:** Participant Management - autocomplete, chips, add new person (US-013)
+- ✅ **Complete:** Activity Management - autocomplete, chips, add new activity (US-014)
+- ✅ **Complete:** Save Meeting to Firestore with validation and feedback (US-015)
 
 
 ### Planned (Future Phases)
@@ -226,6 +228,24 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v1.12.0 - Sprint 2, US-015 (February 19, 2026)
+- ✅ MeetingRepository with saveMeeting method
+- ✅ AuthService extended with currentUserId getter
+- ✅ AddMeetingProvider: saveMeeting(), isSaving state, full form validation
+- ✅ Save button wired in AddMeetingScreen with loading indicator
+- ✅ Success: green snackbar + navigation back to HomeScreen
+- ✅ Error: red snackbar with message
+- ✅ 8 new provider tests, 38 total in AddMeetingProvider test file
+
+### v1.11.0 - Sprint 2, US-014 (February 19, 2026)
+- ✅ Firestore Security Rules updated to allow global activity reads
+- ✅ ActivityRepository with global and private activity support
+- ✅ AddMeetingProvider extended with activities state and validation
+- ✅ ActivityAutocomplete widget with AddActivityDialog
+- ✅ AddMeetingScreen - activities placeholder replaced with working widget
+- ✅ searchActivities logic moved from repository to provider
+- ✅ 10 new provider tests, 30 total in AddMeetingProvider test file
 
 ### v1.10.0 - Sprint 2, US-013 (February 19, 2026)
 - ✅ PersonRepository with getPersonsByUser and addPerson methods

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 import 'package:friendsheet/presentation/screens/add_meeting_screen.dart';
 import 'package:mockito/annotations.dart';
@@ -9,14 +11,19 @@ import 'package:provider/provider.dart';
 
 import 'add_meeting_screen_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, ActivityRepository])
+@GenerateMocks(
+    [PersonRepository, ActivityRepository, MeetingRepository, AuthService])
 void main() {
   late MockPersonRepository mockRepository;
   late MockActivityRepository mockActivityRepository;
+  late MockMeetingRepository mockMeetingRepository;
+  late MockAuthService mockAuthService;
 
   setUp(() {
     mockRepository = MockPersonRepository();
     mockActivityRepository = MockActivityRepository();
+    mockMeetingRepository = MockMeetingRepository();
+    mockAuthService = MockAuthService();
   });
 
   Widget buildTestWidget() {
@@ -25,6 +32,8 @@ void main() {
         create: (_) => AddMeetingProvider(
           personRepository: mockRepository,
           activityRepository: mockActivityRepository,
+          meetingRepository: mockMeetingRepository,
+          authService: mockAuthService,
         ),
         child: const AddMeetingScreenView(),
       ),
@@ -51,7 +60,8 @@ void main() {
       final button = tester.widget<FilledButton>(
         find.byType(FilledButton),
       );
-      expect(button.onPressed, isNull);
+      // Button is enabled now (not null) but blocked by isSaving state
+      expect(button.onPressed, isNotNull);
     });
 
     testWidgets('displays Save Meeting button', (tester) async {

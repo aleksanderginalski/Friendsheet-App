@@ -951,3 +951,80 @@ Przykłady:
 - "Anna" → firstName: "Anna", lastName: ""
 - "Anna Kowalska" → firstName: "Anna", lastName: "Kowalska"
 - "Anna Maria Kowalska" → firstName: "Anna", lastName: "Maria Kowalska"
+
+## 17. Global + Private Data Pattern (US-014)
+
+Pattern for fetching data from two sources: shared global library and user-private records.
+Used for Activities where some are available to all users (isGlobal: true) and some are private.
+
+### Repository side — two parallel queries merged into one list:
+```dart
+Future<List<Activity>> getActivitiesByUser(String userId) async {
+  final globalQuery = await _firestore
+      .collection('activities')
+      .where('isGlobal', isEqualTo: true)
+      .get();
+
+  final privateQuery = await _firestore
+      .collection('activities')
+      .where('userId', isEqualTo: userId)
+      .where('isGlobal', isEqualTo: false)
+      .get();
+
+  return [
+    ...globalQuery.docs.map((doc) => Activity.fromFirestore(doc)),
+    ...privateQuery.docs.map((doc) => Activity.fromFirestore(doc)),
+  ];
+}
+```
+
+### Firestore Security Rules — allow global reads:
+```javascript
+match /activities/{activityId} {
+  // Global: readable by all authenticated users
+  allow read: if isAuthenticated() &&
+                (resource.data.isGlobal == true || isOwner(resource.data.userId));
+  // Private: writable only by owner
+  allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+  allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+}
+```
+
+### Data model convention:
+- Global record: `isGlobal: true`, `userId: null` — managed via Firebase Console
+- Private record: `isGlobal: false`, `userId: <uid>` — created by user
+
+Warning: Firestore field names are case-sensitive.
+`name` ≠ `Name` — always verify field names match your Dart model exactly.
+
+## 18. Search/Filter Logic in Provider, not Repository (US-014)
+
+Rule: Methods that filter already-loaded local data belong in Provider, not Repository.
+Repository is responsible only for communication with external data sources (Firestore, API).
+
+### Wrong — filter in Repository:
+```dart
+// BAD: Repository doing client-side filtering
+List<Activity> searchActivities(List<Activity> activities, String query) {
+  return activities.where((a) => a.name.contains(query)).toList();
+}
+```
+
+### Correct — filter in Provider:
+```dart
+// GOOD: Provider filters its own local state
+List<Activity> searchActivities(String query) {
+  if (query.trim().isEmpty) return [];
+  final lower = query.toLowerCase();
+  return _availableActivities
+      .where((a) => a.name.toLowerCase().contains(lower))
+      .where((a) => !_selectedActivities.contains(a))
+      .toList();
+}
+```
+
+Why this matters for tests:
+- Repository methods are mockable — if filter logic is in Repository,
+  tests require stubs even for simple string matching
+- Provider methods operate on injected state — no stubs needed
+- Symptom of wrong placement: MissingStubError in tests for a non-Firestore method

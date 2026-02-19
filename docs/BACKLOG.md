@@ -532,26 +532,27 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** add activities to my meeting  
 **So that** I can remember what we did
+**Status:** ✅ COMPLETED (February 19, 2026)
 
 **Story Points:** 8  
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Autocomplete for existing activities
-- [ ] "Add new activity" option
-- [ ] Dialog to create new activity
-- [ ] Selected activities shown as chips
-- [ ] Remove activity option
-- [ ] Minimum 1 activity required
-- [ ] No duplicate activities
+- [x] Autocomplete for existing activities
+- [x] "Add new activity" option
+- [x] Dialog to create new activity
+- [x] Selected activities shown as chips
+- [x] Remove activity option
+- [x] Minimum 1 activity required
+- [x] No duplicate activities
 
 **Tasks:**
-- [ ] **TASK-077:** Create ActivityRepository - 2h
-- [ ] **TASK-078:** Implement ActivityAutocomplete - 2h
-- [ ] **TASK-079:** Create AddActivityDialog - 1h
-- [ ] **TASK-080:** Display chips - 1h
-- [ ] **TASK-081:** Add validation - 1h
-- [ ] **TASK-082:** Write tests - 1h
+- [x] **TASK-077:** Create ActivityRepository - 2h
+- [x] **TASK-078:** Implement ActivityAutocomplete - 2h
+- [x] **TASK-079:** Create AddActivityDialog - 1h
+- [x] **TASK-080:** Display chips - 1h
+- [x] **TASK-081:** Add validation - 1h
+- [x] **TASK-082:** Write tests - 1h
 
 **Definition of Done:**
 - Autocomplete works
@@ -566,23 +567,24 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** save my meeting  
 **So that** it's stored securely in the cloud
+**Status:** ✅ COMPLETED (February 19, 2026)
 
 **Acceptance Criteria:**
-- [ ] Form validation before save
-- [ ] Meeting object created from form data
-- [ ] MeetingRepository saveMeeting method called
-- [ ] Loading indicator during save
-- [ ] Success message on successful save
-- [ ] Error message on failure
-- [ ] Form cleared after successful save
-- [ ] Navigation back or to home
+- [x] Form validation before save
+- [x] Meeting object created from form data
+- [x] MeetingRepository saveMeeting method called
+- [x] Loading indicator during save
+- [x] Success message on successful save
+- [x] Error message on failure
+- [x] Form cleared after successful save
+- [x] Navigation back or to home
 
 **Tasks:**
-- [ ] **TASK-083:** Create MeetingRepository - 2h
-- [ ] **TASK-084:** Implement save logic in AddMeetingScreen - 1h
-- [ ] **TASK-085:** Add loading state - 30min
-- [ ] **TASK-086:** Implement success/error handling - 1h
-- [ ] **TASK-087:** Write integration tests - 1h
+- [x] **TASK-083:** Create MeetingRepository - 2h
+- [x] **TASK-084:** Implement save logic in AddMeetingScreen - 1h
+- [x] **TASK-085:** Add loading state - 30min
+- [x] **TASK-086:** Implement success/error handling - 1h
+- [x] **TASK-087:** Write integration tests - 1h
 
 **Definition of Done:**
 - Meeting saves to Firestore
