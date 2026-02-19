@@ -45,13 +45,4 @@ class ActivityRepository {
     final doc = await docRef.get();
     return Activity.fromFirestore(doc);
   }
-
-  // Searches activities by name (case-insensitive, client-side)
-  List<Activity> searchActivities(List<Activity> activities, String query) {
-    if (query.isEmpty) return activities;
-    final lower = query.toLowerCase();
-    return activities
-        .where((a) => a.name.toLowerCase().contains(lower))
-        .toList();
-  }
 }
