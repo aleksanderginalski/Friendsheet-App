@@ -124,20 +124,4 @@ class MockActivityRepository extends _i1.Mock
           ),
         )),
       ) as _i5.Future<_i3.Activity>);
-
-  @override
-  List<_i3.Activity> searchActivities(
-    List<_i3.Activity>? activities,
-    String? query,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #searchActivities,
-          [
-            activities,
-            query,
-          ],
-        ),
-        returnValue: <_i3.Activity>[],
-      ) as List<_i3.Activity>);
 }
