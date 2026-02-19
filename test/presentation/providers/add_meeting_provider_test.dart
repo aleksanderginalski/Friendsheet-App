@@ -1,19 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/activity.dart';
 import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 import 'package:mockito/annotations.dart';
 
 import 'add_meeting_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository])
+@GenerateMocks([PersonRepository, ActivityRepository])
 void main() {
   late AddMeetingProvider provider;
   late MockPersonRepository mockRepository;
+  late MockActivityRepository mockActivityRepository;
 
   setUp(() {
     mockRepository = MockPersonRepository();
-    provider = AddMeetingProvider(personRepository: mockRepository);
+    mockActivityRepository = MockActivityRepository();
+    provider = AddMeetingProvider(
+      personRepository: mockRepository,
+      activityRepository: mockActivityRepository,
+    );
   });
 
   group('AddMeetingProvider - weight', () {
@@ -157,6 +164,89 @@ void main() {
       provider.reset();
       expect(provider.selectedPersons, isEmpty);
       expect(provider.availablePersons, isEmpty);
+    });
+  });
+
+  group('AddMeetingProvider - activities', () {
+    final activity1 = Activity(
+      id: '1',
+      userId: null,
+      name: 'Kawusia',
+      isGlobal: true,
+      categoryId: null,
+      createdAt: DateTime(2024),
+    );
+
+    final activity2 = Activity(
+      id: '2',
+      userId: 'user1',
+      name: 'Planszówki',
+      isGlobal: false,
+      categoryId: null,
+      createdAt: DateTime(2024),
+    );
+
+    test('selectedActivities is empty by default', () {
+      expect(provider.selectedActivities, isEmpty);
+    });
+
+    test('selectActivity adds activity to selectedActivities', () {
+      provider.addNewActivity(activity1);
+      expect(provider.selectedActivities, contains(activity1));
+    });
+
+    test('selectActivity prevents duplicates', () {
+      provider.addNewActivity(activity1);
+      provider.selectActivity(activity1);
+      expect(provider.selectedActivities.length, equals(1));
+    });
+
+    test('removeActivity removes activity from selectedActivities', () {
+      provider.addNewActivity(activity1);
+      provider.removeActivity(activity1);
+      expect(provider.selectedActivities, isEmpty);
+    });
+
+    test('searchActivities returns matching activities', () {
+      provider.addNewActivity(activity1);
+      provider.addNewActivity(activity2);
+      provider.removeActivity(activity1);
+      provider.removeActivity(activity2);
+      final results = provider.searchActivities('kaw');
+      expect(results, contains(activity1));
+      expect(results, isNot(contains(activity2)));
+    });
+
+    test('searchActivities excludes already selected activities', () {
+      provider.addNewActivity(activity1);
+      provider.addNewActivity(activity2);
+      provider.removeActivity(activity2);
+      final results = provider.searchActivities('a');
+      expect(results, isNot(contains(activity1)));
+    });
+
+    test('searchActivities returns empty list for empty query', () {
+      provider.addNewActivity(activity1);
+      provider.removeActivity(activity1);
+      expect(provider.searchActivities(''), isEmpty);
+    });
+
+    test('validateActivities returns false when no activities', () {
+      expect(provider.validateActivities(), isFalse);
+      expect(provider.activitiesError, isNotNull);
+    });
+
+    test('validateActivities returns true when at least one activity', () {
+      provider.addNewActivity(activity1);
+      expect(provider.validateActivities(), isTrue);
+      expect(provider.activitiesError, isNull);
+    });
+
+    test('reset clears selectedActivities and availableActivities', () {
+      provider.addNewActivity(activity1);
+      provider.reset();
+      expect(provider.selectedActivities, isEmpty);
+      expect(provider.availableActivities, isEmpty);
     });
   });
 }

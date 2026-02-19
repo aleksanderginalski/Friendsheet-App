@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/add_meeting_provider.dart';
 import 'package:friendsheet/presentation/widgets/meeting_name_field.dart';
@@ -8,19 +9,24 @@ import 'package:provider/provider.dart';
 
 import 'meeting_name_field_test.mocks.dart';
 
-@GenerateMocks([PersonRepository])
+@GenerateMocks([PersonRepository, ActivityRepository])
 void main() {
   late MockPersonRepository mockRepository;
+  late MockActivityRepository mockActivityRepository;
 
   setUp(() {
     mockRepository = MockPersonRepository();
+    mockActivityRepository = MockActivityRepository();
   });
 
   Widget buildTestWidget() {
     return MaterialApp(
       home: Scaffold(
         body: ChangeNotifierProvider(
-          create: (_) => AddMeetingProvider(personRepository: mockRepository),
+          create: (_) => AddMeetingProvider(
+            personRepository: mockRepository,
+            activityRepository: mockActivityRepository,
+          ),
           child: const MeetingNameField(),
         ),
       ),
