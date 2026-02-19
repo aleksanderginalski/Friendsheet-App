@@ -182,8 +182,9 @@ class AddMeetingProvider extends ChangeNotifier {
   // Returns activities matching the query, excluding already selected ones
   List<Activity> searchActivities(String query) {
     if (query.trim().isEmpty) return [];
-    return _activityRepository
-        .searchActivities(_availableActivities, query)
+    final lower = query.toLowerCase();
+    return _availableActivities
+        .where((a) => a.name.toLowerCase().contains(lower))
         .where((a) => !_selectedActivities.contains(a))
         .toList();
   }
