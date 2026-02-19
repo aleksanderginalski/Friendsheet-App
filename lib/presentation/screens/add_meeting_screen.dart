@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/add_meeting_provider.dart';
+import '../widgets/meeting_date_field.dart';
+import '../widgets/meeting_name_field.dart';
 
 /// Screen for adding a new meeting.
 /// Provides [AddMeetingProvider] scoped to this screen only.
@@ -32,22 +34,11 @@ class _AddMeetingView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // --- Meeting Name ---
-            const _SectionHeader(title: 'Meeting Name *'),
-            const SizedBox(height: 8),
-            const TextField(
-              decoration: InputDecoration(
-                hintText: 'e.g., Coffee with Anna',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-              maxLength: 50,
-            ),
+            const MeetingNameField(),
             const SizedBox(height: 24),
 
             // --- Meeting Date ---
-            const _SectionHeader(title: 'Meeting Date *'),
-            const SizedBox(height: 8),
-            _DatePickerPlaceholder(),
+            const MeetingDateField(),
             const SizedBox(height: 24),
 
             // --- Meeting Weight ---
@@ -110,21 +101,6 @@ class _SectionHeader extends StatelessWidget {
       style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
-    );
-  }
-}
-
-class _DatePickerPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: null, // implemented in US-011
-      icon: const Icon(Icons.calendar_today),
-      label: const Text('Select Date'),
-      style: OutlinedButton.styleFrom(
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      ),
     );
   }
 }
