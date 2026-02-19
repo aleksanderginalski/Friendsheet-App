@@ -1,9 +1,13 @@
+// lib/presentation/screens/add_meeting_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
 import '../widgets/meeting_date_field.dart';
 import '../widgets/meeting_name_field.dart';
 import '../widgets/meeting_weight_stepper.dart';
+import '../widgets/person_autocomplete.dart';
 
 /// Screen for adding a new meeting.
 /// Provides [AddMeetingProvider] scoped to this screen only.
@@ -12,16 +16,38 @@ class AddMeetingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userId = AuthService().currentUser?.uid;
     return ChangeNotifierProvider(
       create: (_) => AddMeetingProvider(),
-      child: const _AddMeetingView(),
+      child: AddMeetingScreenView(userId: userId),
     );
   }
 }
 
 /// Internal view widget that consumes [AddMeetingProvider].
-class _AddMeetingView extends StatelessWidget {
-  const _AddMeetingView();
+/// StatefulWidget is required to trigger loadPersons on init.
+/// [userId] is passed explicitly to allow testing without Firebase.
+class AddMeetingScreenView extends StatefulWidget {
+  final String? userId;
+
+  const AddMeetingScreenView({super.key, this.userId});
+
+  @override
+  State<AddMeetingScreenView> createState() => _AddMeetingScreenViewState();
+}
+
+class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
+  @override
+  void initState() {
+    super.initState();
+    // Load persons after first frame so Provider is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = widget.userId;
+      if (userId != null) {
+        context.read<AddMeetingProvider>().loadPersons(userId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,13 +85,13 @@ class _AddMeetingView extends StatelessWidget {
             // --- Participants ---
             const _SectionHeader(title: 'Participants * (min. 1)'),
             const SizedBox(height: 8),
-            _ParticipantsPlaceholder(),
+            const PersonAutocomplete(),
             const SizedBox(height: 24),
 
             // --- Activities ---
             const _SectionHeader(title: 'Activities * (min. 1)'),
             const SizedBox(height: 8),
-            _ActivitiesPlaceholder(),
+            const _ActivitiesPlaceholder(),
             const SizedBox(height: 32),
 
             // --- Save Button ---
@@ -114,21 +140,9 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ParticipantsPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const TextField(
-      enabled: false,
-      decoration: InputDecoration(
-        hintText: 'Type name... (coming in US-013)',
-        prefixIcon: Icon(Icons.search),
-        border: OutlineInputBorder(),
-      ),
-    );
-  }
-}
-
 class _ActivitiesPlaceholder extends StatelessWidget {
+  const _ActivitiesPlaceholder();
+
   @override
   Widget build(BuildContext context) {
     return const TextField(

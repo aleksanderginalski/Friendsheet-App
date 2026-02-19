@@ -904,3 +904,50 @@ Why index-based over raw value:
 - No validation needed in the form
 - Widget stays stateless and reusable
 - Boundary checks are simple boolean comparisons
+
+## 15. MockRepository Pattern in Provider Tests (US-013)
+
+Problem: Provider tworzy Repository w konstruktorze, Repository wywołuje
+FirebaseFirestore.instance → testy crashują bez Firebase.
+
+Rozwiązanie: Wstrzyknij mock przez konstruktor używając @GenerateMocks.
+```dart
+// 1. Annotate test file with @GenerateMocks
+@GenerateMocks([PersonRepository])
+void main() {
+  late MockPersonRepository mockRepository;
+  late AddMeetingProvider provider;
+
+  setUp(() {
+    mockRepository = MockPersonRepository();
+    // Inject mock instead of real repository
+    provider = AddMeetingProvider(personRepository: mockRepository);
+  });
+}
+```
+
+Zasada: Każdy Repository wstrzykiwany przez konstruktor Providera
+pozwala testować logikę biznesową bez połączenia z Firebase.
+
+Generowanie mocków po dodaniu @GenerateMocks:
+```
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## 16. Full Name Split Pattern (US-013)
+
+Problem: Użytkownik wpisuje "Małgorzata Bielawska" w pole wyszukiwania
+i klika "Add as new person" → cały string trafia do firstName.
+
+Rozwiązanie: Rozdziel string po pierwszej spacji przed otwarciem dialogu.
+Obsługuje wieloczłonowe nazwiska (np. "Anna Maria Kowalska").
+```dart
+final parts = initialName.split(' ');
+final firstName = parts.first;
+final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+```
+
+Przykłady:
+- "Anna" → firstName: "Anna", lastName: ""
+- "Anna Kowalska" → firstName: "Anna", lastName: "Kowalska"
+- "Anna Maria Kowalska" → firstName: "Anna", lastName: "Maria Kowalska"
