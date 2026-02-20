@@ -1,43 +1,31 @@
-# Friendsheet 📱
+### 🗺️ Roadmap
 
-> Track your meetings with friends and generate insightful statistics
+| Milestone | Name | Status |
+|-----------|------|--------|
+| M1 | Add Meeting | ✅ Completed |
+| M2 | Management & CRUD | 🔜 Next |
+| M3 | Statistics & Export | 📋 Planned |
+| M4 | Google Play Release | 📋 Planned |
+| M5 | Social: Data Sharing | 📋 Planned |
+| M6 | Google Photos Integration | 📋 Planned |
+| M7 | Custom Dashboard | 📋 Planned |
+| M8 | AI Assistant | 💡 Future |
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+**M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year (collapsed for older years). Activity categories with icons and 3-level hierarchy.
 
-## 🎯 About
+**M3 — Statistics & Export:** Person frequency stats, activity stats with category hierarchy filtering, "haven't seen in a while" alerts, JSON data export.
 
-Friendsheet is a mobile application that helps you track meetings with friends and analyze your social patterns. Built with Flutter and Firebase, it offers a simple and intuitive way to remember who you spend time with and what activities you enjoy together.
+**M4 — Google Play Release:** Production build, store assets, Privacy Policy, public release. Portfolio milestone.
 
+**M5 — Social: Data Sharing:** Invitation code system — Person A generates a code, Person B redeems it and receives copies of all shared meetings. Copy-based (no real-time sync).
 
-## ✨ Features
+**M6 — Google Photos Integration:** Browse device photos, select one to pre-fill meeting date. Teaches external OAuth API integration.
 
-### MVP (Current Development)
-- ✅ **Complete:** Project setup and Clean Architecture structure (US-001)
-- ✅ **Complete:** Firebase integration (US-002)
-- ✅ **Complete:** Git & CI/CD configuration (US-003)
-- ✅ **Complete:** Google Sign-In authentication (US-004)
-- ✅ **Complete:** User logout with Dependency Injection refactor (US-006)
-- ✅ **Complete:** Meeting Model (US-007)
-- ✅ **Complete:** Person Model (US-008)
-- ✅ **Complete:** Activity Model (US-009)
-- ✅ **Complete:** Add Meeting Screen UI with Provider scaffold (US-010)
-- ✅ **Complete:** Meeting Name & Date Input with validation (US-011)
-- ✅ **Complete:** Meeting weight selector - Fibonacci stepper (US-012)
-- ✅ **Complete:** Participant Management - autocomplete, chips, add new person (US-013)
-- ✅ **Complete:** Activity Management - autocomplete, chips, add new activity (US-014)
-- ✅ **Complete:** Save Meeting to Firestore with validation and feedback (US-015)
+**M7 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
+**M8 — AI Assistant:** Natural language queries about social data. LLM API selection requires cost/privacy spike first.
 
-### Planned (Future Phases)
-- 📊 Statistics and insights
-- 📋 Meeting history view
-- ✏️ Edit and delete meetings
-- 🔍 Advanced search and filters
-- 📱 iOS support
-
-## �️ Architecture
+## 🏗️ Architecture
 
 This project follows **Clean Architecture** principles with clear separation of concerns:
 ```
@@ -103,7 +91,7 @@ e. Create `lib/firebase_options.dart` with your Firebase configuration
 
 **Note:** `google-services.json` and `firebase_options.dart` are gitignored for security. You must create your own Firebase project.
 
-5.  **Create firebase_options.dart**
+4. **Create firebase_options.dart**
 
 You need to create your own Firebase configuration:
 
@@ -114,16 +102,14 @@ flutterfire configure
 
 b. Or copy the example template and fill in your credentials:
 ```bash
-# Copy template
 cp lib/firebase_options.example.dart lib/firebase_options.dart
-
 # Edit lib/firebase_options.dart with your Firebase project details
 ```
 
-**Note:** The `firebase_options.example.dart` file contains mock credentials for CI/CD. Never commit your real `firebase_options.dart` file.
-
 5. **Run the app**
-
+```powershell
+flutter run
+```
 
 ## 🧪 Testing
 ```powershell
@@ -142,7 +128,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (2/2)
+✅ All tests passing (97+)
 ✅ No linting issues
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
@@ -152,6 +138,7 @@ flutter format --set-exit-if-changed .
 ## 📱 Supported Platforms
 
 - ✅ **Android** - API 21+ (Android 5.0) - Current focus
+- 📋 **Google Play** - Planned for M4
 
 ## 🗂️ Project Structure
 ```
@@ -162,7 +149,7 @@ friendsheet/
 │   │   ├── errors/         # Error handling
 │   │   └── utils/          # Utility functions
 │   ├── data/
-│   │   ├── models/         # Data models
+│   │   ├── models/         # Data models (Freezed)
 │   │   ├── repositories/   # Repository implementations
 │   │   └── datasources/    # Firebase datasources
 │   ├── domain/
@@ -229,6 +216,11 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v2.0.0 - Roadmap Planning (February 20, 2026)
+- ✅ Full milestone roadmap defined (M1-M8)
+- ✅ BACKLOG updated with Epics, Features and User Stories for all milestones
+- ✅ Architecture decisions documented (Social: copy-based sharing, Activity icons, Google Photos OAuth)
+
 ### v1.12.0 - Sprint 2, US-015 (February 19, 2026)
 - ✅ MeetingRepository with saveMeeting method
 - ✅ AuthService extended with currentUserId getter
@@ -287,72 +279,41 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 - ✅ categoryId field as String? (foundation for US-019 categories)
 - ✅ Firestore and JSON serialization
 - ✅ 13 unit tests (100% coverage)
-- ✅ Architecture updated: activity_categories collection designed
-- ✅ Scope split: US-019 (categories) + US-020 (global library) created
 
 ### v1.5.0 - Sprint 2, US-008 (February 18, 2026)
 - ✅ Person Model implemented with Freezed
 - ✅ fullName getter with optional lastName support
 - ✅ Firestore and JSON serialization
 - ✅ 11 unit tests (100% coverage)
-- ✅ Test folder structure reorganized to mirror lib/ structure
 
 ### v1.4.0 - Sprint 2, US-007 (February 18, 2026)
 - ✅ Meeting Model implemented with Freezed
 - ✅ Freezed + json_serializable integration
-- ✅ Data models structure in lib/data/models/
 - ✅ 12 unit tests for Meeting model (100% coverage)
-- ✅ Build runner configuration
-- ✅ Firestore and JSON serialization patterns established
 
 ### v1.3.0 - Sprint 1, US-006 (February 17, 2026)
 - ✅ User logout implemented (Google + Firebase sign out)
 - ✅ Dependency Injection introduced for AuthService
-- ✅ AuthWrapper refactored - accepts AuthService as parameter
-- ✅ LoginScreen refactored - accepts AuthService as parameter
-- ✅ HomeScreen refactored - accepts AuthService as parameter
-- ✅ Widget tests for AuthWrapper auth state routing
-- ✅ MockAuthService generated with Mockito
 
 ### v1.2.1 - Sprint 1, US-004 (February 16, 2026)
 - ✅ Google Sign-In authentication implemented
 - ✅ AuthService with Singleton pattern
-- ✅ LoginScreen with Google Sign-In button
-- ✅ HomeScreen with user info and logout
-- ✅ AuthWrapper for automatic auth state management
-- ✅ Manual navigation after successful login
-- ✅ Firebase packages updated to latest compatible versions
 
 ### v1.2.0 - Sprint 1, US-003 (February 14, 2026)
 - ✅ Git repository configured
-- ✅ GitHub repository created with branch protection
-- ✅ CI/CD pipeline with GitHub Actions
-- ✅ Automated testing on Pull Requests
-- ✅ Code quality checks (format, analyze, test)
+- ✅ GitHub Actions CI/CD pipeline
 
 ### v1.1.0 - Sprint 1, US-002 (February 14, 2026)
 - ✅ Firebase project created and configured
-- ✅ Firebase Authentication integrated
-- ✅ Cloud Firestore database enabled
-- ✅ Security rules configured
-- ✅ firebase_options.dart generated
-- ✅ Connection to Firebase verified
 
 ### v1.0.0 - Sprint 1, US-001 (February 12, 2026)
 - ✅ Initial Flutter project setup
 - ✅ Clean Architecture structure implemented
-- ✅ Development dependencies configured
-- ✅ Linting rules established
-- ✅ Basic placeholder UI created
-- ✅ Widget tests added
 
 ## 🔐 Security Notes
 
 **Important:** The following files contain sensitive information and are gitignored:
 - `android/app/google-services.json` - Firebase configuration
 - `lib/firebase_options.dart` - Firebase API keys (your real credentials)
-
-**Mock files for CI (safe to commit):**
-- `lib/firebase_options.example.dart` - Template with fake credentials for CI/CD
 
 **Never commit your real firebase_options.dart!** Each developer must create their own Firebase project and configuration files.

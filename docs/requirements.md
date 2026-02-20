@@ -1,289 +1,413 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 1.1 (Updated for Google Sign-In Authentication)  
-**Date:** February 14, 2026  
+**Version:** 2.0  
+**Date:** February 20, 2026  
 **Author:** Product Owner  
-**Status:** Updated Draft
+**Status:** Updated — Full Roadmap M1-M8
 
-**🔄 Major Change:** Authentication method changed from email/password to Google Sign-In (SSO)
+**Change Log:**
+- v1.1 — Authentication changed from email/password to Google Sign-In
+- v2.0 — Full roadmap requirements added for M2-M8
+
 ---
 
 ## 1. Introduction
 
 ### 1.1 Document Purpose
-This document defines the functional and non-functional requirements for Friendsheet - a tool for tracking meetings with friends.
+This document defines the functional and non-functional requirements for Friendsheet across all planned milestones.
 
 ### 1.2 Application Purpose
-The application enables users to track meetings with friends with the ability to later generate statistics (e.g., who you meet most often, which activities you prefer).
+The application enables users to track meetings with friends with the ability to generate statistics, manage their social history, and optionally share data with friends who join the app.
 
-### 1.3 MVP Scope (Minimum Viable Product)
-**In MVP scope:**
-- ✅ User authentication via Google Sign-In (SSO)
-- ✅ Adding meetings
-- ✅ Saving meeting participants
-- ✅ Saving activity types
+### 1.3 Milestone Scope Overview
 
-**Out of MVP scope (future phases):**
-- ❌ Viewing meeting list
-- ❌ Generating statistics
-- ❌ Editing meetings
-- ❌ Deleting meetings
-- ❌ Email/password authentication (may be added post-MVP if needed)
+| Milestone | Name | Status |
+|-----------|------|--------|
+| M1 | Add Meeting | ✅ Completed |
+| M2 | Management & CRUD | 🔜 Next |
+| M3 | Statistics & Export | 📋 Planned |
+| M4 | Google Play Release | 📋 Planned |
+| M5 | Social: Data Sharing | 📋 Planned |
+| M6 | Google Photos Integration | 📋 Planned |
+| M7 | Custom Dashboard | 📋 Planned |
+| M8 | AI Assistant | 💡 Future |
 
 ---
 
-## 2. Functional Requirements
+## 2. Functional Requirements — M1 (Completed)
 
-### FR-001: User Authentication
-**Priority:** MUST HAVE  
-**Role:** BA (Business Analyst)
+### FR-001: User Authentication ✅
+User signs in via Google Sign-In (SSO). First-time users automatically registered. Auth state persists across restarts.
 
-**Description:**  
-User must be able to log in to the application using Firebase Authentication.
+### FR-002: Adding a Meeting ✅
+User adds meeting with name (max 50 chars), date, weight (Fibonacci: 1,2,3,5,8,13,21), participants (min 1), activities (min 1).
+
+### FR-003: Managing Meeting Participants ✅
+Autocomplete from existing persons. Add new person (firstName required, lastName optional). Chips display. No duplicates.
+
+### FR-004: Managing Meeting Activities ✅
+Autocomplete from existing activities (global + private). Add new activity. Chips display. No duplicates.
+
+### FR-005: User Logout ✅
+Signs out from both Google Sign-In and Firebase Auth. Clears local auth state. Redirects to login screen.
+
+---
+
+## 3. Functional Requirements — M2: Management & CRUD
+
+### FR-006: Meetings List View
+**Priority:** MUST HAVE
+
+**Description:**
+User can view all their meetings in a chronological list grouped by year.
 
 **Acceptance Criteria:**
-- ✅ User can sign in using their Google account
-- ✅ Login screen displays "Sign in with Google" button
-- ✅ Clicking sign-in button triggers Google account selection
-- ✅ User can select from existing Google accounts on device
-- ✅ First-time users are automatically registered (no separate registration flow)
-- ✅ Returning users are automatically logged in
-- ✅ User's email and display name are retrieved from Google account
-- ✅ System displays appropriate error messages for authentication failures
-- ✅ After successful authentication, user is redirected to main application screen
-- ✅ Authentication state persists across app restarts
-- ✅ User can log out (signs out from both Google and Firebase)
-- ✅ Network errors are handled gracefully
-- ✅ User cancellation is handled gracefully
-
-**Technical Requirements:**
-- Google Sign-In SDK integration (`google_sign_in` package)
-- Firebase Authentication with Google provider enabled
-- SHA-1 certificate fingerprint configured in Firebase
-- Google Play Services available on device (Android requirement)
-- OAuth 2.0 credential handling
-- Secure token storage and management
-
-**User Experience Requirements:**
-- One-tap sign-in experience
-- Loading indicators during authentication
-- Clear error messages for failures
-- Confirmation dialog for logout
-- Persistent authentication across app launches
-- Automatic sign-in for returning users
-
-**Security Requirements:**
-- HTTPS communication (enforced by Firebase and Google)
-- Secure token exchange
-- Automatic token refresh
-- Complete sign-out from both providers
-- No credential storage in app (handled by OS)
-
-**Error Handling:**
-- Network connection failures
-- User cancellation of sign-in
-- Google Play Services not available/outdated
-- Invalid or expired credentials
-- Account disabled by administrator
-- Generic authentication failures
+- Meetings displayed newest first (reverse chronological order)
+- Meetings grouped by year with year as section header
+- Current year and previous year expanded by default
+- Years older than 1 year collapsed by default, expandable on tap
+- Each meeting card shows: name, date, participant count, weight
+- Empty state message when no meetings exist
+- Tapping meeting opens Meeting Detail screen
 
 ---
 
-### FR-002: Adding a Meeting
-**Priority:** MUST HAVE  
-**Role:** BA (Business Analyst)
+### FR-007: Meeting Detail & Edit
+**Priority:** MUST HAVE
 
-**Description:**  
-User can add a new meeting with friends.
+**Description:**
+User can view full meeting details and edit or delete a meeting.
 
 **Acceptance Criteria:**
-- User can enter meeting name (max 50 characters)
-- User can select meeting date from calendar
-- User can select meeting weight (values: 1, 2, 3, 5, 8, 13, 21)
-- User can add minimum 1 participant
-- User can add minimum 1 activity
-- System validates form before saving
-- After saving, user sees confirmation message
+- Detail screen shows all fields: name, date, weight, participants (full names), activities (with category)
+- Edit button opens pre-populated edit form
+- All fields editable
+- Save updates Firestore document (updatedAt refreshed)
+- Delete requires confirmation dialog
+- After delete, user returns to Meetings List
 
 ---
 
-### FR-003: Managing Meeting Participants
-**Priority:** MUST HAVE  
-**Role:** BA (Business Analyst)
+### FR-008: Persons List & Management
+**Priority:** MUST HAVE
 
-**Description:**  
-User can add participants to a meeting with the ability to choose from existing ones or create new ones.
+**Description:**
+User can view, search, edit and delete persons.
 
 **Acceptance Criteria:**
-- System displays list of existing friends with autocomplete
-- User can add a new person (first name required, last name optional)
-- User can add multiple participants to one meeting
-- System prevents adding the same person twice to the same meeting
+- Alphabetical list of all persons
+- Search/filter by name
+- Person detail shows: full name, meeting count
+- Edit: first name and last name editable
+- Delete: requires confirmation
+- Warning shown if person has associated meetings
+- Cannot silently delete person with meetings — explicit confirmation required
 
 ---
 
-### FR-004: Managing Meeting Activities
-**Priority:** MUST HAVE  
-**Role:** BA (Business Analyst)
+### FR-009: Activity Categories
+**Priority:** MUST HAVE
 
-**Description:**  
-User can add activities to a meeting with the ability to choose from existing ones or create new ones.
+**Description:**
+Activities can be organized into a 3-level category hierarchy with icons.
 
 **Acceptance Criteria:**
-- System displays list of existing activities with autocomplete
-- User can add a new activity (name)
-- System prevents adding the same activity twice to the same meeting
-- User can add zero or more activities (field is optional)
-- Activities support future categorization via categoryId
+- ActivityCategory has: name, iconIdentifier, isGlobal, parentCategoryId (optional)
+- Maximum 3 levels of nesting (category → subcategory → activity)
+- Icons selected from predefined set of ~50 Material icons
+- Global categories: read-only for users, managed via Firebase Console
+- User can create private categories at any level
+- Category hierarchy used in statistics filtering (M3)
 
 ---
 
-### FR-005: User Logout (⚡ NEW - Added for Completeness)
-**Priority:** MUST HAVE  
-**Role:** BA (Business Analyst)
+### FR-010: Activities List & Management
+**Priority:** MUST HAVE
 
-**Description:**  
-User must be able to securely log out of the application.
+**Description:**
+User can view, add, edit and delete activities organized in category tree.
 
 **Acceptance Criteria:**
-- ✅ Logout option is easily accessible (app bar or navigation drawer)
-- ✅ User is signed out from both Google Sign-In and Firebase Authentication
-- ✅ All local cached authentication data is cleared
-- ✅ User is redirected to login screen after logout
-- ✅ Optional confirmation dialog shown before logout
-- ✅ After logout, user cannot access protected screens
-- ✅ User must re-authenticate to access app again
+- Activities displayed in expandable category tree
+- Global activities visible but marked as read-only
+- User can add private activity with name, icon, optional category
+- User can edit/delete their own private activities
+- User cannot edit/delete global activities
+- Search/filter by activity name
 
-**Technical Requirements:**
-- Sign out from Google Sign-In SDK
-- Sign out from Firebase Authentication
-- Clear all authentication tokens
-- Reset app authentication state
-- Navigate user to login screen
 ---
 
-## 3. Non-Functional Requirements
+### FR-011: Global Activity Library
+**Priority:** MUST HAVE
+
+**Description:**
+A prebuilt library of common activities available to all users.
+
+**Acceptance Criteria:**
+- Global categories and activities seeded in Firebase Console
+- Marked with isGlobal: true, userId: null
+- Read-only for all authenticated users
+- Covers common social activities (sport, food, entertainment, travel, etc.)
+- Each global activity has an icon assigned
+
+---
+
+## 4. Functional Requirements — M3: Statistics & Export
+
+### FR-012: Statistics Overview
+**Priority:** MUST HAVE
+
+**Description:**
+User can view aggregated statistics about their social activity.
+
+**Acceptance Criteria:**
+- Statistics screen accessible from main navigation
+- Default time range: last 12 months
+- Time range filter: 3 months / 6 months / 12 months / all time
+- Overview shows: total meetings, unique persons met, most frequent person
+- Data computed client-side from Firestore
+
+---
+
+### FR-013: Person Frequency Statistics
+**Priority:** MUST HAVE
+
+**Description:**
+User can see who they meet most and least often.
+
+**Acceptance Criteria:**
+- Ranked list of persons by meeting count (descending)
+- Shows last meeting date per person
+- "Haven't seen in a while" section: persons not met in 60+ days
+- Filterable by time range
+- Tapping person opens Person Detail screen
+
+---
+
+### FR-014: Activity Statistics
+**Priority:** MUST HAVE
+
+**Description:**
+User can see which activities they do most and with whom.
+
+**Acceptance Criteria:**
+- Ranked list of activities by occurrence count
+- Category hierarchy respected: filtering by "Sport" includes all subcategories and their activities
+- Per-activity: which persons are associated
+- Filterable by time range and category
+
+---
+
+### FR-015: Data Export
+**Priority:** SHOULD HAVE
+
+**Description:**
+User can export all their data as a JSON file for backup purposes.
+
+**Acceptance Criteria:**
+- Export option in Settings or Profile
+- Exports all meetings, persons, activities in JSON format
+- File saved to device Downloads folder
+- Filename: `friendsheet_export_YYYY-MM-DD.json`
+- Success confirmation with file path
+- Works offline (uses Firestore local cache)
+
+---
+
+## 5. Functional Requirements — M4: Google Play Release
+
+### FR-016: Production Release
+**Priority:** MUST HAVE
+
+**Description:**
+App published on Google Play Store as a publicly downloadable application.
+
+**Acceptance Criteria:**
+- App available on Google Play for Android API 21+
+- App icon, screenshots, description and Privacy Policy published
+- App passes Google Play review
+- Version numbered as 1.0.0
+
+---
+
+## 6. Functional Requirements — M5: Social Data Sharing
+
+### FR-017: Generate Invitation Code
+**Priority:** MUST HAVE
+
+**Description:**
+User can generate an invitation code for a specific person in their contacts list.
+
+**Acceptance Criteria:**
+- "Share with friend" option on Person Detail screen
+- 6-character alphanumeric code generated (e.g. "FR4K9X")
+- Code stored in Firestore with 48-hour TTL
+- Code shareable via system share sheet
+- User can view active/expired codes they generated
+- One code per person at a time (new code invalidates previous)
+
+---
+
+### FR-018: Redeem Invitation Code
+**Priority:** MUST HAVE
+
+**Description:**
+New user enters an invitation code and receives shared meeting history.
+
+**Acceptance Criteria:**
+- Code entry accessible from Home screen or onboarding
+- System validates: code exists, not expired, not already used
+- On valid code: all sender's meetings where targetPerson appears are copied to recipient's Firestore
+- Persons and activities from those meetings also copied (deduplicated by name)
+- Code marked as used after successful redemption
+- Success screen shows count of imported meetings
+- Clear error messages: invalid code / expired code / already used
+
+**Technical note:** Copy-based (Option A) — data is duplicated, not shared in real-time. Data may diverge after import if sender edits original meetings.
+
+---
+
+## 7. Functional Requirements — M6: Google Photos Integration
+
+### FR-019: Connect Google Photos
+**Priority:** MUST HAVE
+
+**Description:**
+User grants Friendsheet read-only access to their Google Photos.
+
+**Acceptance Criteria:**
+- "Browse Photos" option in Add Meeting flow
+- Clear permission request explaining why photo access is needed
+- Google Photos OAuth consent shown on first use
+- Permission revocable from app Settings
+- Graceful degradation if permission denied
+
+---
+
+### FR-020: Create Meeting from Photo
+**Priority:** MUST HAVE
+
+**Description:**
+User browses their photos and selects one to pre-fill meeting date.
+
+**Acceptance Criteria:**
+- Photo grid showing device photos (paginated, performance-optimized)
+- Tapping photo shows "Create meeting from this photo" option
+- Meeting date pre-filled from photo's creation date
+- User proceeds to Add Meeting screen with pre-filled date
+- Photo itself is NOT stored in Firestore
+- Back navigation returns to photo grid without data loss
+
+---
+
+## 8. Functional Requirements — M7: Custom Dashboard
+
+### FR-021: Default Dashboard
+**Priority:** MUST HAVE
+
+**Description:**
+User sees a configurable home screen with key metrics.
+
+**Acceptance Criteria:**
+- Dashboard shows default widgets: recent meeting count, top person this month, top activity this month
+- Data sourced from Statistics layer (M3)
+- Refreshes on screen focus
+
+---
+
+### FR-022: Dashboard Customization
+**Priority:** SHOULD HAVE
+
+**Description:**
+User can add, remove and reorder dashboard widgets.
+
+**Acceptance Criteria:**
+- Edit mode for dashboard
+- Widget library with available types
+- Drag to reorder
+- Remove widget
+- Add widget from library
+- Configuration persisted in Firestore
+- Restored on next app launch
+
+---
+
+## 9. Functional Requirements — M8: AI Assistant
+
+### FR-023: AI-powered Insights
+**Priority:** COULD HAVE
+
+**Description:**
+User can ask natural language questions about their social data.
+
+**Acceptance Criteria:**
+- Chat-like UI for questions
+- AI has context of user's statistics summary (not raw Firestore data)
+- Example queries: "Who should I reach out to this week?", "What's my most social month?"
+- User explicitly consents before data sent to external API
+- Error handling for API failures and rate limits
+- LLM API selection based on cost/privacy spike (US-040)
+
+---
+
+## 10. Non-Functional Requirements
 
 ### NFR-001: Data Storage
-**Role:** SA (Solution Architect)
+- Data stored in Firestore
+- Each user accesses only their own data (except global activities/categories)
+- Data model supports statistics generation
 
-- Data must be stored in Firestore
-- Each user has access only to their own data
-- Data must be stored in a way that enables statistics generation (future functionality)
+### NFR-002: Performance
+- Meeting save: < 3 seconds
+- Autocomplete response: < 500ms
+- Google Sign-In: < 5 seconds (excluding user interaction)
+- Statistics screen load: < 3 seconds (client-side aggregation)
+- Photo grid load: paginated, first page < 2 seconds
 
----
+### NFR-003: Security
+- All Firestore operations require authenticated user
+- Row-level security via userId field
+- Global data (isGlobal: true) read-only for all authenticated users
+- OAuth 2.0 tokens managed by Firebase SDK (Firebase Auth) and flutter_secure_storage (Google Photos)
+- No credentials stored in app code or committed to repository
+- Keystore never committed to version control (M4+)
+- Raw user data never sent to LLM without explicit consent (M8)
 
-### NFR-002: Performance (⚡ UPDATED)
-**Role:** SA (Solution Architect)
+### NFR-004: Privacy
+- Google Photos access: read-only, only date metadata used, no photos stored
+- AI context: aggregated statistics only, no raw meeting data
+- Data export: user owns their data and can extract it at any time
+- Invitation code sharing: user explicitly initiates, no automatic data sharing
 
-- Meeting save time cannot exceed 3 seconds
-- Autocomplete should respond in real-time (< 500ms)
-- **NEW:** Google Sign-In authentication should complete within 5 seconds (excluding user interaction time)
-- **NEW:** App should display login screen within 2 seconds of launch
-- **NEW:** Authentication state check should complete within 1 second
+### NFR-005: Offline Availability
+- Firestore offline persistence enabled
+- Authenticated users can access cached data without internet
+- New authentication requires internet connection
+- Statistics computed from cached data when offline
+- Export available offline (uses local cache)
 
-**Performance Improvements with Google SSO:**
-- Faster authentication flow (no email verification wait time)
-- Reduced server load (no password validation, reset emails)
-- Cached authentication state for instant login
+### NFR-006: Compatibility
+- Android API Level 21+ (Android 5.0)
+- Google Play Services required
+- Google account on device required for authentication
+- Internet connection required for initial auth and data sync
 
----
+### NFR-007: Accessibility
+- WCAG 2.1 Level AA compliance for all screens
+- Minimum touch target: 48dp
+- Color contrast ratio: 4.5:1 minimum
+- Screen reader compatible (TalkBack)
 
-### NFR-003: Security (⚡ UPDATED)
-**Role:** SA (Solution Architect)
-
-- Communication with Firebase must be encrypted (HTTPS)
-- Firestore Security Rules must be configured so user has access only to their own data
-- **NEW:** OAuth 2.0 tokens must be securely managed by Firebase SDK
-- **NEW:** No authentication credentials stored in app code
-- **NEW:** Automatic token refresh handled by Firebase
-- **NEW:** User must sign out from both Google and Firebase for complete logout
-- **NEW:** SHA-1 certificate fingerprint must be configured in Firebase for Android
-
-**Security Enhancements with Google SSO:**
-- ✅ No password storage in database (Google handles authentication)
-- ✅ Multi-factor authentication support (if enabled on Google account)
-- ✅ Automatic security updates from Google
-- ✅ Professional-grade authentication infrastructure
-- ✅ Reduced attack surface (no password reset flow to exploit)
-
----
-
-### NFR-004: Offline Availability (⚡ UPDATED)
-**Role:** SA (Solution Architect)
-
-- Application should work offline (Firestore offline persistence)
-- Data should synchronize automatically after connection returns
-- **NEW:** Previously authenticated users remain logged in offline
-- **NEW:** New authentication requires internet connection
-- **NEW:** Logout requires internet connection to fully sign out from Google
-
-**Offline Behavior:**
-- Authenticated users can access app without internet
-- Firestore data cached for offline access
-- Authentication state persisted locally
-- New sign-in requires network connectivity
+### NFR-008: Cost Constraints
+- Firestore: free tier (Spark plan) sufficient for personal use and small user base
+- Google Photos API: free quota sufficient for expected usage
+- LLM API (M8): cost per query must be evaluated in spike before implementation — feature may be limited or paywalled if costs are significant
 
 ---
 
-### NFR-005: Compatibility (⚡ NEW)
-**Role:** SA (Solution Architect)
+## 11. Data Model
 
-**Google Sign-In Requirements:**
-- Android API Level 21+ (Android 5.0 Lollipop or higher)
-- Google Play Services installed and up-to-date
-- Google account configured on device
-- Internet connection for initial authentication
-
-**Browser Compatibility (future web version):**
-- Modern browsers with OAuth 2.0 support
-- JavaScript enabled
-- Cookies enabled for authentication flow
-
----
-
-### NFR-006: Accessibility (NEW)
-**Role:** UX/UI Designer
-
-**Authentication Screen:**
-- Google Sign-In button meets WCAG 2.1 Level AA standards
-- Minimum touch target size of 48dp
-- Proper color contrast ratios (4.5:1 minimum)
-- Screen reader compatible
-- Keyboard navigation support (for web)
-- Clear focus indicators
-
----
-
-### NFR-007: User Experience (NEW)
-**Role:** UX/UI Designer
-
-**Authentication Flow:**
-- One-tap sign-in experience
-- Clear visual feedback during authentication
-- Helpful error messages in plain language
-- No technical jargon in user-facing messages
-- Loading indicators for async operations
-- Smooth transitions between screens
-
----
-
-## 4. Data Model
-
-### 4.1 Entities
-
-#### User (Firebase Authentication)
-```
-- uid: string (auto-generated by Firebase)
-- email: string (from Google account)
-- displayName: string (from Google account)
-- photoURL: string (from Google account)
-- providerId: "google.com"
-- createdAt: timestamp (Firebase managed)
-- lastSignInTime: timestamp (Firebase managed)
-```
-
-**Note:** User entity is now managed entirely by Firebase Authentication. We don't need to create a separate users collection for authentication purposes.
+### 11.1 Core Entities (M1 — implemented)
 
 #### Meeting
 ```
@@ -292,8 +416,8 @@ User must be able to securely log out of the application.
 - name: string (max 50 characters)
 - date: DateTime
 - weight: int (1, 2, 3, 5, 8, 13, 21)
-- participantIds: List<string> (references to Person)
-- activityIds: List<string> (references to Activity)
+- participantIds: List<string>
+- activityIds: List<string>
 - createdAt: DateTime
 - updatedAt: DateTime
 ```
@@ -312,42 +436,82 @@ User must be able to securely log out of the application.
 - id: string (auto-generated)
 - userId: string (owner, null for global)
 - name: string
-- categoryId: string? (optional, references ActivityCategory)
-- isGlobal: bool (false for user-created)
+- categoryId: string? (optional)
+- isGlobal: bool
 - createdAt: DateTime
 ```
 
-### 4.2 Relationships
-- Meeting ↔ Person (many-to-many) - via participantIds
-- Meeting ↔ Activity (many-to-many) - via activityIds
-- Person ↔ Activity (many-to-many) - derived from above relationships
+### 11.2 New Entities (M2+)
+
+#### ActivityCategory (M2)
+```
+- id: string (auto-generated)
+- userId: string (owner, null for global)
+- name: string
+- iconIdentifier: string (references predefined icon set)
+- isGlobal: bool
+- parentCategoryId: string? (optional, max 3 levels deep)
+- createdAt: DateTime
+```
+
+#### InvitationCode (M5)
+```
+- id: string (auto-generated)
+- code: string (6-char alphanumeric, unique)
+- senderId: string (userId of generator)
+- targetPersonId: string (personId from sender's contacts)
+- status: string (pending | used | expired)
+- expiresAt: DateTime (createdAt + 48h)
+- createdAt: DateTime
+```
+
+#### DashboardConfig (M7)
+```
+- id: string (auto-generated)
+- userId: string (owner)
+- widgets: List<DashboardWidgetConfig> (ordered)
+- updatedAt: DateTime
+```
+
+### 11.3 Relationships
+- Meeting ↔ Person (many-to-many) via participantIds
+- Meeting ↔ Activity (many-to-many) via activityIds
+- Activity → ActivityCategory (optional) via categoryId
+- ActivityCategory → ActivityCategory (self-reference) via parentCategoryId
+- InvitationCode → Person via targetPersonId
+- InvitationCode → User via senderId
 
 ---
 
-## 5. Technical Dependencies
+## 12. Technical Dependencies
 
-### 5.1 Technology Stack
-- **Framework:** Flutter (Dart)
-- **Backend:** Firebase
-  - Firebase Authentication (Auth)
-  - Cloud Firestore (Database)
-- **Target Platform:** Android (MVP)
+### 12.1 Current Stack (M1)
+- Flutter SDK 3.0+, Dart 2.17+
+- Firebase Auth, Cloud Firestore, Firebase Core
+- google_sign_in, provider, freezed, json_serializable
 
-### 5.2 Minimum Requirements
-- Flutter SDK: 3.0+
-- Dart: 2.17+
-- Android SDK: API 21+ (Android 5.0)
+### 12.2 Planned Additions
 
----
-
-## 8. Glossary
-
-- **MVP** - Minimum Viable Product - minimum version of product with basic functionalities
-- **Meeting Weight** - metric determining meeting "importance" on Fibonacci scale (1, 2, 3, 5, 8, 13, 21)
-- **Autocomplete** - functionality suggesting existing values while typing
-- **Firestore** - NoSQL cloud database from Google (Firebase)
+| Milestone | Package | Purpose |
+|-----------|---------|---------|
+| M3 | path_provider | File system access for export |
+| M4 | Release signing config | Production build |
+| M6 | flutter_secure_storage | OAuth token storage |
+| M8 | HTTP / LLM SDK (TBD) | AI API calls |
 
 ---
 
+## 13. Glossary
 
-**End of Document**
+- **MVP** — M1: minimum viable product with Add Meeting functionality
+- **Meeting Weight** — Fibonacci-scale importance metric (1, 2, 3, 5, 8, 13, 21)
+- **Autocomplete** — UI pattern suggesting existing values while typing
+- **isGlobal** — flag indicating data managed by app (read-only for users) vs user-owned
+- **Copy-based sharing** — data duplicated to recipient's Firestore, no real-time sync after import
+- **TTL** — Time To Live, automatic expiry of invitation codes after 48 hours
+- **iconIdentifier** — string key (e.g. "sports_tennis") referencing a predefined icon in the app
+
+---
+
+**End of Document**  
+**Version 2.0 — Full Roadmap M1-M8**
