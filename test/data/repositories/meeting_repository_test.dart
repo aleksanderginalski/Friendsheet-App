@@ -1,0 +1,92 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/meeting.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
+
+void main() {
+  late FakeFirebaseFirestore fakeFirestore;
+  late MeetingRepository repository;
+
+  setUp(() {
+    fakeFirestore = FakeFirebaseFirestore();
+    repository = MeetingRepository(firestore: fakeFirestore);
+  });
+
+  // Helper: creates a valid Meeting for tests
+  Meeting makeMeeting({
+    String id = 'test-id',
+    String userId = 'user-1',
+    String name = 'Coffee with Anna',
+    int weight = 3,
+    List<String> participantIds = const ['person-1'],
+    List<String> activityIds = const ['activity-1'],
+  }) {
+    final now = DateTime(2026, 2, 20);
+    return Meeting(
+      id: id,
+      userId: userId,
+      name: name,
+      date: now,
+      weight: weight,
+      participantIds: participantIds,
+      activityIds: activityIds,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  group('MeetingRepository', () {
+    test('saveMeeting returns a non-empty document ID', () async {
+      final meeting = makeMeeting();
+      final id = await repository.saveMeeting(meeting);
+      expect(id, isNotEmpty);
+    });
+
+    test('saveMeeting stores document in meetings collection', () async {
+      final meeting = makeMeeting();
+      final id = await repository.saveMeeting(meeting);
+
+      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      expect(doc.exists, isTrue);
+    });
+
+    test('saveMeeting stores correct userId', () async {
+      final meeting = makeMeeting(userId: 'user-42');
+      final id = await repository.saveMeeting(meeting);
+
+      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      expect(doc.data()?['userId'], equals('user-42'));
+    });
+
+    test('saveMeeting stores correct name', () async {
+      final meeting = makeMeeting(name: 'Lunch with Bob');
+      final id = await repository.saveMeeting(meeting);
+
+      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      expect(doc.data()?['name'], equals('Lunch with Bob'));
+    });
+
+    test('saveMeeting stores correct weight', () async {
+      final meeting = makeMeeting(weight: 8);
+      final id = await repository.saveMeeting(meeting);
+
+      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      expect(doc.data()?['weight'], equals(8));
+    });
+
+    test('saveMeeting stores correct participantIds', () async {
+      final meeting = makeMeeting(participantIds: ['p-1', 'p-2']);
+      final id = await repository.saveMeeting(meeting);
+
+      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      expect(doc.data()?['participantIds'], equals(['p-1', 'p-2']));
+    });
+
+    test('each saved meeting gets a unique ID', () async {
+      final meeting = makeMeeting();
+      final id1 = await repository.saveMeeting(meeting);
+      final id2 = await repository.saveMeeting(meeting);
+      expect(id1, isNot(equals(id2)));
+    });
+  });
+}
