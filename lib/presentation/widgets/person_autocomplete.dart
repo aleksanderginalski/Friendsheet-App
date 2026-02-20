@@ -46,7 +46,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Search input field
         TextField(
           controller: _controller,
           decoration: InputDecoration(
@@ -61,8 +60,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
           ),
           onChanged: (value) => _onChanged(value, provider),
         ),
-
-        // Suggestions dropdown
         if (_suggestions.isNotEmpty || _controller.text.trim().isNotEmpty)
           Container(
             decoration: BoxDecoration(
@@ -71,7 +68,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
             ),
             child: Column(
               children: [
-                // Existing persons list
                 ..._suggestions.map(
                   (person) => ListTile(
                     leading: const Icon(Icons.person),
@@ -79,8 +75,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
                     onTap: () => _onSelectPerson(person, provider),
                   ),
                 ),
-
-                // Add new person option – shown when query is not empty
                 if (_controller.text.trim().isNotEmpty)
                   ListTile(
                     leading: const Icon(Icons.person_add),
@@ -95,8 +89,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
               ],
             ),
           ),
-
-        // Error message
         if (provider.participantsError != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -108,8 +100,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
               ),
             ),
           ),
-
-        // Selected persons chips
         if (provider.selectedPersons.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -135,12 +125,12 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     String initialName,
     AddMeetingProvider provider,
   ) async {
-    // Split on first space only – "Jan Nowak" → firstName: "Jan", lastName: "Nowak"
     final parts = initialName.split(' ');
     final firstName = parts.first;
     final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-    final Person? newPerson = await showDialog<Person>(
+    // Dialog returns raw strings, Provider handles Firestore save
+    final result = await showDialog<({String firstName, String lastName})>(
       context: context,
       builder: (_) => AddPersonDialog(
         initialFirstName: firstName,
@@ -148,15 +138,18 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
       ),
     );
 
-    if (newPerson != null && context.mounted) {
-      provider.addNewPerson(newPerson);
+    if (result != null && context.mounted) {
+      await provider.addNewPerson(
+        firstName: result.firstName,
+        lastName: result.lastName.isEmpty ? null : result.lastName,
+      );
       _clearInput();
     }
   }
 }
 
 // ---------------------------------------------------------------------------
-// Add Person Dialog
+// Add Person Dialog — returns raw strings only, no Firestore logic
 // ---------------------------------------------------------------------------
 
 class AddPersonDialog extends StatefulWidget {
@@ -199,18 +192,11 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
       return;
     }
 
-    // Return a Person without id – repository will assign it on save
-    final person = Person(
-      id: '',
-      userId: '',
+    // Return raw strings — Provider is responsible for saving to Firestore
+    Navigator.of(context).pop((
       firstName: firstName,
-      lastName: _lastNameController.text.trim().isEmpty
-          ? null
-          : _lastNameController.text.trim(),
-      createdAt: DateTime.now(),
-    );
-
-    Navigator.of(context).pop(person);
+      lastName: _lastNameController.text.trim(),
+    ));
   }
 
   @override
