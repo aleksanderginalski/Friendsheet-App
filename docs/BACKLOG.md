@@ -619,23 +619,24 @@ If you already created a GitHub issue for US-005, you can:
 **As a** QA Engineer  
 **I want to** comprehensive unit tests  
 **So that** data models and business logic are reliable
+**Status:** ✅ COMPLETED (February 20, 2026)
 
 **Story Points:** 5  
 **Priority:** P1
 
 **Acceptance Criteria:**
-- [ ] All models have unit tests (Meeting, Person, Activity)
-- [ ] All repositories have unit tests
-- [ ] Validation logic tested
-- [ ] Edge cases covered
-- [ ] Code coverage > 80%
+- [x] All models have unit tests (Meeting, Person, Activity)
+- [x] All repositories have unit tests
+- [x] Validation logic tested
+- [x] Edge cases covered
+- [x] Code coverage > 80%
 
 **Tasks:**
-- [ ] **TASK-088:** Write Meeting model tests - 1h
-- [ ] **TASK-089:** Write Person model tests - 1h
-- [ ] **TASK-090:** Write Activity model tests - 1h
-- [ ] **TASK-091:** Write repository tests - 1h
-- [ ] **TASK-092:** Achieve 80%+ coverage - 1h
+- [x] **TASK-088:** Write Meeting model tests - 1h
+- [x] **TASK-089:** Write Person model tests - 1h
+- [x] **TASK-090:** Write Activity model tests - 1h
+- [x] **TASK-091:** Write repository tests - 1h
+- [x] **TASK-092:** Achieve 80%+ coverage - 1h
 
 **Definition of Done:**
 - All tests pass
@@ -649,20 +650,21 @@ If you already created a GitHub issue for US-005, you can:
 **As a** QA Engineer  
 **I want to** widget tests for UI components  
 **So that** user interface is reliable
+**Status:** ✅ COMPLETED (February 20, 2026)
 
 
-**Acceptance Criteria:**
-- [ ] Login screen widget tests
-- [ ] Register screen widget tests
-- [ ] AddMeeting screen widget tests
-- [ ] Custom widgets tested (stepper, autocomplete)
-- [ ] User interactions tested
+- [x] Login screen widget tests
+- [x] ~~Register screen widget tests~~ (obsolete - Google SSO)
+- [x] AddMeeting screen widget tests
+- [x] Custom widgets tested (stepper, autocomplete)
+- [x] HomeScreen widget tests
+- [x] User interactions tested
 
 **Tasks:**
-- [ ] **TASK-093:** Test LoginScreen - 1h
-- [ ] **TASK-094:** Test RegisterScreen - 1h
-- [ ] **TASK-095:** Test AddMeetingScreen - 2h
-- [ ] **TASK-096:** Test custom widgets - 1h
+- [x] **TASK-093:** Test LoginScreen - 1h
+- [x] **TASK-094:** Test RegisterScreen - 1h
+- [x] **TASK-095:** Test AddMeetingScreen - 2h
+- [x] **TASK-096:** Test custom widgets - 1h
 
 **Definition of Done:**
 - All widget tests pass
