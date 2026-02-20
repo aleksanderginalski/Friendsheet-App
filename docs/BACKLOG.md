@@ -1,47 +1,60 @@
 # Friendsheet - Product Backlog
 
-**Project:** Friendsheet MVP  
-**Version:** 1.0  
-**Last Updated:** February 13, 2026  
+**Project:** Friendsheet  
+**Version:** 2.0  
+**Last Updated:** February 20, 2026  
 **Product Owner:** Aleksander Ginalski  
 
 ---
 
 ## 📊 Backlog Overview
 
+| Milestone | Name | Status |
+|-----------|------|--------|
+| M1 | Add Meeting | ✅ COMPLETED |
+| M2 | Management & CRUD | 🔜 Next |
+| M3 | Statistics & Export | 📋 Planned |
+| M4 | Google Play Release | 📋 Planned |
+| M5 | Social: Data Sharing | 📋 Planned |
+| M6 | Google Photos Integration | 📋 Planned |
+| M7 | Custom Dashboard | 📋 Planned |
+| M8 | AI Assistant | 💡 Future |
+
 ---
 
 ## 🎯 Epic Structure
 
 ```
-EPIC-001: Friendsheet MVP
-├── FEATURE-001: Project Infrastructure Setup
-│   ├── US-001: Initialize Flutter Project
-│   ├── US-002: Setup Firebase
-│   └── US-003: Configure Git & CI/CD
-│
-├── FEATURE-002: User Authentication
-│   ├── US-004: Google Sign-In Authentication
-│   ├── US-005: [OBSOLETE] Email/Password Login
-│   └── US-006: User Logout (UPDATED for SSO)
-│
-├── FEATURE-003: Data Models
-│   ├── US-007: Meeting Model
-│   ├── US-008: Person Model
-│   └── US-009: Activity Model
-│
-├── FEATURE-004: Add Meeting Feature
-│   ├── US-010: Add Meeting Screen UI
-│   ├── US-011: Meeting Name & Date Input
-│   ├── US-012: Meeting Weight Selector
-│   ├── US-013: Participant Management
-│   ├── US-014: Activity Management
-│   └── US-015: Save Meeting to Firestore
-│
+EPIC-001: Friendsheet M1 - Add Meeting 
+├── FEATURE-001: Project Infrastructure Setup ✅
+├── FEATURE-002: User Authentication ✅
+├── FEATURE-003: Data Models ✅
+├── FEATURE-004: Add Meeting Feature ✅
 └── FEATURE-005: Testing & Quality Assurance
-    ├── US-016: Unit Tests
-    ├── US-017: Widget Tests
-    └── US-018: Manual Testing & Bug Fixes
+
+EPIC-002: Friendsheet M2 - Management & CRUD
+├── FEATURE-006: Meetings View
+├── FEATURE-007: Persons View
+└── FEATURE-008: Activities View & Categories
+
+EPIC-003: Friendsheet M3 - Statistics & Export
+├── FEATURE-009: Core Statistics
+└── FEATURE-010: Data Export
+
+EPIC-004: Friendsheet M4 - Google Play Release
+└── FEATURE-011: Store Release Preparation
+
+EPIC-005: Friendsheet M5 - Social: Data Sharing
+└── FEATURE-012: Invitation Code System
+
+EPIC-006: Friendsheet M6 - Google Photos Integration
+└── FEATURE-013: Photo-based Meeting Creation
+
+EPIC-007: Friendsheet M7 - Custom Dashboard
+└── FEATURE-014: Configurable Metrics Dashboard
+
+EPIC-008: Friendsheet M8 - AI Assistant
+└── FEATURE-015: AI-powered Insights
 ```
 
 ---
@@ -683,7 +696,30 @@ If you already created a GitHub issue for US-005, you can:
 - Critical bugs fixed
 - App stable for release
 
-## 🧪 FEATURE-X: Not defined - to be mapped 
+
+---
+
+# 📦 EPIC-002: Friendsheet M2 - Management & CRUD
+
+**Goal:** Give users full visibility and control over their meetings, persons and activities
+
+**Business Value:** App becomes a real management tool instead of just a data entry form. Foundation for statistics in M3.
+
+**Architecture Notes:**
+- Meetings view requires Firestore queries ordered by date DESC
+- Persons and Activities views reuse existing repositories
+- Activity categories require ActivityCategory model (designed in US-019)
+- Icon system: predefine ~50 icons (Material/emoji), stored as string identifier in Firestore
+
+---
+
+## 📅 FEATURE-006: Meetings View
+
+**Priority:** P0  
+**Role:** Developer + UX Designer  
+**Status:** 📋 Planned
+
+---
 
 ### US-019: Activity Categories
 
@@ -716,6 +752,769 @@ If you already created a GitHub issue for US-005, you can:
 - [ ] Global activities read-only for users (isGlobal: true)
 - [ ] Private activities manageable by user
 - [ ] Security Rules enforce read-only on global data
+
+### US-021: Meetings List Screen
+
+**As a** user  
+**I want to** see all my meetings in chronological order  
+**So that** I can review my social history and find specific meetings
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Meetings displayed in reverse chronological order (newest first)
+- [ ] Meetings grouped by year
+- [ ] Current year and previous year expanded by default
+- [ ] Years older than 1 year collapsed by default with expand button
+- [ ] Each meeting card shows: name, date, participants count, weight
+- [ ] Tapping a meeting opens Meeting Detail screen
+- [ ] Empty state shown when no meetings exist
+- [ ] Loading indicator while fetching data
+
+**Tasks:**
+- [ ] **TASK-102:** Create MeetingsListScreen scaffold - 1h
+- [ ] **TASK-103:** Implement Firestore query (orderBy date DESC) in MeetingRepository - 1h
+- [ ] **TASK-104:** Implement year-grouping logic in provider - 2h
+- [ ] **TASK-105:** Build MeetingCard widget - 1h
+- [ ] **TASK-106:** Implement collapsible year sections - 2h
+- [ ] **TASK-107:** Add empty state widget - 30min
+- [ ] **TASK-108:** Write widget tests - 1h
+
+---
+
+### US-022: Meeting Detail Screen
+
+**As a** user  
+**I want to** see full details of a meeting  
+**So that** I can review what happened and who was there
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Screen displays all meeting fields (name, date, weight, participants, activities)
+- [ ] Participants shown as list with full names
+- [ ] Activities shown as list with category context
+- [ ] Edit button navigates to Edit Meeting screen
+- [ ] Delete button with confirmation dialog
+- [ ] Back navigation to Meetings List
+
+**Tasks:**
+- [ ] **TASK-109:** Create MeetingDetailScreen - 2h
+- [ ] **TASK-110:** Resolve participant names from IDs - 1h
+- [ ] **TASK-111:** Resolve activity names from IDs - 1h
+- [ ] **TASK-112:** Implement delete with confirmation - 1h
+- [ ] **TASK-113:** Write tests - 1h
+
+---
+
+### US-023: Edit Meeting
+
+**As a** user  
+**I want to** edit an existing meeting  
+**So that** I can correct mistakes or update information
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Edit screen pre-populated with existing meeting data
+- [ ] All fields editable (name, date, weight, participants, activities)
+- [ ] Save updates the existing document in Firestore (updatedAt refreshed)
+- [ ] Cancel returns to detail screen without changes
+- [ ] Validation same as Add Meeting screen
+- [ ] Success/error feedback shown
+
+**Tasks:**
+- [ ] **TASK-114:** Reuse AddMeetingScreen as EditMeetingScreen with initial data - 2h
+- [ ] **TASK-115:** Add updateMeeting method to MeetingRepository - 1h
+- [ ] **TASK-116:** Update provider to handle edit mode - 2h
+- [ ] **TASK-117:** Write tests - 1h
+
+---
+
+## 👥 FEATURE-007: Persons View
+
+**Priority:** P0  
+**Role:** Developer + UX Designer  
+**Status:** 📋 Planned
+
+---
+
+### US-024: Persons List Screen
+
+**As a** user  
+**I want to** see all people I have added  
+**So that** I can manage my contacts
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Alphabetical list of all persons
+- [ ] Each row shows full name
+- [ ] Search/filter by name
+- [ ] Tapping person opens Person Detail screen
+- [ ] Empty state shown when no persons exist
+
+**Tasks:**
+- [ ] **TASK-118:** Create PersonsListScreen - 2h
+- [ ] **TASK-119:** Implement search/filter in PersonRepository - 1h
+- [ ] **TASK-120:** Build PersonListTile widget - 1h
+- [ ] **TASK-121:** Write tests - 1h
+
+---
+
+### US-025: Person Detail & Edit
+
+**As a** user  
+**I want to** view and edit a person's details  
+**So that** I can keep my contacts accurate
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Shows first name, last name
+- [ ] Shows number of meetings together
+- [ ] Edit inline or via edit screen
+- [ ] Delete with confirmation (warn if person has meetings)
+- [ ] Cannot delete person who has associated meetings without explicit confirmation
+
+**Tasks:**
+- [ ] **TASK-122:** Create PersonDetailScreen - 2h
+- [ ] **TASK-123:** Add updatePerson, deletePerson to PersonRepository - 1h
+- [ ] **TASK-124:** Implement meeting count query - 1h
+- [ ] **TASK-125:** Write tests - 1h
+
+---
+
+## 🏷️ FEATURE-008: Activities View & Categories
+
+**Priority:** P0  
+**Role:** Developer + UX Designer  
+**Status:** 📋 Planned
+
+**Architecture Note:** This feature delivers US-019 and US-020 which were designed in M1 but not implemented. The ActivityCategory model with parentCategoryId (max 3 levels) and icon support is the foundation for M3 statistics filtering.
+
+---
+
+### US-019: Activity Categories (moved from FEATURE-X)
+
+**As a** user  
+**I want to** organize activities into categories and subcategories  
+**So that** I can better structure my activity data and enable hierarchical statistics
+
+**Story Points:** 13  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] ActivityCategory model created (max 3 levels: category → subcategory → activity)
+- [ ] parentCategoryId: String? for hierarchy support
+- [ ] iconIdentifier: String field (references predefined icon set)
+- [ ] isGlobal: bool field
+- [ ] Security Rules updated for activity_categories collection
+- [ ] Unit tests written
+
+**Tasks:**
+- [ ] **TASK-126:** Create ActivityCategory model with Freezed - 2h
+- [ ] **TASK-127:** Create ActivityCategoryRepository - 2h
+- [ ] **TASK-128:** Update Firestore Security Rules - 1h
+- [ ] **TASK-129:** Write unit tests - 1h
+
+---
+
+### US-020: Global Activity Library (moved from FEATURE-X)
+
+**As a** user  
+**I want to** have a built-in library of common activities with icons  
+**So that** I don't have to create everything from scratch
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Predefined icon set defined (~50 icons, Material-based, stored as string identifiers)
+- [ ] Global categories seeded via Firebase Console
+- [ ] Global activities with icons read-only for users (isGlobal: true)
+- [ ] Private activities manageable by user
+- [ ] Security Rules enforce read-only on global data
+
+**Tasks:**
+- [ ] **TASK-130:** Define icon identifier system and map - 2h
+- [ ] **TASK-131:** Seed global categories and activities in Firebase Console - 2h
+- [ ] **TASK-132:** Create IconPickerWidget from predefined list - 2h
+- [ ] **TASK-133:** Write tests - 1h
+
+---
+
+### US-026: Activities List Screen
+
+**As a** user  
+**I want to** see all activities organized by category  
+**So that** I can manage my activity library
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Activities displayed in category tree (expandable)
+- [ ] Global activities shown but marked as read-only
+- [ ] User can add new private activity with icon and optional category
+- [ ] User can edit/delete their own private activities
+- [ ] User cannot edit/delete global activities
+- [ ] Search/filter by name
+
+**Tasks:**
+- [ ] **TASK-134:** Create ActivitiesListScreen with tree view - 3h
+- [ ] **TASK-135:** Implement category tree expansion widget - 2h
+- [ ] **TASK-136:** Add/Edit activity dialog with icon picker - 2h
+- [ ] **TASK-137:** Write tests - 1h
+
+---
+
+---
+
+# 📦 EPIC-003: Friendsheet M3 - Statistics & Export
+
+**Goal:** Give users meaningful insights about their social life and ability to back up their data
+
+**Business Value:** Core value proposition of the app — transforms raw data into actionable insights. Export enables user trust and data portability.
+
+**Architecture Notes:**
+- Statistics require efficient Firestore queries — consider composite indexes
+- Heavy aggregation should happen client-side for MVP (Cloud Functions post-MVP)
+- Export generates JSON file saved to device storage
+- Statistics respect activity category hierarchy (filtering by parent = includes children)
+
+---
+
+## 📊 FEATURE-009: Core Statistics
+
+**Priority:** P0  
+**Role:** Developer + UX Designer  
+**Status:** 📋 Planned
+
+---
+
+### US-027: Statistics Screen - Overview
+
+**As a** user  
+**I want to** see an overview of my social activity statistics  
+**So that** I can understand my social patterns at a glance
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Statistics screen accessible from bottom navigation
+- [ ] Default time range: last 12 months
+- [ ] Time range filter: last 3 months / 6 months / 12 months / all time
+- [ ] Shows: total meetings count, unique persons met, most frequent person
+- [ ] Loading state while calculating
+
+**Tasks:**
+- [ ] **TASK-138:** Create StatisticsScreen scaffold with time range filter - 2h
+- [ ] **TASK-139:** Create StatisticsRepository with aggregation queries - 3h
+- [ ] **TASK-140:** Implement StatisticsProvider - 2h
+- [ ] **TASK-141:** Build overview metrics widgets - 2h
+- [ ] **TASK-142:** Write tests - 1h
+
+---
+
+### US-028: Person Frequency Statistics
+
+**As a** user  
+**I want to** see who I meet most and least often  
+**So that** I can be more intentional about my relationships
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Ranked list of persons by meeting count (descending)
+- [ ] Shows last meeting date per person
+- [ ] "Haven't seen in a while" section — persons not met in 60+ days
+- [ ] Filterable by time range
+- [ ] Tapping person navigates to Person Detail
+
+**Tasks:**
+- [ ] **TASK-143:** Implement person frequency aggregation - 2h
+- [ ] **TASK-144:** Build PersonFrequencyList widget - 2h
+- [ ] **TASK-145:** Implement "haven't seen" threshold logic - 1h
+- [ ] **TASK-146:** Write tests - 1h
+
+---
+
+### US-029: Activity Statistics
+
+**As a** user  
+**I want to** see which activities I do most and with whom  
+**So that** I understand how I spend my social time
+
+**Story Points:** 8  
+**Priority:** P1
+
+**Acceptance Criteria:**
+- [ ] Ranked list of activities by occurrence count
+- [ ] Category hierarchy respected — filtering by "Sport" includes "Kayaking", "Tennis" etc.
+- [ ] Per-activity breakdown: which persons are associated
+- [ ] Filterable by time range
+- [ ] Filterable by category
+
+**Tasks:**
+- [ ] **TASK-147:** Implement activity aggregation with category hierarchy - 3h
+- [ ] **TASK-148:** Build ActivityStatsWidget - 2h
+- [ ] **TASK-149:** Implement category filter logic - 2h
+- [ ] **TASK-150:** Write tests - 1h
+
+---
+
+## 💾 FEATURE-010: Data Export
+
+**Priority:** P1  
+**Role:** Developer  
+**Status:** 📋 Planned
+
+---
+
+### US-030: Export Data to JSON
+
+**As a** user  
+**I want to** export all my data as a JSON file  
+**So that** I have a backup and can migrate if needed
+
+**Story Points:** 5  
+**Priority:** P1
+
+**Acceptance Criteria:**
+- [ ] Export option accessible from Settings or Profile
+- [ ] Exports all meetings, persons, activities in JSON format
+- [ ] File saved to device Downloads folder
+- [ ] File named: `friendsheet_export_YYYY-MM-DD.json`
+- [ ] Success confirmation with file path shown
+- [ ] Export works offline (data already in Firestore cache)
+
+**Tasks:**
+- [ ] **TASK-151:** Implement ExportService with JSON serialization - 2h
+- [ ] **TASK-152:** Add file system permissions for Android - 1h
+- [ ] **TASK-153:** Build export UI (button + progress + confirmation) - 1h
+- [ ] **TASK-154:** Write tests - 1h
+
+---
+
+---
+
+# 📦 EPIC-004: Friendsheet M4 - Google Play Release
+
+**Goal:** Publish Friendsheet on Google Play Store as a publicly downloadable app
+
+**Business Value:** Portfolio milestone — demonstrates ability to ship a real product. Enables friends to use the app without manual APK installation.
+
+**Prerequisites:** M2 and M3 completed — app must be "showable" with CRUD and statistics.
+
+---
+
+## 🚀 FEATURE-011: Store Release Preparation
+
+**Priority:** P0  
+**Role:** Developer + DevOps  
+**Status:** 📋 Planned
+
+---
+
+### US-031: App Store Assets & Metadata
+
+**As a** developer  
+**I want to** prepare all required Google Play assets  
+**So that** the app can be submitted for review
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] App icon (512x512 PNG)
+- [ ] Feature graphic (1024x500 PNG)
+- [ ] Screenshots (min 2, phone format)
+- [ ] Short description (max 80 chars)
+- [ ] Full description
+- [ ] Privacy Policy published at accessible URL
+
+**Tasks:**
+- [ ] **TASK-155:** Design app icon - 2h
+- [ ] **TASK-156:** Create store screenshots - 2h
+- [ ] **TASK-157:** Write store description - 1h
+- [ ] **TASK-158:** Create and publish Privacy Policy page - 2h
+
+---
+
+### US-032: Production Build Configuration
+
+**As a** developer  
+**I want to** configure a signed production build  
+**So that** the app can be published on Google Play
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Keystore generated and securely stored (NOT in git)
+- [ ] `key.properties` file configured and gitignored
+- [ ] Release build variant configured in build.gradle
+- [ ] App Bundle (.aab) generated successfully
+- [ ] Version code and version name set
+- [ ] ProGuard/R8 rules configured if needed
+
+**Tasks:**
+- [ ] **TASK-159:** Generate keystore and document storage - 1h
+- [ ] **TASK-160:** Configure signing in build.gradle - 1h
+- [ ] **TASK-161:** Update .gitignore for keystore files - 30min
+- [ ] **TASK-162:** Build and test release AAB - 1h
+- [ ] **TASK-163:** Update CI/CD for release builds - 1h
+
+---
+
+### US-033: Google Play Developer Account Setup
+
+**As a** developer  
+**I want to** set up my Google Play Developer account  
+**So that** I can publish and manage the app
+
+**Story Points:** 3  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Google Play Developer account created ($25 one-time fee)
+- [ ] Account verified
+- [ ] App created in Play Console
+- [ ] Internal testing track configured
+- [ ] App tested via Internal Testing before public release
+
+**Tasks:**
+- [ ] **TASK-164:** Create Google Play Developer account - 30min
+- [ ] **TASK-165:** Create app in Play Console - 30min
+- [ ] **TASK-166:** Upload to Internal Testing track - 1h
+- [ ] **TASK-167:** Test Internal build on real device - 1h
+- [ ] **TASK-168:** Submit for production review - 1h
+
+---
+
+---
+
+# 📦 EPIC-005: Friendsheet M5 - Social: Data Sharing
+
+**Goal:** Allow users to share their meeting history with friends who join the app
+
+**Business Value:** Solves the "cold start problem" — new users get instant value by receiving shared meeting history instead of starting from empty app.
+
+**Architecture Notes:**
+- Uses copy-based sharing (Option A) — data is duplicated into recipient's Firestore, not shared in real-time
+- No changes to core data model required — isolation per user maintained
+- Invitation codes stored as Firestore documents with TTL (time-to-live)
+- Shared package contains only meetings where both users were participants
+- Future upgrade path to real-time sharing (Option B) is possible without full rewrite
+
+**Decision Log:**
+- Date: February 20, 2026
+- Decision: Copy-based sharing (Option A) over real-time shared documents (Option B)
+- Rationale: Simpler architecture, no Firestore cost risk, no conflict resolution needed, maintains data isolation model
+- Trade-off: Data diverges after sharing — Person A can update a meeting and Person B won't see the change
+
+---
+
+## 🤝 FEATURE-012: Invitation Code System
+
+**Priority:** P0  
+**Role:** Developer  
+**Status:** 📋 Planned
+
+---
+
+### US-034: Generate Invitation Code
+
+**As a** user who has been using Friendsheet for a while  
+**I want to** generate an invitation code for a friend  
+**So that** they can receive all meetings we shared together
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] "Share with friend" option accessible from Person Detail screen
+- [ ] User selects which person (from their list) to generate code for
+- [ ] System creates invitation document in Firestore with: code, senderId, targetPersonId, expiresAt (48h TTL), status: pending
+- [ ] 6-character alphanumeric code generated (e.g. "FR4K9X")
+- [ ] Code displayed with copy button and share sheet option
+- [ ] Code expires after 48 hours
+- [ ] User can see active/expired codes they generated
+
+**Tasks:**
+- [ ] **TASK-169:** Create InvitationCode model and Firestore collection - 2h
+- [ ] **TASK-170:** Implement code generation logic in InvitationService - 2h
+- [ ] **TASK-171:** Add Firestore Security Rules for invitations collection - 1h
+- [ ] **TASK-172:** Build GenerateInvitationScreen UI - 2h
+- [ ] **TASK-173:** Implement share sheet integration - 1h
+- [ ] **TASK-174:** Write tests - 1h
+
+---
+
+### US-035: Redeem Invitation Code
+
+**As a** new user who received an invitation code  
+**I want to** enter the code in the app  
+**So that** I receive my shared meeting history instantly
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] "Enter invitation code" option on Home screen or onboarding
+- [ ] Code input field with 6-character validation
+- [ ] System validates code: exists, not expired, not already used
+- [ ] On valid code: all meetings from sender where targetPerson appears are copied to recipient's Firestore
+- [ ] Participants and activities from those meetings are also copied (deduplication by name)
+- [ ] Code marked as used after successful redemption
+- [ ] Success screen shows count of imported meetings
+- [ ] Error messages for: invalid code, expired code, already used
+
+**Tasks:**
+- [ ] **TASK-175:** Create RedeemInvitationScreen - 2h
+- [ ] **TASK-176:** Implement code validation in InvitationService - 1h
+- [ ] **TASK-177:** Implement meeting copy logic (batch Firestore write) - 3h
+- [ ] **TASK-178:** Implement person/activity deduplication logic - 2h
+- [ ] **TASK-179:** Build success/error feedback screens - 1h
+- [ ] **TASK-180:** Write tests - 2h
+
+---
+
+---
+
+# 📦 EPIC-006: Friendsheet M6 - Google Photos Integration
+
+**Goal:** Allow users to create meetings based on photos from their device gallery
+
+**Business Value:** Reduces friction for retroactive data entry — user sees a photo, remembers a meeting, adds it in seconds. Also teaches OAuth integration with external API.
+
+**Architecture Notes:**
+- Requires Google Photos Library API (separate OAuth scope from Firebase Auth)
+- User must grant additional permission: `https://www.googleapis.com/auth/photoslibrary.readonly`
+- Date of photo used as pre-filled meeting date
+- Photo is NOT stored in Firestore — only the date is used as a hint
+- OAuth token managed separately from Firebase Auth token
+
+---
+
+## 📷 FEATURE-013: Photo-based Meeting Creation
+
+**Priority:** P0  
+**Role:** Developer  
+**Status:** 📋 Planned
+
+---
+
+### US-036: Google Photos Permission & Connection
+
+**As a** user  
+**I want to** connect my Google Photos to Friendsheet  
+**So that** I can browse my photos to create meetings
+
+**Story Points:** 5  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] "Browse Photos" option available in Add Meeting flow
+- [ ] First-time: permission request explains why access is needed
+- [ ] Google Photos OAuth consent screen shown
+- [ ] Permission can be revoked from app Settings
+- [ ] Graceful handling if permission denied
+
+**Tasks:**
+- [ ] **TASK-181:** Add Google Photos API OAuth scope - 1h
+- [ ] **TASK-182:** Implement GooglePhotosService with auth flow - 3h
+- [ ] **TASK-183:** Build permission request UI - 1h
+- [ ] **TASK-184:** Write tests - 1h
+
+---
+
+### US-037: Browse Photos & Create Meeting
+
+**As a** user  
+**I want to** browse my photos and select one to create a meeting  
+**So that** the meeting date is automatically filled from the photo
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Photo grid showing device photos (paginated)
+- [ ] Tapping photo opens "Create meeting from this photo" flow
+- [ ] Meeting date pre-filled from photo's creation date
+- [ ] User proceeds to normal Add Meeting screen with pre-filled date
+- [ ] Photo is NOT saved — only date is transferred
+- [ ] Back navigation returns to photo grid
+
+**Tasks:**
+- [ ] **TASK-185:** Implement Google Photos API fetch (paginated) - 3h
+- [ ] **TASK-186:** Build PhotoGridScreen - 2h
+- [ ] **TASK-187:** Implement date extraction from photo metadata - 1h
+- [ ] **TASK-188:** Bridge to AddMeetingScreen with pre-filled date - 1h
+- [ ] **TASK-189:** Write tests - 1h
+
+---
+
+---
+
+# 📦 EPIC-007: Friendsheet M7 - Custom Dashboard
+
+**Goal:** Allow users to build a personalized view with the metrics that matter most to them
+
+**Business Value:** Power users can configure the app to reflect their personal priorities — some care about activity diversity, others about frequency, others about specific relationships.
+
+**Architecture Notes:**
+- Dashboard config stored in Firestore per user (users/{uid}/dashboard_config)
+- Each widget is a self-contained component that accepts a config object
+- Widget library built on top of M3 statistics infrastructure
+
+---
+
+## 🎛️ FEATURE-014: Configurable Metrics Dashboard
+
+**Priority:** P0  
+**Role:** Developer + UX Designer  
+**Status:** 📋 Planned
+
+---
+
+### US-038: Dashboard Screen with Default Widgets
+
+**As a** user  
+**I want to** see a dashboard with my key metrics  
+**So that** I get a quick overview of my social life on the home screen
+
+**Story Points:** 8  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Dashboard accessible as main/home screen
+- [ ] Default layout includes: recent meetings count, top person this month, top activity this month
+- [ ] Widgets display data from StatisticsRepository (M3)
+- [ ] Refresh on screen focus
+
+**Tasks:**
+- [ ] **TASK-190:** Create DashboardScreen scaffold - 2h
+- [ ] **TASK-191:** Build default widget set (3 widgets) - 3h
+- [ ] **TASK-192:** Connect to StatisticsRepository - 1h
+- [ ] **TASK-193:** Write tests - 1h
+
+---
+
+### US-039: Dashboard Customization
+
+**As a** user  
+**I want to** add, remove and reorder dashboard widgets  
+**So that** I see only the metrics I care about
+
+**Story Points:** 13  
+**Priority:** P1
+
+**Acceptance Criteria:**
+- [ ] Edit mode for dashboard (tap "Edit" to enter)
+- [ ] Widget library with available widget types
+- [ ] Drag to reorder widgets
+- [ ] Remove widget (X button in edit mode)
+- [ ] Add widget from library
+- [ ] Configuration saved to Firestore
+- [ ] Configuration restored on next app launch
+
+**Tasks:**
+- [ ] **TASK-194:** Implement dashboard config model and Firestore persistence - 2h
+- [ ] **TASK-195:** Build widget library screen - 2h
+- [ ] **TASK-196:** Implement drag-and-drop reordering - 3h
+- [ ] **TASK-197:** Build edit mode UI - 2h
+- [ ] **TASK-198:** Write tests - 1h
+
+---
+
+---
+
+# 📦 EPIC-008: Friendsheet M8 - AI Assistant
+
+**Goal:** Allow users to ask natural language questions about their social data and get AI-powered insights
+
+**Business Value:** Transforms the app from a tracker into an intelligent social advisor. Demonstrates AI integration skills for portfolio.
+
+**Architecture Notes:**
+- Integration with external LLM API (Claude API or OpenAI — decision pending cost analysis)
+- User data never sent to LLM without explicit consent — privacy-first approach
+- Context window: relevant statistics summary sent as context, not raw Firestore data
+- Spike required before full implementation to evaluate: API costs per query, response latency, privacy implications
+- Consider: on-device models (Gemini Nano on Android) as zero-cost alternative for basic queries
+
+**Decision Pending:**
+- Which LLM API to use (Claude / OpenAI / Gemini Nano on-device)
+- Cost model: per-query pricing vs subscription
+- Privacy: what data is sent as context
+
+---
+
+## 🤖 FEATURE-015: AI-powered Insights
+
+**Priority:** P0  
+**Role:** Developer  
+**Status:** 💡 Future - Spike Required
+
+---
+
+### US-040: AI Integration Spike
+
+**As a** developer  
+**I want to** evaluate LLM API options and costs  
+**So that** I can make an informed decision before full implementation
+
+**Story Points:** 5  
+**Priority:** P0 (must complete before US-041)
+
+**Acceptance Criteria:**
+- [ ] At least 2 LLM APIs evaluated (e.g. Claude API, Gemini Nano)
+- [ ] Cost per query estimated based on typical context size
+- [ ] Latency measured for typical query
+- [ ] Privacy implications documented
+- [ ] Decision documented with rationale
+- [ ] Simple proof of concept built
+
+**Tasks:**
+- [ ] **TASK-199:** Research Claude API and OpenAI pricing - 2h
+- [ ] **TASK-200:** Research Gemini Nano on-device option - 2h
+- [ ] **TASK-201:** Build minimal proof of concept with chosen API - 3h
+- [ ] **TASK-202:** Document decision - 1h
+
+---
+
+### US-041: AI Assistant Screen
+
+**As a** user  
+**I want to** ask the AI assistant questions about my social life  
+**So that** I get personalized insights beyond standard statistics
+
+**Story Points:** 13  
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Chat-like UI for asking questions
+- [ ] AI has context of user's statistics summary (not raw data)
+- [ ] Example queries: "Who should I reach out to this week?", "What's my most social month?"
+- [ ] Response streamed or shown with loading indicator
+- [ ] User informed that data is sent to external API (consent)
+- [ ] Error handling for API failures
+
+**Tasks:**
+- [ ] **TASK-203:** Create AIAssistantScreen with chat UI - 3h
+- [ ] **TASK-204:** Implement context builder (statistics → prompt) - 2h
+- [ ] **TASK-205:** Integrate chosen LLM API - 3h
+- [ ] **TASK-206:** Implement consent/disclaimer flow - 1h
+- [ ] **TASK-207:** Write tests - 1h
+
 ---
 
 ## 📝 Definition of Ready (DoR)
