@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** lutego 19, 2026
+**Last Updated:** lutego 20, 2026
 
 ## lib/core/
 - lib/core/utils/firebase_test.dart - Firebase connection test
@@ -29,11 +29,11 @@
 - lib/presentation/screens/add_meeting_screen.dart - Add Meeting screen
 - lib/presentation/screens/home_screen.dart - Home screen with logout
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
-- lib/presentation/widgets/activity_autocomplete.dart - Activity autocomplete widget + AddActivityDialog (US-014)
+- lib/presentation/widgets/activity_autocomplete.dart - Activity autocomplete widget + AddActivityDialog — returns name string, save handled by Provider (BUG-42)
 - lib/presentation/widgets/meeting_date_field.dart - Date picker widget (US-011)
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget (US-011)
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
-- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget + AddPersonDialog (US-013)
+- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget + AddPersonDialog — returns strings, save handled by Provider (BUG-42)
 
 ## test/data/
 - test/data/models/activity_test.dart - Activity model tests (13 tests)
@@ -44,11 +44,11 @@
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests (38 tests)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for PersonRepository, ActivityRepository, MeetingRepository, AuthService (Mockito)
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
-- test/presentation/screens/add_meeting_screen_test.mocks.dart
+- test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
-- test/presentation/widgets/meeting_date_field_test.mocks.dart
+- test/presentation/widgets/meeting_date_field_test.mocks.dart - Generated mocks for MeetingDateField tests
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
-- test/presentation/widgets/meeting_name_field_test.mocks.dart
+- test/presentation/widgets/meeting_name_field_test.mocks.dart - Generated mocks for MeetingNameField tests
 - test/presentation/widgets/meeting_weight_stepper_test.dart - MeetingWeightStepper tests (5 tests)
 
 ## test/
