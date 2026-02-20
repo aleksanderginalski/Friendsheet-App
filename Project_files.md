@@ -39,12 +39,19 @@
 - test/data/models/activity_test.dart - Activity model tests (13 tests)
 - test/data/models/meeting_test.dart - Meeting model tests (12 tests)
 - test/data/models/person_test.dart - Person model tests (11 tests)
+- test/data/repositories/activity_repository_test.dart - ActivityRepository tests (12 tests)
+- test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (7 tests)
+- test/data/repositories/person_repository_test.dart - PersonRepository tests (8 tests)
 
 ## test/presentation/
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests (38 tests)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for PersonRepository, ActivityRepository, MeetingRepository, AuthService (Mockito)
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
+- test/presentation/screens/home_screen_test.dart - HomeScreen tests (9 tests)
+- test/presentation/screens/home_screen_test.mocks.dart - Generated mocks for HomeScreen tests
+- test/presentation/screens/login_screen_test.dart - LoginScreen tests (8 tests)
+- test/presentation/screens/login_screen_test.mocks.dart - Generated mocks for LoginScreen tests
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
 - test/presentation/widgets/meeting_date_field_test.mocks.dart - Generated mocks for MeetingDateField tests
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)

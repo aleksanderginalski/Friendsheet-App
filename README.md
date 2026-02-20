@@ -128,7 +128,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (97+)
+✅ All tests passing (151+)
 ✅ No linting issues
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
@@ -215,6 +215,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v2.1.0 - Sprint 3, US-016 + US-017 (February 20, 2026)
+- ✅ Repository tests: MeetingRepository (7), PersonRepository (8), ActivityRepository (12)
+- ✅ Widget tests: LoginScreen (8), HomeScreen (9)
+- ✅ Added fake_cloud_firestore for repository testing
+- ✅ Total test count: 97 → 151 tests (+54)
+- ✅ Patterns introduced: fake_cloud_firestore, Completer for async state testing
 
 ### v2.0.0 - Roadmap Planning (February 20, 2026)
 - ✅ Full milestone roadmap defined (M1-M8)
