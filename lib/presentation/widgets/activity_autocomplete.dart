@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/activity.dart';
-import '../../data/repositories/activity_repository.dart';
-import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
 
 class ActivityAutocomplete extends StatefulWidget {
@@ -26,14 +24,12 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     super.dispose();
   }
 
-  // Updates suggestion list based on current query
   void _onSearchChanged(String query, AddMeetingProvider provider) {
     setState(() {
       _suggestions = provider.searchActivities(query);
     });
   }
 
-  // Selects existing activity from suggestions
   void _selectActivity(Activity activity, AddMeetingProvider provider) {
     provider.selectActivity(activity);
     _controller.clear();
@@ -41,19 +37,19 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     _focusNode.unfocus();
   }
 
-  // Opens dialog to create and save a new activity
   Future<void> _showAddActivityDialog(
     BuildContext context,
     AddMeetingProvider provider,
     String initialName,
   ) async {
-    final activity = await showDialog<Activity>(
+    // Dialog returns raw name string, Provider handles Firestore save
+    final name = await showDialog<String>(
       context: context,
       builder: (_) => AddActivityDialog(initialName: initialName),
     );
 
-    if (activity != null && context.mounted) {
-      provider.addNewActivity(activity);
+    if (name != null && context.mounted) {
+      await provider.addNewActivity(name);
       _controller.clear();
       setState(() => _suggestions = []);
     }
@@ -68,7 +64,6 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Search input field
         TextField(
           controller: _controller,
           focusNode: _focusNode,
@@ -81,12 +76,8 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
           ),
           onChanged: (query) => _onSearchChanged(query, provider),
         ),
-
-        // Suggestions dropdown
         if (_suggestions.isNotEmpty || _controller.text.trim().isNotEmpty)
           _buildSuggestionsList(context, provider),
-
-        // Selected activities chips
         if (selectedActivities.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -119,7 +110,6 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
       elevation: 4,
       child: Column(
         children: [
-          // Existing activity suggestions
           ..._suggestions.map(
             (activity) => ListTile(
               leading: const Icon(Icons.local_activity_outlined),
@@ -127,8 +117,6 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
               onTap: () => _selectActivity(activity, provider),
             ),
           ),
-
-          // Add new activity option
           if (query.isNotEmpty && !hasExactMatch)
             ListTile(
               leading: const Icon(Icons.add_circle_outline),
@@ -141,7 +129,10 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
   }
 }
 
-// Dialog for creating a new activity
+// ---------------------------------------------------------------------------
+// Add Activity Dialog — returns raw name string only, no Firestore logic
+// ---------------------------------------------------------------------------
+
 class AddActivityDialog extends StatefulWidget {
   final String initialName;
 
@@ -153,7 +144,6 @@ class AddActivityDialog extends StatefulWidget {
 
 class _AddActivityDialogState extends State<AddActivityDialog> {
   late final TextEditingController _nameController;
-  bool _isSaving = false;
   String? _error;
 
   @override
@@ -168,37 +158,15 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
     super.dispose();
   }
 
-  Future<void> _save() async {
+  void _submit() {
     final name = _nameController.text.trim();
-
     if (name.isEmpty) {
       setState(() => _error = 'Activity name is required');
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-      _error = null;
-    });
-
-    try {
-      final userId = AuthService().currentUser?.uid;
-      if (userId == null) throw Exception('User not authenticated');
-
-      final activity = await ActivityRepository().addActivity(
-        userId: userId,
-        name: name,
-      );
-
-      if (mounted) Navigator.of(context).pop(activity);
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-          _error = 'Failed to save activity';
-        });
-      }
-    }
+    // Return raw name string — Provider is responsible for saving to Firestore
+    Navigator.of(context).pop(name);
   }
 
   @override
@@ -213,21 +181,18 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         ),
         autofocus: true,
         textCapitalization: TextCapitalization.sentences,
+        onChanged: (_) {
+          if (_error != null) setState(() => _error = null);
+        },
       ),
       actions: [
         TextButton(
-          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('CANCEL'),
         ),
         TextButton(
-          onPressed: _isSaving ? null : _save,
-          child: _isSaving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('SAVE'),
+          onPressed: _submit,
+          child: const Text('SAVE'),
         ),
       ],
     );

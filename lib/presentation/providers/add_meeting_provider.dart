@@ -159,10 +159,25 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Adds newly created person to both available and selected lists
-  void addNewPerson(Person person) {
-    _availablePersons.add(person);
-    selectPerson(person);
+  // Saves new person to Firestore, then adds to available and selected lists
+  Future<void> addNewPerson({
+    required String firstName,
+    String? lastName,
+  }) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) return;
+
+    final person = Person(
+      id: '',
+      userId: userId,
+      firstName: firstName,
+      lastName: lastName,
+      createdAt: DateTime.now(),
+    );
+
+    final saved = await _personRepository.addPerson(person);
+    _availablePersons.add(saved);
+    selectPerson(saved);
   }
 
   // Returns true if participants section is valid
@@ -218,10 +233,17 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Adds newly created activity to both available and selected lists
-  void addNewActivity(Activity activity) {
-    _availableActivities.add(activity);
-    selectActivity(activity);
+// Saves new activity to Firestore, then adds to available and selected lists
+  Future<void> addNewActivity(String name) async {
+    final userId = _authService.currentUserId;
+    if (userId == null) return;
+
+    final saved = await _activityRepository.addActivity(
+      userId: userId,
+      name: name,
+    );
+    _availableActivities.add(saved);
+    selectActivity(saved);
   }
 
   // Returns true if activities section is valid
