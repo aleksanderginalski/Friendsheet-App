@@ -1579,4 +1579,198 @@ Attach if available
 
 ---
 
+---
+
+# 📦 EPIC-INF: Developer Experience & AI Tooling
+
+**Goal:** Continuously improve developer workflow by leveraging AI tooling, optimizing Claude Code integration, and gradually introducing specialized sub-agents.
+
+**Business Value:** Faster development cycles, better code quality, and hands-on experience with modern AI-assisted development — directly relevant for portfolio and career growth.
+
+---
+
+## 🔧 FEATURE-INF-001: Claude Code Optimization
+
+**Priority:** P1  
+**Role:** Developer  
+**Status:** 🔜 In Progress
+
+---
+
+### US-INF-001: Claude Code Integration (CLAUDE.md)
+
+**As a** Developer  
+**I want to** have a CLAUDE.md file in the repository  
+**So that** Claude Code CLI understands project context on every session start
+
+**Story Points:** 2  
+**Priority:** P1  
+**Status:** ✅ COMPLETED (February 21, 2026)
+
+**Acceptance Criteria:**
+- [x] CLAUDE.md created in project root
+- [x] Project Invariants documented
+- [x] Git workflow documented
+- [x] Flutter best practices included
+- [x] Claude Code reads context on fresh session start
+
+---
+
+### US-INF-002: Claude Code Task Mode Evaluation
+
+**As a** Developer  
+**I want to** evaluate whether Claude Code Task Mode improves my workflow  
+**So that** I can decide how to evolve my development process
+
+**Story Points:** 2  
+**Priority:** P2  
+**Status:** 📋 Planned  
+**Trigger:** After M2 completion
+
+**Acceptance Criteria:**
+- [ ] Retrospective completed: which tasks worked better in Claude Code vs chat
+- [ ] Decision made: whether to update CLAUDE.md based on findings
+- [ ] Short findings document created (can be a section in CLAUDE.md)
+- [ ] Workflow adjustments applied if needed
+
+---
+
+### US-INF-003: CLAUDE.md v2 — Extended Instructions
+
+**As a** Developer  
+**I want to** update CLAUDE.md based on real usage experience  
+**So that** Claude Code instructions reflect actual project patterns
+
+**Story Points:** 2  
+**Priority:** P2  
+**Status:** 📋 Planned  
+**Trigger:** After US-INF-002 evaluation
+
+**Acceptance Criteria:**
+- [ ] CLAUDE.md updated with lessons learned from M2
+- [ ] New patterns documented (e.g. M2-specific repository patterns)
+- [ ] Outdated instructions removed or updated
+- [ ] Claude Code tested on fresh session with updated instructions
+
+---
+
+## 🤖 FEATURE-INF-002: Sub-agents
+
+**Priority:** P2  
+**Role:** Developer  
+**Status:** 📋 Planned  
+**Note:** Sub-agents require solid CLAUDE.md foundation and developer familiarity with project patterns. Do not start before M3.
+
+---
+
+### US-INF-004: Tester Sub-agent
+
+**As a** Developer  
+**I want to** have a specialized Tester sub-agent in Claude Code  
+**So that** test generation follows project patterns automatically
+
+**Story Points:** 5  
+**Priority:** P2  
+**Status:** 📋 Planned  
+**Trigger:** After M3/M4 completion
+
+**Acceptance Criteria:**
+- [ ] `/tester` slash command configured in Claude Code
+- [ ] Agent understands project test patterns (Mockito, fake_cloud_firestore, widget tests)
+- [ ] Agent generates tests consistent with Project Invariants
+- [ ] Agent mirrors lib/ structure in test/ automatically
+- [ ] User reviews and accepts every generated test before commit
+- [ ] Agent documented in CLAUDE.md
+
+---
+
+### US-INF-005: Analyst Sub-agent
+
+**As a** Developer  
+**I want to** have a specialized Analyst sub-agent  
+**So that** documentation updates after US completion are semi-automated
+
+**Story Points:** 5  
+**Priority:** P2  
+**Status:** 📋 Planned  
+**Trigger:** After M4 completion
+
+**Acceptance Criteria:**
+- [ ] `/analyst` slash command configured in Claude Code
+- [ ] Agent updates BACKLOG, PROJECT_FILES.md, README after US completion
+- [ ] Agent follows existing documentation conventions and language (English)
+- [ ] User reviews every change before commit
+- [ ] Agent documented in CLAUDE.md
+
+---
+
+### US-INF-006: Architect Sub-agent
+
+**As a** Developer  
+**I want to** have a specialized Architect sub-agent  
+**So that** architectural decisions are validated against project standards before implementation
+
+**Story Points:** 5  
+**Priority:** P3  
+**Status:** 📋 Planned  
+**Trigger:** After M5 completion
+
+**Acceptance Criteria:**
+- [ ] `/architect` slash command configured in Claude Code
+- [ ] Agent understands Clean Architecture constraints of this project
+- [ ] Agent validates new features against existing architecture before implementation
+- [ ] Agent suggests impact on existing layers (data/domain/presentation)
+- [ ] Agent documented in CLAUDE.md
+
+---
+
+## ⚙️ FEATURE-INF-003: CI/CD Enhancement
+
+**Priority:** P3  
+**Role:** DevOps + Developer  
+**Status:** 📋 Planned  
+**Note:** Requires GitHub Pro or sufficient Actions minutes. Evaluate cost before starting.
+
+---
+
+### US-INF-007: Automated Code Review on PR
+
+**As a** Developer  
+**I want to** have automated code review triggered on every Pull Request  
+**So that** code quality issues are caught before merge
+
+**Story Points:** 8  
+**Priority:** P3  
+**Status:** 📋 Planned  
+**Trigger:** After M4 (Google Play Release) — app is stable enough for stricter gates
+
+**Acceptance Criteria:**
+- [ ] GitHub Actions workflow triggers on PR to main
+- [ ] flutter analyze runs automatically
+- [ ] flutter test runs automatically
+- [ ] Results posted as PR comment
+- [ ] PR cannot be merged if tests fail
+- [ ] GitHub Actions minutes usage documented and within free tier limits
+
+---
+
+### US-INF-008: Automated Test Coverage Report
+
+**As a** Developer  
+**I want to** see test coverage report on every PR  
+**So that** I can track coverage trends and catch regressions
+
+**Story Points:** 5  
+**Priority:** P3  
+**Status:** 📋 Planned  
+**Trigger:** After US-INF-007
+
+**Acceptance Criteria:**
+- [ ] Coverage report generated on every PR
+- [ ] Coverage percentage visible in PR summary
+- [ ] Coverage threshold defined (minimum 80%)
+- [ ] PR blocked if coverage drops below threshold
+- [ ] Coverage trend tracked over time
+
+
 **End of Backlog Document**

@@ -555,6 +555,147 @@ Think of authentication like entering a members-only club:
 
 ---
 
+## Navigation: BottomNavigationBar (M2+)
+```
+┌─────────────────────────────────────┐
+│  Current Screen Title           ⋮  │
+├─────────────────────────────────────┤
+│                                     │
+│         [Screen Content]            │
+│                                     │
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+│ Home   │Meetings│Persons │Activities│
+└────────┴────────┴────────┴──────────┘
+```
+
+**Tab Structure:**
+| Index | Icon | Label | Screen | Status |
+|-------|------|-------|--------|--------|
+| 0 | home | Home | HomeScreen | Existing |
+| 1 | calendar_today | Meetings | MeetingsListScreen | US-021 |
+| 2 | people | Persons | PersonsListScreen | US-024 |
+| 3 | sports_tennis | Activities | ActivitiesListScreen | US-026 |
+
+**Behavior:**
+- Active tab highlighted with primary color (#4CAF50)
+- Inactive tabs: gray (#9E9E9E)
+- Tapping active tab scrolls content to top (future enhancement)
+- BottomNavigationBar replaces Drawer as primary navigation
+
+**Migration note:** Drawer remains accessible via ⋮ menu (logout only).
+
+---
+
+## Screen: MeetingsListScreen (US-021)
+
+### Default State (meetings exist)
+```
+┌─────────────────────────────────────┐
+│  MY MEETINGS                    ⋮  │
+├─────────────────────────────────────┤
+│                                     │
+│  2026  ▼                           │
+│  ┌───────────────────────────────┐ │
+│  │ Coffee with Anna         📅  │ │
+│  │ Feb 12 · 2 people · ⚖️ 8    │ │
+│  └───────────────────────────────┘ │
+│  ┌───────────────────────────────┐ │
+│  │ Team lunch                📅  │ │
+│  │ Feb 5 · 4 people · ⚖️ 3     │ │
+│  └───────────────────────────────┘ │
+│                                     │
+│  2025  ▼                           │
+│  ┌───────────────────────────────┐ │
+│  │ New Year dinner           📅  │ │
+│  │ Jan 1 · 6 people · ⚖️ 13    │ │
+│  └───────────────────────────────┘ │
+│                                     │
+│  2024  ▶  (collapsed)              │
+│                                     │
+│  2023  ▶  (collapsed)              │
+│                                     │
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+└─────────────────────────────────────┘
+```
+
+### Empty State
+```
+┌─────────────────────────────────────┐
+│  MY MEETINGS                    ⋮  │
+├─────────────────────────────────────┤
+│                                     │
+│                                     │
+│           📅                       │
+│                                     │
+│    No meetings yet!                 │
+│    Tap + to add your first          │
+│    meeting.                         │
+│                                     │
+│                                     │
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+└─────────────────────────────────────┘
+```
+
+### MeetingCard Component
+```
+┌───────────────────────────────────┐
+│  Coffee with Anna                 │
+│  Feb 12, 2026 · 2 people · ⚖️ 8  │
+└───────────────────────────────────┘
+```
+
+**MeetingCard fields:**
+- Meeting name (bold)
+- Date (formatted: MMM dd, yyyy)
+- Participant count
+- Weight value with scale icon
+
+### Year Section Behavior
+- Current year: expanded by default
+- Previous year (current - 1): expanded by default
+- Older years: collapsed by default
+- Tap year header to toggle expanded/collapsed
+- Arrow icon indicates state: ▼ expanded / ▶ collapsed
+
+### Loading State
+```
+┌─────────────────────────────────────┐
+│  MY MEETINGS                    ⋮  │
+├─────────────────────────────────────┤
+│                                     │
+│    [shimmer/spinner]                │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Updated User Flow (M2)
+```mermaid
+flowchart TD
+    A[App Starts] --> B{Authenticated?}
+    B -->|NO| C[Login Screen]
+    B -->|YES| D[HomeScreen - Tab 0]
+    C --> E[Google Sign-In]
+    E --> D
+
+    D --> F[BottomNavigationBar]
+    F --> G[Tab 1: MeetingsListScreen]
+    F --> H[Tab 2: PersonsListScreen - US-024]
+    F --> I[Tab 3: ActivitiesListScreen - US-026]
+
+    G --> J[Tap Meeting Card]
+    J --> K[MeetingDetailScreen - US-022]
+
+    D --> L[FAB: Add Meeting]
+    G --> L
+    L --> M[AddMeetingScreen]
+    M --> G
+```
+
 **End of Updated Wireframes Documentation**
 
 **Next Step:** Implement US-004 (Google Sign-In) following this design! 🚀
