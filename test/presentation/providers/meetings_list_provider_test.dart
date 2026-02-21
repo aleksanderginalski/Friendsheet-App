@@ -119,7 +119,8 @@ void main() {
       });
 
       // Emits the three fixtures and waits for the listener to run.
-      Future<void> emitMeetings(StreamController<List<Meeting>> controller) async {
+      Future<void> emitMeetings(
+          StreamController<List<Meeting>> controller) async {
         controller.add([meeting2026a, meeting2026b, meeting2025]);
         await Future.delayed(Duration.zero);
       }
