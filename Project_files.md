@@ -53,12 +53,17 @@
 ## test/presentation/
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests (38 tests)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
+- test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests (11 tests)
+- test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
 - test/presentation/screens/home_screen_test.dart - HomeScreen tests
 - test/presentation/screens/home_screen_test.mocks.dart - Generated mocks for HomeScreen tests
 - test/presentation/screens/login_screen_test.dart - LoginScreen tests (8 tests)
 - test/presentation/screens/login_screen_test.mocks.dart - Generated mocks for LoginScreen tests
+- test/presentation/screens/main_screen_test.dart - MainScreen tests (5 tests)
+- test/presentation/screens/main_screen_test.mocks.dart - Generated mocks for MainScreen tests
+- test/presentation/screens/meetings_list_screen_test.dart - MeetingsListScreen tests (5 tests)
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
 - test/presentation/widgets/meeting_date_field_test.mocks.dart - Generated mocks for MeetingDateField tests
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
