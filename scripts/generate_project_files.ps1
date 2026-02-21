@@ -1,4 +1,5 @@
 ﻿$descriptions = @{
+    "CLAUDE.md"                                                        = "Claude Code instructions — project invariants, conventions, git workflow"
     "lib/main.dart"                                                    = "App entry point, Firebase initialization, AuthWrapper"
     "lib/firebase_options.dart"                                        = "Firebase config (gitignored)"
     "lib/firebase_options.example.dart"                                = "Mock config for CI/CD"
@@ -53,6 +54,11 @@ $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add("# Friendsheet - Project File Structure")
 $lines.Add("**Last Updated:** $date")
 
+# Add CLAUDE.md as first entry (root level)
+$lines.Add("")
+$lines.Add("## Root")
+$lines.Add("- CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow")
+
 $files = Get-ChildItem -Recurse -Path "lib\", "test\" |
 Where-Object { !$_.PSIsContainer -and $_.Name -ne ".gitkeep" } |
 ForEach-Object {
@@ -102,6 +108,7 @@ $lines.Add("## Rules")
 $lines.Add("- Generated files (*.freezed.dart, *.g.dart) ARE committed")
 $lines.Add("- firebase_options.dart is gitignored")
 $lines.Add("- .gitkeep files mark empty directories")
+$lines.Add("- CLAUDE.md is committed — shared instructions for Claude Code CLI")
 
 [System.IO.File]::WriteAllLines("$PWD\PROJECT_FILES.md", $lines, [System.Text.Encoding]::UTF8)
 Write-Host "PROJECT_FILES.md generated!" -ForegroundColor Green

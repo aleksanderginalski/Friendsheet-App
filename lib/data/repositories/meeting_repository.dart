@@ -15,4 +15,16 @@ class MeetingRepository {
         await _firestore.collection('meetings').add(meeting.toFirestore());
     return docRef.id;
   }
+
+  /// Returns a real-time stream of meetings for a given user,
+  /// ordered by date descending (newest first).
+  Stream<List<Meeting>> getMeetingsByUser(String userId) {
+    return _firestore
+        .collection('meetings')
+        .where('userId', isEqualTo: userId)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList());
+  }
 }

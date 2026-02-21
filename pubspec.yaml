@@ -55,7 +55,7 @@ dev_dependencies:
 
   json_serializable: ^6.8.0
 
-  fake_cloud_firestore: ^3.1.0   # ← dodaj tę linię
+  fake_cloud_firestore: ^3.1.0  
 
 # Flutter configuration
 flutter:

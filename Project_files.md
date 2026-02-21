@@ -1,5 +1,8 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** lutego 20, 2026
+**Last Updated:** lutego 21, 2026
+
+## Root
+- CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
 
 ## lib/core/
 - lib/core/utils/firebase_test.dart - Firebase connection test
@@ -74,3 +77,4 @@
 - Generated files (*.freezed.dart, *.g.dart) ARE committed
 - firebase_options.dart is gitignored
 - .gitkeep files mark empty directories
+- CLAUDE.md is committed — shared instructions for Claude Code CLI
