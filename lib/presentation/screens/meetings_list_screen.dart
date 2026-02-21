@@ -8,7 +8,11 @@ import '../widgets/meeting_card.dart';
 /// Screen that displays all meetings for the current user, grouped by year.
 /// Provides and owns [MeetingsListProvider] scoped to this screen.
 class MeetingsListScreen extends StatefulWidget {
-  const MeetingsListScreen({super.key});
+  // Optional provider injection — when set, the screen uses it directly
+  // instead of creating its own. Intended for testing only.
+  final MeetingsListProvider? provider;
+
+  const MeetingsListScreen({super.key, this.provider});
 
   @override
   State<MeetingsListScreen> createState() => _MeetingsListScreenState();
@@ -16,20 +20,30 @@ class MeetingsListScreen extends StatefulWidget {
 
 class _MeetingsListScreenState extends State<MeetingsListScreen> {
   late final MeetingsListProvider _provider;
+  // True when this state created the provider and is responsible for disposing it.
+  late final bool _ownsProvider;
 
   @override
   void initState() {
     super.initState();
-    _provider = MeetingsListProvider();
-    final userId = AuthService().currentUser?.uid;
-    if (userId != null) {
-      _provider.initialize(userId);
+    if (widget.provider != null) {
+      _provider = widget.provider!;
+      _ownsProvider = false;
+    } else {
+      _provider = MeetingsListProvider();
+      _ownsProvider = true;
+      final userId = AuthService().currentUser?.uid;
+      if (userId != null) {
+        _provider.initialize(userId);
+      }
     }
   }
 
   @override
   void dispose() {
-    _provider.dispose();
+    if (_ownsProvider) {
+      _provider.dispose();
+    }
     super.dispose();
   }
 
