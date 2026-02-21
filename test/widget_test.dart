@@ -1,12 +1,14 @@
 // test/widget_test.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/main.dart';
-import 'package:friendsheet/presentation/screens/home_screen.dart';
 import 'package:friendsheet/presentation/screens/login_screen.dart';
+import 'package:friendsheet/presentation/screens/main_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -18,6 +20,13 @@ import 'widget_test.mocks.dart';
 void main() {
   // Declare mock - our "actor" pretending to be AuthService
   late MockAuthService mockAuthService;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    // Set up Firebase Core mock so Firestore.instance works without a real app.
+    setupFirebaseCoreMocks();
+    await Firebase.initializeApp();
+  });
 
   // setUp runs before each test - like setting up the stage before each scene
   setUp(() {
@@ -42,20 +51,20 @@ void main() {
 
       // Assert: LoginScreen is shown
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.byType(HomeScreen), findsNothing);
+      expect(find.byType(MainScreen), findsNothing);
     });
 
-    testWidgets('shows HomeScreen when user IS authenticated',
+    testWidgets('shows MainScreen when user IS authenticated',
         (WidgetTester tester) async {
       // Arrange: Mock returns a User - someone is logged in
       final mockUser = MockUser();
       when(mockAuthService.authStateChanges).thenAnswer(
         (_) => Stream.value(mockUser),
       );
-      // Tell mock what to return when HomeScreen asks for user data
-
+      // Tell mock what to return when MainScreen asks for user data
       when(mockAuthService.userDisplayName).thenReturn('Test User');
       when(mockAuthService.userEmail).thenReturn('test@example.com');
+      when(mockAuthService.currentUser).thenReturn(null);
 
       // Act: Build widget with injected mock
       await tester.pumpWidget(
@@ -65,8 +74,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Assert: HomeScreen is shown
-      expect(find.byType(HomeScreen), findsOneWidget);
+      // Assert: MainScreen is shown
+      expect(find.byType(MainScreen), findsOneWidget);
       expect(find.byType(LoginScreen), findsNothing);
     });
   });
