@@ -187,6 +187,43 @@ graph TB
 
 ## 4. Milestone Architecture Notes
 
+### M2 — Navigation Architecture (US-021)
+
+**Primary navigation pattern:** `BottomNavigationBar` with 4 tabs hosted in `MainScreen`.
+
+**MainScreen** is the root widget returned by `AuthWrapper` after successful authentication. It owns the `BottomNavigationBar` and global FAB.
+
+**Tab structure:**
+| Index | Label | Screen | Status |
+|-------|-------|--------|--------|
+| 0 | Home | HomeScreen | Reserved for M7 dashboard |
+| 1 | Meetings | MeetingsListScreen | ✅ US-021 |
+| 2 | Persons | PersonsListScreen | US-024 |
+| 3 | Activities | ActivitiesListScreen | US-026 |
+
+**IndexedStack:** All tab widgets are kept alive — `MeetingsListScreen` stream subscription stays active when switching tabs.
+
+**FAB:** Global `FloatingActionButton` in `MainScreen` navigates to `AddMeetingScreen` from any tab. After save, `Navigator.pop()` returns to originating tab.
+
+**MeetingsListProvider pattern:**
+- Extends `ChangeNotifier`
+- Owns `StreamSubscription<List<Meeting>>` — cancelled in `dispose()`
+- Groups meetings client-side by year (`Map<int, List<Meeting>>`)
+- Auto-expands current year and previous year on `initialize()`
+
+**Firestore indexes** managed via `firestore.indexes.json` (committed to repo). Deploy with:
+```bash
+firebase deploy --only firestore:indexes
+```
+
+---
+
+Zaktualizuj też ostatnią linię `architecture.md`:
+```markdown
+**Last Updated:** February 21, 2026 (M2 navigation architecture added — US-021)
+
+```
+
 ### M2 — Activity Category Hierarchy
 
 Activity categories support up to 3 levels of nesting via `parentCategoryId`:

@@ -153,6 +153,16 @@ class MockMeetingRepository extends _i1.Mock implements _i7.MeetingRepository {
           ),
         )),
       ) as _i5.Future<String>);
+
+  @override
+  _i5.Stream<List<_i8.Meeting>> getMeetingsByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsByUser,
+          [userId],
+        ),
+        returnValue: _i5.Stream<List<_i8.Meeting>>.empty(),
+      ) as _i5.Stream<List<_i8.Meeting>>);
 }
 
 /// A class which mocks [AuthService].
