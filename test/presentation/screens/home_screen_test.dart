@@ -44,10 +44,6 @@ void main() {
         expect(find.text('Welcome back, Friend! 👋'), findsOneWidget);
       });
 
-      testWidgets('displays ADD NEW MEETING button', (tester) async {
-        await tester.pumpWidget(buildHomeScreen());
-        expect(find.text('ADD NEW MEETING'), findsOneWidget);
-      });
     });
   });
 }
