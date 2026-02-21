@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
-import 'add_meeting_screen.dart';
 
 /// Home screen shown to authenticated users
 class HomeScreen extends StatelessWidget {
@@ -38,24 +37,6 @@ class HomeScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 48),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddMeetingScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add),
-                label: const Text('ADD NEW MEETING'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 16,
-                  ),
                 ),
               ),
             ],
