@@ -1,0 +1,86 @@
+# Friendsheet — Claude Code Instructions
+
+## Project Identity (Invariants)
+- **App name:** Friendsheet
+- **Root widget:** FriendsheetApp
+- **Package name:** com.friendsheet.app
+- **Main entry file:** main.dart
+- **Repository:** friendsheet-app
+
+## Tech Stack
+- Flutter 3.0+ / Dart
+- Firebase Auth + Cloud Firestore
+- Provider (ChangeNotifier)
+- Freezed + json_serializable
+- Mockito for tests
+
+## Architecture
+Clean Architecture with three layers:
+- `lib/data/` — models (Freezed), repositories (Firestore), services (Auth)
+- `lib/domain/` — scaffolded for future use
+- `lib/presentation/` — screens, widgets, providers
+
+## Code Standards
+- Code comments: English only
+- Style: explain WHAT and WHY, no metaphors in comments
+- Max file length: 300 lines
+- Always use `const` constructors where possible
+- Prefer single quotes for strings
+
+## Naming Conventions
+- Files: snake_case
+- Classes: UpperCamelCase
+- Variables/methods: lowerCamelCase
+- Tests mirror lib/ structure exactly
+  - `lib/data/models/person.dart` → `test/data/models/person_test.dart`
+
+## Git Workflow
+- Branch format: `{issue-number}-{short-description}`
+- Conventional Commits required:
+  - `feat:` new feature
+  - `fix:` bug fix
+  - `test:` adding tests
+  - `refactor:` code change without feature/fix
+  - `docs:` documentation only
+  - `chore:` build, config, dependencies
+- Always include `Closes #issue_number` in commit message
+- Never push directly — always PR to main
+
+## Flutter Best Practices
+- Run `flutter analyze` before every commit
+- Run `flutter test` before every commit
+- Fix all issues before committing — never commit with failing tests
+- Disable buttons during loading to prevent double-tap
+- Check `mounted` before setState
+
+## Freezed Workflow
+After any model change:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+- Commit generated files (*.freezed.dart, *.g.dart)
+- Use explicit type casting in fromFirestore
+
+## Gitignore Check Protocol
+Before adding new packages or files — check if .gitignore needs updating:
+- API keys → always gitignored
+- Generated files (*.freezed.dart, *.g.dart) → committed in this project
+- firebase_options.dart → gitignored
+- google-services.json → gitignored
+
+## Testing Patterns
+- MockRepository injected via constructor (never instantiate real Firebase in tests)
+- After adding dependency to Provider → update ALL test files that create that Provider
+- Run `dart run build_runner build --delete-conflicting-outputs` after @GenerateMocks changes
+- Widget tests: use `FocusManager.instance.primaryFocus?.unfocus()` for focus-loss simulation
+
+## Never Do
+- Never use `--dangerously-skip-permissions`
+- Never commit firebase_options.dart or google-services.json
+- Never push with failing tests
+- Never use names: MyApp, MainApp, ExampleApp, TestApp
+- Never push directly to main — always PR
+```
+
+---
+
