@@ -1,20 +1,13 @@
-// lib/data/models/meeting.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-// Required for Freezed code generation
 part 'meeting.freezed.dart';
-// Required for JSON serialization
 part 'meeting.g.dart';
 
-/// Meeting model representing a social gathering with friends
-///
-/// This model uses Freezed for immutability and code generation.
-/// Valid weight values follow Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21
+/// Represents a meeting between the user and one or more friends.
 @freezed
 class Meeting with _$Meeting {
-  const Meeting._(); // Private constructor for custom methods
+  const Meeting._();
 
   const factory Meeting({
     required String id,
@@ -28,35 +21,26 @@ class Meeting with _$Meeting {
     required DateTime updatedAt,
   }) = _Meeting;
 
-  /// Valid Fibonacci weight values
-  static const List<int> validWeights = [1, 2, 3, 5, 8, 13, 21];
+  factory Meeting.fromJson(Map<String, dynamic> json) =>
+      _$MeetingFromJson(json);
 
-  /// Creates Meeting from Firestore document
+  /// Creates a Meeting from a Firestore document.
   factory Meeting.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-
     return Meeting(
       id: doc.id,
-      userId: (data['userId'] ?? '') as String,
-      name: (data['name'] ?? '') as String,
+      userId: data['userId'] as String,
+      name: data['name'] as String,
       date: (data['date'] as Timestamp).toDate(),
-      weight: (data['weight'] ?? 1) as int,
-      participantIds: List<String>.from(
-        (data['participantIds'] ?? []) as List<dynamic>,
-      ),
-      activityIds: List<String>.from(
-        (data['activityIds'] ?? []) as List<dynamic>,
-      ),
+      weight: (data['weight'] as num).toInt(),
+      participantIds: List<String>.from(data['participantIds'] as List),
+      activityIds: List<String>.from(data['activityIds'] as List),
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
   }
 
-  /// Creates Meeting from JSON
-  factory Meeting.fromJson(Map<String, dynamic> json) =>
-      _$MeetingFromJson(json);
-
-  /// Converts Meeting to Firestore map
+  /// Converts Meeting to a map for Firestore storage.
   Map<String, dynamic> toFirestore() {
     return {
       'userId': userId,
@@ -70,9 +54,12 @@ class Meeting with _$Meeting {
     };
   }
 
-  /// Validates meeting data
+  /// Fibonacci sequence used as valid meeting weight values.
+  static const List<int> validWeights = [1, 2, 3, 5, 8, 13, 21];
+
+  /// Returns true if the meeting has valid data.
   bool isValid() {
-    return name.isNotEmpty &&
+    return name.trim().isNotEmpty &&
         name.length <= 50 &&
         validWeights.contains(weight) &&
         participantIds.isNotEmpty &&

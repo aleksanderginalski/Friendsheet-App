@@ -133,7 +133,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (151+)
+✅ All tests passing (166)
 ✅ No linting issues
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
@@ -220,6 +220,18 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v2.2.0 - M2 Start, US-021 Meetings List Screen (February 21, 2026)
+- ✅ MeetingsListScreen with meetings grouped by year (expand/collapse)
+- ✅ Current and previous year expanded by default, older years collapsed
+- ✅ MeetingCard widget with date, participant count and weight display
+- ✅ Empty state when no meetings exist
+- ✅ MainScreen with BottomNavigationBar (4 tabs: Home, Meetings, Persons, Activities)
+- ✅ FAB for adding meetings accessible from any tab
+- ✅ HomeScreen reserved for future statistics/dashboard (M7)
+- ✅ MeetingsListProvider with real-time Firestore stream
+- ✅ firestore.indexes.json and firestore.rules added to repository
+- ✅ Total test count: 151 → 166 tests (+15)
 
 ### v2.1.0 - US-INF-001 Claude Code Integration (February 21, 2026)
 - ✅ CLAUDE.md created for Claude Code CLI integration

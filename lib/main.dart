@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'data/services/auth_service.dart';
 import 'firebase_options.dart';
-import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/login_screen.dart';
+import 'presentation/screens/main_screen.dart';
 
 /// Main entry point of the application
 void main() async {
@@ -34,7 +34,6 @@ class FriendsheetApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Inject real AuthService in production
-      // 🎨 METAPHOR: Connect real water supply to the coffee machine
       home: AuthWrapper(authService: AuthService()),
     );
   }
@@ -77,7 +76,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final bool isAuthenticated = snapshot.hasData && snapshot.data != null;
 
         if (isAuthenticated) {
-          return HomeScreen(authService: widget.authService);
+          return MainScreen(authService: widget.authService);
         } else {
           return LoginScreen(authService: widget.authService);
         }
