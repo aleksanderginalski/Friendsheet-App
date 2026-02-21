@@ -30,10 +30,10 @@ EPIC-001: Friendsheet M1 - Add Meeting
 ├── FEATURE-002: User Authentication ✅
 ├── FEATURE-003: Data Models ✅
 ├── FEATURE-004: Add Meeting Feature ✅
-└── FEATURE-005: Testing & Quality Assurance
+└── FEATURE-005: Testing & Quality Assurance ✅
 
 EPIC-002: Friendsheet M2 - Management & CRUD
-├── FEATURE-006: Meetings View
+├── FEATURE-006: Meetings View 🔜
 ├── FEATURE-007: Persons View
 └── FEATURE-008: Activities View & Categories
 
@@ -763,25 +763,26 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 8  
 **Priority:** P0
+**Status:** ✅ COMPLETED (February 21, 2026)
 
 **Acceptance Criteria:**
-- [ ] Meetings displayed in reverse chronological order (newest first)
-- [ ] Meetings grouped by year
-- [ ] Current year and previous year expanded by default
-- [ ] Years older than 1 year collapsed by default with expand button
-- [ ] Each meeting card shows: name, date, participants count, weight
-- [ ] Tapping a meeting opens Meeting Detail screen
-- [ ] Empty state shown when no meetings exist
-- [ ] Loading indicator while fetching data
+- [x] Meetings displayed in reverse chronological order (newest first)
+- [x] Meetings grouped by year
+- [x] Current year and previous year expanded by default
+- [x] Years older than 1 year collapsed by default with expand button
+- [x] Each meeting card shows: name, date, participants count, weight
+- [x] Tapping a meeting opens Meeting Detail screen
+- [x] Empty state shown when no meetings exist
+- [x] Loading indicator while fetching data
 
 **Tasks:**
-- [ ] **TASK-102:** Create MeetingsListScreen scaffold - 1h
-- [ ] **TASK-103:** Implement Firestore query (orderBy date DESC) in MeetingRepository - 1h
-- [ ] **TASK-104:** Implement year-grouping logic in provider - 2h
-- [ ] **TASK-105:** Build MeetingCard widget - 1h
-- [ ] **TASK-106:** Implement collapsible year sections - 2h
-- [ ] **TASK-107:** Add empty state widget - 30min
-- [ ] **TASK-108:** Write widget tests - 1h
+- [x] **TASK-102:** Create MeetingsListScreen scaffold - 1h
+- [x] **TASK-103:** Implement Firestore query (orderBy date DESC) in MeetingRepository - 1h
+- [x] **TASK-104:** Implement year-grouping logic in provider - 2h
+- [x] **TASK-105:** Build MeetingCard widget - 1h
+- [x] **TASK-106:** Implement collapsible year sections - 2h
+- [x] **TASK-107:** Add empty state widget - 30min
+- [x] **TASK-108:** Write widget tests - 1h
 
 ---
 
