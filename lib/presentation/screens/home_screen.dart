@@ -12,67 +12,12 @@ class HomeScreen extends StatelessWidget {
     required this.authService,
   });
 
-  /// Handle logout button press
-  Future<void> _handleLogout(BuildContext context) async {
-    // Show confirmation dialog
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Log Out?'),
-        content: const Text(
-          'Are you sure you want to log out?\n\n'
-          'You\'ll need to sign in again to access your meetings.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('LOG OUT'),
-          ),
-        ],
-      ),
-    );
-
-    // If user confirmed, proceed with logout
-    // AuthWrapper stream will automatically navigate to LoginScreen
-    if (confirmed == true && context.mounted) {
-      try {
-        await authService.signOut();
-        // No manual navigation needed - AuthWrapper handles it automatically
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to log out: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final String userName = authService.userDisplayName ?? 'Friend';
     final String userEmail = authService.userEmail ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('FRIENDSHEET'),
-        backgroundColor: const Color(0xFF4CAF50),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Log Out',
-            onPressed: () => _handleLogout(context),
-          ),
-        ],
-      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
