@@ -52,8 +52,7 @@ void main() {
     });
 
     testWidgets('shows error message when error is not null', (tester) async {
-      final stub =
-          _StubMeetingsListProvider(error: 'Failed to load meetings');
+      final stub = _StubMeetingsListProvider(error: 'Failed to load meetings');
       await tester.pumpWidget(buildScreen(stub));
 
       expect(find.text('Failed to load meetings'), findsOneWidget);

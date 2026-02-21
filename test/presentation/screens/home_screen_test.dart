@@ -43,7 +43,6 @@ void main() {
         await tester.pumpWidget(buildHomeScreen());
         expect(find.text('Welcome back, Friend! 👋'), findsOneWidget);
       });
-
     });
   });
 }
