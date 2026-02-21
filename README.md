@@ -66,20 +66,25 @@ Comprehensive documentation is available in the project root:
 - **Git** for version control
 - **Firebase Account** (free tier)
 
+
 ### Installation
 
 1. **Clone the repository**
 ```powershell
 git clone https://github.com/aleksanderginalski/friendsheet-app.git
 cd friendsheet
+
+```
+2. **Claude Code users:**
+A `CLAUDE.md` file is included in the repository with project conventions and workflow instructions. Claude Code reads this automatically on every session start.
 ```
 
-2. **Install dependencies**
+3. **Install dependencies**
 ```powershell
 flutter pub get
 ```
 
-3. **Firebase Setup**
+4. **Firebase Setup**
 
 You need to set up your own Firebase project:
 
@@ -91,7 +96,7 @@ e. Create `lib/firebase_options.dart` with your Firebase configuration
 
 **Note:** `google-services.json` and `firebase_options.dart` are gitignored for security. You must create your own Firebase project.
 
-4. **Create firebase_options.dart**
+5. **Create firebase_options.dart**
 
 You need to create your own Firebase configuration:
 
@@ -106,7 +111,7 @@ cp lib/firebase_options.example.dart lib/firebase_options.dart
 # Edit lib/firebase_options.dart with your Firebase project details
 ```
 
-5. **Run the app**
+6. **Run the app**
 ```powershell
 flutter run
 ```
@@ -215,6 +220,11 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v2.1.0 - US-INF-001 Claude Code Integration (February 21, 2026)
+- ✅ CLAUDE.md created for Claude Code CLI integration
+- ✅ Project Invariants, Code Standards and Git workflow documented for Claude Code
+- ✅ Hybrid workflow established: claude.ai for strategy, Claude Code for implementation
 
 ### v2.1.0 - Sprint 3, US-016 + US-017 (February 20, 2026)
 - ✅ Repository tests: MeetingRepository (7), PersonRepository (8), ActivityRepository (12)
