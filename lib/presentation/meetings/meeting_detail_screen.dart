@@ -1,17 +1,38 @@
+// lib/presentation/meetings/meeting_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
 import '../../data/repositories/activity_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../screens/add_meeting_screen.dart';
 import 'meeting_detail_provider.dart';
 
 /// Displays full details of a single meeting.
-/// Receives a Meeting object via constructor — no additional Firestore fetch needed.
-class MeetingDetailScreen extends StatelessWidget {
+/// Stores meeting in state so the view reflects updates from the edit screen.
+class MeetingDetailScreen extends StatefulWidget {
   final Meeting meeting;
 
   const MeetingDetailScreen({super.key, required this.meeting});
+
+  @override
+  State<MeetingDetailScreen> createState() => _MeetingDetailScreenState();
+}
+
+class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
+  late Meeting _meeting;
+
+  @override
+  void initState() {
+    super.initState();
+    _meeting = widget.meeting;
+  }
+
+  // Updates displayed meeting data when returning from the edit screen
+  void _onMeetingUpdated(Meeting updated) {
+    setState(() => _meeting = updated);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +40,23 @@ class MeetingDetailScreen extends StatelessWidget {
       create: (_) => MeetingDetailProvider(
         personRepository: PersonRepository(),
         activityRepository: ActivityRepository(),
-      )..initialize(meeting),
+      )..initialize(_meeting),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Meeting Detail'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            // Passes current meeting state back to caller on back navigation
+            onPressed: () => Navigator.pop(context, _meeting),
+          ),
           actions: [
-            _DeleteButton(meeting: meeting),
+            _DeleteButton(meeting: _meeting),
           ],
         ),
-        body: _MeetingDetailBody(meeting: meeting),
+        body: _MeetingDetailBody(
+          meeting: _meeting,
+          onMeetingUpdated: _onMeetingUpdated,
+        ),
       ),
     );
   }
@@ -35,8 +64,12 @@ class MeetingDetailScreen extends StatelessWidget {
 
 class _MeetingDetailBody extends StatelessWidget {
   final Meeting meeting;
+  final void Function(Meeting) onMeetingUpdated;
 
-  const _MeetingDetailBody({required this.meeting});
+  const _MeetingDetailBody({
+    required this.meeting,
+    required this.onMeetingUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +98,7 @@ class _MeetingDetailBody extends StatelessWidget {
           const SizedBox(height: 8),
           _ActivityList(provider: provider),
           const SizedBox(height: 32),
-          _EditButton(meeting: meeting),
+          _EditButton(meeting: meeting, onMeetingUpdated: onMeetingUpdated),
         ],
       ),
     );
@@ -167,21 +200,36 @@ class _ActivityList extends StatelessWidget {
 
 class _EditButton extends StatelessWidget {
   final Meeting meeting;
+  final void Function(Meeting) onMeetingUpdated;
 
-  const _EditButton({required this.meeting});
+  const _EditButton({required this.meeting, required this.onMeetingUpdated});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {
-          // Navigation to EditMeetingScreen — implemented in US-023
-        },
+        onPressed: () => _handleEdit(context),
         icon: const Icon(Icons.edit),
         label: const Text('Edit Meeting'),
       ),
     );
+  }
+
+  Future<void> _handleEdit(BuildContext context) async {
+    final updated = await Navigator.push<Meeting>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddMeetingScreen(initialMeeting: meeting),
+      ),
+    );
+
+    if (updated is Meeting && context.mounted) {
+      // Refresh participant and activity display with updated meeting data
+      context.read<MeetingDetailProvider>().initialize(updated);
+      onMeetingUpdated(updated);
+      // User stays on detail screen — updated meeting passed back on back navigation
+    }
   }
 }
 
