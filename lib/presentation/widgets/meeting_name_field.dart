@@ -24,6 +24,13 @@ class _MeetingNameFieldState extends State<MeetingNameField> {
         context.read<AddMeetingProvider>().validateName();
       }
     });
+    // Pre-fill the controller with the existing name when editing a meeting
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<AddMeetingProvider>();
+      if (provider.isEditMode) {
+        _controller.text = provider.name;
+      }
+    });
   }
 
   @override

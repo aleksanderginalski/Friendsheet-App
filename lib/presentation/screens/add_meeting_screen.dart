@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../data/models/meeting.dart';
 import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
 import '../widgets/activity_autocomplete.dart';
@@ -10,16 +11,19 @@ import '../widgets/meeting_name_field.dart';
 import '../widgets/meeting_weight_stepper.dart';
 import '../widgets/person_autocomplete.dart';
 
-/// Screen for adding a new meeting.
+/// Screen for adding a new meeting or editing an existing one.
+/// When [initialMeeting] is provided, the screen operates in edit mode.
 /// Provides [AddMeetingProvider] scoped to this screen only.
 class AddMeetingScreen extends StatelessWidget {
-  const AddMeetingScreen({super.key});
+  final Meeting? initialMeeting;
+
+  const AddMeetingScreen({super.key, this.initialMeeting});
 
   @override
   Widget build(BuildContext context) {
     final userId = AuthService().currentUser?.uid;
     return ChangeNotifierProvider(
-      create: (_) => AddMeetingProvider(),
+      create: (_) => AddMeetingProvider(initialMeeting: initialMeeting),
       child: AddMeetingScreenView(userId: userId),
     );
   }
@@ -41,13 +45,15 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
   @override
   void initState() {
     super.initState();
-    // Load persons after first frame so Provider is ready
+    // Load persons/activities after first frame so Provider is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = widget.userId;
       if (userId != null) {
         context.read<AddMeetingProvider>().loadPersons(userId);
         context.read<AddMeetingProvider>().loadActivities(userId);
       }
+      // Load full Person/Activity objects when editing an existing meeting
+      context.read<AddMeetingProvider>().initializeEditData();
     });
   }
 
@@ -65,7 +71,8 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.of(context).pop();
+      // Return saved meeting so callers (e.g. detail screen) can update their state
+      Navigator.of(context).pop(provider.savedMeeting);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -82,7 +89,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Meeting'),
+        title: Text(provider.isEditMode ? 'Edit Meeting' : 'Add Meeting'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -136,9 +143,9 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'SAVE MEETING',
-                        style: TextStyle(fontSize: 16),
+                    : Text(
+                        provider.isEditMode ? 'SAVE CHANGES' : 'SAVE MEETING',
+                        style: const TextStyle(fontSize: 16),
                       ),
               ),
             ),
