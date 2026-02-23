@@ -45,10 +45,25 @@ class MeetingCard extends StatelessWidget {
                           style: theme.textTheme.bodySmall,
                         ),
                         _bullet(context),
-                        Text(
-                          '${meeting.participantIds.length} people',
-                          style: theme.textTheme.bodySmall,
-                        ),
+                        if (meeting.participantIds.isEmpty) ...[
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            size: 14,
+                            color: Colors.orange,
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'No participants',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            '${meeting.participantIds.length} people',
+                            style: theme.textTheme.bodySmall,
+                          ),
                         _bullet(context),
                         Icon(
                           Icons.scale,

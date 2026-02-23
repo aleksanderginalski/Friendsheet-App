@@ -76,14 +76,16 @@ class PersonDetailProvider extends ChangeNotifier {
     }
   }
 
-  // Deletes the person from the repository.
+  // Deletes the person and removes them from all associated meetings.
   // Returns false and resets _isDeleting if the repository call fails.
   Future<bool> deletePerson() async {
     _isDeleting = true;
     notifyListeners();
 
     try {
-      await _personRepository.deletePerson(_person!.id);
+      final userId = _authService.currentUserId!;
+      // deletePerson also removes the person from all meetings via batch update
+      await _personRepository.deletePerson(userId, _person!.id);
       return true;
     } catch (e) {
       _errorMessage = e.toString();
