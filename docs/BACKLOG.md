@@ -847,50 +847,43 @@ If you already created a GitHub issue for US-005, you can:
 ---
 
 ### US-024: Persons List Screen
-
-**As a** user  
-**I want to** see all people I have added  
-**So that** I can manage my contacts
-
-**Story Points:** 5  
-**Priority:** P0
+**Status:** ✅ COMPLETED (February 23, 2026)
 
 **Acceptance Criteria:**
-- [ ] Alphabetical list of all persons
-- [ ] Each row shows full name
-- [ ] Search/filter by name
-- [ ] Tapping person opens Person Detail screen
-- [ ] Empty state shown when no persons exist
+- [x] Alphabetical list of all persons
+- [x] Each row shows full name
+- [x] Search/filter by name
+- [x] Tapping person opens Person Detail screen
+- [x] Empty state shown when no persons exist
 
 **Tasks:**
-- [ ] **TASK-118:** Create PersonsListScreen - 2h
-- [ ] **TASK-119:** Implement search/filter in PersonRepository - 1h
-- [ ] **TASK-120:** Build PersonListTile widget - 1h
-- [ ] **TASK-121:** Write tests - 1h
+- [x] **TASK-118:** Create PersonsListScreen - 2h
+- [x] **TASK-118b:** Fix MeetingCard empty participants warning - 30min
+- [x] **TASK-118c:** Fix MeetingDetailScreen crash on empty participants - 30min
+- [x] **TASK-118d:** Data integrity — cascade delete person from meetings - 1h
+- [x] **TASK-118e:** Add person from Friends tab AppBar - 1h
+- [x] **TASK-118f:** Rename tab label Persons → Friends - 15min
+- [x] **TASK-119:** Implement search/filter in PersonRepository - 1h
+- [x] **TASK-120:** Build PersonListTile widget - 1h
+- [x] **TASK-121:** Write tests - 1h
 
 ---
 
 ### US-025: Person Detail & Edit
-
-**As a** user  
-**I want to** view and edit a person's details  
-**So that** I can keep my contacts accurate
-
-**Story Points:** 5  
-**Priority:** P0
+**Status:** ✅ COMPLETED (February 23, 2026)
 
 **Acceptance Criteria:**
-- [ ] Shows first name, last name
-- [ ] Shows number of meetings together
-- [ ] Edit inline or via edit screen
-- [ ] Delete with confirmation (warn if person has meetings)
-- [ ] Cannot delete person who has associated meetings without explicit confirmation
+- [x] Shows first name, last name
+- [x] Shows number of meetings together
+- [x] Edit inline or via edit screen
+- [x] Delete with confirmation (warn if person has meetings)
+- [x] Cannot delete person who has associated meetings without explicit confirmation
 
 **Tasks:**
-- [ ] **TASK-122:** Create PersonDetailScreen - 2h
-- [ ] **TASK-123:** Add updatePerson, deletePerson to PersonRepository - 1h
-- [ ] **TASK-124:** Implement meeting count query - 1h
-- [ ] **TASK-125:** Write tests - 1h
+- [x] **TASK-122:** Create PersonDetailScreen - 2h
+- [x] **TASK-123:** Add updatePerson, deletePerson to PersonRepository - 1h
+- [x] **TASK-124:** Implement meeting count query - 1h
+- [x] **TASK-125:** Write tests - 1h
 
 ---
 

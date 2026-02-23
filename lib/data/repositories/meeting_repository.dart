@@ -41,4 +41,32 @@ class MeetingRepository {
   Future<void> deleteMeeting(String meetingId) async {
     await _firestore.collection('meetings').doc(meetingId).delete();
   }
+
+  /// Returns the number of meetings for a given user that include the given person.
+  Future<int> getMeetingsCountForPerson(String userId, String personId) async {
+    final snapshot = await _firestore
+        .collection('meetings')
+        .where('userId', isEqualTo: userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+    return snapshot.docs.length;
+  }
+
+  /// Removes personId from participantIds in all meetings that contain them.
+  /// Uses a WriteBatch to apply all updates atomically.
+  Future<void> removePersonFromMeetings(String userId, String personId) async {
+    final snapshot = await _firestore
+        .collection('meetings')
+        .where('userId', isEqualTo: userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {
+        'participantIds': FieldValue.arrayRemove([personId]),
+      });
+    }
+    await batch.commit();
+  }
 }

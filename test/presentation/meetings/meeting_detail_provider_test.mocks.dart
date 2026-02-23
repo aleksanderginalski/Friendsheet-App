@@ -87,6 +87,33 @@ class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
         ),
         returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
       ) as _i5.Future<List<_i2.Person>>);
+
+  @override
+  _i5.Future<void> updatePerson(_i2.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #updatePerson,
+          [person],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deletePerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deletePerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [ActivityRepository].
