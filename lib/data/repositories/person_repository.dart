@@ -26,4 +26,15 @@ class PersonRepository {
     final docRef = await _persons.add(person.toFirestore());
     return person.copyWith(id: docRef.id);
   }
+
+  /// Returns persons matching the given list of IDs.
+  /// Returns empty list if ids is empty.
+  Future<List<Person>> getPersonsByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final snapshot = await _firestore
+        .collection('persons')
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+    return snapshot.docs.map((doc) => Person.fromFirestore(doc)).toList();
+  }
 }
