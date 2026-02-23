@@ -82,6 +82,16 @@ class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
           ),
         )),
       ) as _i5.Future<_i2.Person>);
+
+  @override
+  _i5.Future<List<_i2.Person>> getPersonsByIds(List<String>? ids) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getPersonsByIds,
+          [ids],
+        ),
+        returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
+      ) as _i5.Future<List<_i2.Person>>);
 }
 
 /// A class which mocks [ActivityRepository].
@@ -129,6 +139,16 @@ class MockActivityRepository extends _i1.Mock
           ),
         )),
       ) as _i5.Future<_i3.Activity>);
+
+  @override
+  _i5.Future<List<_i3.Activity>> getActivitiesByIds(List<String>? ids) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getActivitiesByIds,
+          [ids],
+        ),
+        returnValue: _i5.Future<List<_i3.Activity>>.value(<_i3.Activity>[]),
+      ) as _i5.Future<List<_i3.Activity>>);
 }
 
 /// A class which mocks [MeetingRepository].

@@ -45,4 +45,15 @@ class ActivityRepository {
     final doc = await docRef.get();
     return Activity.fromFirestore(doc);
   }
+
+  /// Returns activities matching the given list of IDs.
+  /// Returns empty list if ids is empty.
+  Future<List<Activity>> getActivitiesByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final snapshot = await _firestore
+        .collection('activities')
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+    return snapshot.docs.map((doc) => Activity.fromFirestore(doc)).toList();
+  }
 }
