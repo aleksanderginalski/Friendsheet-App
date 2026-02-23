@@ -1028,3 +1028,91 @@ Why this matters for tests:
   tests require stubs even for simple string matching
 - Provider methods operate on injected state — no stubs needed
 - Symptom of wrong placement: MissingStubError in tests for a non-Firestore method
+
+## 19. Provider created at navigation call-site, not inside target screen
+
+Pattern: When a screen needs a Provider that depends on repositories,
+create the ChangeNotifierProvider at the navigation call-site rather than
+inside the target screen's build method.
+
+// CORRECT — Provider created where navigation happens:
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => ChangeNotifierProvider(
+      create: (_) => PersonDetailProvider(
+        personRepository: PersonRepository(),
+        meetingRepository: MeetingRepository(),
+        authService: AuthService(),
+      ),
+      child: PersonDetailScreen(person: person),
+    ),
+  ),
+);
+
+// Why this pattern:
+// - Screen stays a pure Consumer — no repository knowledge
+// - Provider is mockable in tests (wrap with mock provider in test)
+// - Consistent with MeetingDetailScreen pattern
+// - Screen has no responsibility for its own dependency construction
+
+## 20. addPostFrameCallback for Provider initialization in initState
+
+Pattern: When a screen receives its Provider from outside (call-site pattern above),
+use addPostFrameCallback to call initialize() because the Provider is not yet
+accessible during initState before the widget tree is built.
+
+// CORRECT:
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    context.read<PersonDetailProvider>().initialize(widget.person);
+  });
+}
+
+// WRONG — crashes because Provider not yet accessible:
+@override
+void initState() {
+  super.initState();
+  context.read<PersonDetailProvider>().initialize(widget.person); // throws
+}
+
+// Why addPostFrameCallback works:
+// - Executes after the first frame is built
+// - Provider is fully wired into the widget tree at that point
+// - Safe to call context.read() inside the callback
+
+## 21. WriteBatch cascade delete pattern (US-024)
+
+Pattern: When deleting an entity that is referenced in other documents,
+use WriteBatch to atomically clean up all references before deleting
+the entity itself.
+
+// In MeetingRepository:
+Future<void> removePersonFromMeetings(String userId, String personId) async {
+  final query = await _firestore
+      .collection('meetings')
+      .where('userId', isEqualTo: userId)
+      .where('participantIds', arrayContains: personId)
+      .get();
+
+  final batch = _firestore.batch();
+  for (final doc in query.docs) {
+    batch.update(doc.reference, {
+      'participantIds': FieldValue.arrayRemove([personId]),
+    });
+  }
+  await batch.commit();
+}
+
+// In PersonRepository.deletePerson — always cascade first:
+Future<void> deletePerson(String userId, String personId) async {
+  await _meetingRepository.removePersonFromMeetings(userId, personId);
+  await _firestore.collection('persons').doc(personId).delete();
+}
+
+// Why WriteBatch:
+// - Atomic — either all updates succeed or none do
+// - Single network round-trip for multiple document updates
+// - Safe for Firestore limit of 500 writes per batch (personal scale: safe)

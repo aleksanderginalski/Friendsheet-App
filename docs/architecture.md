@@ -198,7 +198,7 @@ graph TB
 |-------|-------|--------|--------|
 | 0 | Home | HomeScreen | Reserved for M7 dashboard |
 | 1 | Meetings | MeetingsListScreen | ✅ US-021 |
-| 2 | Persons | PersonsListScreen | US-024 |
+| 2 | Friends | PersonsListScreen | ✅ US-024 |
 | 3 | Activities | ActivitiesListScreen | US-026 |
 
 **IndexedStack:** All tab widgets are kept alive — `MeetingsListScreen` stream subscription stays active when switching tabs.
@@ -537,4 +537,4 @@ graph TB
 ---
 
 **End of Document - Architecture Documentation**  
-**Last Updated:** February 2026 (Full roadmap M1-M8)
+**Last Updated:** February 23, 2026 (Persons List & Detail added — US-024, US-025)

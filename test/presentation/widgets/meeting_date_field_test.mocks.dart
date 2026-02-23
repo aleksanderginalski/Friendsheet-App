@@ -92,6 +92,33 @@ class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
         ),
         returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
       ) as _i5.Future<List<_i2.Person>>);
+
+  @override
+  _i5.Future<void> updatePerson(_i2.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #updatePerson,
+          [person],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deletePerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deletePerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [ActivityRepository].
@@ -183,6 +210,59 @@ class MockMeetingRepository extends _i1.Mock implements _i7.MeetingRepository {
         ),
         returnValue: _i5.Stream<List<_i8.Meeting>>.empty(),
       ) as _i5.Stream<List<_i8.Meeting>>);
+
+  @override
+  _i5.Future<void> updateMeeting(_i8.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #updateMeeting,
+          [meeting],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deleteMeeting(String? meetingId) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteMeeting,
+          [meetingId],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<int> getMeetingsCountForPerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsCountForPerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
+
+  @override
+  _i5.Future<void> removePersonFromMeetings(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromMeetings,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
 
 /// A class which mocks [AuthService].

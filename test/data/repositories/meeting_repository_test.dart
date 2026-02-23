@@ -88,5 +88,36 @@ void main() {
       final id2 = await repository.saveMeeting(meeting);
       expect(id1, isNot(equals(id2)));
     });
+
+    group('getMeetingsCountForPerson', () {
+      test('returns correct count when person is a participant', () async {
+        await repository.saveMeeting(
+            makeMeeting(userId: 'user-1', participantIds: ['person-1']));
+        await repository.saveMeeting(makeMeeting(
+            userId: 'user-1', participantIds: ['person-1', 'person-2']));
+
+        final count =
+            await repository.getMeetingsCountForPerson('user-1', 'person-1');
+        expect(count, equals(2));
+      });
+
+      test('returns 0 when no meetings match', () async {
+        await repository.saveMeeting(
+            makeMeeting(userId: 'user-1', participantIds: ['person-2']));
+
+        final count =
+            await repository.getMeetingsCountForPerson('user-1', 'person-1');
+        expect(count, equals(0));
+      });
+
+      test('does not count meetings belonging to a different user', () async {
+        await repository.saveMeeting(
+            makeMeeting(userId: 'user-2', participantIds: ['person-1']));
+
+        final count =
+            await repository.getMeetingsCountForPerson('user-1', 'person-1');
+        expect(count, equals(0));
+      });
+    });
   });
 }
