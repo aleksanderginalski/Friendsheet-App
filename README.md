@@ -221,6 +221,22 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v2.4.0 - US-024 + US-025 Persons List & Person Detail (February 23, 2026)
+- ✅ PersonsListScreen with alphabetical list, search/filter and empty state
+- ✅ PersonListTile widget with initials avatar
+- ✅ PersonDetailScreen with meeting count, edit via dialog, delete with confirmation
+- ✅ Two-step delete warning when person has associated meetings
+- ✅ PersonsListProvider with one-time fetch and client-side filtering
+- ✅ PersonDetailProvider with meeting count query
+- ✅ PersonRepository extended: updatePerson, deletePerson (with cascade)
+- ✅ MeetingRepository extended: getMeetingsCountForPerson, removePersonFromMeetings
+- ✅ Data integrity: deleting a person removes them from all associated meetings (WriteBatch)
+- ✅ MeetingCard: warning state when participantIds is empty
+- ✅ MeetingDetailScreen: loads successfully with empty participants, shows warning banner
+- ✅ Add person directly from Friends tab via AppBar "+" button
+- ✅ Tab renamed from "Persons" to "Friends"
+- ✅ Total test count: 169 → 187 tests (+18)
+
 ### v2.3.0 - US-022 + US-023 Meeting Detail & Edit (February 23, 2026)
 - ✅ MeetingDetailScreen with full meeting data (name, date, weight, participants, activities)
 - ✅ MeetingDetailProvider with parallel fetch of persons and activities by ID

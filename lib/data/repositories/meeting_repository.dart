@@ -51,4 +51,22 @@ class MeetingRepository {
         .get();
     return snapshot.docs.length;
   }
+
+  /// Removes personId from participantIds in all meetings that contain them.
+  /// Uses a WriteBatch to apply all updates atomically.
+  Future<void> removePersonFromMeetings(String userId, String personId) async {
+    final snapshot = await _firestore
+        .collection('meetings')
+        .where('userId', isEqualTo: userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.update(doc.reference, {
+        'participantIds': FieldValue.arrayRemove([personId]),
+      });
+    }
+    await batch.commit();
+  }
 }

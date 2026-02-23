@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
@@ -8,20 +9,16 @@ import '../persons/person_detail_provider.dart';
 import '../persons/person_detail_screen.dart';
 import '../persons/person_list_tile.dart';
 import '../persons/persons_list_provider.dart';
+import '../widgets/person_autocomplete.dart';
 
 /// Displays the list of all persons for the current user with search support.
+/// PersonsListProvider is provided by MainScreen via ChangeNotifierProvider.value.
 class PersonsListScreen extends StatelessWidget {
   const PersonsListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PersonsListProvider(
-        personRepository: PersonRepository(),
-        authService: AuthService(),
-      )..initialize(),
-      child: const _PersonsListView(),
-    );
+    return const _PersonsListView();
   }
 }
 
@@ -35,6 +32,13 @@ class _PersonsListView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('MY PEOPLE'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add),
+            tooltip: 'Add person',
+            onPressed: () => _showAddPersonDialog(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -66,6 +70,47 @@ class _PersonsListView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Shows the AddPersonDialog and saves the new person to Firestore on confirm.
+  Future<void> _showAddPersonDialog(BuildContext context) async {
+    final result = await showDialog<({String firstName, String lastName})>(
+      context: context,
+      builder: (_) => const AddPersonDialog(initialFirstName: ''),
+    );
+
+    if (result == null || !context.mounted) return;
+
+    try {
+      final userId = AuthService().currentUserId!;
+      final person = Person(
+        id: '',
+        userId: userId,
+        firstName: result.firstName,
+        lastName: result.lastName.isEmpty ? null : result.lastName,
+        createdAt: DateTime.now(),
+      );
+      await PersonRepository().addPerson(person);
+
+      if (context.mounted) {
+        context.read<PersonsListProvider>().initialize();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Person added'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add person: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

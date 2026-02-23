@@ -89,10 +89,17 @@ class MockPersonRepository extends _i1.Mock implements _i3.PersonRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> deletePerson(String? personId) => (super.noSuchMethod(
+  _i4.Future<void> deletePerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #deletePerson,
-          [personId],
+          [
+            userId,
+            personId,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
