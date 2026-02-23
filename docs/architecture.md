@@ -245,6 +245,18 @@ My Custom Category (level 1, isGlobal: false, userId: uid)
 
 **Statistics implication:** Filtering by parent category includes all descendants. Query logic: load full category tree client-side, resolve descendant IDs, filter meetings.
 
+**AddMeetingProvider dual mode (US-023):**
+- Accepts optional `initialMeeting` parameter
+- Edit mode: pre-fills form, calls `updateMeeting` instead of `saveMeeting`
+- `initializeEditData()` loads full Person and Activity objects for pre-fill
+- `savedMeeting` getter returns updated Meeting after successful save
+
+**MeetingDetailScreen navigation pattern:**
+- Receives Meeting object via constructor (no additional Firestore fetch)
+- Edit: pushes AddMeetingScreen, awaits updated Meeting, re-initializes provider
+- Delete: calls deleteMeeting, pops with 'deleted' string result
+- Back: pops with current _meeting state so MeetingsListScreen stream handles refresh
+
 ---
 
 ### M3 — Statistics Architecture

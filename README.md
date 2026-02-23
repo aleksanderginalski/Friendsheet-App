@@ -221,6 +221,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v2.3.0 - US-022 + US-023 Meeting Detail & Edit (February 23, 2026)
+- ✅ MeetingDetailScreen with full meeting data (name, date, weight, participants, activities)
+- ✅ MeetingDetailProvider with parallel fetch of persons and activities by ID
+- ✅ getPersonsByIds and getActivitiesByIds added to repositories
+- ✅ Edit meeting — AddMeetingScreen dual mode (create + edit), pre-filled form
+- ✅ Delete meeting with confirmation dialog and loading state
+- ✅ Updated meeting propagated back to MeetingsListScreen on navigation
+- ✅ Total test count: 166 → 169 tests (+3)
+
 ### v2.2.0 - M2 Start, US-021 Meetings List Screen (February 21, 2026)
 - ✅ MeetingsListScreen with meetings grouped by year (expand/collapse)
 - ✅ Current and previous year expanded by default, older years collapsed
