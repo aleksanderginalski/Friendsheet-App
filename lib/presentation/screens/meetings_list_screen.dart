@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/services/auth_service.dart';
+import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
 import '../widgets/meeting_card.dart';
 
@@ -100,7 +101,15 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
                         ),
                         child: MeetingCard(
                           meeting: meeting,
-                          onTap: null, // Navigation to detail screen (US-022)
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    MeetingDetailScreen(meeting: meeting),
+                              ),
+                            );
+                          },
                         ),
                       ),
                 ],
