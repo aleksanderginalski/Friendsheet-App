@@ -41,4 +41,14 @@ class MeetingRepository {
   Future<void> deleteMeeting(String meetingId) async {
     await _firestore.collection('meetings').doc(meetingId).delete();
   }
+
+  /// Returns the number of meetings for a given user that include the given person.
+  Future<int> getMeetingsCountForPerson(String userId, String personId) async {
+    final snapshot = await _firestore
+        .collection('meetings')
+        .where('userId', isEqualTo: userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+    return snapshot.docs.length;
+  }
 }
