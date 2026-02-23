@@ -4,6 +4,7 @@ import '../../data/services/auth_service.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
+import 'persons_list_screen.dart';
 
 /// Main screen with bottom navigation, hosting all top-level tabs.
 class MainScreen extends StatefulWidget {
@@ -78,9 +79,7 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           HomeScreen(authService: widget.authService),
           const MeetingsListScreen(),
-          const Scaffold(
-            body: Center(child: Text('Persons - Coming Soon')),
-          ),
+          const PersonsListScreen(),
           const Scaffold(
             body: Center(child: Text('Activities - Coming Soon')),
           ),
