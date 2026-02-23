@@ -90,5 +90,54 @@ void main() {
         expect(result.last.firstName, equals('Zofia'));
       });
     });
+
+    group('updatePerson', () {
+      test('updates firstName in Firestore document', () async {
+        final saved = await repository.addPerson(makePerson(firstName: 'Anna'));
+        final updated = saved.copyWith(firstName: 'Maria');
+
+        await repository.updatePerson(updated);
+
+        final doc =
+            await fakeFirestore.collection('persons').doc(saved.id).get();
+        expect(doc.data()?['firstName'], equals('Maria'));
+      });
+
+      test('updates lastName in Firestore document', () async {
+        final saved =
+            await repository.addPerson(makePerson(lastName: 'Kowalska'));
+        final updated = saved.copyWith(lastName: 'Nowak');
+
+        await repository.updatePerson(updated);
+
+        final doc =
+            await fakeFirestore.collection('persons').doc(saved.id).get();
+        expect(doc.data()?['lastName'], equals('Nowak'));
+      });
+    });
+
+    group('deletePerson', () {
+      test('removes document from Firestore', () async {
+        final saved = await repository.addPerson(makePerson());
+
+        await repository.deletePerson(saved.id);
+
+        final doc =
+            await fakeFirestore.collection('persons').doc(saved.id).get();
+        expect(doc.exists, isFalse);
+      });
+
+      test('other persons are not affected by delete', () async {
+        final saved1 =
+            await repository.addPerson(makePerson(firstName: 'Anna'));
+        final saved2 = await repository.addPerson(makePerson(firstName: 'Bob'));
+
+        await repository.deletePerson(saved1.id);
+
+        final doc =
+            await fakeFirestore.collection('persons').doc(saved2.id).get();
+        expect(doc.exists, isTrue);
+      });
+    });
   });
 }

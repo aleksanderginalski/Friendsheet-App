@@ -37,4 +37,14 @@ class PersonRepository {
         .get();
     return snapshot.docs.map((doc) => Person.fromFirestore(doc)).toList();
   }
+
+  /// Updates an existing person document in Firestore.
+  Future<void> updatePerson(Person person) async {
+    await _persons.doc(person.id).update(person.toFirestore());
+  }
+
+  /// Deletes a person document from Firestore by its ID.
+  Future<void> deletePerson(String personId) async {
+    await _persons.doc(personId).delete();
+  }
 }
