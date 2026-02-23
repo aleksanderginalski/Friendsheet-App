@@ -18,8 +18,8 @@
 - lib/data/models/person.freezed.dart - Generated
 - lib/data/models/person.g.dart - Generated
 - lib/data/repositories/activity_repository.dart - ActivityRepository (Firestore CRUD for activities, global + private, getActivitiesByIds)
-- lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD for meetings — save, update, delete, stream by user)
-- lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD for persons, getPersonsByIds)
+- lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
+- lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton)
 
 ## lib/
@@ -30,13 +30,18 @@
 ## lib/presentation/
 - lib/presentation/meetings/meeting_detail_provider.dart - State for Meeting Detail screen — resolves participantIds and activityIds to full objects
 - lib/presentation/meetings/meeting_detail_screen.dart - Meeting detail screen — displays all fields, edit and delete actions (US-022, US-023)
+- lib/presentation/persons/person_detail_provider.dart - State for Person Detail screen — fetches meeting count, handles update and delete (US-025)
+- lib/presentation/persons/person_detail_screen.dart - Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation (US-025)
+- lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
+- lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode (create + edit), pre-fill, save, update
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen (stream, year grouping, expand/collapse)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen (future dashboard/statistics placeholder)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider lifecycle
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
+- lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
 - lib/presentation/widgets/activity_autocomplete.dart - Activity autocomplete widget + AddActivityDialog — returns name string, save handled by Provider (BUG-42)
 - lib/presentation/widgets/meeting_card.dart - Meeting card widget — displays name, date, participant count, weight (US-021)
 - lib/presentation/widgets/meeting_date_field.dart - Date picker widget (US-011)
@@ -49,12 +54,16 @@
 - test/data/models/meeting_test.dart - Meeting model tests (12 tests)
 - test/data/models/person_test.dart - Person model tests (11 tests)
 - test/data/repositories/activity_repository_test.dart - ActivityRepository tests (12 tests)
-- test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (7 tests)
-- test/data/repositories/person_repository_test.dart - PersonRepository tests (8 tests)
+- test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
+- test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
 
 ## test/presentation/
 - test/presentation/meetings/meeting_detail_provider_test.dart - MeetingDetailProvider tests (3 tests)
 - test/presentation/meetings/meeting_detail_provider_test.mocks.dart - Generated mocks for MeetingDetailProvider tests
+- test/presentation/persons/person_detail_provider_test.dart - PersonDetailProvider tests (US-025)
+- test/presentation/persons/person_detail_provider_test.mocks.dart - Generated mocks for PersonDetailProvider tests
+- test/presentation/persons/persons_list_provider_test.dart - PersonsListProvider tests (US-024)
+- test/presentation/persons/persons_list_provider_test.mocks.dart - Generated mocks for PersonsListProvider tests
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests (38 tests)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests (11 tests)

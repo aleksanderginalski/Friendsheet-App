@@ -80,7 +80,17 @@ Before adding new packages or files — check if .gitignore needs updating:
 - Never push with failing tests
 - Never use names: MyApp, MainApp, ExampleApp, TestApp
 - Never push directly to main — always PR
+
+## Provider Navigation Pattern
+
+When creating a Provider for a detail screen, always create it at the
+navigation call-site (in the parent screen), not inside the target screen itself.
+Use addPostFrameCallback in initState to call initialize() on the provider.
+
+See: PersonDetailScreen + PersonsListScreen as reference implementation.
 ```
+
+
 
 ---
 
