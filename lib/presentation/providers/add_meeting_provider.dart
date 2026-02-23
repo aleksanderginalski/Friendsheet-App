@@ -15,15 +15,23 @@ class AddMeetingProvider extends ChangeNotifier {
   final MeetingRepository _meetingRepository;
   final AuthService _authService;
 
+  // If provided, provider operates in edit mode
+  final Meeting? initialMeeting;
+
   AddMeetingProvider({
     PersonRepository? personRepository,
     ActivityRepository? activityRepository,
     MeetingRepository? meetingRepository,
     AuthService? authService,
+    this.initialMeeting,
   })  : _personRepository = personRepository ?? PersonRepository(),
         _activityRepository = activityRepository ?? ActivityRepository(),
         _meetingRepository = meetingRepository ?? MeetingRepository(),
-        _authService = authService ?? AuthService();
+        _authService = authService ?? AuthService() {
+    if (initialMeeting != null) {
+      _initializeFromMeeting(initialMeeting!);
+    }
+  }
 
   // --- Name & Date ---
   String _name = '';
@@ -36,18 +44,19 @@ class AddMeetingProvider extends ChangeNotifier {
 
   // --- Participants state ---
   List<Person> _availablePersons = [];
-  final List<Person> _selectedPersons = [];
+  List<Person> _selectedPersons = [];
   bool _isLoadingPersons = false;
   String? _participantsError;
 
   // --- Activities state ---
   List<Activity> _availableActivities = [];
-  final List<Activity> _selectedActivities = [];
+  List<Activity> _selectedActivities = [];
   bool _isLoadingActivities = false;
   String? _activitiesError;
 
   // --- Save state ---
   bool _isSaving = false;
+  Meeting? _savedMeeting;
 
   // --- Name & Date getters ---
   String get name => _name;
@@ -75,6 +84,10 @@ class AddMeetingProvider extends ChangeNotifier {
 
   // --- Save getters ---
   bool get isSaving => _isSaving;
+  bool get isEditMode => initialMeeting != null;
+
+  // Returns the meeting after successful save or update
+  Meeting? get savedMeeting => _savedMeeting;
 
   // --- Name & Date methods ---
   void setName(String value) {
@@ -233,7 +246,7 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-// Saves new activity to Firestore, then adds to available and selected lists
+  // Saves new activity to Firestore, then adds to available and selected lists
   Future<void> addNewActivity(String name) async {
     final userId = _authService.currentUserId;
     if (userId == null) return;
@@ -256,7 +269,7 @@ class AddMeetingProvider extends ChangeNotifier {
     return true;
   }
 
-  // Validates all fields and saves the meeting to Firestore.
+  // Validates all fields and saves or updates the meeting in Firestore.
   // Returns true on success, false if validation fails or save throws.
   Future<bool> saveMeeting() async {
     final isNameValid = validateName();
@@ -275,19 +288,36 @@ class AddMeetingProvider extends ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final meeting = Meeting(
-        id: '',
-        userId: userId,
-        name: _name,
-        date: _date,
-        weight: weight,
-        participantIds: _selectedPersons.map((p) => p.id).toList(),
-        activityIds: _selectedActivities.map((a) => a.id).toList(),
-        createdAt: now,
-        updatedAt: now,
-      );
 
-      await _meetingRepository.saveMeeting(meeting);
+      if (isEditMode) {
+        // Edit mode — update existing document
+        final updated = initialMeeting!.copyWith(
+          name: _name,
+          date: _date,
+          weight: weight,
+          participantIds: _selectedPersons.map((p) => p.id).toList(),
+          activityIds: _selectedActivities.map((a) => a.id).toList(),
+          updatedAt: now,
+        );
+        await _meetingRepository.updateMeeting(updated);
+        _savedMeeting = updated;
+      } else {
+        // Create mode — save new document
+        final meeting = Meeting(
+          id: '',
+          userId: userId,
+          name: _name,
+          date: _date,
+          weight: weight,
+          participantIds: _selectedPersons.map((p) => p.id).toList(),
+          activityIds: _selectedActivities.map((a) => a.id).toList(),
+          createdAt: now,
+          updatedAt: now,
+        );
+        await _meetingRepository.saveMeeting(meeting);
+        _savedMeeting = meeting;
+      }
+
       return true;
     } catch (e) {
       return false;
@@ -304,14 +334,49 @@ class AddMeetingProvider extends ChangeNotifier {
     _date = DateTime.now();
     _weightIndex = 2;
     _availablePersons = [];
-    _selectedPersons.clear();
+    _selectedPersons = [];
     _isLoadingPersons = false;
     _participantsError = null;
     _availableActivities = [];
-    _selectedActivities.clear();
+    _selectedActivities = [];
     _isLoadingActivities = false;
     _activitiesError = null;
     _isSaving = false;
+    _savedMeeting = null;
     notifyListeners();
+  }
+
+  // Pre-fills form fields from existing meeting data (edit mode only)
+  void _initializeFromMeeting(Meeting meeting) {
+    _name = meeting.name;
+    _date = meeting.date;
+    _weightIndex = weightValues.indexOf(meeting.weight);
+    // Falls back to default index if weight value not found in list
+    if (_weightIndex == -1) _weightIndex = 2;
+  }
+
+  // Loads full Person and Activity objects for pre-filling edit form
+  Future<void> initializeEditData() async {
+    if (initialMeeting == null) return;
+
+    _isLoadingPersons = true;
+    _isLoadingActivities = true;
+    notifyListeners();
+
+    try {
+      final results = await Future.wait([
+        _personRepository.getPersonsByIds(initialMeeting!.participantIds),
+        _activityRepository.getActivitiesByIds(initialMeeting!.activityIds),
+      ]);
+
+      _selectedPersons = List.from(results[0] as List<Person>);
+      _selectedActivities = List.from(results[1] as List<Activity>);
+    } catch (e) {
+      _participantsError = 'Failed to load meeting data';
+    } finally {
+      _isLoadingPersons = false;
+      _isLoadingActivities = false;
+      notifyListeners();
+    }
   }
 }
