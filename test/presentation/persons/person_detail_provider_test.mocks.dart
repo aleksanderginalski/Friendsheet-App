@@ -92,10 +92,17 @@ class MockPersonRepository extends _i1.Mock implements _i3.PersonRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> deletePerson(String? personId) => (super.noSuchMethod(
+  _i4.Future<void> deletePerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #deletePerson,
-          [personId],
+          [
+            userId,
+            personId,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
@@ -170,6 +177,23 @@ class MockMeetingRepository extends _i1.Mock implements _i5.MeetingRepository {
         ),
         returnValue: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
+
+  @override
+  _i4.Future<void> removePersonFromMeetings(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromMeetings,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }
 
 /// A class which mocks [AuthService].

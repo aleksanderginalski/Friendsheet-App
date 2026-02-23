@@ -88,14 +88,14 @@ void main() {
     test('deletePerson calls repository and returns true on success', () async {
       when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
           .thenAnswer((_) async => 0);
-      when(mockPersonRepository.deletePerson('p1'))
+      when(mockPersonRepository.deletePerson('u1', 'p1'))
           .thenAnswer((_) => Future<void>.value());
 
       await provider.initialize(testPerson);
       final result = await provider.deletePerson();
 
       expect(result, isTrue);
-      verify(mockPersonRepository.deletePerson('p1')).called(1);
+      verify(mockPersonRepository.deletePerson('u1', 'p1')).called(1);
     });
   });
 }

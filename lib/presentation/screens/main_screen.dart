@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../persons/persons_list_provider.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
@@ -18,6 +21,22 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final PersonsListProvider _personsListProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _personsListProvider = PersonsListProvider(
+      personRepository: PersonRepository(),
+      authService: AuthService(),
+    )..initialize();
+  }
+
+  @override
+  void dispose() {
+    _personsListProvider.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleLogout(BuildContext context) async {
     final bool? confirmed = await showDialog<bool>(
@@ -60,6 +79,13 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: _personsListProvider,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('FRIENDSHEET'),
@@ -99,7 +125,12 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex,
           selectedItemColor: const Color(0xFF4CAF50),
           type: BottomNavigationBarType.fixed,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            // Re-fetch persons every time the Friends tab becomes active so
+            // people added via AddMeetingScreen are visible immediately.
+            if (index == 2) _personsListProvider.initialize();
+            setState(() => _currentIndex = index);
+          },
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
@@ -111,7 +142,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.people),
-              label: 'Persons',
+              label: 'Friends',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.sports_tennis),

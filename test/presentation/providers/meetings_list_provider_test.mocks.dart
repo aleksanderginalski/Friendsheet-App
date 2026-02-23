@@ -94,6 +94,23 @@ class MockMeetingRepository extends _i1.Mock implements _i2.MeetingRepository {
         ),
         returnValue: _i3.Future<int>.value(0),
       ) as _i3.Future<int>);
+
+  @override
+  _i3.Future<void> removePersonFromMeetings(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromMeetings,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }
 
 /// A class which mocks [AuthService].
