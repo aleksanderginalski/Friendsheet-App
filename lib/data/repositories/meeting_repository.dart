@@ -27,4 +27,18 @@ class MeetingRepository {
         .map((snapshot) =>
             snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList());
   }
+
+  /// Updates an existing meeting document in Firestore.
+  /// Refreshes updatedAt to current timestamp.
+  Future<void> updateMeeting(Meeting meeting) async {
+    final data = meeting.toFirestore();
+    data['updatedAt'] = FieldValue.serverTimestamp();
+
+    await _firestore.collection('meetings').doc(meeting.id).update(data);
+  }
+
+  /// Deletes a meeting document from Firestore by its ID.
+  Future<void> deleteMeeting(String meetingId) async {
+    await _firestore.collection('meetings').doc(meetingId).delete();
+  }
 }

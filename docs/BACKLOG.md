@@ -794,21 +794,22 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5  
 **Priority:** P0
+**Status:** ✅ COMPLETED (February 23, 2026)
 
 **Acceptance Criteria:**
-- [ ] Screen displays all meeting fields (name, date, weight, participants, activities)
-- [ ] Participants shown as list with full names
-- [ ] Activities shown as list with category context
-- [ ] Edit button navigates to Edit Meeting screen
-- [ ] Delete button with confirmation dialog
-- [ ] Back navigation to Meetings List
+- [x] Screen displays all meeting fields (name, date, weight, participants, activities)
+- [x] Participants shown as list with full names
+- [x] Activities shown as list with category context
+- [x] Edit button navigates to Edit Meeting screen
+- [x] Delete button with confirmation dialog
+- [x] Back navigation to Meetings List
 
 **Tasks:**
-- [ ] **TASK-109:** Create MeetingDetailScreen - 2h
-- [ ] **TASK-110:** Resolve participant names from IDs - 1h
-- [ ] **TASK-111:** Resolve activity names from IDs - 1h
-- [ ] **TASK-112:** Implement delete with confirmation - 1h
-- [ ] **TASK-113:** Write tests - 1h
+- [x] **TASK-109:** Create MeetingDetailScreen - 2h
+- [x] **TASK-110:** Resolve participant names from IDs - 1h
+- [x] **TASK-111:** Resolve activity names from IDs - 1h
+- [x] **TASK-112:** Implement delete with confirmation - 1h
+- [x] **TASK-113:** Write tests - 1h
 
 ---
 
@@ -820,20 +821,20 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 8  
 **Priority:** P0
-
+**Status:** ✅ COMPLETED (February 23, 2026)
 **Acceptance Criteria:**
-- [ ] Edit screen pre-populated with existing meeting data
-- [ ] All fields editable (name, date, weight, participants, activities)
-- [ ] Save updates the existing document in Firestore (updatedAt refreshed)
-- [ ] Cancel returns to detail screen without changes
-- [ ] Validation same as Add Meeting screen
-- [ ] Success/error feedback shown
+- [x] Edit screen pre-populated with existing meeting data
+- [x] All fields editable (name, date, weight, participants, activities)
+- [x] Save updates the existing document in Firestore (updatedAt refreshed)
+- [x] Cancel returns to detail screen without changes
+- [x] Validation same as Add Meeting screen
+- [x] Success/error feedback shown
 
 **Tasks:**
-- [ ] **TASK-114:** Reuse AddMeetingScreen as EditMeetingScreen with initial data - 2h
-- [ ] **TASK-115:** Add updateMeeting method to MeetingRepository - 1h
-- [ ] **TASK-116:** Update provider to handle edit mode - 2h
-- [ ] **TASK-117:** Write tests - 1h
+- [x] **TASK-114:** Reuse AddMeetingScreen as EditMeetingScreen with initial data - 2h
+- [x] **TASK-115:** Add updateMeeting method to MeetingRepository - 1h
+- [x] **TASK-116:** Update provider to handle edit mode - 2h
+- [x] **TASK-117:** Write tests - 1h
 
 ---
 
