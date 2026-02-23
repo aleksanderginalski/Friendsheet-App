@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
 import '../../data/repositories/activity_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../screens/add_meeting_screen.dart';
 import 'meeting_detail_provider.dart';
@@ -233,13 +234,31 @@ class _EditButton extends StatelessWidget {
   }
 }
 
-class _DeleteButton extends StatelessWidget {
+class _DeleteButton extends StatefulWidget {
   final Meeting meeting;
 
   const _DeleteButton({required this.meeting});
 
   @override
+  State<_DeleteButton> createState() => _DeleteButtonState();
+}
+
+class _DeleteButtonState extends State<_DeleteButton> {
+  bool _isDeleting = false;
+
+  @override
   Widget build(BuildContext context) {
+    if (_isDeleting) {
+      return const Padding(
+        padding: EdgeInsets.all(12),
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
     return IconButton(
       icon: const Icon(Icons.delete_outline),
       onPressed: () => _confirmDelete(context),
@@ -269,8 +288,21 @@ class _DeleteButton extends StatelessWidget {
 
     if (confirmed != true) return;
 
-    // Delete logic — uses MeetingRepository via provider (US-023 scope)
-    // For now navigates back
-    if (context.mounted) Navigator.of(context).pop();
+    setState(() => _isDeleting = true);
+
+    try {
+      await MeetingRepository().deleteMeeting(widget.meeting.id);
+      if (context.mounted) Navigator.of(context).pop('deleted');
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete meeting. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
   }
 }

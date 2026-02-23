@@ -36,4 +36,9 @@ class MeetingRepository {
 
     await _firestore.collection('meetings').doc(meeting.id).update(data);
   }
+
+  /// Deletes a meeting document from Firestore by its ID.
+  Future<void> deleteMeeting(String meetingId) async {
+    await _firestore.collection('meetings').doc(meetingId).delete();
+  }
 }
