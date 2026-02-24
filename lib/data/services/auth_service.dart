@@ -1,6 +1,8 @@
 // lib/data/services/auth_service.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// Authentication service handling Google Sign-In with Firebase
@@ -11,13 +13,23 @@ class AuthService {
   factory AuthService() {
     return _instance;
   }
-  AuthService._internal();
+  AuthService._internal() {
+    _firestore = FirebaseFirestore.instance;
+    _auth = FirebaseAuth.instance;
+    _googleSignIn = GoogleSignIn();
+  }
 
-  // Firebase Authentication instance
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Named constructor for testing: injects a fake Firestore instance.
+  // _auth and _googleSignIn are intentionally left uninitialized — only
+  // Firestore-related methods are tested via this constructor.
+  @visibleForTesting
+  AuthService.withFirestore(FirebaseFirestore firestore) {
+    _firestore = firestore;
+  }
 
-  // Google Sign-In instance
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  late final FirebaseFirestore _firestore;
+  late final FirebaseAuth _auth;
+  late final GoogleSignIn _googleSignIn;
 
   /// Get current authenticated user
   User? get currentUser => _auth.currentUser;
@@ -62,9 +74,14 @@ class AuthService {
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
-      // Return the authenticated user
+      final user = userCredential.user;
+      if (user != null) {
+        // Step 5: Ensure the user has their private category library.
+        // Copies global categories on first login; no-op on subsequent logins.
+        await _copyGlobalCategoriesToUser(user.uid);
+      }
 
-      return userCredential.user;
+      return user;
     } catch (e) {
       return null;
     }
@@ -83,4 +100,71 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Copies all global categories to the user's private collection on first login.
+  // Returns early if the user already has private categories (idempotent guard).
+  // parentCategoryId values are remapped to point to the new user-copy IDs.
+  Future<void> _copyGlobalCategoriesToUser(String userId) async {
+    // 1. Check if the user already has private categories.
+    final existing = await _firestore
+        .collection('activity_categories')
+        .where('isGlobal', isEqualTo: false)
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      // Already copied — nothing to do.
+      return;
+    }
+
+    // 2. Fetch all global categories.
+    final globalSnapshot = await _firestore
+        .collection('activity_categories')
+        .where('isGlobal', isEqualTo: true)
+        .get();
+
+    if (globalSnapshot.docs.isEmpty) return;
+
+    // 3. Pre-create document references to get new IDs before the batch write.
+    final newRefs = List.generate(
+      globalSnapshot.docs.length,
+      (_) => _firestore.collection('activity_categories').doc(),
+    );
+
+    // Build mapping: globalId → newId for parentCategoryId remapping.
+    final globalToNewId = <String, String>{};
+    for (var i = 0; i < globalSnapshot.docs.length; i++) {
+      globalToNewId[globalSnapshot.docs[i].id] = newRefs[i].id;
+    }
+
+    // 4. Batch write user copies with remapped parentCategoryIds.
+    final batch = _firestore.batch();
+    for (var i = 0; i < globalSnapshot.docs.length; i++) {
+      final globalDoc = globalSnapshot.docs[i];
+      final globalData = globalDoc.data();
+
+      final globalParentId = globalData['parentCategoryId'] as String?;
+      final newParentId =
+          globalParentId != null ? globalToNewId[globalParentId] : null;
+
+      batch.set(newRefs[i], {
+        'userId': userId,
+        'name': globalData['name'],
+        'iconIdentifier': globalData['iconIdentifier'] ?? '',
+        'isGlobal': false,
+        'isSelectableAsActivity': globalData['isSelectableAsActivity'] ?? false,
+        'parentCategoryId': newParentId,
+        'copiedFromId': globalDoc.id,
+        'createdAt': Timestamp.fromDate(DateTime.now()),
+      });
+    }
+
+    await batch.commit();
+  }
+
+  // Exposed for unit-testing the guard logic without triggering Google Sign-In.
+  @visibleForTesting
+  Future<void> copyGlobalCategoriesToUserForTest(String userId) =>
+      _copyGlobalCategoriesToUser(userId);
 }

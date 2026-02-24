@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
@@ -12,17 +13,24 @@ import 'package:provider/provider.dart';
 
 import 'meeting_date_field_test.mocks.dart';
 
-@GenerateMocks(
-    [PersonRepository, ActivityRepository, MeetingRepository, AuthService])
+@GenerateMocks([
+  PersonRepository,
+  ActivityRepository,
+  ActivityCategoryRepository,
+  MeetingRepository,
+  AuthService,
+])
 void main() {
   late MockPersonRepository mockRepository;
   late MockActivityRepository mockActivityRepository;
+  late MockActivityCategoryRepository mockCategoryRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
 
   setUp(() {
     mockRepository = MockPersonRepository();
     mockActivityRepository = MockActivityRepository();
+    mockCategoryRepository = MockActivityCategoryRepository();
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
   });
@@ -34,6 +42,7 @@ void main() {
           create: (_) => AddMeetingProvider(
             personRepository: mockRepository,
             activityRepository: mockActivityRepository,
+            categoryRepository: mockCategoryRepository,
             meetingRepository: mockMeetingRepository,
             authService: mockAuthService,
           ),

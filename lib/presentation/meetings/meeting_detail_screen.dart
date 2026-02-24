@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
+import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/activity_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
@@ -41,6 +42,7 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
       create: (_) => MeetingDetailProvider(
         personRepository: PersonRepository(),
         activityRepository: ActivityRepository(),
+        categoryRepository: ActivityCategoryRepository(),
       )..initialize(_meeting),
       child: Scaffold(
         appBar: AppBar(

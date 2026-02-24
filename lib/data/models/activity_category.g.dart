@@ -18,6 +18,8 @@ _$ActivityCategoryImpl _$$ActivityCategoryImplFromJson(
           name: $checkedConvert('name', (v) => v as String),
           iconIdentifier: $checkedConvert('iconIdentifier', (v) => v as String),
           isGlobal: $checkedConvert('isGlobal', (v) => v as bool),
+          isSelectableAsActivity:
+              $checkedConvert('isSelectableAsActivity', (v) => v as bool),
           parentCategoryId:
               $checkedConvert('parentCategoryId', (v) => v as String?),
           createdAt:
@@ -35,6 +37,7 @@ Map<String, dynamic> _$$ActivityCategoryImplToJson(
       'name': instance.name,
       'iconIdentifier': instance.iconIdentifier,
       'isGlobal': instance.isGlobal,
+      'isSelectableAsActivity': instance.isSelectableAsActivity,
       'parentCategoryId': instance.parentCategoryId,
       'createdAt': instance.createdAt.toIso8601String(),
     };

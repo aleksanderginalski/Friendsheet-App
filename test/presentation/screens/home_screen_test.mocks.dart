@@ -55,4 +55,15 @@ class MockAuthService extends _i1.Mock implements _i2.AuthService {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> copyGlobalCategoriesToUserForTest(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #copyGlobalCategoriesToUserForTest,
+          [userId],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }
