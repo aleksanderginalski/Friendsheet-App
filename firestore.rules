@@ -28,5 +28,14 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
       allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
+
+    match /users/{userId}/activity_categories/{categoryId} {
+      allow read: if isAuthenticated() &&
+                    (resource.data.isGlobal == true || isOwner(resource.data.userId));
+      allow create, update: if isAuthenticated() &&
+                               request.resource.data.isGlobal == false &&
+                               isOwner(request.resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
   }
 }
