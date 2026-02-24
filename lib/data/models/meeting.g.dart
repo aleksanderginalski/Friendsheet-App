@@ -21,6 +21,11 @@ _$MeetingImpl _$$MeetingImplFromJson(Map<String, dynamic> json) =>
               (v) => (v as List<dynamic>).map((e) => e as String).toList()),
           activityIds: $checkedConvert('activityIds',
               (v) => (v as List<dynamic>).map((e) => e as String).toList()),
+          categoryIds: $checkedConvert(
+              'categoryIds',
+              (v) =>
+                  (v as List<dynamic>?)?.map((e) => e as String).toList() ??
+                  const []),
           createdAt:
               $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
           updatedAt:
@@ -39,6 +44,7 @@ Map<String, dynamic> _$$MeetingImplToJson(_$MeetingImpl instance) =>
       'weight': instance.weight,
       'participantIds': instance.participantIds,
       'activityIds': instance.activityIds,
+      'categoryIds': instance.categoryIds,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };
