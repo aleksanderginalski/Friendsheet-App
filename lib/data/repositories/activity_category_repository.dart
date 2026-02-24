@@ -1,0 +1,66 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../models/activity_category.dart';
+
+class ActivityCategoryRepository {
+  final FirebaseFirestore _firestore;
+
+  ActivityCategoryRepository({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  CollectionReference _categoriesRef(String userId) => _firestore
+      .collection('users')
+      .doc(userId)
+      .collection('activity_categories');
+
+  // Returns a live stream of all activity categories for the given user.
+  Stream<List<ActivityCategory>> getCategories(String userId) {
+    return _categoriesRef(userId).snapshots().map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ActivityCategory.fromFirestore(doc))
+              .toList(),
+        );
+  }
+
+  // Adds a new category. Throws if adding would exceed the 2-level depth limit.
+  Future<void> addCategory(ActivityCategory category) async {
+    await _validateDepth(category.userId, category);
+    await _categoriesRef(category.userId).add(category.toFirestore());
+  }
+
+  // Updates an existing category. Throws if the new parent would exceed depth 2.
+  Future<void> updateCategory(ActivityCategory category) async {
+    await _validateDepth(category.userId, category);
+    await _categoriesRef(category.userId)
+        .doc(category.id)
+        .update(category.toFirestore());
+  }
+
+  // Deletes the category document for the given user and categoryId.
+  Future<void> deleteCategory(String userId, String categoryId) async {
+    await _categoriesRef(userId).doc(categoryId).delete();
+  }
+
+  // Validates that the category does not exceed 2 levels of hierarchy.
+  // Depth 1: parentCategoryId == null (root).
+  // Depth 2: parent is a root category (parent.parentCategoryId == null).
+  // Depth 3+: not allowed — throws Exception.
+  Future<void> _validateDepth(String userId, ActivityCategory category) async {
+    if (category.parentCategoryId == null) {
+      // Root category — always valid.
+      return;
+    }
+
+    final parentDoc =
+        await _categoriesRef(userId).doc(category.parentCategoryId).get();
+    if (!parentDoc.exists) {
+      throw Exception('Parent category not found');
+    }
+
+    final parentData = parentDoc.data() as Map<String, dynamic>;
+    if (parentData['parentCategoryId'] != null) {
+      // Parent is already a subcategory — adding a child would be depth 3.
+      throw Exception('Max category depth exceeded');
+    }
+  }
+}

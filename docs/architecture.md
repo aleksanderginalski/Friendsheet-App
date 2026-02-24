@@ -226,37 +226,25 @@ Zaktualizuj też ostatnią linię `architecture.md`:
 
 ### M2 — Activity Category Hierarchy
 
-Activity categories support up to 3 levels of nesting via `parentCategoryId`:
-
+Activity categories support up to **2 levels** of nesting via `parentCategoryId`.
+Users start with a copy of global categories (seeded during onboarding — US-020).
+After onboarding, users see and manage only their own private categories.
 ```
-Sport (level 1, isGlobal: true)
-├── Kayaking (level 2, isGlobal: true)
-└── Tennis (level 2, isGlobal: true)
+Sport (level 1, isGlobal: false, userId: uid)
+└── Tennis (level 2, isGlobal: false, userId: uid)
 
-Food & Drinks (level 1, isGlobal: true)
-├── Restaurant (level 2, isGlobal: true)
-└── Home Cooking (level 2, isGlobal: true)
-
-My Custom Category (level 1, isGlobal: false, userId: uid)
-└── My Subcategory (level 2, isGlobal: false, userId: uid)
+Food & Drinks (level 1, isGlobal: false, userId: uid)
+└── Restaurant (level 2, isGlobal: false, userId: uid)
 ```
 
-**Icon System:** Icons stored as string identifiers (e.g. `"sports_tennis"`, `"kayaking"`) referencing Material Icons. Predefined set of ~50 icons. No image uploads — identifier resolved to widget at render time.
+**Firestore path:** `users/{userId}/activity_categories` (subcollection)
+Depth validation enforced in `ActivityCategoryRepository._validateDepth()`.
+
+**Icon System:** Icons stored as string identifiers (e.g. `"sports_tennis"`, `"restaurant"`) referencing Material Icons. Predefined set of ~50 icons. No image uploads — identifier resolved to widget at render time.
 
 **Statistics implication:** Filtering by parent category includes all descendants. Query logic: load full category tree client-side, resolve descendant IDs, filter meetings.
 
-**AddMeetingProvider dual mode (US-023):**
-- Accepts optional `initialMeeting` parameter
-- Edit mode: pre-fills form, calls `updateMeeting` instead of `saveMeeting`
-- `initializeEditData()` loads full Person and Activity objects for pre-fill
-- `savedMeeting` getter returns updated Meeting after successful save
-
-**MeetingDetailScreen navigation pattern:**
-- Receives Meeting object via constructor (no additional Firestore fetch)
-- Edit: pushes AddMeetingScreen, awaits updated Meeting, re-initializes provider
-- Delete: calls deleteMeeting, pops with 'deleted' string result
-- Back: pops with current _meeting state so MeetingsListScreen stream handles refresh
-
+**Onboarding copy logic:** On first login, all global categories are batch-copied to user's subcollection (US-020). Global categories are invisible to the user after onboarding.
 ---
 
 ### M3 — Statistics Architecture
@@ -372,7 +360,7 @@ graph LR
         B[meetings/]
         C[persons/]
         D[activities/]
-        E[activity_categories/]
+        E[activity_categories/] → E[users/{userId}/activity_categories/]
         F[invitation_codes/ - M5]
     end
     
@@ -386,7 +374,7 @@ graph LR
     B1 -.->|references| C1
     B1 -.->|references| D1
     D1 -.->|references| E1
-    E1 -.->|"self-reference (max 3 levels)"| E1
+    E1 -.->|"self-reference (max 2 levels)"| E1
 ```
 
 **Global vs Private data pattern:**
@@ -537,4 +525,5 @@ graph TB
 ---
 
 **End of Document - Architecture Documentation**  
-**Last Updated:** February 23, 2026 (Persons List & Detail added — US-024, US-025)
+**Last Updated:** February 24, 2026 (Activity Categories model and repository — US-019)
+

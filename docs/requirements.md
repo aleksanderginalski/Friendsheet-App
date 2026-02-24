@@ -450,7 +450,9 @@ User can ask natural language questions about their social data.
 - name: string
 - iconIdentifier: string (references predefined icon set)
 - isGlobal: bool
-- parentCategoryId: string? (optional, max 3 levels deep)
+- parentCategoryId: string? (optional, max 2 levels deep)
+- Firestore path: users/{userId}/activity_categories (subcollection per user)
+- Onboarding: global categories batch-copied to user on first login (US-020)
 - createdAt: DateTime
 ```
 
