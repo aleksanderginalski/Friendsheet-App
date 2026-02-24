@@ -37,5 +37,18 @@ service cloud.firestore {
                                isOwner(request.resource.data.userId);
       allow delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
+
+    match /activity_categories/{categoryId} {
+      // Global categories: readable by all authenticated users.
+      allow read: if isAuthenticated() && resource.data.isGlobal == true;
+
+      // User's private copy: full access by owner.
+      allow read, write: if isAuthenticated() && isOwner(resource.data.userId);
+
+      // Batch write on first login: create only, userId must match auth.
+      allow create: if isAuthenticated() &&
+                       request.resource.data.isGlobal == false &&
+                       isOwner(request.resource.data.userId);
+    }
   }
 }

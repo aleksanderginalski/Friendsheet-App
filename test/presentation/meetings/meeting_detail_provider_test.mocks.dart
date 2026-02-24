@@ -6,7 +6,10 @@
 import 'dart:async' as _i5;
 
 import 'package:friendsheet/data/models/activity.dart' as _i3;
+import 'package:friendsheet/data/models/activity_category.dart' as _i8;
 import 'package:friendsheet/data/models/person.dart' as _i2;
+import 'package:friendsheet/data/repositories/activity_category_repository.dart'
+    as _i7;
 import 'package:friendsheet/data/repositories/activity_repository.dart' as _i6;
 import 'package:friendsheet/data/repositories/person_repository.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
@@ -171,4 +174,108 @@ class MockActivityRepository extends _i1.Mock
         ),
         returnValue: _i5.Future<List<_i3.Activity>>.value(<_i3.Activity>[]),
       ) as _i5.Future<List<_i3.Activity>>);
+}
+
+/// A class which mocks [ActivityCategoryRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockActivityCategoryRepository extends _i1.Mock
+    implements _i7.ActivityCategoryRepository {
+  MockActivityCategoryRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Stream<List<_i8.ActivityCategory>> getCategories(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCategories,
+          [userId],
+        ),
+        returnValue: _i5.Stream<List<_i8.ActivityCategory>>.empty(),
+      ) as _i5.Stream<List<_i8.ActivityCategory>>);
+
+  @override
+  _i5.Future<void> addCategory(_i8.ActivityCategory? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addCategory,
+          [category],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateCategory(_i8.ActivityCategory? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCategory,
+          [category],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deleteCategory(
+    String? userId,
+    String? categoryId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteCategory,
+          [
+            userId,
+            categoryId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<_i8.ActivityCategory>> getSelectableCategories(
+          String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSelectableCategories,
+          [userId],
+        ),
+        returnValue: _i5.Future<List<_i8.ActivityCategory>>.value(
+            <_i8.ActivityCategory>[]),
+      ) as _i5.Future<List<_i8.ActivityCategory>>);
+
+  @override
+  _i5.Future<List<String>> getAncestorIds(
+    String? categoryId,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAncestorIds,
+          [
+            categoryId,
+            userId,
+          ],
+        ),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
+
+  @override
+  _i5.Future<List<_i8.ActivityCategory>> getCategoriesByIds(
+    List<String>? ids,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCategoriesByIds,
+          [
+            ids,
+            userId,
+          ],
+        ),
+        returnValue: _i5.Future<List<_i8.ActivityCategory>>.value(
+            <_i8.ActivityCategory>[]),
+      ) as _i5.Future<List<_i8.ActivityCategory>>);
 }

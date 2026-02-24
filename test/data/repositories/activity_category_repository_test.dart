@@ -15,6 +15,7 @@ void main() {
     String id = '',
     String name = 'Sport',
     String? parentCategoryId,
+    bool isSelectableAsActivity = false,
   }) {
     return ActivityCategory(
       id: id,
@@ -22,6 +23,7 @@ void main() {
       name: name,
       iconIdentifier: 'sport_icon',
       isGlobal: false,
+      isSelectableAsActivity: isSelectableAsActivity,
       parentCategoryId: parentCategoryId,
       createdAt: DateTime(2026, 2, 24),
     );
@@ -32,25 +34,30 @@ void main() {
     repository = ActivityCategoryRepository(firestore: fakeFirestore);
   });
 
-  // Returns the Firestore collection reference used by the repository.
+  // Returns the Firestore subcollection reference used by legacy methods.
   CollectionReference categoriesRef() => fakeFirestore
       .collection('users')
       .doc(userId)
       .collection('activity_categories');
 
-  // Seeds a root category directly in fake Firestore and returns its ID.
+  // Returns the top-level collection used by the global library methods.
+  CollectionReference globalLibraryRef() =>
+      fakeFirestore.collection('activity_categories');
+
+  // Seeds a root category in the subcollection and returns its ID.
   Future<String> seedRootCategory({String name = 'Root'}) async {
     final ref = await categoriesRef().add({
       'userId': userId,
       'name': name,
       'iconIdentifier': 'icon',
       'isGlobal': false,
+      'isSelectableAsActivity': false,
       'createdAt': Timestamp.now(),
     });
     return ref.id;
   }
 
-  // Seeds a subcategory (depth 2) directly in fake Firestore and returns its ID.
+  // Seeds a subcategory in the subcollection and returns its ID.
   Future<String> seedSubCategory(
     String parentId, {
     String name = 'Sub',
@@ -60,9 +67,33 @@ void main() {
       'name': name,
       'iconIdentifier': 'icon',
       'isGlobal': false,
+      'isSelectableAsActivity': false,
       'parentCategoryId': parentId,
       'createdAt': Timestamp.now(),
     });
+    return ref.id;
+  }
+
+  // Seeds a category in the top-level collection (global library) and returns its ID.
+  Future<String> seedGlobalLibraryCategory({
+    required String name,
+    required bool isSelectable,
+    String? parentCategoryId,
+    bool isGlobal = false,
+    String? specificUserId,
+  }) async {
+    final data = <String, dynamic>{
+      'userId': specificUserId ?? userId,
+      'name': name,
+      'iconIdentifier': 'icon',
+      'isGlobal': isGlobal,
+      'isSelectableAsActivity': isSelectable,
+      'createdAt': Timestamp.now(),
+    };
+    if (parentCategoryId != null) {
+      data['parentCategoryId'] = parentCategoryId;
+    }
+    final ref = await globalLibraryRef().add(data);
     return ref.id;
   }
 
@@ -189,6 +220,121 @@ void main() {
         await seedRootCategory(name: 'Dance');
         final result = await stream.first;
         expect(result.length, equals(1));
+      });
+    });
+
+    group('getSelectableCategories', () {
+      test('returns empty list when no categories exist', () async {
+        final result = await repository.getSelectableCategories(userId);
+        expect(result, isEmpty);
+      });
+
+      test('returns only selectable private categories for the user', () async {
+        await seedGlobalLibraryCategory(name: 'Gory', isSelectable: true);
+        await seedGlobalLibraryCategory(name: 'Sport', isSelectable: false);
+        await seedGlobalLibraryCategory(
+          name: 'OtherUser',
+          isSelectable: true,
+          specificUserId: 'other-user',
+        );
+
+        final result = await repository.getSelectableCategories(userId);
+
+        expect(result.length, equals(1));
+        expect(result.first.name, equals('Gory'));
+      });
+
+      test('excludes global categories (isGlobal: true)', () async {
+        await seedGlobalLibraryCategory(
+          name: 'Global',
+          isSelectable: true,
+          isGlobal: true,
+        );
+        await seedGlobalLibraryCategory(name: 'Private', isSelectable: true);
+
+        final result = await repository.getSelectableCategories(userId);
+
+        expect(result.length, equals(1));
+        expect(result.first.name, equals('Private'));
+      });
+
+      test('returned items are ActivityCategory instances', () async {
+        await seedGlobalLibraryCategory(name: 'Running', isSelectable: true);
+
+        final result = await repository.getSelectableCategories(userId);
+
+        expect(result.first, isA<ActivityCategory>());
+        expect(result.first.isSelectableAsActivity, isTrue);
+      });
+    });
+
+    group('getAncestorIds', () {
+      test('returns only the category itself when it has no parent', () async {
+        final rootId = await seedGlobalLibraryCategory(
+          name: 'Sport',
+          isSelectable: false,
+        );
+
+        final result = await repository.getAncestorIds(rootId, userId);
+
+        expect(result, equals([rootId]));
+      });
+
+      test('returns leaf and parent IDs for depth-2 category', () async {
+        final parentId = await seedGlobalLibraryCategory(
+          name: 'Sport',
+          isSelectable: false,
+        );
+        final leafId = await seedGlobalLibraryCategory(
+          name: 'Running',
+          isSelectable: true,
+          parentCategoryId: parentId,
+        );
+
+        final result = await repository.getAncestorIds(leafId, userId);
+
+        expect(result.length, equals(2));
+        expect(result, containsAll([leafId, parentId]));
+        expect(result.first, equals(leafId));
+      });
+
+      test('stops traversal when category belongs to different user', () async {
+        final otherParentId = await seedGlobalLibraryCategory(
+          name: 'OtherParent',
+          isSelectable: false,
+          specificUserId: 'other-user',
+        );
+        final leafId = await seedGlobalLibraryCategory(
+          name: 'Leaf',
+          isSelectable: true,
+          parentCategoryId: otherParentId,
+        );
+
+        final result = await repository.getAncestorIds(leafId, userId);
+
+        // Stops at leafId because its parent belongs to a different user.
+        expect(result, equals([leafId]));
+      });
+
+      test('returns at most 3 IDs (max depth guard)', () async {
+        final a = await seedGlobalLibraryCategory(
+          name: 'A',
+          isSelectable: false,
+        );
+        final b = await seedGlobalLibraryCategory(
+          name: 'B',
+          isSelectable: false,
+          parentCategoryId: a,
+        );
+        final c = await seedGlobalLibraryCategory(
+          name: 'C',
+          isSelectable: true,
+          parentCategoryId: b,
+        );
+
+        final result = await repository.getAncestorIds(c, userId);
+
+        expect(result.length, lessThanOrEqualTo(3));
       });
     });
   });

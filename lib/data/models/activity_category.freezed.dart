@@ -25,6 +25,7 @@ mixin _$ActivityCategory {
   String get name => throw _privateConstructorUsedError;
   String get iconIdentifier => throw _privateConstructorUsedError;
   bool get isGlobal => throw _privateConstructorUsedError;
+  bool get isSelectableAsActivity => throw _privateConstructorUsedError;
   String? get parentCategoryId => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -50,6 +51,7 @@ abstract class $ActivityCategoryCopyWith<$Res> {
       String name,
       String iconIdentifier,
       bool isGlobal,
+      bool isSelectableAsActivity,
       String? parentCategoryId,
       DateTime createdAt});
 }
@@ -74,6 +76,7 @@ class _$ActivityCategoryCopyWithImpl<$Res, $Val extends ActivityCategory>
     Object? name = null,
     Object? iconIdentifier = null,
     Object? isGlobal = null,
+    Object? isSelectableAsActivity = null,
     Object? parentCategoryId = freezed,
     Object? createdAt = null,
   }) {
@@ -97,6 +100,10 @@ class _$ActivityCategoryCopyWithImpl<$Res, $Val extends ActivityCategory>
       isGlobal: null == isGlobal
           ? _value.isGlobal
           : isGlobal // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSelectableAsActivity: null == isSelectableAsActivity
+          ? _value.isSelectableAsActivity
+          : isSelectableAsActivity // ignore: cast_nullable_to_non_nullable
               as bool,
       parentCategoryId: freezed == parentCategoryId
           ? _value.parentCategoryId
@@ -124,6 +131,7 @@ abstract class _$$ActivityCategoryImplCopyWith<$Res>
       String name,
       String iconIdentifier,
       bool isGlobal,
+      bool isSelectableAsActivity,
       String? parentCategoryId,
       DateTime createdAt});
 }
@@ -146,6 +154,7 @@ class __$$ActivityCategoryImplCopyWithImpl<$Res>
     Object? name = null,
     Object? iconIdentifier = null,
     Object? isGlobal = null,
+    Object? isSelectableAsActivity = null,
     Object? parentCategoryId = freezed,
     Object? createdAt = null,
   }) {
@@ -170,6 +179,10 @@ class __$$ActivityCategoryImplCopyWithImpl<$Res>
           ? _value.isGlobal
           : isGlobal // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSelectableAsActivity: null == isSelectableAsActivity
+          ? _value.isSelectableAsActivity
+          : isSelectableAsActivity // ignore: cast_nullable_to_non_nullable
+              as bool,
       parentCategoryId: freezed == parentCategoryId
           ? _value.parentCategoryId
           : parentCategoryId // ignore: cast_nullable_to_non_nullable
@@ -191,6 +204,7 @@ class _$ActivityCategoryImpl extends _ActivityCategory {
       required this.name,
       required this.iconIdentifier,
       required this.isGlobal,
+      required this.isSelectableAsActivity,
       this.parentCategoryId,
       required this.createdAt})
       : super._();
@@ -209,13 +223,15 @@ class _$ActivityCategoryImpl extends _ActivityCategory {
   @override
   final bool isGlobal;
   @override
+  final bool isSelectableAsActivity;
+  @override
   final String? parentCategoryId;
   @override
   final DateTime createdAt;
 
   @override
   String toString() {
-    return 'ActivityCategory(id: $id, userId: $userId, name: $name, iconIdentifier: $iconIdentifier, isGlobal: $isGlobal, parentCategoryId: $parentCategoryId, createdAt: $createdAt)';
+    return 'ActivityCategory(id: $id, userId: $userId, name: $name, iconIdentifier: $iconIdentifier, isGlobal: $isGlobal, isSelectableAsActivity: $isSelectableAsActivity, parentCategoryId: $parentCategoryId, createdAt: $createdAt)';
   }
 
   @override
@@ -230,6 +246,8 @@ class _$ActivityCategoryImpl extends _ActivityCategory {
                 other.iconIdentifier == iconIdentifier) &&
             (identical(other.isGlobal, isGlobal) ||
                 other.isGlobal == isGlobal) &&
+            (identical(other.isSelectableAsActivity, isSelectableAsActivity) ||
+                other.isSelectableAsActivity == isSelectableAsActivity) &&
             (identical(other.parentCategoryId, parentCategoryId) ||
                 other.parentCategoryId == parentCategoryId) &&
             (identical(other.createdAt, createdAt) ||
@@ -239,7 +257,7 @@ class _$ActivityCategoryImpl extends _ActivityCategory {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, userId, name, iconIdentifier,
-      isGlobal, parentCategoryId, createdAt);
+      isGlobal, isSelectableAsActivity, parentCategoryId, createdAt);
 
   /// Create a copy of ActivityCategory
   /// with the given fields replaced by the non-null parameter values.
@@ -265,6 +283,7 @@ abstract class _ActivityCategory extends ActivityCategory {
       required final String name,
       required final String iconIdentifier,
       required final bool isGlobal,
+      required final bool isSelectableAsActivity,
       final String? parentCategoryId,
       required final DateTime createdAt}) = _$ActivityCategoryImpl;
   const _ActivityCategory._() : super._();
@@ -282,6 +301,8 @@ abstract class _ActivityCategory extends ActivityCategory {
   String get iconIdentifier;
   @override
   bool get isGlobal;
+  @override
+  bool get isSelectableAsActivity;
   @override
   String? get parentCategoryId;
   @override

@@ -1,0 +1,210 @@
+[
+    {
+        "id": "cat_sport",
+        "name": "Sport",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "directions_run"
+    },
+    {
+        "id": "cat_gory",
+        "name": "Góry",
+        "parentCategoryId": "cat_sport",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "landscape"
+    },
+    {
+        "id": "cat_rowery",
+        "name": "Rowery",
+        "parentCategoryId": "cat_sport",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "directions_bike"
+    },
+    {
+        "id": "cat_silownia",
+        "name": "Siłownia",
+        "parentCategoryId": "cat_sport",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "fitness_center"
+    },
+    {
+        "id": "cat_narty",
+        "name": "Narty",
+        "parentCategoryId": "cat_sport",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "downhill_skiing"
+    },
+    {
+        "id": "cat_szkola",
+        "name": "Szkoła",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "school"
+    },
+    {
+        "id": "cat_podroze",
+        "name": "Podróże",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "flight"
+    },
+    {
+        "id": "cat_kultura",
+        "name": "Kultura",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "theater_comedy"
+    },
+    {
+        "id": "cat_koncert",
+        "name": "Koncert",
+        "parentCategoryId": "cat_kultura",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "music_note"
+    },
+    {
+        "id": "cat_teatr",
+        "name": "Teatr",
+        "parentCategoryId": "cat_kultura",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "theater_comedy"
+    },
+    {
+        "id": "cat_standup",
+        "name": "Stand-up",
+        "parentCategoryId": "cat_kultura",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "mic"
+    },
+    {
+        "id": "cat_kino",
+        "name": "Kino",
+        "parentCategoryId": "cat_kultura",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "movie"
+    },
+    {
+        "id": "cat_planszowki",
+        "name": "Planszówki",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "casino"
+    },
+    {
+        "id": "cat_zwiedzanie",
+        "name": "Zwiedzanie",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "explore"
+    },
+    {
+        "id": "cat_impreza",
+        "name": "Impreza",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "celebration"
+    },
+    {
+        "id": "cat_parapetowka",
+        "name": "Parapetówka",
+        "parentCategoryId": "cat_impreza",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "home"
+    },
+    {
+        "id": "cat_reunion",
+        "name": "Reunion",
+        "parentCategoryId": "cat_impreza",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "group"
+    },
+    {
+        "id": "cat_spotkanie",
+        "name": "Spotkanie",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "people"
+    },
+    {
+        "id": "cat_plotki",
+        "name": "Plotki",
+        "parentCategoryId": "cat_spotkanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "chat_bubble"
+    },
+    {
+        "id": "cat_clubing",
+        "name": "Clubing",
+        "parentCategoryId": "cat_spotkanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "nightlife"
+    },
+    {
+        "id": "cat_restauracja",
+        "name": "Restauracja",
+        "parentCategoryId": "cat_spotkanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "restaurant"
+    },
+    {
+        "id": "cat_escape_room",
+        "name": "Escape Room",
+        "parentCategoryId": "cat_spotkanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "lock"
+    },
+    {
+        "id": "cat_swietowanie",
+        "name": "Świętowanie",
+        "parentCategoryId": null,
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "cake"
+    },
+    {
+        "id": "cat_wesele",
+        "name": "Wesele",
+        "parentCategoryId": "cat_swietowanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "favorite"
+    },
+    {
+        "id": "cat_swieta",
+        "name": "Święta",
+        "parentCategoryId": "cat_swietowanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "ac_unit"
+    },
+    {
+        "id": "cat_urodziny",
+        "name": "Urodziny",
+        "parentCategoryId": "cat_swietowanie",
+        "isGlobal": true,
+        "isSelectableAsActivity": true,
+        "iconIdentifier": "cake"
+    }
+]

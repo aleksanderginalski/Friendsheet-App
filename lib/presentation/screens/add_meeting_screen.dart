@@ -51,6 +51,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
       if (userId != null) {
         context.read<AddMeetingProvider>().loadPersons(userId);
         context.read<AddMeetingProvider>().loadActivities(userId);
+        context.read<AddMeetingProvider>().loadCategories(userId);
       }
       // Load full Person/Activity objects when editing an existing meeting
       context.read<AddMeetingProvider>().initializeEditData();

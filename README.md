@@ -220,6 +220,19 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v2.6.0 - M2, US-020 Global Activity Library (February 24, 2026)
+- ✅ ActivityCategory model extended: isSelectableAsActivity, copiedFromId
+- ✅ Meeting model extended: categoryIds alongside activityIds
+- ✅ Global activity library: 26 categories seeded (2-level hierarchy)
+- ✅ Seed data versioned in repository (seed/global_categories.json + seed_firestore.js)
+- ✅ AuthService: batch-copy global categories to user's private collection on first login
+- ✅ Ancestor propagation: selecting "Góry" saves ["cat_gory", "cat_sport"] in categoryIds
+- ✅ ActivityCategoryRepository: getSelectableCategories, getAncestorIds
+- ✅ Unified autocomplete: selectable categories + private activities in one field
+- ✅ MeetingDetailProvider: resolves categoryIds to full category objects
+- ✅ Security Rules updated for first-login batch-write
+- ✅ Total test count: 251 (all passing)
+
 ### v2.5.0 - US-019 Activity Categories (February 24, 2026)
 - ✅ ActivityCategory model with Freezed (7 fields: id, userId, name, iconIdentifier, isGlobal, parentCategoryId, createdAt)
 - ✅ ActivityCategoryRepository with full CRUD
