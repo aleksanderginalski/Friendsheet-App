@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity.dart';
+import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
@@ -11,12 +13,18 @@ import 'package:mockito/mockito.dart';
 
 import 'add_meeting_provider_test.mocks.dart';
 
-@GenerateMocks(
-    [PersonRepository, ActivityRepository, MeetingRepository, AuthService])
+@GenerateMocks([
+  PersonRepository,
+  ActivityRepository,
+  ActivityCategoryRepository,
+  MeetingRepository,
+  AuthService,
+])
 void main() {
   late AddMeetingProvider provider;
   late MockPersonRepository mockPersonRepository;
   late MockActivityRepository mockActivityRepository;
+  late MockActivityCategoryRepository mockCategoryRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
 
@@ -49,20 +57,33 @@ void main() {
   final activity2 = Activity(
     id: 'a2',
     userId: 'user1',
-    name: 'Planszówki',
+    name: 'Planszowki',
     isGlobal: false,
     categoryId: null,
+    createdAt: DateTime(2024),
+  );
+
+  final category1 = ActivityCategory(
+    id: 'cat1',
+    userId: 'user1',
+    name: 'Gory',
+    iconIdentifier: 'mountain',
+    isGlobal: false,
+    isSelectableAsActivity: true,
+    parentCategoryId: 'cat-sport',
     createdAt: DateTime(2024),
   );
 
   setUp(() {
     mockPersonRepository = MockPersonRepository();
     mockActivityRepository = MockActivityRepository();
+    mockCategoryRepository = MockActivityCategoryRepository();
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
     provider = AddMeetingProvider(
       personRepository: mockPersonRepository,
       activityRepository: mockActivityRepository,
+      categoryRepository: mockCategoryRepository,
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,
     );
@@ -74,6 +95,10 @@ void main() {
       userId: anyNamed('userId'),
       name: anyNamed('name'),
     )).thenAnswer((_) async => activity1);
+    when(mockCategoryRepository.getSelectableCategories(any))
+        .thenAnswer((_) async => []);
+    when(mockCategoryRepository.getAncestorIds(any, any))
+        .thenAnswer((_) async => ['cat1', 'cat-sport']);
   });
 
   group('AddMeetingProvider - weight', () {
@@ -273,7 +298,7 @@ void main() {
         userId: anyNamed('userId'),
         name: anyNamed('name'),
       )).thenAnswer((_) async => activity2);
-      await provider.addNewActivity('Planszówki');
+      await provider.addNewActivity('Planszowki');
       provider.removeActivity(activity2);
 
       final results = provider.searchActivities('kaw');
@@ -310,6 +335,78 @@ void main() {
       provider.reset();
       expect(provider.selectedActivities, isEmpty);
       expect(provider.availableActivities, isEmpty);
+    });
+  });
+
+  group('AddMeetingProvider - categories', () {
+    test('selectedCategories is empty by default', () {
+      expect(provider.selectedCategories, isEmpty);
+    });
+
+    test('selectedCategoryIds is empty by default', () {
+      expect(provider.selectedCategoryIds, isEmpty);
+    });
+
+    test('addCategory adds category to selectedCategories', () async {
+      await provider.addCategory(category1, 'user1');
+
+      expect(provider.selectedCategories, contains(category1));
+    });
+
+    test('addCategory merges ancestor IDs into selectedCategoryIds', () async {
+      when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
+          .thenAnswer((_) async => ['cat1', 'cat-sport']);
+
+      await provider.addCategory(category1, 'user1');
+
+      expect(provider.selectedCategoryIds, containsAll(['cat1', 'cat-sport']));
+    });
+
+    test('addCategory prevents duplicate chips', () async {
+      await provider.addCategory(category1, 'user1');
+      await provider.addCategory(category1, 'user1');
+
+      expect(provider.selectedCategories.length, equals(1));
+    });
+
+    test('removeCategory removes category from selectedCategories', () async {
+      await provider.addCategory(category1, 'user1');
+      provider.removeCategory(category1);
+
+      expect(provider.selectedCategories, isEmpty);
+    });
+
+    test('removeCategory removes leaf ID from selectedCategoryIds', () async {
+      when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
+          .thenAnswer((_) async => ['cat1', 'cat-sport']);
+
+      await provider.addCategory(category1, 'user1');
+      provider.removeCategory(category1);
+
+      // Leaf ID removed, ancestor left in place
+      expect(provider.selectedCategoryIds, isNot(contains('cat1')));
+    });
+
+    test('searchCategories returns matching categories', () async {
+      when(mockCategoryRepository.getSelectableCategories('user1'))
+          .thenAnswer((_) async => [category1]);
+      await provider.loadCategories('user1');
+
+      final results = provider.searchCategories('gor');
+      expect(results, contains(category1));
+    });
+
+    test('searchCategories returns empty for empty query', () async {
+      final results = provider.searchCategories('');
+      expect(results, isEmpty);
+    });
+
+    test('reset clears selectedCategories and selectedCategoryIds', () async {
+      await provider.addCategory(category1, 'user1');
+      provider.reset();
+
+      expect(provider.selectedCategories, isEmpty);
+      expect(provider.selectedCategoryIds, isEmpty);
     });
   });
 
@@ -380,6 +477,21 @@ void main() {
       final captured =
           verify(mockMeetingRepository.saveMeeting(captureAny)).captured.first;
       expect(captured.userId, equals('user1'));
+    });
+
+    test('saveMeeting includes categoryIds in saved meeting', () async {
+      await setupValidForm();
+      when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
+          .thenAnswer((_) async => ['cat1', 'cat-sport']);
+      await provider.addCategory(category1, 'user1');
+      when(mockMeetingRepository.saveMeeting(any))
+          .thenAnswer((_) async => 'meeting-id-123');
+
+      await provider.saveMeeting();
+
+      final captured =
+          verify(mockMeetingRepository.saveMeeting(captureAny)).captured.first;
+      expect(captured.categoryIds, containsAll(['cat1', 'cat-sport']));
     });
 
     test('saveMeeting returns false when repository throws', () async {

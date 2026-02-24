@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/activity.dart';
+import '../../data/models/activity_category.dart';
+import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
 
 class ActivityAutocomplete extends StatefulWidget {
@@ -15,7 +17,8 @@ class ActivityAutocomplete extends StatefulWidget {
 class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  List<Activity> _suggestions = [];
+  List<Activity> _activitySuggestions = [];
+  List<ActivityCategory> _categorySuggestions = [];
 
   @override
   void dispose() {
@@ -26,14 +29,33 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
 
   void _onSearchChanged(String query, AddMeetingProvider provider) {
     setState(() {
-      _suggestions = provider.searchActivities(query);
+      _activitySuggestions = provider.searchActivities(query);
+      _categorySuggestions = provider.searchCategories(query);
     });
   }
 
   void _selectActivity(Activity activity, AddMeetingProvider provider) {
     provider.selectActivity(activity);
     _controller.clear();
-    setState(() => _suggestions = []);
+    setState(() {
+      _activitySuggestions = [];
+      _categorySuggestions = [];
+    });
+    _focusNode.unfocus();
+  }
+
+  Future<void> _selectCategory(
+    ActivityCategory category,
+    AddMeetingProvider provider,
+  ) async {
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+    await provider.addCategory(category, userId);
+    _controller.clear();
+    setState(() {
+      _activitySuggestions = [];
+      _categorySuggestions = [];
+    });
     _focusNode.unfocus();
   }
 
@@ -51,7 +73,10 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     if (name != null && context.mounted) {
       await provider.addNewActivity(name);
       _controller.clear();
-      setState(() => _suggestions = []);
+      setState(() {
+        _activitySuggestions = [];
+        _categorySuggestions = [];
+      });
     }
   }
 
@@ -59,6 +84,7 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
   Widget build(BuildContext context) {
     final provider = context.watch<AddMeetingProvider>();
     final selectedActivities = provider.selectedActivities;
+    final selectedCategories = provider.selectedCategories;
     final error = provider.activitiesError;
 
     return Column(
@@ -69,27 +95,38 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
           focusNode: _focusNode,
           decoration: InputDecoration(
             labelText: 'Activities *',
-            hintText: 'Search or add activity...',
+            hintText: 'Search activities or categories...',
             border: const OutlineInputBorder(),
             prefixIcon: const Icon(Icons.local_activity_outlined),
             errorText: error,
           ),
           onChanged: (query) => _onSearchChanged(query, provider),
         ),
-        if (_suggestions.isNotEmpty || _controller.text.trim().isNotEmpty)
+        if (_activitySuggestions.isNotEmpty ||
+            _categorySuggestions.isNotEmpty ||
+            _controller.text.trim().isNotEmpty)
           _buildSuggestionsList(context, provider),
-        if (selectedActivities.isNotEmpty)
+        if (selectedCategories.isNotEmpty || selectedActivities.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: selectedActivities
-                  .map((a) => Chip(
-                        label: Text(a.name),
-                        onDeleted: () => provider.removeActivity(a),
-                      ))
-                  .toList(),
+              children: [
+                ...selectedCategories.map(
+                  (c) => Chip(
+                    avatar: const Icon(Icons.category_outlined, size: 16),
+                    label: Text(c.name),
+                    onDeleted: () => provider.removeCategory(c),
+                  ),
+                ),
+                ...selectedActivities.map(
+                  (a) => Chip(
+                    label: Text(a.name),
+                    onDeleted: () => provider.removeActivity(a),
+                  ),
+                ),
+              ],
             ),
           ),
       ],
@@ -101,7 +138,7 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     AddMeetingProvider provider,
   ) {
     final query = _controller.text.trim();
-    final hasExactMatch = _suggestions.any(
+    final hasExactActivityMatch = _activitySuggestions.any(
       (a) => a.name.toLowerCase() == query.toLowerCase(),
     );
 
@@ -110,14 +147,37 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
       elevation: 4,
       child: Column(
         children: [
-          ..._suggestions.map(
+          // Category suggestions — shown with parent label
+          ..._categorySuggestions.map(
+            (category) {
+              final parentName = provider.getParentName(category);
+              return ListTile(
+                leading: const Icon(Icons.category_outlined),
+                title: Text(category.name),
+                trailing: parentName != null
+                    ? Chip(
+                        label: Text(
+                          parentName,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                      )
+                    : null,
+                onTap: () => _selectCategory(category, provider),
+              );
+            },
+          ),
+          // Activity suggestions — private user activities
+          ..._activitySuggestions.map(
             (activity) => ListTile(
               leading: const Icon(Icons.local_activity_outlined),
               title: Text(activity.name),
               onTap: () => _selectActivity(activity, provider),
             ),
           ),
-          if (query.isNotEmpty && !hasExactMatch)
+          // "Add custom" option — creates a private Activity with no category
+          if (query.isNotEmpty && !hasExactActivityMatch)
             ListTile(
               leading: const Icon(Icons.add_circle_outline),
               title: Text('Add "$query" as new activity'),
