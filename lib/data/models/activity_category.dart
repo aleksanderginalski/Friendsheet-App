@@ -9,6 +9,8 @@ part 'activity_category.g.dart';
 ///
 /// Categories can be private (isGlobal: false) — created by individual users,
 /// or global (isGlobal: true) — managed separately (see US-020).
+/// isSelectableAsActivity marks categories that can be used directly as
+/// activity tags when adding a meeting (leaf-selectable categories).
 @freezed
 class ActivityCategory with _$ActivityCategory {
   const ActivityCategory._();
@@ -19,6 +21,7 @@ class ActivityCategory with _$ActivityCategory {
     required String name,
     required String iconIdentifier,
     required bool isGlobal,
+    required bool isSelectableAsActivity,
     String? parentCategoryId,
     required DateTime createdAt,
   }) = _ActivityCategory;
@@ -35,6 +38,7 @@ class ActivityCategory with _$ActivityCategory {
       name: (data['name'] ?? '') as String,
       iconIdentifier: (data['iconIdentifier'] ?? '') as String,
       isGlobal: (data['isGlobal'] ?? false) as bool,
+      isSelectableAsActivity: (data['isSelectableAsActivity'] ?? false) as bool,
       parentCategoryId: data['parentCategoryId'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
@@ -47,6 +51,7 @@ class ActivityCategory with _$ActivityCategory {
       'name': name,
       'iconIdentifier': iconIdentifier,
       'isGlobal': isGlobal,
+      'isSelectableAsActivity': isSelectableAsActivity,
       if (parentCategoryId != null) 'parentCategoryId': parentCategoryId,
       'createdAt': Timestamp.fromDate(createdAt),
     };

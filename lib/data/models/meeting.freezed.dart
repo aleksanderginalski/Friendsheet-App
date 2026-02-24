@@ -27,6 +27,7 @@ mixin _$Meeting {
   int get weight => throw _privateConstructorUsedError;
   List<String> get participantIds => throw _privateConstructorUsedError;
   List<String> get activityIds => throw _privateConstructorUsedError;
+  List<String> get categoryIds => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -52,6 +53,7 @@ abstract class $MeetingCopyWith<$Res> {
       int weight,
       List<String> participantIds,
       List<String> activityIds,
+      List<String> categoryIds,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -78,6 +80,7 @@ class _$MeetingCopyWithImpl<$Res, $Val extends Meeting>
     Object? weight = null,
     Object? participantIds = null,
     Object? activityIds = null,
+    Object? categoryIds = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -110,6 +113,10 @@ class _$MeetingCopyWithImpl<$Res, $Val extends Meeting>
           ? _value.activityIds
           : activityIds // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      categoryIds: null == categoryIds
+          ? _value.categoryIds
+          : categoryIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -137,6 +144,7 @@ abstract class _$$MeetingImplCopyWith<$Res> implements $MeetingCopyWith<$Res> {
       int weight,
       List<String> participantIds,
       List<String> activityIds,
+      List<String> categoryIds,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -161,6 +169,7 @@ class __$$MeetingImplCopyWithImpl<$Res>
     Object? weight = null,
     Object? participantIds = null,
     Object? activityIds = null,
+    Object? categoryIds = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -193,6 +202,10 @@ class __$$MeetingImplCopyWithImpl<$Res>
           ? _value._activityIds
           : activityIds // ignore: cast_nullable_to_non_nullable
               as List<String>,
+      categoryIds: null == categoryIds
+          ? _value._categoryIds
+          : categoryIds // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -216,10 +229,12 @@ class _$MeetingImpl extends _Meeting {
       required this.weight,
       required final List<String> participantIds,
       required final List<String> activityIds,
+      final List<String> categoryIds = const [],
       required this.createdAt,
       required this.updatedAt})
       : _participantIds = participantIds,
         _activityIds = activityIds,
+        _categoryIds = categoryIds,
         super._();
 
   factory _$MeetingImpl.fromJson(Map<String, dynamic> json) =>
@@ -251,6 +266,15 @@ class _$MeetingImpl extends _Meeting {
     return EqualUnmodifiableListView(_activityIds);
   }
 
+  final List<String> _categoryIds;
+  @override
+  @JsonKey()
+  List<String> get categoryIds {
+    if (_categoryIds is EqualUnmodifiableListView) return _categoryIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_categoryIds);
+  }
+
   @override
   final DateTime createdAt;
   @override
@@ -258,7 +282,7 @@ class _$MeetingImpl extends _Meeting {
 
   @override
   String toString() {
-    return 'Meeting(id: $id, userId: $userId, name: $name, date: $date, weight: $weight, participantIds: $participantIds, activityIds: $activityIds, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Meeting(id: $id, userId: $userId, name: $name, date: $date, weight: $weight, participantIds: $participantIds, activityIds: $activityIds, categoryIds: $categoryIds, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -275,6 +299,8 @@ class _$MeetingImpl extends _Meeting {
                 .equals(other._participantIds, _participantIds) &&
             const DeepCollectionEquality()
                 .equals(other._activityIds, _activityIds) &&
+            const DeepCollectionEquality()
+                .equals(other._categoryIds, _categoryIds) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -292,6 +318,7 @@ class _$MeetingImpl extends _Meeting {
       weight,
       const DeepCollectionEquality().hash(_participantIds),
       const DeepCollectionEquality().hash(_activityIds),
+      const DeepCollectionEquality().hash(_categoryIds),
       createdAt,
       updatedAt);
 
@@ -320,6 +347,7 @@ abstract class _Meeting extends Meeting {
       required final int weight,
       required final List<String> participantIds,
       required final List<String> activityIds,
+      final List<String> categoryIds,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$MeetingImpl;
   const _Meeting._() : super._();
@@ -340,6 +368,8 @@ abstract class _Meeting extends Meeting {
   List<String> get participantIds;
   @override
   List<String> get activityIds;
+  @override
+  List<String> get categoryIds;
   @override
   DateTime get createdAt;
   @override

@@ -28,6 +28,26 @@ void main() {
       expect(validMeeting.activityIds.length, 1);
     });
 
+    test('categoryIds defaults to empty list', () {
+      expect(validMeeting.categoryIds, isEmpty);
+    });
+
+    test('categoryIds can be set explicitly', () {
+      final meeting = Meeting(
+        id: 'm1',
+        userId: 'u1',
+        name: 'Hiking',
+        date: testDate,
+        weight: 5,
+        participantIds: ['p1'],
+        activityIds: ['a1'],
+        categoryIds: ['cat-sport', 'cat-gory'],
+        createdAt: testDate,
+        updatedAt: testDate,
+      );
+      expect(meeting.categoryIds, equals(['cat-sport', 'cat-gory']));
+    });
+
     test('isValid returns true for valid meeting', () {
       expect(validMeeting.isValid(), true);
     });
@@ -66,6 +86,14 @@ void main() {
       expect(updated.weight, validMeeting.weight);
     });
 
+    test('copyWith updates categoryIds', () {
+      final updated = validMeeting.copyWith(
+        categoryIds: ['cat-1', 'cat-2'],
+      );
+      expect(updated.categoryIds, equals(['cat-1', 'cat-2']));
+      expect(updated.activityIds, validMeeting.activityIds);
+    });
+
     test('equality works correctly', () {
       final meeting1 = Meeting(
         id: 'same-id',
@@ -102,6 +130,15 @@ void main() {
       expect(map['weight'], 8);
       expect(map['participantIds'], ['person-1', 'person-2']);
       expect(map['activityIds'], ['activity-1']);
+      expect(map['categoryIds'], isEmpty);
+    });
+
+    test('toFirestore includes categoryIds when set', () {
+      final meeting = validMeeting.copyWith(
+        categoryIds: ['cat-sport', 'cat-gory'],
+      );
+      final map = meeting.toFirestore();
+      expect(map['categoryIds'], equals(['cat-sport', 'cat-gory']));
     });
 
     test('JSON serialization works', () {
@@ -114,6 +151,7 @@ void main() {
       expect(fromJson.id, validMeeting.id);
       expect(fromJson.name, validMeeting.name);
       expect(fromJson.weight, validMeeting.weight);
+      expect(fromJson.categoryIds, isEmpty);
     });
 
     test('validWeights constant contains correct Fibonacci values', () {

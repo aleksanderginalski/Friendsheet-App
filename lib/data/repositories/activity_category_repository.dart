@@ -8,10 +8,15 @@ class ActivityCategoryRepository {
   ActivityCategoryRepository({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
+  // Subcollection for user-created categories (legacy path).
   CollectionReference _categoriesRef(String userId) => _firestore
       .collection('users')
       .doc(userId)
       .collection('activity_categories');
+
+  // Top-level collection used by the global library and user copies (US-020).
+  CollectionReference get _globalLibraryRef =>
+      _firestore.collection('activity_categories');
 
   // Returns a live stream of all activity categories for the given user.
   Stream<List<ActivityCategory>> getCategories(String userId) {
@@ -39,6 +44,61 @@ class ActivityCategoryRepository {
   // Deletes the category document for the given user and categoryId.
   Future<void> deleteCategory(String userId, String categoryId) async {
     await _categoriesRef(userId).doc(categoryId).delete();
+  }
+
+  // Returns all user-private selectable categories from the global library
+  // (isGlobal: false, userId: userId, isSelectableAsActivity: true).
+  Future<List<ActivityCategory>> getSelectableCategories(String userId) async {
+    final snapshot = await _globalLibraryRef
+        .where('isGlobal', isEqualTo: false)
+        .where('userId', isEqualTo: userId)
+        .where('isSelectableAsActivity', isEqualTo: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => ActivityCategory.fromFirestore(doc))
+        .toList();
+  }
+
+  // Walks up the parentCategoryId chain for the given category and returns
+  // all ancestor IDs including categoryId itself.
+  // Operates on the user's private copies (isGlobal: false, userId: userId).
+  // Guard: max 3 iterations to match the maximum supported depth.
+  Future<List<String>> getAncestorIds(String categoryId, String userId) async {
+    final result = <String>[];
+    var currentId = categoryId;
+
+    for (var i = 0; i < 3; i++) {
+      final doc = await _globalLibraryRef.doc(currentId).get();
+      if (!doc.exists) break;
+
+      final data = doc.data() as Map<String, dynamic>;
+      // Safety: only follow ancestors within the user's own copies.
+      if (data['isGlobal'] == true || data['userId'] != userId) break;
+
+      // Add after ownership check so a wrong-user parent is never included.
+      result.add(currentId);
+
+      final parentId = data['parentCategoryId'] as String?;
+      if (parentId == null) break;
+
+      currentId = parentId;
+    }
+
+    return result;
+  }
+
+  // Returns categories matching the given IDs from the user's private collection.
+  Future<List<ActivityCategory>> getCategoriesByIds(
+      List<String> ids, String userId) async {
+    if (ids.isEmpty) return [];
+    final snapshot = await _globalLibraryRef
+        .where(FieldPath.documentId, whereIn: ids)
+        .where('isGlobal', isEqualTo: false)
+        .where('userId', isEqualTo: userId)
+        .get();
+    return snapshot.docs
+        .map((doc) => ActivityCategory.fromFirestore(doc))
+        .toList();
   }
 
   // Validates that the category does not exceed 2 levels of hierarchy.
