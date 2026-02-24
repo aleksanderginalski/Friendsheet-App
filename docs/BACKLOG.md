@@ -731,13 +731,14 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 13  
 **Priority:** P1 (post-MVP)
+**Status:** ✅ COMPLETED (February 23, 2026)
 
 **Acceptance Criteria:**
-- [ ] ActivityCategory model created (max 3 levels deep)
-- [ ] parentCategoryId: String? for hierarchy support
-- [ ] isGlobal: bool field
-- [ ] Security Rules updated for activity_categories collection
-- [ ] Unit tests written
+- [x] ActivityCategory model created (max 2 levels deep)
+- [x] parentCategoryId: String? for hierarchy support
+- [x] isGlobal: bool field
+- [x] Security Rules updated for activity_categories collection
+- [x] Unit tests written
 
 ### US-020: Global Activity Library
 
@@ -754,6 +755,8 @@ If you already created a GitHub issue for US-005, you can:
 - [ ] Global activities read-only for users (isGlobal: true)
 - [ ] Private activities manageable by user
 - [ ] Security Rules enforce read-only on global data
+- [ ] On first login: batch-copy all global categories to user's subcollection (users/{userId}/activity_categories)
+- [ ] After onboarding: user sees only their own private categories
 
 ### US-021: Meetings List Screen
 
