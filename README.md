@@ -11,7 +11,7 @@
 | M7 | Custom Dashboard | 📋 Planned |
 | M8 | AI Assistant | 💡 Future |
 
-**M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year (collapsed for older years). Activity categories with icons and 3-level hierarchy.
+**M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year (collapsed for older years). Activity categories with icons and 2-level hierarchy.
 
 **M3 — Statistics & Export:** Person frequency stats, activity stats with category hierarchy filtering, "haven't seen in a while" alerts, JSON data export.
 
@@ -133,8 +133,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (166)
-✅ No linting issues
+✅ All tests passing (214)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +219,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v2.5.0 - US-019 Activity Categories (February 24, 2026)
+- ✅ ActivityCategory model with Freezed (7 fields: id, userId, name, iconIdentifier, isGlobal, parentCategoryId, createdAt)
+- ✅ ActivityCategoryRepository with full CRUD
+- ✅ Hierarchy depth validation in repository (max 2 levels)
+- ✅ Firestore path: users/{userId}/activity_categories (subcollection)
+- ✅ Firestore Security Rules updated and deployed
+- ✅ 27 new unit tests (model + repository)
+- ✅ Total test count: 187 → 214 tests (+27)
 
 ### v2.4.0 - US-024 + US-025 Persons List & Person Detail (February 23, 2026)
 - ✅ PersonsListScreen with alphabetical list, search/filter and empty state
