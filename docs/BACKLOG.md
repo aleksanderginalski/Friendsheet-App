@@ -748,15 +748,33 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 8  
 **Priority:** P2 (post-MVP)
+**Status:** ✅ COMPLETED (February 24, 2026)
 
 **Acceptance Criteria:**
-- [ ] Seed data structure defined
-- [ ] Global categories seeded via Firebase Console
-- [ ] Global activities read-only for users (isGlobal: true)
-- [ ] Private activities manageable by user
-- [ ] Security Rules enforce read-only on global data
-- [ ] On first login: batch-copy all global categories to user's subcollection (users/{userId}/activity_categories)
-- [ ] After onboarding: user sees only their own private categories
+- [x] ActivityCategory model extended with isSelectableAsActivity: bool and copiedFromId: String?
+- [x] Meeting model extended with categoryIds: List<String> alongside activityIds
+- [x] Global categories seeded via Node.js script (26 categories, 2-level hierarchy)
+- [x] Seed data versioned in repository (seed/global_categories.json)
+- [x] On first login: batch-copy all global categories to user's private collection
+- [x] After copy: user operates on their own private categories (isGlobal: false)
+- [x] Ancestor propagation: selecting leaf category saves full path to root in categoryIds
+- [x] ActivityCategoryRepository: getSelectableCategories, getAncestorIds methods
+- [x] Unified autocomplete: selectable categories + private activities in one field
+- [x] Security Rules updated for batch-write on first login
+- [x] Unit tests written (251/251 passing)
+
+**Tasks:**
+- [x] **TASK-130a:** Extend ActivityCategory model — isSelectableAsActivity, copiedFromId
+- [x] **TASK-130b:** Extend Meeting model — categoryIds field
+- [x] **TASK-131:** Prepare and seed global categories via Node.js script
+- [x] **TASK-132a:** Add getSelectableCategories to ActivityCategoryRepository
+- [x] **TASK-132b:** Add getAncestorIds to ActivityCategoryRepository
+- [x] **TASK-133:** AuthService batch-copy on first login
+- [x] **TASK-134:** AddMeetingProvider — categories + ancestor propagation
+- [x] **TASK-135:** ActivityAutocomplete — unified search from two sources
+- [x] **TASK-136:** MeetingDetailProvider — resolve categoryIds
+- [x] **TASK-137:** Update Security Rules for batch-write
+- [x] **TASK-138:** Update all affected tests
 
 ### US-021: Meetings List Screen
 
@@ -951,12 +969,18 @@ If you already created a GitHub issue for US-005, you can:
 
 ### US-026: Activities List Screen
 
-**As a** user  
-**I want to** see all activities organized by category  
+**As a** user
+**I want to** see all activities organized by category
 **So that** I can manage my activity library
 
-**Story Points:** 8  
+**Story Points:** 8
 **Priority:** P0
+
+**Architecture Note (US-020):**
+- User operates on their own private copy of categories (isGlobal: false, userId: uid)
+- ActivityAutocomplete widget already built in US-020 — reuse, do not rewrite
+- CategoryIds stored with ancestor propagation — display leaf only, breadcrumb optional (e.g. Góry → Sport)
+- Private activities outside global library remain in activities collection
 
 **Acceptance Criteria:**
 - [ ] Activities displayed in category tree (expandable)

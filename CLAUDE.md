@@ -90,7 +90,5 @@ Use addPostFrameCallback in initState to call initialize() on the provider.
 See: PersonDetailScreen + PersonsListScreen as reference implementation.
 ```
 
-
-
 ---
 
