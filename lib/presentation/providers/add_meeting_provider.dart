@@ -282,7 +282,7 @@ class AddMeetingProvider extends ChangeNotifier {
 
   // Returns true if activities section is valid
   bool validateActivities() {
-    if (_selectedActivities.isEmpty) {
+    if (_selectedActivities.isEmpty && _selectedCategories.isEmpty) {
       _activitiesError = 'Add at least one activity';
       notifyListeners();
       return false;
@@ -460,6 +460,21 @@ class AddMeetingProvider extends ChangeNotifier {
 
       _selectedPersons = List.from(results[0] as List<Person>);
       _selectedActivities = List.from(results[1] as List<Activity>);
+
+      // Restore selected category chips from saved categoryIds.
+      // Only leaf categories (isSelectableAsActivity: true) are shown as chips.
+      // Ancestor IDs are kept in _selectedCategoryIds for storage only.
+      if (_selectedCategoryIds.isNotEmpty) {
+        try {
+          final allCategories = await _categoryRepository
+              .getSelectableCategories(initialMeeting!.userId);
+          _selectedCategories = allCategories
+              .where((c) => _selectedCategoryIds.contains(c.id))
+              .toList();
+        } catch (_) {
+          // Non-critical: chips won't show but categoryIds are preserved.
+        }
+      }
     } catch (e) {
       _participantsError = 'Failed to load meeting data';
     } finally {
