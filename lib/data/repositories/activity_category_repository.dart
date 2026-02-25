@@ -87,6 +87,14 @@ class ActivityCategoryRepository {
     return result;
   }
 
+  // Returns all documents from the user's private activity_categories subcollection.
+  Future<List<ActivityCategory>> getAllCategories(String userId) async {
+    final snapshot = await _categoriesRef(userId).get();
+    return snapshot.docs
+        .map((doc) => ActivityCategory.fromFirestore(doc))
+        .toList();
+  }
+
   // Returns categories matching the given IDs from the user's private collection.
   Future<List<ActivityCategory>> getCategoriesByIds(
       List<String> ids, String userId) async {
