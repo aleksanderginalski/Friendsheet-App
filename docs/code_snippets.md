@@ -1116,3 +1116,43 @@ Future<void> deletePerson(String userId, String personId) async {
 // - Atomic — either all updates succeed or none do
 // - Single network round-trip for multiple document updates
 // - Safe for Firestore limit of 500 writes per batch (personal scale: safe)
+
+## 21. getAllCategories — Merging Global and Private Firestore Collections (US-026)
+
+Pattern for fetching data that lives in two separate Firestore locations:
+global root collection + user's private subcollection.
+```dart
+Future<List<ActivityCategory>> getAllCategories(String userId) async {
+  final globalSnapshot = await _firestore
+      .collection('activity_categories')
+      .where('isGlobal', isEqualTo: true)
+      .get();
+
+  final privateSnapshot = await _firestore
+      .collection('users')
+      .doc(userId)
+      .collection('activity_categories')
+      .get();
+
+  return [
+    ...globalSnapshot.docs.map((doc) => ActivityCategory.fromFirestore(doc)),
+    ...privateSnapshot.docs.map((doc) => ActivityCategory.fromFirestore(doc)),
+  ];
+}
+```
+
+Rule: Repository merges sources — Provider and Screen are unaware of the dual source.
+Reuse this pattern in Statistics (US-029) when filtering by category hierarchy.
+
+## 22. GestureDetector wrapping ExpansionTile for long-press (US-026)
+
+`ExpansionTile` does not expose `onLongPress`. Wrap with `GestureDetector` to add it.
+Guard the gesture with a null check to make global items read-only.
+```dart
+GestureDetector(
+  onLongPress: category.isGlobal ? null : () => _showOptions(context),
+  child: ExpansionTile(
+    // ... unchanged
+  ),
+)
+```

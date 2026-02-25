@@ -219,6 +219,18 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+### v2.7.0 - M2, US-026 Activities List Screen (February 25, 2026)
+- ✅ ActivitiesListScreen with expandable category tree (level-1 sections, level-2 leaf tiles)
+- ✅ ActivitiesListProvider with search, expand/collapse, CRUD operations
+- ✅ AddEditActivityDialog with icon picker (20 predefined Material icons)
+- ✅ ActivityCategoryRepository.getAllCategories — merges global + private categories
+- ✅ Long-press edit/delete for user-owned categories (global categories read-only)
+- ✅ Fix: Firestore Security Rules — path-based userId for list queries on subcollections
+- ✅ Fix: AddMeetingProvider validation includes selectedCategories
+- ✅ Fix: ActivityCategory.fromFirestore — nullable createdAt fallback for global docs
+- ✅ Fix: MeetingDetailScreen displays resolved category names
+- ✅ Fix: AddMeetingProvider.initializeEditData restores category chips in edit mode
+- ✅ Total test count: 260 (all passing)
 
 ### v2.6.0 - M2, US-020 Global Activity Library (February 24, 2026)
 - ✅ ActivityCategory model extended: isSelectableAsActivity, copiedFromId
