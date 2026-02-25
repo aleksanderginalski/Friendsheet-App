@@ -962,6 +962,95 @@ If you already created a GitHub issue for US-005, you can:
 - [x] **TASK-150:** Fix AddMeetingProvider.initializeEditData — restore category chips
 
 ---
+### US-042: Cleanup — Remove legacy Activity model and collection
+
+**As a** developer
+**I want to** remove the legacy `Activity` model and `activities` Firestore collection from the codebase
+**So that** the app has a single, consistent data source for activities
+
+**Story Points:** 5
+**Priority:** P0
+**Status:** 📋 Planned
+**Milestone:** M2
+
+**Acceptance Criteria:**
+
+- [ ] `Activity` model removed (`activity.dart`, `activity.freezed.dart`, `activity.g.dart`)
+- [ ] `ActivityRepository` removed (`activity_repository.dart` and its test file)
+- [ ] `Meeting` model no longer contains `activityIds` field
+- [ ] `AddMeetingProvider` no longer references `Activity` model or `ActivityRepository`
+- [ ] `ActivityAutocomplete` no longer uses `Activity` suggestions or `_activitySuggestions` list
+- [ ] `MeetingDetailProvider` no longer resolves `activityIds`
+- [ ] `MeetingDetailScreen` no longer displays legacy activities section
+- [ ] All tests updated — no references to `Activity` model remain
+- [ ] `flutter analyze` passes with 0 issues
+
+**Tasks:**
+
+- [ ] **TASK-42.1:** Delete `activity.dart`, `activity.freezed.dart`, `activity.g.dart`
+- [ ] **TASK-42.2:** Delete `activity_repository.dart` and its corresponding test file
+- [ ] **TASK-42.3:** Remove `activityIds` field from `Meeting` model + run `build_runner`
+- [ ] **TASK-42.4:** Remove `Activity` references from `AddMeetingProvider` (`selectedActivities`, `searchActivities`, `selectActivity`, `removeActivity`, `addNewActivity`)
+- [ ] **TASK-42.5:** Remove `Activity` suggestions from `ActivityAutocomplete` (`_activitySuggestions`, `_selectActivity`)
+- [ ] **TASK-42.6:** Remove `activityIds` resolving from `MeetingDetailProvider` and `MeetingDetailScreen`
+- [ ] **TASK-42.7:** Update all affected tests — run `flutter test` and fix failures
+
+---
+
+### US-043: Fix — Unified activity flow
+
+**As a** user
+**I want to** have activities work consistently between AddMeeting and the Activities tab
+**So that** anything I add in AddMeeting appears in my activity tree and vice versa
+
+**Story Points:** 8
+**Priority:** P0
+**Status:** 📋 Planned
+**Milestone:** M2
+
+**Acceptance Criteria:**
+
+- [ ] Autocomplete in AddMeeting reads only from `users/{uid}/activity_categories` via `getSelectableCategories`
+- [ ] Typing a new activity name in AddMeeting and confirming creates a root category (`isSelectableAsActivity: true`) in `users/{uid}/activity_categories`
+- [ ] Newly created activity appears in Activities tab immediately after saving the meeting
+- [ ] Deleting a root category in Activities tab deletes all its children atomically (WriteBatch)
+- [ ] Deleting a child category does not affect its siblings or parent
+- [ ] `flutter analyze` passes with 0 issues
+
+**Tasks:**
+
+- [ ] **TASK-43.1:** Update `ActivityAutocomplete` — remove `Activity` path, read only from `getSelectableCategories`
+- [ ] **TASK-43.2:** Update `AddMeetingProvider.addNewActivity` — saves to `users/{uid}/activity_categories` as root category with `isSelectableAsActivity: true`
+- [ ] **TASK-43.3:** Add `deleteWithChildren(String categoryId, String userId)` to `ActivityCategoryRepository` using `WriteBatch`
+- [ ] **TASK-43.4:** Update `ActivitiesListProvider` — call `deleteWithChildren` instead of `deleteCategory`
+- [ ] **TASK-43.5:** Write/update tests for repository and provider changes
+
+---
+
+### US-044: Fix — Onboarding idempotency
+
+**As a** developer
+**I want to** ensure the activity template is copied to a new user exactly once
+**So that** reinstalling the app or logging in again does not create duplicate categories
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Milestone:** M2
+
+**Acceptance Criteria:**
+
+- [ ] `users/{uid}` document contains `onboardingCompletedAt: Timestamp` field after first login
+- [ ] Batch-copy of global categories runs only if `onboardingCompletedAt` is null (field absent)
+- [ ] Re-login or reinstall does not create duplicate entries in `users/{uid}/activity_categories`
+- [ ] `flutter analyze` passes with 0 issues
+
+**Tasks:**
+
+- [ ] **TASK-44.1:** Add `onboardingCompletedAt: Timestamp` write to `users/{uid}` document as part of the first-login batch operation
+- [ ] **TASK-44.2:** Update `AuthService` — check `onboardingCompletedAt` flag before running batch-copy; skip if field exists
+- [ ] **TASK-44.3:** Write/update tests for `AuthService` covering idempotent onboarding behavior
+
 
 ---
 
