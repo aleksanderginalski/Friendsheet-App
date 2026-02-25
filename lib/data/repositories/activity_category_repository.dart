@@ -87,12 +87,20 @@ class ActivityCategoryRepository {
     return result;
   }
 
-  // Returns all documents from the user's private activity_categories subcollection.
+  // Returns all categories visible to the user: global categories from the
+  // root collection (isGlobal: true) merged with the user's private copies.
   Future<List<ActivityCategory>> getAllCategories(String userId) async {
-    final snapshot = await _categoriesRef(userId).get();
-    return snapshot.docs
-        .map((doc) => ActivityCategory.fromFirestore(doc))
-        .toList();
+    final globalSnapshot = await _firestore
+        .collection('activity_categories')
+        .where('isGlobal', isEqualTo: true)
+        .get();
+
+    final privateSnapshot = await _categoriesRef(userId).get();
+
+    return [
+      ...globalSnapshot.docs.map((doc) => ActivityCategory.fromFirestore(doc)),
+      ...privateSnapshot.docs.map((doc) => ActivityCategory.fromFirestore(doc)),
+    ];
   }
 
   // Returns categories matching the given IDs from the user's private collection.
