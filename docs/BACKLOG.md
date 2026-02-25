@@ -930,6 +930,7 @@ If you already created a GitHub issue for US-005, you can:
 ---
 
 ### US-026: Activities List Screen
+**Status:** ✅ COMPLETED (February 25, 2026)
 
 **As a** user
 **I want to** see all activities organized by category
@@ -938,25 +939,27 @@ If you already created a GitHub issue for US-005, you can:
 **Story Points:** 8
 **Priority:** P0
 
-**Architecture Note (US-020):**
-- User operates on their own private copy of categories (isGlobal: false, userId: uid)
-- ActivityAutocomplete widget already built in US-020 — reuse, do not rewrite
-- CategoryIds stored with ancestor propagation — display leaf only, breadcrumb optional (e.g. Góry → Sport)
-- Private activities outside global library remain in activities collection
-
 **Acceptance Criteria:**
-- [ ] Activities displayed in category tree (expandable)
-- [ ] Global activities shown but marked as read-only
-- [ ] User can add new private activity with icon and optional category
-- [ ] User can edit/delete their own private activities
-- [ ] User cannot edit/delete global activities
-- [ ] Search/filter by name
+- [x] Activities displayed in category tree (expandable)
+- [x] Global categories visible and read-only (long-press disabled)
+- [x] User can add new private activity category with icon and optional parent
+- [x] User can edit/delete their own private categories (long-press)
+- [x] User cannot edit/delete global categories
+- [x] Search/filter by name
 
 **Tasks:**
-- [ ] **TASK-134:** Create ActivitiesListScreen with tree view - 3h
-- [ ] **TASK-135:** Implement category tree expansion widget - 2h
-- [ ] **TASK-136:** Add/Edit activity dialog with icon picker - 2h
-- [ ] **TASK-137:** Write tests - 1h
+- [x] **TASK-139:** Add `getAllCategories` to ActivityCategoryRepository — merges global + private (US-026)
+- [x] **TASK-140:** Create ActivitiesListProvider — fetch, tree expansion, search, CRUD
+- [x] **TASK-141:** Verify/add addCategory, updateCategory, deleteCategory to repository
+- [x] **TASK-142:** Create ActivitiesListScreen with expandable tree view
+- [x] **TASK-143:** Create AddEditActivityDialog with icon picker
+- [x] **TASK-144:** Wire ActivitiesListProvider into MainScreen
+- [x] **TASK-145:** Write tests (9 new tests)
+- [x] **TASK-146:** Fix Firestore Security Rules — path-based userId for subcollection list queries
+- [x] **TASK-147:** Fix AddMeetingProvider validation — include selectedCategories
+- [x] **TASK-148:** Fix ActivityCategory.fromFirestore — nullable createdAt
+- [x] **TASK-149:** Fix MeetingDetailScreen — display resolved categories
+- [x] **TASK-150:** Fix AddMeetingProvider.initializeEditData — restore category chips
 
 ---
 

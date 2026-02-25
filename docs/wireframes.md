@@ -585,6 +585,73 @@ Think of authentication like entering a members-only club:
 
 **Migration note:** Drawer remains accessible via ⋮ menu (logout only).
 
+
+## Activities List Screen (US-026)
+```
+┌─────────────────────────────────────┐
+│  Activities                + 🔍    │
+├─────────────────────────────────────┤
+│                                     │
+│  ▶ 🏃 Sport                    +   │
+│  ▶ 🍕 Food & Drinks            +   │
+│  ▶ 🎬 Entertainment            +   │
+│  ▶ ✈️ Travel                   +   │
+│  ▶ 🏔️ Gory                    +   │  ← user-created root
+│                                     │
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+│ Home   │Meetings│Friends │Activities│
+└────────┴────────┴────────┴──────────┘
+```
+
+**Expanded state (after tapping Sport):**
+```
+┌─────────────────────────────────────┐
+│  Activities                + 🔍    │
+├─────────────────────────────────────┤
+│                                     │
+│  ▼ 🏃 Sport                    +   │
+│      💪 Siłownia                   │  ← leaf tile (long-press to edit/delete)
+│      🎾 Tenis                      │
+│      🏔️ Góry                       │
+│  ▶ 🍕 Food & Drinks            +   │
+│  ▶ 🏔️ Gory                    +   │  ← user-created (long-press available)
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Add Activity Dialog:**
+```
+┌─────────────────────────────────────┐
+│  Add Activity                       │
+├─────────────────────────────────────┤
+│                                     │
+│  Name                               │
+│  ┌─────────────────────────────┐    │
+│  │ e.g. Kayaking               │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  Parent category                    │
+│  ┌─────────────────────────────┐    │
+│  │ None (top-level)          ▼ │    │
+│  └─────────────────────────────┘    │
+│                                     │
+│  Icon                               │
+│  [🏃][🍕][🎬][✈️][💪][🎾]...      │
+│                                     │
+├─────────────────────────────────────┤
+│              CANCEL    SAVE         │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- All sections collapsed by default on screen open
+- `+` in AppBar → Add root category dialog (no parent preselected)
+- `+` on section row → Add child dialog (parent preselected)
+- Long-press on user-owned root → bottom sheet: Edit / Delete
+- Long-press on leaf tile → bottom sheet: Edit / Delete
+- Long-press on global category → no action (read-only)
+- Search filters leaf names, auto-expands matching sections
 ---
 
 ## Screen: MeetingsListScreen (US-021)

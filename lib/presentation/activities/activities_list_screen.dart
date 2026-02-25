@@ -296,38 +296,70 @@ class _RootCategoryTile extends StatelessWidget {
     required this.onDelete,
   });
 
+  Future<void> _showOptions(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit'),
+              onTap: () {
+                Navigator.of(context).pop();
+                onEdit(category);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.of(context).pop();
+                onDelete(category);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isExpanded = provider.isExpanded(category.id);
     final children = provider.childrenOf(category.id);
-    return ExpansionTile(
-      key: ValueKey('${category.id}_$isExpanded'),
-      initiallyExpanded: isExpanded,
-      leading: Icon(resolveActivityIcon(category.iconIdentifier)),
-      title: Text(category.name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add child activity',
-            onPressed: () => onAddChild(category.id),
-          ),
-          // ExpansionTile renders its own arrow after trailing, so we use
-          // a small spacer to avoid overlap with the default expand icon.
-          const SizedBox(width: 24),
-        ],
-      ),
-      onExpansionChanged: (_) => provider.toggleExpanded(category.id),
-      children: children
-          .map(
-            (child) => _ActivityLeafTile(
-              category: child,
-              onEdit: onEdit,
-              onDelete: onDelete,
+    return GestureDetector(
+      onLongPress: category.isGlobal ? null : () => _showOptions(context),
+      child: ExpansionTile(
+        key: ValueKey('${category.id}_$isExpanded'),
+        initiallyExpanded: isExpanded,
+        leading: Icon(resolveActivityIcon(category.iconIdentifier)),
+        title: Text(category.name),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Add child activity',
+              onPressed: () => onAddChild(category.id),
             ),
-          )
-          .toList(),
+            // ExpansionTile renders its own arrow after trailing, so we use
+            // a small spacer to avoid overlap with the default expand icon.
+            const SizedBox(width: 24),
+          ],
+        ),
+        onExpansionChanged: (_) => provider.toggleExpanded(category.id),
+        children: children
+            .map(
+              (child) => _ActivityLeafTile(
+                category: child,
+                onEdit: onEdit,
+                onDelete: onDelete,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 }
