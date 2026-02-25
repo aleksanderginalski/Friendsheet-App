@@ -245,6 +245,21 @@ Depth validation enforced in `ActivityCategoryRepository._validateDepth()`.
 **Statistics implication:** Filtering by parent category includes all descendants. Query logic: load full category tree client-side, resolve descendant IDs, filter meetings.
 
 **Onboarding copy logic:** On first login, all global categories are batch-copied to user's subcollection (US-020). Global categories are invisible to the user after onboarding.
+
+### M2 — Activities List Screen (US-026)
+
+**ActivitiesListProvider** owned by `MainScreen` — same lifecycle pattern as `PersonsListProvider`.
+Initialized via `addPostFrameCallback` on first load and re-initialized on every tab switch to index 3.
+
+**Data source:** `getAllCategories` merges two Firestore sources:
+- Root collection `activity_categories` (isGlobal: true) — global library
+- Subcollection `users/{userId}/activity_categories` (isGlobal: false) — user's private copy
+
+**Edit/Delete guard:** Only categories with `isGlobal: false` expose long-press options.
+Global categories are read-only in the UI.
+
+**Icon system:** String identifiers (e.g. `"sports_tennis"`) resolved to `IconData` at render time
+via `resolveActivityIcon()` helper in `activity_icons.dart`. Predefined set of 20 icons.
 ---
 
 ### M3 — Statistics Architecture

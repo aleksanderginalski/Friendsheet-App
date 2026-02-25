@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** lutego 24, 2026
+**Last Updated:** lutego 25, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -11,7 +11,7 @@
 - lib/data/models/activity.dart - Activity model (Freezed)
 - lib/data/models/activity.freezed.dart - Generated
 - lib/data/models/activity.g.dart - Generated
-- lib/data/models/activity_category.dart - ActivityCategory model (Freezed) — isSelectableAsActivity, copiedFromId, parentCategoryId, iconIdentifier (US-020)
+- lib/data/models/activity_category.dart - ActivityCategory model (Freezed) — nullable createdAt fallback, isSelectableAsActivity, copiedFromId, parentCategoryId, iconIdentifier (US-020, US-026)
 - lib/data/models/activity_category.freezed.dart - Generated
 - lib/data/models/activity_category.g.dart - Generated
 - lib/data/models/meeting.dart - Meeting model (Freezed) — categoryIds + activityIds dual list (US-020)
@@ -20,7 +20,7 @@
 - lib/data/models/person.dart - Person model (Freezed)
 - lib/data/models/person.freezed.dart - Generated
 - lib/data/models/person.g.dart - Generated
-- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, getSelectableCategories, getAncestorIds, depth validation (US-019, US-020)
+- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, getSelectableCategories, getAncestorIds, getAllCategories (global + private merge), depth validation (US-019, US-020, US-026)
 - lib/data/repositories/activity_repository.dart - ActivityRepository — private user activities only, global + private fetch, getActivitiesByIds
 - lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
 - lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
@@ -32,18 +32,22 @@
 - lib/main.dart - App entry point, Firebase initialization, AuthWrapper, MainScreen as root
 
 ## lib/presentation/
-- lib/presentation/meetings/meeting_detail_provider.dart - State for Meeting Detail screen — resolves participantIds, activityIds and categoryIds to full objects (US-020)
-- lib/presentation/meetings/meeting_detail_screen.dart - Meeting detail screen — displays all fields, edit and delete actions (US-022, US-023)
+- lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD (US-026)
+- lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, long-press edit/delete for private categories (US-026)
+- lib/presentation/activities/activity_icons.dart - Predefined icon set and resolveActivityIcon helper — maps string identifiers to Material IconData (US-026)
+- lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, icon picker (US-026)
+- lib/presentation/meetings/meeting_detail_provider.dart - State for Meeting Detail screen — resolves participantIds, activityIds and categoryIds to full objects (US-020, US-026)
+- lib/presentation/meetings/meeting_detail_screen.dart - Meeting detail screen — displays all fields including resolved categories, edit and delete actions (US-022, US-023, US-026)
 - lib/presentation/persons/person_detail_provider.dart - State for Person Detail screen — fetches meeting count, handles update and delete (US-025)
 - lib/presentation/persons/person_detail_screen.dart - Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation (US-025)
 - lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
-- lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation + private activities (US-020)
+- lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, validates selectedCategories (US-020, US-026)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen (stream, year grouping, expand/collapse)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen (future dashboard/statistics placeholder)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider lifecycle
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider and ActivitiesListProvider lifecycle (US-026)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
 - lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories + private activities, ancestor propagation on select (US-020)
@@ -65,6 +69,8 @@
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
 
 ## test/presentation/
+- test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD (US-026)
+- test/presentation/activities/activities_list_provider_test.mocks.dart - Generated mocks for ActivitiesListProvider tests
 - test/presentation/meetings/meeting_detail_provider_test.dart - MeetingDetailProvider tests — categoryIds resolution (US-020)
 - test/presentation/meetings/meeting_detail_provider_test.mocks.dart - Generated mocks for MeetingDetailProvider tests
 - test/presentation/persons/person_detail_provider_test.dart - PersonDetailProvider tests (US-025)
