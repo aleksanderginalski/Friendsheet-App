@@ -268,6 +268,17 @@ class MockActivityCategoryRepository extends _i1.Mock
       ) as _i5.Future<List<String>>);
 
   @override
+  _i5.Future<List<_i8.ActivityCategory>> getAllCategories(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllCategories,
+          [userId],
+        ),
+        returnValue: _i5.Future<List<_i8.ActivityCategory>>.value(
+            <_i8.ActivityCategory>[]),
+      ) as _i5.Future<List<_i8.ActivityCategory>>);
+
+  @override
   _i5.Future<List<_i8.ActivityCategory>> getCategoriesByIds(
     List<String>? ids,
     String? userId,
