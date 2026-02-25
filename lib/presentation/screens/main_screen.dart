@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../activities/activities_list_provider.dart';
+import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
@@ -22,6 +25,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final PersonsListProvider _personsListProvider;
+  late final ActivitiesListProvider _activitiesListProvider;
 
   @override
   void initState() {
@@ -30,11 +34,21 @@ class _MainScreenState extends State<MainScreen> {
       personRepository: PersonRepository(),
       authService: AuthService(),
     )..initialize();
+    _activitiesListProvider = ActivitiesListProvider(
+      repository: ActivityCategoryRepository(),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = AuthService().currentUserId;
+      if (userId != null) {
+        _activitiesListProvider.initialize(userId);
+      }
+    });
   }
 
   @override
   void dispose() {
     _personsListProvider.dispose();
+    _activitiesListProvider.dispose();
     super.dispose();
   }
 
@@ -79,8 +93,11 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _personsListProvider,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: _personsListProvider),
+        ChangeNotifierProvider.value(value: _activitiesListProvider),
+      ],
       child: _buildScaffold(context),
     );
   }
@@ -106,9 +123,7 @@ class _MainScreenState extends State<MainScreen> {
           HomeScreen(authService: widget.authService),
           const MeetingsListScreen(),
           const PersonsListScreen(),
-          const Scaffold(
-            body: Center(child: Text('Activities - Coming Soon')),
-          ),
+          const ActivitiesListScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -129,6 +144,11 @@ class _MainScreenState extends State<MainScreen> {
             // Re-fetch persons every time the Friends tab becomes active so
             // people added via AddMeetingScreen are visible immediately.
             if (index == 2) _personsListProvider.initialize();
+            // Re-fetch categories every time the Activities tab becomes active.
+            if (index == 3) {
+              final userId = AuthService().currentUserId;
+              if (userId != null) _activitiesListProvider.initialize(userId);
+            }
             setState(() => _currentIndex = index);
           },
           items: const [

@@ -30,12 +30,11 @@ service cloud.firestore {
     }
 
     match /users/{userId}/activity_categories/{categoryId} {
-      allow read: if isAuthenticated() &&
-                    (resource.data.isGlobal == true || isOwner(resource.data.userId));
+      allow read: if isAuthenticated() && isOwner(userId);
       allow create, update: if isAuthenticated() &&
                                request.resource.data.isGlobal == false &&
                                isOwner(request.resource.data.userId);
-      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
     }
 
     match /activity_categories/{categoryId} {

@@ -88,6 +88,56 @@ navigation call-site (in the parent screen), not inside the target screen itself
 Use addPostFrameCallback in initState to call initialize() on the provider.
 
 See: PersonDetailScreen + PersonsListScreen as reference implementation.
+
+## Firestore Security Rules — List Queries on Subcollections
+
+When writing Security Rules for subcollections (`users/{userId}/subcollection/{docId}`),
+use `userId` from the URL path for `allow read` and `allow delete` — NOT `resource.data.userId`.
+
+`resource.data` is unavailable during list queries (Firestore does not load document data
+to evaluate list permissions). Path-based check is always safe for both get and list.
+```javascript
+// WRONG — blocks list queries:
+allow read: if isAuthenticated() && isOwner(resource.data.userId);
+
+// CORRECT — works for both get and list:
+allow read: if isAuthenticated() && isOwner(userId);
+```
+
+## AlertDialog Layout — No ListView Inside
+
+`AlertDialog` computes its width using `IntrinsicWidth`. `ListView` does not support
+intrinsic dimension queries and will crash with:
+`RenderViewport does not support returning intrinsic dimensions`
+
+Always use `SingleChildScrollView + Row` for horizontal scrolling inside dialogs.
+```dart
+// WRONG — crashes inside AlertDialog:
+SizedBox(
+  height: 48,
+  child: ListView.builder(...),
+)
+
+// CORRECT:
+SingleChildScrollView(
+  scrollDirection: Axis.horizontal,
+  child: Row(children: [...]),
+)
+```
+
+## Firestore fromFirestore — Nullable Fields in Global Documents
+
+Global documents (seeded via script) may have different schemas than user-created documents.
+Always use null-safe fallback for fields that may be missing in global records.
+```dart
+// WRONG — crashes if field missing in global document:
+createdAt: (data['createdAt'] as Timestamp).toDate(),
+
+// CORRECT:
+createdAt: data['createdAt'] != null
+    ? (data['createdAt'] as Timestamp).toDate()
+    : DateTime.fromMillisecondsSinceEpoch(0),
+
 ```
 
 ---

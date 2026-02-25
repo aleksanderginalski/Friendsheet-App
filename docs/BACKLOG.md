@@ -269,7 +269,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** logged-in user  
 **I want to** log out of the application  
 **So that** my data is secure when I'm not using the app
-
+**Status:** ✅ COMPLETED 
 
 **Acceptance Criteria:**
 - [x] Logout button/option visible in app bar or drawer
@@ -316,7 +316,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** Developer  
 **I want to** have a Meeting data model  
 **So that** I can represent meeting data in the application
-
+**Status:** ✅ COMPLETED (February 18, 2026)
 
 **Acceptance Criteria:**
 - [x] Meeting class created with all required fields
@@ -326,7 +326,7 @@ If you already created a GitHub issue for US-005, you can:
 - [x] copyWith method for immutability
 - [x] Proper null safety handling
 - [x] Unit tests for all methods
-**Status:** ✅ COMPLETED (February 18, 2026)
+
 
 
 **Tasks:**
@@ -511,10 +511,10 @@ If you already created a GitHub issue for US-005, you can:
 **As a** user  
 **I want to** add participants to my meeting  
 **So that** I can track who I met with
-**Status:** ✅ COMPLETED (February 19, 2026)
+
 **Story Points:** 8  
 **Priority:** P0
-
+**Status:** ✅ COMPLETED (February 19, 2026)
 **Acceptance Criteria:**
 - [x] Autocomplete field for searching existing persons
 - [x] "Add new person" option when no match
@@ -723,59 +723,6 @@ If you already created a GitHub issue for US-005, you can:
 
 ---
 
-### US-019: Activity Categories
-
-**As a** user  
-**I want to** organize activities into categories and subcategories  
-**So that** I can better structure my activity data
-
-**Story Points:** 13  
-**Priority:** P1 (post-MVP)
-**Status:** ✅ COMPLETED (February 23, 2026)
-
-**Acceptance Criteria:**
-- [x] ActivityCategory model created (max 2 levels deep)
-- [x] parentCategoryId: String? for hierarchy support
-- [x] isGlobal: bool field
-- [x] Security Rules updated for activity_categories collection
-- [x] Unit tests written
-
-### US-020: Global Activity Library
-
-**As a** user  
-**I want to** have a built-in library of common activities  
-**So that** I don't have to create everything from scratch
-
-**Story Points:** 8  
-**Priority:** P2 (post-MVP)
-**Status:** ✅ COMPLETED (February 24, 2026)
-
-**Acceptance Criteria:**
-- [x] ActivityCategory model extended with isSelectableAsActivity: bool and copiedFromId: String?
-- [x] Meeting model extended with categoryIds: List<String> alongside activityIds
-- [x] Global categories seeded via Node.js script (26 categories, 2-level hierarchy)
-- [x] Seed data versioned in repository (seed/global_categories.json)
-- [x] On first login: batch-copy all global categories to user's private collection
-- [x] After copy: user operates on their own private categories (isGlobal: false)
-- [x] Ancestor propagation: selecting leaf category saves full path to root in categoryIds
-- [x] ActivityCategoryRepository: getSelectableCategories, getAncestorIds methods
-- [x] Unified autocomplete: selectable categories + private activities in one field
-- [x] Security Rules updated for batch-write on first login
-- [x] Unit tests written (251/251 passing)
-
-**Tasks:**
-- [x] **TASK-130a:** Extend ActivityCategory model — isSelectableAsActivity, copiedFromId
-- [x] **TASK-130b:** Extend Meeting model — categoryIds field
-- [x] **TASK-131:** Prepare and seed global categories via Node.js script
-- [x] **TASK-132a:** Add getSelectableCategories to ActivityCategoryRepository
-- [x] **TASK-132b:** Add getAncestorIds to ActivityCategoryRepository
-- [x] **TASK-133:** AuthService batch-copy on first login
-- [x] **TASK-134:** AddMeetingProvider — categories + ancestor propagation
-- [x] **TASK-135:** ActivityAutocomplete — unified search from two sources
-- [x] **TASK-136:** MeetingDetailProvider — resolve categoryIds
-- [x] **TASK-137:** Update Security Rules for batch-write
-- [x] **TASK-138:** Update all affected tests
-
 ### US-021: Meetings List Screen
 
 **As a** user  
@@ -926,48 +873,64 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 13  
 **Priority:** P0
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] ActivityCategory model created (max 3 levels: category → subcategory → activity)
-- [ ] parentCategoryId: String? for hierarchy support
-- [ ] iconIdentifier: String field (references predefined icon set)
-- [ ] isGlobal: bool field
-- [ ] Security Rules updated for activity_categories collection
-- [ ] Unit tests written
+- [x] ActivityCategory model created (max 3 levels: category → subcategory → activity)
+- [x] parentCategoryId: String? for hierarchy support
+- [x] iconIdentifier: String field (references predefined icon set)
+- [x] isGlobal: bool field
+- [x] Security Rules updated for activity_categories collection
+- [x] Unit tests written
 
 **Tasks:**
-- [ ] **TASK-126:** Create ActivityCategory model with Freezed - 2h
-- [ ] **TASK-127:** Create ActivityCategoryRepository - 2h
-- [ ] **TASK-128:** Update Firestore Security Rules - 1h
-- [ ] **TASK-129:** Write unit tests - 1h
+- [x] **TASK-126:** Create ActivityCategory model with Freezed - 2h
+- [x] **TASK-127:** Create ActivityCategoryRepository - 2h
+- [x] **TASK-128:** Update Firestore Security Rules - 1h
+- [x] **TASK-129:** Write unit tests - 1h
 
 ---
 
-### US-020: Global Activity Library (moved from FEATURE-X)
+### US-020: Global Activity Library
 
 **As a** user  
-**I want to** have a built-in library of common activities with icons  
+**I want to** have a built-in library of common activities  
 **So that** I don't have to create everything from scratch
 
 **Story Points:** 8  
-**Priority:** P0
+**Priority:** P2 (post-MVP)
+**Status:** ✅ COMPLETED (February 24, 2026)
 
 **Acceptance Criteria:**
-- [ ] Predefined icon set defined (~50 icons, Material-based, stored as string identifiers)
-- [ ] Global categories seeded via Firebase Console
-- [ ] Global activities with icons read-only for users (isGlobal: true)
-- [ ] Private activities manageable by user
-- [ ] Security Rules enforce read-only on global data
+- [x] ActivityCategory model extended with isSelectableAsActivity: bool and copiedFromId: String?
+- [x] Meeting model extended with categoryIds: List<String> alongside activityIds
+- [x] Global categories seeded via Node.js script (26 categories, 2-level hierarchy)
+- [x] Seed data versioned in repository (seed/global_categories.json)
+- [x] On first login: batch-copy all global categories to user's private collection
+- [x] After copy: user operates on their own private categories (isGlobal: false)
+- [x] Ancestor propagation: selecting leaf category saves full path to root in categoryIds
+- [x] ActivityCategoryRepository: getSelectableCategories, getAncestorIds methods
+- [x] Unified autocomplete: selectable categories + private activities in one field
+- [x] Security Rules updated for batch-write on first login
+- [x] Unit tests written (251/251 passing)
 
 **Tasks:**
-- [ ] **TASK-130:** Define icon identifier system and map - 2h
-- [ ] **TASK-131:** Seed global categories and activities in Firebase Console - 2h
-- [ ] **TASK-132:** Create IconPickerWidget from predefined list - 2h
-- [ ] **TASK-133:** Write tests - 1h
+- [x] **TASK-130a:** Extend ActivityCategory model — isSelectableAsActivity, copiedFromId
+- [x] **TASK-130b:** Extend Meeting model — categoryIds field
+- [x] **TASK-131:** Prepare and seed global categories via Node.js script
+- [x] **TASK-132a:** Add getSelectableCategories to ActivityCategoryRepository
+- [x] **TASK-132b:** Add getAncestorIds to ActivityCategoryRepository
+- [x] **TASK-133:** AuthService batch-copy on first login
+- [x] **TASK-134:** AddMeetingProvider — categories + ancestor propagation
+- [x] **TASK-135:** ActivityAutocomplete — unified search from two sources
+- [x] **TASK-136:** MeetingDetailProvider — resolve categoryIds
+- [x] **TASK-137:** Update Security Rules for batch-write
+- [x] **TASK-138:** Update all affected tests
 
 ---
 
 ### US-026: Activities List Screen
+**Status:** ✅ COMPLETED (February 25, 2026)
 
 **As a** user
 **I want to** see all activities organized by category
@@ -976,25 +939,27 @@ If you already created a GitHub issue for US-005, you can:
 **Story Points:** 8
 **Priority:** P0
 
-**Architecture Note (US-020):**
-- User operates on their own private copy of categories (isGlobal: false, userId: uid)
-- ActivityAutocomplete widget already built in US-020 — reuse, do not rewrite
-- CategoryIds stored with ancestor propagation — display leaf only, breadcrumb optional (e.g. Góry → Sport)
-- Private activities outside global library remain in activities collection
-
 **Acceptance Criteria:**
-- [ ] Activities displayed in category tree (expandable)
-- [ ] Global activities shown but marked as read-only
-- [ ] User can add new private activity with icon and optional category
-- [ ] User can edit/delete their own private activities
-- [ ] User cannot edit/delete global activities
-- [ ] Search/filter by name
+- [x] Activities displayed in category tree (expandable)
+- [x] Global categories visible and read-only (long-press disabled)
+- [x] User can add new private activity category with icon and optional parent
+- [x] User can edit/delete their own private categories (long-press)
+- [x] User cannot edit/delete global categories
+- [x] Search/filter by name
 
 **Tasks:**
-- [ ] **TASK-134:** Create ActivitiesListScreen with tree view - 3h
-- [ ] **TASK-135:** Implement category tree expansion widget - 2h
-- [ ] **TASK-136:** Add/Edit activity dialog with icon picker - 2h
-- [ ] **TASK-137:** Write tests - 1h
+- [x] **TASK-139:** Add `getAllCategories` to ActivityCategoryRepository — merges global + private (US-026)
+- [x] **TASK-140:** Create ActivitiesListProvider — fetch, tree expansion, search, CRUD
+- [x] **TASK-141:** Verify/add addCategory, updateCategory, deleteCategory to repository
+- [x] **TASK-142:** Create ActivitiesListScreen with expandable tree view
+- [x] **TASK-143:** Create AddEditActivityDialog with icon picker
+- [x] **TASK-144:** Wire ActivitiesListProvider into MainScreen
+- [x] **TASK-145:** Write tests (9 new tests)
+- [x] **TASK-146:** Fix Firestore Security Rules — path-based userId for subcollection list queries
+- [x] **TASK-147:** Fix AddMeetingProvider validation — include selectedCategories
+- [x] **TASK-148:** Fix ActivityCategory.fromFirestore — nullable createdAt
+- [x] **TASK-149:** Fix MeetingDetailScreen — display resolved categories
+- [x] **TASK-150:** Fix AddMeetingProvider.initializeEditData — restore category chips
 
 ---
 
