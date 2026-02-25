@@ -40,7 +40,9 @@ class ActivityCategory with _$ActivityCategory {
       isGlobal: (data['isGlobal'] ?? false) as bool,
       isSelectableAsActivity: (data['isSelectableAsActivity'] ?? false) as bool,
       parentCategoryId: data['parentCategoryId'] as String?,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 

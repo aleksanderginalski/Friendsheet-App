@@ -210,18 +210,23 @@ class _ActivityList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (provider.activities.isEmpty) {
+    if (provider.activities.isEmpty && provider.categories.isEmpty) {
       return const Text('No activities.');
     }
 
     return Column(
-      children: provider.activities
-          .map((a) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.local_activity_outlined),
-                title: Text(a.name),
-              ))
-          .toList(),
+      children: [
+        ...provider.activities.map((a) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.local_activity_outlined),
+              title: Text(a.name),
+            )),
+        ...provider.categories.map((c) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.sports_tennis),
+              title: Text(c.name),
+            )),
+      ],
     );
   }
 }
