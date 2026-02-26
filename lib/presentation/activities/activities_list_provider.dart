@@ -94,7 +94,7 @@ class ActivitiesListProvider extends ChangeNotifier {
       name: name,
       iconIdentifier: iconIdentifier,
       isGlobal: false,
-      isSelectableAsActivity: parentCategoryId != null,
+      isSelectableAsActivity: true,
       parentCategoryId: parentCategoryId,
       createdAt: DateTime.now(),
     );
@@ -114,7 +114,7 @@ class ActivitiesListProvider extends ChangeNotifier {
     final updated = existing.copyWith(
       name: name,
       iconIdentifier: iconIdentifier,
-      isSelectableAsActivity: parentCategoryId != null,
+      isSelectableAsActivity: existing.isSelectableAsActivity,
       parentCategoryId: parentCategoryId,
     );
     await _repository.updateCategory(updated);
