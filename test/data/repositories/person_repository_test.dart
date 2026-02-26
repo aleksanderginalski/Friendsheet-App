@@ -156,7 +156,6 @@ void main() {
           'date': DateTime(2026, 1, 1),
           'weight': 3,
           'participantIds': [saved.id],
-          'activityIds': <String>[],
           'createdAt': DateTime(2026, 1, 1),
           'updatedAt': DateTime(2026, 1, 1),
         });

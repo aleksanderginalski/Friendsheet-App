@@ -138,7 +138,44 @@ createdAt: data['createdAt'] != null
     ? (data['createdAt'] as Timestamp).toDate()
     : DateTime.fromMillisecondsSinceEpoch(0),
 
+## Activity Architecture (post US-042 refactor)
+- Legacy `Activity` model and `activities` Firestore collection are REMOVED
+- Only source of truth: `users/{uid}/activity_categories` (subcollection)
+- Meeting model uses `categoryIds` only — `activityIds` field does not exist
+- New activity from AddMeeting → creates root category in user's subcollection
+
+```
+## Firestore Data Hierarchy (post US-045)
+
+All user data lives under `users/{uid}` subcollections:
+
+```
+activity_categories/          ← global template only (isGlobal: true, read-only)
+users/{uid}/
+  activity_categories/        ← user's private categories (isGlobal: false)
+  meetings/                   ← user's meetings
+  persons/                    ← user's persons
+  [document]                  ← onboardingCompletedAt: Timestamp
 ```
 
+Rule: Never query root `/meetings` or `/persons` collections — they no longer exist post US-045.
+Always pass `userId` to repository methods so they can build the correct subcollection path.
+
+## Onboarding Guard Pattern
+
+`AuthService` checks `onboardingCompletedAt` on `users/{uid}` document before batch-copy.
+If field is absent → run batch-copy + write `onboardingCompletedAt`.
+If field is present → skip. This ensures idempotency across re-installs and re-logins.
+
+```dart
+// WRONG — runs batch-copy every login:
+await _batchCopyGlobalCategories(uid);
+
+// CORRECT — idempotent:
+final userDoc = await _firestore.collection('users').doc(uid).get();
+if (userDoc.data()?['onboardingCompletedAt'] == null) {
+  await _batchCopyGlobalCategories(uid);
+}
+```
 ---
 

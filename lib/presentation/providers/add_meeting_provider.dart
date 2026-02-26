@@ -1,19 +1,16 @@
 // lib/presentation/providers/add_meeting_provider.dart
 
 import 'package:flutter/foundation.dart';
-import '../../data/models/activity.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/models/meeting.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/activity_category_repository.dart';
-import '../../data/repositories/activity_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
 
 class AddMeetingProvider extends ChangeNotifier {
   final PersonRepository _personRepository;
-  final ActivityRepository _activityRepository;
   final ActivityCategoryRepository _categoryRepository;
   final MeetingRepository _meetingRepository;
   final AuthService _authService;
@@ -23,13 +20,11 @@ class AddMeetingProvider extends ChangeNotifier {
 
   AddMeetingProvider({
     PersonRepository? personRepository,
-    ActivityRepository? activityRepository,
     ActivityCategoryRepository? categoryRepository,
     MeetingRepository? meetingRepository,
     AuthService? authService,
     this.initialMeeting,
   })  : _personRepository = personRepository ?? PersonRepository(),
-        _activityRepository = activityRepository ?? ActivityRepository(),
         _categoryRepository =
             categoryRepository ?? ActivityCategoryRepository(),
         _meetingRepository = meetingRepository ?? MeetingRepository(),
@@ -54,10 +49,7 @@ class AddMeetingProvider extends ChangeNotifier {
   bool _isLoadingPersons = false;
   String? _participantsError;
 
-  // --- Activities state ---
-  List<Activity> _availableActivities = [];
-  List<Activity> _selectedActivities = [];
-  bool _isLoadingActivities = false;
+  // --- Activities/Categories error state ---
   String? _activitiesError;
 
   // --- Categories state ---
@@ -87,12 +79,7 @@ class AddMeetingProvider extends ChangeNotifier {
   bool get isLoadingPersons => _isLoadingPersons;
   String? get participantsError => _participantsError;
 
-  // --- Activities getters ---
-  List<Activity> get availableActivities =>
-      List.unmodifiable(_availableActivities);
-  List<Activity> get selectedActivities =>
-      List.unmodifiable(_selectedActivities);
-  bool get isLoadingActivities => _isLoadingActivities;
+  // --- Activities/Categories getters ---
   String? get activitiesError => _activitiesError;
 
   // --- Categories getters ---
@@ -224,72 +211,6 @@ class AddMeetingProvider extends ChangeNotifier {
     return true;
   }
 
-  // --- Activities methods ---
-
-  // Loads global and user-private activities from Firestore
-  Future<void> loadActivities(String userId) async {
-    _isLoadingActivities = true;
-    _activitiesError = null;
-    notifyListeners();
-
-    try {
-      _availableActivities =
-          await _activityRepository.getActivitiesByUser(userId);
-    } catch (e) {
-      _activitiesError = 'Failed to load activities';
-    } finally {
-      _isLoadingActivities = false;
-      notifyListeners();
-    }
-  }
-
-  // Returns activities matching the query, excluding already selected ones
-  List<Activity> searchActivities(String query) {
-    if (query.trim().isEmpty) return [];
-    final lower = query.toLowerCase();
-    return _availableActivities
-        .where((a) => a.name.toLowerCase().contains(lower))
-        .where((a) => !_selectedActivities.contains(a))
-        .toList();
-  }
-
-  // Adds activity to selected list, prevents duplicates
-  void selectActivity(Activity activity) {
-    if (_selectedActivities.contains(activity)) return;
-    _selectedActivities.add(activity);
-    _activitiesError = null;
-    notifyListeners();
-  }
-
-  // Removes activity from selected list
-  void removeActivity(Activity activity) {
-    _selectedActivities.remove(activity);
-    notifyListeners();
-  }
-
-  // Saves new activity to Firestore, then adds to available and selected lists
-  Future<void> addNewActivity(String name) async {
-    final userId = _authService.currentUserId;
-    if (userId == null) return;
-
-    final saved = await _activityRepository.addActivity(
-      userId: userId,
-      name: name,
-    );
-    _availableActivities.add(saved);
-    selectActivity(saved);
-  }
-
-  // Returns true if activities section is valid
-  bool validateActivities() {
-    if (_selectedActivities.isEmpty && _selectedCategories.isEmpty) {
-      _activitiesError = 'Add at least one activity';
-      notifyListeners();
-      return false;
-    }
-    return true;
-  }
-
   // --- Categories methods ---
 
   // Loads selectable categories for the user from the global library.
@@ -344,12 +265,38 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Creates a new root selectable category in the user's subcollection and
+  // immediately selects it as a chip. Bypasses getAncestorIds because the
+  // newly created category is always a root (parentCategoryId: null).
+  Future<void> addNewActivity(String name, String userId) async {
+    final category = await _categoryRepository.createSelectableCategory(
+      name: name,
+      userId: userId,
+    );
+    _availableCategories.add(category);
+    if (!_selectedCategoryIds.contains(category.id)) {
+      _selectedCategoryIds.add(category.id);
+    }
+    _selectedCategories.add(category);
+    notifyListeners();
+  }
+
   // Removes a category chip. Only the leaf ID is removed; ancestors may still
   // be needed by other selected categories, so they are left in place.
   void removeCategory(ActivityCategory category) {
     _selectedCategories.remove(category);
     _selectedCategoryIds.remove(category.id);
     notifyListeners();
+  }
+
+  // Returns true if at least one category is selected.
+  bool validateActivities() {
+    if (_selectedCategories.isEmpty) {
+      _activitiesError = 'Add at least one activity';
+      notifyListeners();
+      return false;
+    }
+    return true;
   }
 
   // Validates all fields and saves or updates the meeting in Firestore.
@@ -379,7 +326,6 @@ class AddMeetingProvider extends ChangeNotifier {
           date: _date,
           weight: weight,
           participantIds: _selectedPersons.map((p) => p.id).toList(),
-          activityIds: _selectedActivities.map((a) => a.id).toList(),
           categoryIds: List<String>.from(_selectedCategoryIds),
           updatedAt: now,
         );
@@ -394,7 +340,6 @@ class AddMeetingProvider extends ChangeNotifier {
           date: _date,
           weight: weight,
           participantIds: _selectedPersons.map((p) => p.id).toList(),
-          activityIds: _selectedActivities.map((a) => a.id).toList(),
           categoryIds: List<String>.from(_selectedCategoryIds),
           createdAt: now,
           updatedAt: now,
@@ -422,9 +367,6 @@ class AddMeetingProvider extends ChangeNotifier {
     _selectedPersons = [];
     _isLoadingPersons = false;
     _participantsError = null;
-    _availableActivities = [];
-    _selectedActivities = [];
-    _isLoadingActivities = false;
     _activitiesError = null;
     _availableCategories = [];
     _selectedCategories = [];
@@ -444,22 +386,16 @@ class AddMeetingProvider extends ChangeNotifier {
     _selectedCategoryIds = List<String>.from(meeting.categoryIds);
   }
 
-  // Loads full Person and Activity objects for pre-filling edit form
+  // Loads full Person objects for pre-filling edit form
   Future<void> initializeEditData() async {
     if (initialMeeting == null) return;
 
     _isLoadingPersons = true;
-    _isLoadingActivities = true;
     notifyListeners();
 
     try {
-      final results = await Future.wait([
-        _personRepository.getPersonsByIds(initialMeeting!.participantIds),
-        _activityRepository.getActivitiesByIds(initialMeeting!.activityIds),
-      ]);
-
-      _selectedPersons = List.from(results[0] as List<Person>);
-      _selectedActivities = List.from(results[1] as List<Activity>);
+      _selectedPersons = await _personRepository
+          .getPersonsByIds(initialMeeting!.participantIds);
 
       // Restore selected category chips from saved categoryIds.
       // Only leaf categories (isSelectableAsActivity: true) are shown as chips.
@@ -479,7 +415,6 @@ class AddMeetingProvider extends ChangeNotifier {
       _participantsError = 'Failed to load meeting data';
     } finally {
       _isLoadingPersons = false;
-      _isLoadingActivities = false;
       notifyListeners();
     }
   }

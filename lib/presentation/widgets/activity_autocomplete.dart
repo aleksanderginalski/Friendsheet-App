@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../data/models/activity.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/services/auth_service.dart';
 import '../providers/add_meeting_provider.dart';
@@ -17,7 +16,6 @@ class ActivityAutocomplete extends StatefulWidget {
 class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  List<Activity> _activitySuggestions = [];
   List<ActivityCategory> _categorySuggestions = [];
 
   @override
@@ -29,19 +27,8 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
 
   void _onSearchChanged(String query, AddMeetingProvider provider) {
     setState(() {
-      _activitySuggestions = provider.searchActivities(query);
       _categorySuggestions = provider.searchCategories(query);
     });
-  }
-
-  void _selectActivity(Activity activity, AddMeetingProvider provider) {
-    provider.selectActivity(activity);
-    _controller.clear();
-    setState(() {
-      _activitySuggestions = [];
-      _categorySuggestions = [];
-    });
-    _focusNode.unfocus();
   }
 
   Future<void> _selectCategory(
@@ -53,37 +40,30 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     await provider.addCategory(category, userId);
     _controller.clear();
     setState(() {
-      _activitySuggestions = [];
       _categorySuggestions = [];
     });
     _focusNode.unfocus();
   }
 
-  Future<void> _showAddActivityDialog(
+  // Creates a new root selectable category and selects it as a chip.
+  Future<void> _addNewActivity(
     BuildContext context,
     AddMeetingProvider provider,
-    String initialName,
+    String name,
   ) async {
-    // Dialog returns raw name string, Provider handles Firestore save
-    final name = await showDialog<String>(
-      context: context,
-      builder: (_) => AddActivityDialog(initialName: initialName),
-    );
-
-    if (name != null && context.mounted) {
-      await provider.addNewActivity(name);
-      _controller.clear();
-      setState(() {
-        _activitySuggestions = [];
-        _categorySuggestions = [];
-      });
-    }
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+    await provider.addNewActivity(name, userId);
+    _controller.clear();
+    setState(() {
+      _categorySuggestions = [];
+    });
+    _focusNode.unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AddMeetingProvider>();
-    final selectedActivities = provider.selectedActivities;
     final selectedCategories = provider.selectedCategories;
     final error = provider.activitiesError;
 
@@ -102,11 +82,10 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
           ),
           onChanged: (query) => _onSearchChanged(query, provider),
         ),
-        if (_activitySuggestions.isNotEmpty ||
-            _categorySuggestions.isNotEmpty ||
+        if (_categorySuggestions.isNotEmpty ||
             _controller.text.trim().isNotEmpty)
           _buildSuggestionsList(context, provider),
-        if (selectedCategories.isNotEmpty || selectedActivities.isNotEmpty)
+        if (selectedCategories.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Wrap(
@@ -118,12 +97,6 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
                     avatar: const Icon(Icons.category_outlined, size: 16),
                     label: Text(c.name),
                     onDeleted: () => provider.removeCategory(c),
-                  ),
-                ),
-                ...selectedActivities.map(
-                  (a) => Chip(
-                    label: Text(a.name),
-                    onDeleted: () => provider.removeActivity(a),
                   ),
                 ),
               ],
@@ -138,8 +111,8 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     AddMeetingProvider provider,
   ) {
     final query = _controller.text.trim();
-    final hasExactActivityMatch = _activitySuggestions.any(
-      (a) => a.name.toLowerCase() == query.toLowerCase(),
+    final hasExactMatch = _categorySuggestions.any(
+      (c) => c.name.toLowerCase() == query.toLowerCase(),
     );
 
     return Card(
@@ -168,93 +141,15 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
               );
             },
           ),
-          // Activity suggestions — private user activities
-          ..._activitySuggestions.map(
-            (activity) => ListTile(
-              leading: const Icon(Icons.local_activity_outlined),
-              title: Text(activity.name),
-              onTap: () => _selectActivity(activity, provider),
-            ),
-          ),
-          // "Add custom" option — creates a private Activity with no category
-          if (query.isNotEmpty && !hasExactActivityMatch)
+          // "Add custom" option — creates a new root category in the user's subcollection
+          if (query.isNotEmpty && !hasExactMatch)
             ListTile(
               leading: const Icon(Icons.add_circle_outline),
               title: Text('Add "$query" as new activity'),
-              onTap: () => _showAddActivityDialog(context, provider, query),
+              onTap: () => _addNewActivity(context, provider, query),
             ),
         ],
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Add Activity Dialog — returns raw name string only, no Firestore logic
-// ---------------------------------------------------------------------------
-
-class AddActivityDialog extends StatefulWidget {
-  final String initialName;
-
-  const AddActivityDialog({super.key, required this.initialName});
-
-  @override
-  State<AddActivityDialog> createState() => _AddActivityDialogState();
-}
-
-class _AddActivityDialogState extends State<AddActivityDialog> {
-  late final TextEditingController _nameController;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.initialName);
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      setState(() => _error = 'Activity name is required');
-      return;
-    }
-
-    // Return raw name string — Provider is responsible for saving to Firestore
-    Navigator.of(context).pop(name);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('New Activity'),
-      content: TextField(
-        controller: _nameController,
-        decoration: InputDecoration(
-          labelText: 'Activity name',
-          errorText: _error,
-        ),
-        autofocus: true,
-        textCapitalization: TextCapitalization.sentences,
-        onChanged: (_) {
-          if (_error != null) setState(() => _error = null);
-        },
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CANCEL'),
-        ),
-        TextButton(
-          onPressed: _submit,
-          child: const Text('SAVE'),
-        ),
-      ],
     );
   }
 }

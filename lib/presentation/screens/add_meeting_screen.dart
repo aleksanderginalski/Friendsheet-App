@@ -45,15 +45,14 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
   @override
   void initState() {
     super.initState();
-    // Load persons/activities after first frame so Provider is ready
+    // Load persons/categories after first frame so Provider is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = widget.userId;
       if (userId != null) {
         context.read<AddMeetingProvider>().loadPersons(userId);
-        context.read<AddMeetingProvider>().loadActivities(userId);
         context.read<AddMeetingProvider>().loadCategories(userId);
       }
-      // Load full Person/Activity objects when editing an existing meeting
+      // Load full Person objects when editing an existing meeting
       context.read<AddMeetingProvider>().initializeEditData();
     });
   }
