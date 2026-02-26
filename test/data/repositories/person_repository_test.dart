@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/person.dart';
@@ -34,6 +35,14 @@ void main() {
     );
   }
 
+  // Helper: returns the persons subcollection reference for a given userId.
+  CollectionReference<Map<String, dynamic>> personsRef(String userId) =>
+      fakeFirestore.collection('users').doc(userId).collection('persons');
+
+  // Helper: returns the meetings subcollection reference for a given userId.
+  CollectionReference<Map<String, dynamic>> meetingsRef(String userId) =>
+      fakeFirestore.collection('users').doc(userId).collection('meetings');
+
   group('PersonRepository', () {
     group('addPerson', () {
       test('returns person with generated ID', () async {
@@ -54,12 +63,11 @@ void main() {
         expect(saved.lastName, equals('Nowak'));
       });
 
-      test('stores document in persons collection', () async {
+      test('stores document in persons subcollection', () async {
         final person = makePerson();
         final saved = await repository.addPerson(person);
 
-        final doc =
-            await fakeFirestore.collection('persons').doc(saved.id).get();
+        final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.exists, isTrue);
       });
     });
@@ -104,8 +112,7 @@ void main() {
 
         await repository.updatePerson(updated);
 
-        final doc =
-            await fakeFirestore.collection('persons').doc(saved.id).get();
+        final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.data()?['firstName'], equals('Maria'));
       });
 
@@ -116,8 +123,7 @@ void main() {
 
         await repository.updatePerson(updated);
 
-        final doc =
-            await fakeFirestore.collection('persons').doc(saved.id).get();
+        final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.data()?['lastName'], equals('Nowak'));
       });
     });
@@ -128,8 +134,7 @@ void main() {
 
         await repository.deletePerson('user-1', saved.id);
 
-        final doc =
-            await fakeFirestore.collection('persons').doc(saved.id).get();
+        final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.exists, isFalse);
       });
 
@@ -140,8 +145,7 @@ void main() {
 
         await repository.deletePerson('user-1', saved1.id);
 
-        final doc =
-            await fakeFirestore.collection('persons').doc(saved2.id).get();
+        final doc = await personsRef('user-1').doc(saved2.id).get();
         expect(doc.exists, isTrue);
       });
 
@@ -149,8 +153,8 @@ void main() {
           () async {
         final saved = await repository.addPerson(makePerson());
 
-        // Create a meeting that includes the person as a participant
-        await fakeFirestore.collection('meetings').add({
+        // Create a meeting in the user's subcollection that includes the person
+        await meetingsRef('user-1').add({
           'userId': 'user-1',
           'name': 'Test Meeting',
           'date': DateTime(2026, 1, 1),
@@ -162,10 +166,7 @@ void main() {
 
         await repository.deletePerson('user-1', saved.id);
 
-        final meetings = await fakeFirestore
-            .collection('meetings')
-            .where('userId', isEqualTo: 'user-1')
-            .get();
+        final meetings = await meetingsRef('user-1').get();
         expect(meetings.docs.first['participantIds'], isEmpty);
       });
     });
