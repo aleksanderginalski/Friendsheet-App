@@ -14,7 +14,7 @@ void main() {
     authService = AuthService.withFirestore(fakeFirestore);
   });
 
-  // Seeds a global category in the top-level activity_categories collection.
+  // Seeds a global category in the root activity_categories collection (source).
   Future<void> seedGlobalCategory({
     String name = 'Sport',
     String? parentCategoryId,
@@ -33,17 +33,19 @@ void main() {
     await fakeFirestore.collection('activity_categories').add(data);
   }
 
-  // Seeds a private user category (simulates already-copied state).
-  Future<void> seedUserCategory(String uid) async {
-    await fakeFirestore.collection('activity_categories').add({
-      'userId': uid,
-      'name': 'Existing',
-      'iconIdentifier': 'icon',
-      'isGlobal': false,
-      'isSelectableAsActivity': false,
-      'createdAt': Timestamp.now(),
+  // Seeds onboardingCompletedAt on the user document to simulate second login.
+  Future<void> seedOnboardingCompleted(String uid) async {
+    await fakeFirestore.collection('users').doc(uid).set({
+      'onboardingCompletedAt': Timestamp.now(),
     });
   }
+
+  // Returns the user's private activity_categories subcollection reference.
+  CollectionReference<Map<String, dynamic>> userCategoriesRef(String uid) =>
+      fakeFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('activity_categories');
 
   group('AuthService._copyGlobalCategoriesToUser (guard logic)', () {
     test('copies global categories when user has none', () async {
@@ -52,43 +54,58 @@ void main() {
 
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('isGlobal', isEqualTo: false)
-          .where('userId', isEqualTo: userId)
-          .get();
-
+      final snapshot = await userCategoriesRef(userId).get();
       expect(snapshot.docs.length, equals(2));
     });
 
-    test('returns early without writing when user already has categories',
+    test('skips batch-copy when onboardingCompletedAt is already set',
         () async {
       await seedGlobalCategory(name: 'Sport');
-      await seedUserCategory(userId);
+      await seedOnboardingCompleted(userId);
 
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      // Only the pre-existing category should be present, not a new copy.
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('isGlobal', isEqualTo: false)
-          .where('userId', isEqualTo: userId)
-          .get();
-
-      expect(snapshot.docs.length, equals(1));
-      expect(snapshot.docs.first['name'], equals('Existing'));
+      // Guard fired — no categories should have been copied.
+      final snapshot = await userCategoriesRef(userId).get();
+      expect(snapshot.docs, isEmpty);
     });
 
     test('does nothing when there are no global categories', () async {
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('isGlobal', isEqualTo: false)
-          .where('userId', isEqualTo: userId)
-          .get();
-
+      final snapshot = await userCategoriesRef(userId).get();
       expect(snapshot.docs, isEmpty);
+    });
+
+    test('writes onboardingCompletedAt to users/{uid} after first batch-copy',
+        () async {
+      await seedGlobalCategory(name: 'Sport');
+
+      await authService.copyGlobalCategoriesToUserForTest(userId);
+
+      final userDoc = await fakeFirestore.collection('users').doc(userId).get();
+      expect(userDoc.data()?['onboardingCompletedAt'], isNotNull);
+      expect(userDoc.data()?['onboardingCompletedAt'], isA<Timestamp>());
+    });
+
+    test('does not run batch-copy on second login (onboardingCompletedAt set)',
+        () async {
+      await seedGlobalCategory(name: 'Sport');
+
+      // First login — copies categories and writes the guard timestamp.
+      await authService.copyGlobalCategoriesToUserForTest(userId);
+
+      final countAfterFirst =
+          (await userCategoriesRef(userId).get()).docs.length;
+
+      // Second login — guard fires, no additional copies.
+      await authService.copyGlobalCategoriesToUserForTest(userId);
+
+      final countAfterSecond =
+          (await userCategoriesRef(userId).get()).docs.length;
+
+      expect(countAfterFirst, equals(1));
+      expect(countAfterSecond, equals(1));
     });
 
     test('remaps parentCategoryId to new user copy IDs', () async {
@@ -113,11 +130,7 @@ void main() {
 
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('isGlobal', isEqualTo: false)
-          .where('userId', isEqualTo: userId)
-          .get();
+      final snapshot = await userCategoriesRef(userId).get();
 
       // Find the child copy (Running) and verify its parentCategoryId points
       // to the user copy of Sport, not the global Sport doc ID.
@@ -131,10 +144,8 @@ void main() {
       expect(childParentId, isNot(equals(parentRef.id)));
 
       // The parentCategoryId must point to another user copy (Sport).
-      final parentDoc = await fakeFirestore
-          .collection('activity_categories')
-          .doc(childParentId)
-          .get();
+      final parentDoc =
+          await userCategoriesRef(userId).doc(childParentId).get();
       expect(parentDoc.exists, isTrue);
       expect(
           (parentDoc.data() as Map<String, dynamic>)['name'], equals('Sport'));
@@ -146,11 +157,7 @@ void main() {
 
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('userId', isEqualTo: userId)
-          .get();
-
+      final snapshot = await userCategoriesRef(userId).get();
       for (final doc in snapshot.docs) {
         expect((doc.data())['isGlobal'], isFalse);
       }
@@ -169,11 +176,7 @@ void main() {
 
       await authService.copyGlobalCategoriesToUserForTest(userId);
 
-      final snapshot = await fakeFirestore
-          .collection('activity_categories')
-          .where('userId', isEqualTo: userId)
-          .get();
-
+      final snapshot = await userCategoriesRef(userId).get();
       expect(snapshot.docs.length, equals(1));
       expect(
         (snapshot.docs.first.data())['copiedFromId'],
