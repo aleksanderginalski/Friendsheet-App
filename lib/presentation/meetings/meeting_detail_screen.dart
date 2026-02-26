@@ -316,7 +316,8 @@ class _DeleteButtonState extends State<_DeleteButton> {
     setState(() => _isDeleting = true);
 
     try {
-      await MeetingRepository().deleteMeeting(widget.meeting.id);
+      await MeetingRepository()
+          .deleteMeeting(widget.meeting.userId, widget.meeting.id);
       if (context.mounted) Navigator.of(context).pop('deleted');
     } catch (e) {
       if (context.mounted) {
