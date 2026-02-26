@@ -400,6 +400,10 @@ graph LR
 
 ## 6. Security Rules (Full)
 
+> ⚠️ **Planned change — US-045:** `meetings` and `persons` will be migrated to subcollections
+> under `users/{uid}`. Security Rules will be updated to path-based checks at that point.
+> Current rules below reflect pre-US-045 state.
+
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -425,19 +429,22 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
 
-    match /activities/{activityId} {
-      allow read: if isAuthenticated() &&
-                    (resource.data.isGlobal == true || isOwner(resource.data.userId));
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
-
     match /activity_categories/{categoryId} {
       allow read: if isAuthenticated() &&
                     (resource.data.isGlobal == true || isOwner(resource.data.userId));
       allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
       allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
+
+    // User subcollections — path-based userId (resource.data unavailable for list queries)
+    match /users/{userId}/activity_categories/{categoryId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
+    }
+
+    // US-045: meetings and persons will move here
+    // match /users/{userId}/meetings/{meetingId} { ... }
+    // match /users/{userId}/persons/{personId} { ... }
 
     // M5 - Invitation codes
     match /invitation_codes/{codeId} {
@@ -453,8 +460,8 @@ service cloud.firestore {
   }
 }
 ```
-
 ---
+
 
 ## 7. Deployment Architecture
 

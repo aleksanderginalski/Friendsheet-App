@@ -972,28 +972,30 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0
 **Status:** 📋 Planned
 **Milestone:** M2
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
 
-- [ ] `Activity` model removed (`activity.dart`, `activity.freezed.dart`, `activity.g.dart`)
-- [ ] `ActivityRepository` removed (`activity_repository.dart` and its test file)
-- [ ] `Meeting` model no longer contains `activityIds` field
-- [ ] `AddMeetingProvider` no longer references `Activity` model or `ActivityRepository`
-- [ ] `ActivityAutocomplete` no longer uses `Activity` suggestions or `_activitySuggestions` list
-- [ ] `MeetingDetailProvider` no longer resolves `activityIds`
-- [ ] `MeetingDetailScreen` no longer displays legacy activities section
-- [ ] All tests updated — no references to `Activity` model remain
-- [ ] `flutter analyze` passes with 0 issues
+- [x] `Activity` model removed (`activity.dart`, `activity.freezed.dart`, `activity.g.dart`)
+- [x] `ActivityRepository` removed (`activity_repository.dart` and its test file)
+- [x] `Meeting` model no longer contains `activityIds` field
+- [x] `AddMeetingProvider` no longer references `Activity` model or `ActivityRepository`
+- [x] `ActivityAutocomplete` no longer uses `Activity` suggestions or `_activitySuggestions` list
+- [x] `MeetingDetailProvider` no longer resolves `activityIds`
+- [x] `MeetingDetailScreen` no longer displays legacy activities section
+- [x] All tests updated — no references to `Activity` model remain
+- [x] `flutter analyze` passes with 0 issues
 
 **Tasks:**
 
-- [ ] **TASK-42.1:** Delete `activity.dart`, `activity.freezed.dart`, `activity.g.dart`
-- [ ] **TASK-42.2:** Delete `activity_repository.dart` and its corresponding test file
-- [ ] **TASK-42.3:** Remove `activityIds` field from `Meeting` model + run `build_runner`
-- [ ] **TASK-42.4:** Remove `Activity` references from `AddMeetingProvider` (`selectedActivities`, `searchActivities`, `selectActivity`, `removeActivity`, `addNewActivity`)
-- [ ] **TASK-42.5:** Remove `Activity` suggestions from `ActivityAutocomplete` (`_activitySuggestions`, `_selectActivity`)
-- [ ] **TASK-42.6:** Remove `activityIds` resolving from `MeetingDetailProvider` and `MeetingDetailScreen`
-- [ ] **TASK-42.7:** Update all affected tests — run `flutter test` and fix failures
+- [x] **TASK-42.1:** Delete `activity.dart`, `activity.freezed.dart`, `activity.g.dart`
+- [x] **TASK-42.2:** Delete `activity_repository.dart` and its corresponding test file
+- [x] **TASK-42.3:** Remove `activityIds` field from `Meeting` model + run `build_runner`
+- [x] **TASK-42.4:** Remove `Activity` references from `AddMeetingProvider` (`selectedActivities`, `searchActivities`, `selectActivity`, `removeActivity`, `addNewActivity`)
+- [x] **TASK-42.5:** Remove `Activity` suggestions from `ActivityAutocomplete` (`_activitySuggestions`, `_selectActivity`)
+- [x] **TASK-42.6:** Remove `activityIds` resolving from `MeetingDetailProvider` and `MeetingDetailScreen`
+- [x] **TASK-42.7:** Update all affected tests — run `flutter test` and fix failures
+- [x] **TASK-42.8:** Fix regressions — private categories in autocomplete, add-new-activity flow
 
 ---
 
@@ -1051,6 +1053,37 @@ If you already created a GitHub issue for US-005, you can:
 - [ ] **TASK-44.2:** Update `AuthService` — check `onboardingCompletedAt` flag before running batch-copy; skip if field exists
 - [ ] **TASK-44.3:** Write/update tests for `AuthService` covering idempotent onboarding behavior
 
+
+### US-045: Firestore Hierarchy — Migrate meetings and persons to user subcollections
+
+**As a** developer
+**I want to** store meetings and persons under `users/{uid}/meetings` and `users/{uid}/persons`
+**So that** all user data lives under a single consistent path and Security Rules are path-based
+
+**Story Points:** 8
+**Priority:** P0
+**Status:** 📋 Planned
+**Milestone:** M2
+
+**Acceptance Criteria:**
+
+- [ ] `MeetingRepository` reads/writes from `users/{uid}/meetings` subcollection
+- [ ] `PersonRepository` reads/writes from `users/{uid}/persons` subcollection
+- [ ] `users/{uid}` document created on first login with `onboardingCompletedAt: Timestamp`
+- [ ] Batch-copy of global categories runs only if `onboardingCompletedAt` is absent (idempotent)
+- [ ] Security Rules for meetings and persons use path-based `userId` (not `resource.data.userId`)
+- [ ] `firestore.indexes.json` updated with new subcollection paths
+- [ ] `flutter analyze` passes with 0 issues
+- [ ] All tests pass
+
+**Tasks:**
+
+- [ ] **TASK-45.1:** Update `MeetingRepository` — change all Firestore paths from `/meetings` to `users/{uid}/meetings`; update `save`, `update`, `delete`, `stream`, `getMeetingsCountForPerson`, `removePersonFromMeetings`
+- [ ] **TASK-45.2:** Update `PersonRepository` — change all Firestore paths from `/persons` to `users/{uid}/persons`; update `getPersonsByUser`, `addPerson`, `updatePerson`, `deletePerson`, `getPersonsByIds`
+- [ ] **TASK-45.3:** Update Security Rules — replace `resource.data.userId` checks with path-based `userId` for meetings and persons; remove `userId` field dependency from read/delete rules
+- [ ] **TASK-45.4:** Update `AuthService` — create `users/{uid}` document with `onboardingCompletedAt: Timestamp` as part of first-login batch; guard batch-copy with `onboardingCompletedAt` field presence check
+- [ ] **TASK-45.5:** Update `firestore.indexes.json` — replace root collection paths with subcollection paths for meetings and persons indexes
+- [ ] **TASK-45.6:** Update all affected tests — `MeetingRepository`, `PersonRepository`, `AuthService`, `AddMeetingProvider`, `MeetingDetailProvider`, `PersonDetailProvider`, `PersonsListProvider`
 
 ---
 

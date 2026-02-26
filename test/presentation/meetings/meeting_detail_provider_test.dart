@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:friendsheet/data/models/activity.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
-import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/meetings/meeting_detail_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -12,11 +10,9 @@ import 'package:mockito/mockito.dart';
 
 import 'meeting_detail_provider_test.mocks.dart';
 
-@GenerateMocks(
-    [PersonRepository, ActivityRepository, ActivityCategoryRepository])
+@GenerateMocks([PersonRepository, ActivityCategoryRepository])
 void main() {
   late MockPersonRepository mockPersonRepository;
-  late MockActivityRepository mockActivityRepository;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MeetingDetailProvider provider;
 
@@ -27,7 +23,6 @@ void main() {
     date: DateTime(2026, 2, 12),
     weight: 8,
     participantIds: ['p1'],
-    activityIds: ['a1'],
     createdAt: DateTime(2026, 2, 12),
     updatedAt: DateTime(2026, 2, 12),
   );
@@ -39,7 +34,6 @@ void main() {
     date: DateTime(2026, 2, 12),
     weight: 5,
     participantIds: ['p1'],
-    activityIds: ['a1'],
     categoryIds: ['cat-gory', 'cat-sport'],
     createdAt: DateTime(2026, 2, 12),
     updatedAt: DateTime(2026, 2, 12),
@@ -50,14 +44,6 @@ void main() {
     userId: 'u1',
     firstName: 'Anna',
     lastName: 'Kowalska',
-    createdAt: DateTime(2026, 2, 12),
-  );
-
-  final testActivity = Activity(
-    id: 'a1',
-    userId: 'u1',
-    name: 'Coffee',
-    isGlobal: false,
     createdAt: DateTime(2026, 2, 12),
   );
 
@@ -85,11 +71,9 @@ void main() {
 
   setUp(() {
     mockPersonRepository = MockPersonRepository();
-    mockActivityRepository = MockActivityRepository();
     mockCategoryRepository = MockActivityCategoryRepository();
     provider = MeetingDetailProvider(
       personRepository: mockPersonRepository,
-      activityRepository: mockActivityRepository,
       categoryRepository: mockCategoryRepository,
     );
 
@@ -99,16 +83,13 @@ void main() {
   });
 
   group('MeetingDetailProvider', () {
-    test('initialize loads participants and activities', () async {
+    test('initialize loads participants', () async {
       when(mockPersonRepository.getPersonsByIds(['p1']))
           .thenAnswer((_) async => [testPerson]);
-      when(mockActivityRepository.getActivitiesByIds(['a1']))
-          .thenAnswer((_) async => [testActivity]);
 
       await provider.initialize(testMeeting);
 
       expect(provider.participants, [testPerson]);
-      expect(provider.activities, [testActivity]);
       expect(provider.isLoading, false);
       expect(provider.errorMessage, null);
     });
@@ -116,8 +97,6 @@ void main() {
     test('initialize sets errorMessage on failure', () async {
       when(mockPersonRepository.getPersonsByIds(any))
           .thenThrow(Exception('network error'));
-      when(mockActivityRepository.getActivitiesByIds(any))
-          .thenAnswer((_) async => []);
 
       await provider.initialize(testMeeting);
 
@@ -125,30 +104,23 @@ void main() {
       expect(provider.isLoading, false);
     });
 
-    test(
-        'initialize returns empty lists when meeting has no participants or activities',
+    test('initialize returns empty list when meeting has no participants',
         () async {
       final emptyMeeting = testMeeting.copyWith(
         participantIds: [],
-        activityIds: [],
       );
 
       when(mockPersonRepository.getPersonsByIds([]))
-          .thenAnswer((_) async => []);
-      when(mockActivityRepository.getActivitiesByIds([]))
           .thenAnswer((_) async => []);
 
       await provider.initialize(emptyMeeting);
 
       expect(provider.participants, isEmpty);
-      expect(provider.activities, isEmpty);
     });
 
     test('initialize resolves categoryIds and filters to leaf nodes', () async {
       when(mockPersonRepository.getPersonsByIds(['p1']))
           .thenAnswer((_) async => [testPerson]);
-      when(mockActivityRepository.getActivitiesByIds(['a1']))
-          .thenAnswer((_) async => [testActivity]);
       when(mockCategoryRepository.getCategoriesByIds(
         ['cat-gory', 'cat-sport'],
         'u1',
@@ -164,8 +136,6 @@ void main() {
     test('categories is empty when meeting has no categoryIds', () async {
       when(mockPersonRepository.getPersonsByIds(any))
           .thenAnswer((_) async => [testPerson]);
-      when(mockActivityRepository.getActivitiesByIds(any))
-          .thenAnswer((_) async => [testActivity]);
 
       await provider.initialize(testMeeting);
 

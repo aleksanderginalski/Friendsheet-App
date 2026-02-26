@@ -8,15 +8,11 @@ class ActivityCategoryRepository {
   ActivityCategoryRepository({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  // Subcollection for user-created categories (legacy path).
+  // Subcollection for user-created categories.
   CollectionReference _categoriesRef(String userId) => _firestore
       .collection('users')
       .doc(userId)
       .collection('activity_categories');
-
-  // Top-level collection used by the global library and user copies (US-020).
-  CollectionReference get _globalLibraryRef =>
-      _firestore.collection('activity_categories');
 
   // Returns a live stream of all activity categories for the given user.
   Stream<List<ActivityCategory>> getCategories(String userId) {
@@ -46,12 +42,28 @@ class ActivityCategoryRepository {
     await _categoriesRef(userId).doc(categoryId).delete();
   }
 
-  // Returns all user-private selectable categories from the global library
-  // (isGlobal: false, userId: userId, isSelectableAsActivity: true).
+  // Creates a new root selectable category in the user's subcollection and
+  // returns the persisted ActivityCategory with its generated Firestore ID.
+  Future<ActivityCategory> createSelectableCategory({
+    required String name,
+    required String userId,
+  }) async {
+    final docRef = await _categoriesRef(userId).add({
+      'userId': userId,
+      'name': name,
+      'iconIdentifier': 'category',
+      'isGlobal': false,
+      'isSelectableAsActivity': true,
+      'createdAt': Timestamp.now(),
+    });
+    final doc = await docRef.get();
+    return ActivityCategory.fromFirestore(doc);
+  }
+
+  // Returns selectable leaf categories from the user's subcollection
+  // (isSelectableAsActivity: true). These are shown in the AddMeeting autocomplete.
   Future<List<ActivityCategory>> getSelectableCategories(String userId) async {
-    final snapshot = await _globalLibraryRef
-        .where('isGlobal', isEqualTo: false)
-        .where('userId', isEqualTo: userId)
+    final snapshot = await _categoriesRef(userId)
         .where('isSelectableAsActivity', isEqualTo: true)
         .get();
     return snapshot.docs
@@ -61,23 +73,19 @@ class ActivityCategoryRepository {
 
   // Walks up the parentCategoryId chain for the given category and returns
   // all ancestor IDs including categoryId itself.
-  // Operates on the user's private copies (isGlobal: false, userId: userId).
+  // Operates on the user's subcollection (users/{uid}/activity_categories).
   // Guard: max 3 iterations to match the maximum supported depth.
   Future<List<String>> getAncestorIds(String categoryId, String userId) async {
     final result = <String>[];
     var currentId = categoryId;
 
     for (var i = 0; i < 3; i++) {
-      final doc = await _globalLibraryRef.doc(currentId).get();
+      final doc = await _categoriesRef(userId).doc(currentId).get();
       if (!doc.exists) break;
 
-      final data = doc.data() as Map<String, dynamic>;
-      // Safety: only follow ancestors within the user's own copies.
-      if (data['isGlobal'] == true || data['userId'] != userId) break;
-
-      // Add after ownership check so a wrong-user parent is never included.
       result.add(currentId);
 
+      final data = doc.data() as Map<String, dynamic>;
       final parentId = data['parentCategoryId'] as String?;
       if (parentId == null) break;
 
@@ -103,14 +111,12 @@ class ActivityCategoryRepository {
     ];
   }
 
-  // Returns categories matching the given IDs from the user's private collection.
+  // Returns categories matching the given IDs from the user's subcollection.
   Future<List<ActivityCategory>> getCategoriesByIds(
       List<String> ids, String userId) async {
     if (ids.isEmpty) return [];
-    final snapshot = await _globalLibraryRef
+    final snapshot = await _categoriesRef(userId)
         .where(FieldPath.documentId, whereIn: ids)
-        .where('isGlobal', isEqualTo: false)
-        .where('userId', isEqualTo: userId)
         .get();
     return snapshot.docs
         .map((doc) => ActivityCategory.fromFirestore(doc))
