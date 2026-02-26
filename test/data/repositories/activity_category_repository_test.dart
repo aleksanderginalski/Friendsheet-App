@@ -40,10 +40,6 @@ void main() {
       .doc(userId)
       .collection('activity_categories');
 
-  // Returns the top-level collection used by the global library methods.
-  CollectionReference globalLibraryRef() =>
-      fakeFirestore.collection('activity_categories');
-
   // Seeds a root category in the subcollection and returns its ID.
   Future<String> seedRootCategory({String name = 'Root'}) async {
     final ref = await categoriesRef().add({
@@ -71,29 +67,6 @@ void main() {
       'parentCategoryId': parentId,
       'createdAt': Timestamp.now(),
     });
-    return ref.id;
-  }
-
-  // Seeds a category in the top-level collection (global library) and returns its ID.
-  Future<String> seedGlobalLibraryCategory({
-    required String name,
-    required bool isSelectable,
-    String? parentCategoryId,
-    bool isGlobal = false,
-    String? specificUserId,
-  }) async {
-    final data = <String, dynamic>{
-      'userId': specificUserId ?? userId,
-      'name': name,
-      'iconIdentifier': 'icon',
-      'isGlobal': isGlobal,
-      'isSelectableAsActivity': isSelectable,
-      'createdAt': Timestamp.now(),
-    };
-    if (parentCategoryId != null) {
-      data['parentCategoryId'] = parentCategoryId;
-    }
-    final ref = await globalLibraryRef().add(data);
     return ref.id;
   }
 
@@ -229,37 +202,59 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('returns only selectable private categories for the user', () async {
-        await seedGlobalLibraryCategory(name: 'Gory', isSelectable: true);
-        await seedGlobalLibraryCategory(name: 'Sport', isSelectable: false);
-        await seedGlobalLibraryCategory(
-          name: 'OtherUser',
-          isSelectable: true,
-          specificUserId: 'other-user',
-        );
+      test('returns only categories with isSelectableAsActivity true',
+          () async {
+        await categoriesRef().add({
+          'userId': userId,
+          'name': 'Running',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': true,
+          'createdAt': Timestamp.now(),
+        });
+        await categoriesRef().add({
+          'userId': userId,
+          'name': 'Sport',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': false,
+          'createdAt': Timestamp.now(),
+        });
 
         final result = await repository.getSelectableCategories(userId);
 
         expect(result.length, equals(1));
-        expect(result.first.name, equals('Gory'));
+        expect(result.first.name, equals('Running'));
       });
 
-      test('excludes global categories (isGlobal: true)', () async {
-        await seedGlobalLibraryCategory(
-          name: 'Global',
-          isSelectable: true,
-          isGlobal: true,
-        );
-        await seedGlobalLibraryCategory(name: 'Private', isSelectable: true);
+      test('does not return categories from a different user', () async {
+        await fakeFirestore
+            .collection('users')
+            .doc('other-user')
+            .collection('activity_categories')
+            .add({
+          'userId': 'other-user',
+          'name': 'Hiking',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': true,
+          'createdAt': Timestamp.now(),
+        });
 
         final result = await repository.getSelectableCategories(userId);
 
-        expect(result.length, equals(1));
-        expect(result.first.name, equals('Private'));
+        expect(result, isEmpty);
       });
 
       test('returned items are ActivityCategory instances', () async {
-        await seedGlobalLibraryCategory(name: 'Running', isSelectable: true);
+        await categoriesRef().add({
+          'userId': userId,
+          'name': 'Running',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': true,
+          'createdAt': Timestamp.now(),
+        });
 
         final result = await repository.getSelectableCategories(userId);
 
@@ -270,10 +265,7 @@ void main() {
 
     group('getAncestorIds', () {
       test('returns only the category itself when it has no parent', () async {
-        final rootId = await seedGlobalLibraryCategory(
-          name: 'Sport',
-          isSelectable: false,
-        );
+        final rootId = await seedRootCategory(name: 'Sport');
 
         final result = await repository.getAncestorIds(rootId, userId);
 
@@ -281,15 +273,8 @@ void main() {
       });
 
       test('returns leaf and parent IDs for depth-2 category', () async {
-        final parentId = await seedGlobalLibraryCategory(
-          name: 'Sport',
-          isSelectable: false,
-        );
-        final leafId = await seedGlobalLibraryCategory(
-          name: 'Running',
-          isSelectable: true,
-          parentCategoryId: parentId,
-        );
+        final parentId = await seedRootCategory(name: 'Sport');
+        final leafId = await seedSubCategory(parentId, name: 'Running');
 
         final result = await repository.getAncestorIds(leafId, userId);
 
@@ -298,43 +283,97 @@ void main() {
         expect(result.first, equals(leafId));
       });
 
-      test('stops traversal when category belongs to different user', () async {
-        final otherParentId = await seedGlobalLibraryCategory(
-          name: 'OtherParent',
-          isSelectable: false,
-          specificUserId: 'other-user',
-        );
-        final leafId = await seedGlobalLibraryCategory(
-          name: 'Leaf',
-          isSelectable: true,
-          parentCategoryId: otherParentId,
-        );
+      test('returns empty list when category does not exist', () async {
+        final result = await repository.getAncestorIds('nonexistent', userId);
 
-        final result = await repository.getAncestorIds(leafId, userId);
+        expect(result, isEmpty);
+      });
 
-        // Stops at leafId because its parent belongs to a different user.
-        expect(result, equals([leafId]));
+      test('stops traversal when parent is not found in subcollection',
+          () async {
+        // Leaf with a parentCategoryId that does not exist in the subcollection.
+        final ref = await categoriesRef().add({
+          'userId': userId,
+          'name': 'Leaf',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': true,
+          'parentCategoryId': 'ghost-parent-id',
+          'createdAt': Timestamp.now(),
+        });
+
+        final result = await repository.getAncestorIds(ref.id, userId);
+
+        // Traversal stops at leaf because parent document is not found.
+        expect(result, equals([ref.id]));
       });
 
       test('returns at most 3 IDs (max depth guard)', () async {
-        final a = await seedGlobalLibraryCategory(
-          name: 'A',
-          isSelectable: false,
-        );
-        final b = await seedGlobalLibraryCategory(
-          name: 'B',
-          isSelectable: false,
-          parentCategoryId: a,
-        );
-        final c = await seedGlobalLibraryCategory(
-          name: 'C',
-          isSelectable: true,
-          parentCategoryId: b,
-        );
+        final a = await seedRootCategory(name: 'A');
+        final b = await seedSubCategory(a, name: 'B');
+        // Manually create a depth-3 entry to exercise the loop guard.
+        final ref = await categoriesRef().add({
+          'userId': userId,
+          'name': 'C',
+          'iconIdentifier': 'icon',
+          'isGlobal': false,
+          'isSelectableAsActivity': true,
+          'parentCategoryId': b,
+          'createdAt': Timestamp.now(),
+        });
 
-        final result = await repository.getAncestorIds(c, userId);
+        final result = await repository.getAncestorIds(ref.id, userId);
 
         expect(result.length, lessThanOrEqualTo(3));
+      });
+    });
+
+    group('createSelectableCategory', () {
+      test('creates a new category in the user subcollection', () async {
+        await repository.createSelectableCategory(
+          name: 'Climbing',
+          userId: userId,
+        );
+
+        final snapshot =
+            await categoriesRef().where('name', isEqualTo: 'Climbing').get();
+        expect(snapshot.docs.length, equals(1));
+      });
+
+      test('returns ActivityCategory with correct name', () async {
+        final category = await repository.createSelectableCategory(
+          name: 'Climbing',
+          userId: userId,
+        );
+
+        expect(category.name, equals('Climbing'));
+      });
+
+      test('returns category with isSelectableAsActivity true', () async {
+        final category = await repository.createSelectableCategory(
+          name: 'Climbing',
+          userId: userId,
+        );
+
+        expect(category.isSelectableAsActivity, isTrue);
+      });
+
+      test('returns category with isGlobal false', () async {
+        final category = await repository.createSelectableCategory(
+          name: 'Climbing',
+          userId: userId,
+        );
+
+        expect(category.isGlobal, isFalse);
+      });
+
+      test('returns category with non-empty id', () async {
+        final category = await repository.createSelectableCategory(
+          name: 'Climbing',
+          userId: userId,
+        );
+
+        expect(category.id, isNotEmpty);
       });
     });
   });
