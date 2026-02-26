@@ -219,6 +219,17 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+
+### v2.8.0 - M2, US-042 Cleanup — Remove legacy Activity model (February 26, 2026)
+- ✅ Activity model removed (activity.dart + generated files)
+- ✅ ActivityRepository removed
+- ✅ activityIds field removed from Meeting model
+- ✅ AddMeetingProvider, ActivityAutocomplete, MeetingDetailProvider cleaned
+- ✅ Fix: private user categories now visible in autocomplete (subcollection path corrected)
+- ✅ Fix: add-new-activity flow restored from AddMeeting screen
+- ✅ Total test count: 230 (all passing)
+
 ### v2.7.0 - M2, US-026 Activities List Screen (February 25, 2026)
 - ✅ ActivitiesListScreen with expandable category tree (level-1 sections, level-2 leaf tiles)
 - ✅ ActivitiesListProvider with search, expand/collapse, CRUD operations
