@@ -16,7 +16,6 @@ class Meeting with _$Meeting {
     required DateTime date,
     required int weight,
     required List<String> participantIds,
-    required List<String> activityIds,
     @Default([]) List<String> categoryIds,
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -35,7 +34,6 @@ class Meeting with _$Meeting {
       date: (data['date'] as Timestamp).toDate(),
       weight: (data['weight'] as num).toInt(),
       participantIds: List<String>.from(data['participantIds'] as List),
-      activityIds: List<String>.from(data['activityIds'] as List),
       categoryIds:
           (data['categoryIds'] as List?)?.map((e) => e as String).toList() ??
               [],
@@ -52,7 +50,6 @@ class Meeting with _$Meeting {
       'date': Timestamp.fromDate(date),
       'weight': weight,
       'participantIds': participantIds,
-      'activityIds': activityIds,
       'categoryIds': categoryIds,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
@@ -67,7 +64,6 @@ class Meeting with _$Meeting {
     return name.trim().isNotEmpty &&
         name.length <= 50 &&
         validWeights.contains(weight) &&
-        participantIds.isNotEmpty &&
-        activityIds.isNotEmpty;
+        participantIds.isNotEmpty;
   }
 }
