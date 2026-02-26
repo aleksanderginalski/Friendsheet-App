@@ -138,6 +138,12 @@ createdAt: data['createdAt'] != null
     ? (data['createdAt'] as Timestamp).toDate()
     : DateTime.fromMillisecondsSinceEpoch(0),
 
+## Activity Architecture (post US-042 refactor)
+- Legacy `Activity` model and `activities` Firestore collection are REMOVED
+- Only source of truth: `users/{uid}/activity_categories` (subcollection)
+- Meeting model uses `categoryIds` only — `activityIds` field does not exist
+- New activity from AddMeeting → creates root category in user's subcollection
+
 ```
 
 ---

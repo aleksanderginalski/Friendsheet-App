@@ -15,7 +15,7 @@ void main() {
       date: testDate,
       weight: 8,
       participantIds: ['person-1', 'person-2'],
-      activityIds: ['activity-1'],
+      categoryIds: ['cat-1'],
       createdAt: testDate,
       updatedAt: testDate,
     );
@@ -25,11 +25,21 @@ void main() {
       expect(validMeeting.name, 'Coffee with Anna');
       expect(validMeeting.weight, 8);
       expect(validMeeting.participantIds.length, 2);
-      expect(validMeeting.activityIds.length, 1);
+      expect(validMeeting.categoryIds.length, 1);
     });
 
     test('categoryIds defaults to empty list', () {
-      expect(validMeeting.categoryIds, isEmpty);
+      final meeting = Meeting(
+        id: 'm1',
+        userId: 'u1',
+        name: 'Test',
+        date: testDate,
+        weight: 5,
+        participantIds: ['p1'],
+        createdAt: testDate,
+        updatedAt: testDate,
+      );
+      expect(meeting.categoryIds, isEmpty);
     });
 
     test('categoryIds can be set explicitly', () {
@@ -40,7 +50,6 @@ void main() {
         date: testDate,
         weight: 5,
         participantIds: ['p1'],
-        activityIds: ['a1'],
         categoryIds: ['cat-sport', 'cat-gory'],
         createdAt: testDate,
         updatedAt: testDate,
@@ -73,11 +82,6 @@ void main() {
       expect(invalidMeeting.isValid(), false);
     });
 
-    test('isValid returns false when activityIds is empty', () {
-      final invalidMeeting = validMeeting.copyWith(activityIds: []);
-      expect(invalidMeeting.isValid(), false);
-    });
-
     test('copyWith creates new instance with updated fields', () {
       final updated = validMeeting.copyWith(name: 'Updated Meeting');
 
@@ -91,7 +95,6 @@ void main() {
         categoryIds: ['cat-1', 'cat-2'],
       );
       expect(updated.categoryIds, equals(['cat-1', 'cat-2']));
-      expect(updated.activityIds, validMeeting.activityIds);
     });
 
     test('equality works correctly', () {
@@ -102,7 +105,6 @@ void main() {
         date: testDate,
         weight: 5,
         participantIds: ['p1'],
-        activityIds: ['a1'],
         createdAt: testDate,
         updatedAt: testDate,
       );
@@ -114,7 +116,6 @@ void main() {
         date: testDate,
         weight: 5,
         participantIds: ['p1'],
-        activityIds: ['a1'],
         createdAt: testDate,
         updatedAt: testDate,
       );
@@ -129,8 +130,8 @@ void main() {
       expect(map['name'], 'Coffee with Anna');
       expect(map['weight'], 8);
       expect(map['participantIds'], ['person-1', 'person-2']);
-      expect(map['activityIds'], ['activity-1']);
-      expect(map['categoryIds'], isEmpty);
+      expect(map['categoryIds'], ['cat-1']);
+      expect(map.containsKey('activityIds'), isFalse);
     });
 
     test('toFirestore includes categoryIds when set', () {
@@ -151,7 +152,7 @@ void main() {
       expect(fromJson.id, validMeeting.id);
       expect(fromJson.name, validMeeting.name);
       expect(fromJson.weight, validMeeting.weight);
-      expect(fromJson.categoryIds, isEmpty);
+      expect(fromJson.categoryIds, equals(['cat-1']));
     });
 
     test('validWeights constant contains correct Fibonacci values', () {

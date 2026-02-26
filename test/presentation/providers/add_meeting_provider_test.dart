@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:friendsheet/data/models/activity.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
-import 'package:friendsheet/data/repositories/activity_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
@@ -15,7 +13,6 @@ import 'add_meeting_provider_test.mocks.dart';
 
 @GenerateMocks([
   PersonRepository,
-  ActivityRepository,
   ActivityCategoryRepository,
   MeetingRepository,
   AuthService,
@@ -23,7 +20,6 @@ import 'add_meeting_provider_test.mocks.dart';
 void main() {
   late AddMeetingProvider provider;
   late MockPersonRepository mockPersonRepository;
-  late MockActivityRepository mockActivityRepository;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
@@ -45,24 +41,6 @@ void main() {
     createdAt: DateTime(2024),
   );
 
-  final activity1 = Activity(
-    id: 'a1',
-    userId: null,
-    name: 'Kawusia',
-    isGlobal: true,
-    categoryId: null,
-    createdAt: DateTime(2024),
-  );
-
-  final activity2 = Activity(
-    id: 'a2',
-    userId: 'user1',
-    name: 'Planszowki',
-    isGlobal: false,
-    categoryId: null,
-    createdAt: DateTime(2024),
-  );
-
   final category1 = ActivityCategory(
     id: 'cat1',
     userId: 'user1',
@@ -76,25 +54,19 @@ void main() {
 
   setUp(() {
     mockPersonRepository = MockPersonRepository();
-    mockActivityRepository = MockActivityRepository();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
     provider = AddMeetingProvider(
       personRepository: mockPersonRepository,
-      activityRepository: mockActivityRepository,
       categoryRepository: mockCategoryRepository,
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,
     );
 
-    // Default stubs used by addNewPerson and addNewActivity
+    // Default stubs used by addNewPerson
     when(mockAuthService.currentUserId).thenReturn('user1');
     when(mockPersonRepository.addPerson(any)).thenAnswer((_) async => person1);
-    when(mockActivityRepository.addActivity(
-      userId: anyNamed('userId'),
-      name: anyNamed('name'),
-    )).thenAnswer((_) async => activity1);
     when(mockCategoryRepository.getSelectableCategories(any))
         .thenAnswer((_) async => []);
     when(mockCategoryRepository.getAncestorIds(any, any))
@@ -252,92 +224,6 @@ void main() {
     });
   });
 
-  group('AddMeetingProvider - activities', () {
-    test('selectedActivities is empty by default', () {
-      expect(provider.selectedActivities, isEmpty);
-    });
-
-    test('addNewActivity saves to Firestore and adds to selected list',
-        () async {
-      when(mockActivityRepository.addActivity(
-        userId: anyNamed('userId'),
-        name: anyNamed('name'),
-      )).thenAnswer((_) async => activity1);
-
-      await provider.addNewActivity('Kawusia');
-
-      expect(provider.selectedActivities, contains(activity1));
-      expect(provider.availableActivities, contains(activity1));
-      verify(mockActivityRepository.addActivity(
-        userId: anyNamed('userId'),
-        name: anyNamed('name'),
-      )).called(1);
-    });
-
-    test('selectActivity prevents duplicates', () async {
-      await provider.addNewActivity('Kawusia');
-      provider.selectActivity(activity1);
-      expect(provider.selectedActivities.length, equals(1));
-    });
-
-    test('removeActivity removes activity from selectedActivities', () async {
-      await provider.addNewActivity('Kawusia');
-      provider.removeActivity(activity1);
-      expect(provider.selectedActivities, isEmpty);
-    });
-
-    test('searchActivities returns matching activities', () async {
-      when(mockActivityRepository.addActivity(
-        userId: anyNamed('userId'),
-        name: anyNamed('name'),
-      )).thenAnswer((_) async => activity1);
-      await provider.addNewActivity('Kawusia');
-      provider.removeActivity(activity1);
-
-      when(mockActivityRepository.addActivity(
-        userId: anyNamed('userId'),
-        name: anyNamed('name'),
-      )).thenAnswer((_) async => activity2);
-      await provider.addNewActivity('Planszowki');
-      provider.removeActivity(activity2);
-
-      final results = provider.searchActivities('kaw');
-      expect(results, contains(activity1));
-      expect(results, isNot(contains(activity2)));
-    });
-
-    test('searchActivities excludes already selected activities', () async {
-      await provider.addNewActivity('Kawusia');
-      final results = provider.searchActivities('kaw');
-      expect(results, isNot(contains(activity1)));
-    });
-
-    test('searchActivities returns empty list for empty query', () async {
-      await provider.addNewActivity('Kawusia');
-      provider.removeActivity(activity1);
-      expect(provider.searchActivities(''), isEmpty);
-    });
-
-    test('validateActivities returns false when no activities', () {
-      expect(provider.validateActivities(), isFalse);
-      expect(provider.activitiesError, isNotNull);
-    });
-
-    test('validateActivities returns true when at least one activity',
-        () async {
-      await provider.addNewActivity('Kawusia');
-      expect(provider.validateActivities(), isTrue);
-      expect(provider.activitiesError, isNull);
-    });
-
-    test('reset clears selectedActivities and availableActivities', () async {
-      await provider.addNewActivity('Kawusia');
-      provider.reset();
-      expect(provider.selectedActivities, isEmpty);
-      expect(provider.availableActivities, isEmpty);
-    });
-  });
-
   group('AddMeetingProvider - categories', () {
     test('selectedCategories is empty by default', () {
       expect(provider.selectedCategories, isEmpty);
@@ -401,6 +287,18 @@ void main() {
       expect(results, isEmpty);
     });
 
+    test('validateActivities returns false when no categories', () {
+      expect(provider.validateActivities(), isFalse);
+      expect(provider.activitiesError, isNotNull);
+    });
+
+    test('validateActivities returns true when at least one category',
+        () async {
+      await provider.addCategory(category1, 'user1');
+      expect(provider.validateActivities(), isTrue);
+      expect(provider.activitiesError, isNull);
+    });
+
     test('reset clears selectedCategories and selectedCategoryIds', () async {
       await provider.addCategory(category1, 'user1');
       provider.reset();
@@ -415,12 +313,12 @@ void main() {
     Future<void> setupValidForm() async {
       provider.setName('Coffee with Anna');
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
-      await provider.addNewActivity('Kawusia');
+      await provider.addCategory(category1, 'user1');
     }
 
     test('saveMeeting returns false when name is empty', () async {
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
-      await provider.addNewActivity('Kawusia');
+      await provider.addCategory(category1, 'user1');
 
       final result = await provider.saveMeeting();
 
@@ -430,7 +328,7 @@ void main() {
 
     test('saveMeeting returns false when no participants', () async {
       provider.setName('Coffee with Anna');
-      await provider.addNewActivity('Kawusia');
+      await provider.addCategory(category1, 'user1');
 
       final result = await provider.saveMeeting();
 
@@ -438,7 +336,7 @@ void main() {
       expect(provider.participantsError, isNotNull);
     });
 
-    test('saveMeeting returns false when no activities', () async {
+    test('saveMeeting returns false when no categories', () async {
       provider.setName('Coffee with Anna');
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
 
