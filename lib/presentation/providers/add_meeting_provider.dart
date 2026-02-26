@@ -394,8 +394,8 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _selectedPersons = await _personRepository
-          .getPersonsByIds(initialMeeting!.participantIds);
+      _selectedPersons = await _personRepository.getPersonsByIds(
+          initialMeeting!.participantIds, initialMeeting!.userId);
 
       // Restore selected category chips from saved categoryIds.
       // Only leaf categories (isSelectableAsActivity: true) are shown as chips.

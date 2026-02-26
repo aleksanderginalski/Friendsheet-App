@@ -84,7 +84,7 @@ void main() {
 
   group('MeetingDetailProvider', () {
     test('initialize loads participants', () async {
-      when(mockPersonRepository.getPersonsByIds(['p1']))
+      when(mockPersonRepository.getPersonsByIds(['p1'], 'u1'))
           .thenAnswer((_) async => [testPerson]);
 
       await provider.initialize(testMeeting);
@@ -95,7 +95,7 @@ void main() {
     });
 
     test('initialize sets errorMessage on failure', () async {
-      when(mockPersonRepository.getPersonsByIds(any))
+      when(mockPersonRepository.getPersonsByIds(any, any))
           .thenThrow(Exception('network error'));
 
       await provider.initialize(testMeeting);
@@ -110,7 +110,7 @@ void main() {
         participantIds: [],
       );
 
-      when(mockPersonRepository.getPersonsByIds([]))
+      when(mockPersonRepository.getPersonsByIds([], any))
           .thenAnswer((_) async => []);
 
       await provider.initialize(emptyMeeting);
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('initialize resolves categoryIds and filters to leaf nodes', () async {
-      when(mockPersonRepository.getPersonsByIds(['p1']))
+      when(mockPersonRepository.getPersonsByIds(['p1'], 'u1'))
           .thenAnswer((_) async => [testPerson]);
       when(mockCategoryRepository.getCategoriesByIds(
         ['cat-gory', 'cat-sport'],
@@ -134,7 +134,7 @@ void main() {
     });
 
     test('categories is empty when meeting has no categoryIds', () async {
-      when(mockPersonRepository.getPersonsByIds(any))
+      when(mockPersonRepository.getPersonsByIds(any, any))
           .thenAnswer((_) async => [testPerson]);
 
       await provider.initialize(testMeeting);

@@ -1064,26 +1064,30 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0
 **Status:** 📋 Planned
 **Milestone:** M2
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
 
-- [ ] `MeetingRepository` reads/writes from `users/{uid}/meetings` subcollection
-- [ ] `PersonRepository` reads/writes from `users/{uid}/persons` subcollection
-- [ ] `users/{uid}` document created on first login with `onboardingCompletedAt: Timestamp`
-- [ ] Batch-copy of global categories runs only if `onboardingCompletedAt` is absent (idempotent)
-- [ ] Security Rules for meetings and persons use path-based `userId` (not `resource.data.userId`)
-- [ ] `firestore.indexes.json` updated with new subcollection paths
-- [ ] `flutter analyze` passes with 0 issues
-- [ ] All tests pass
+- [x] `MeetingRepository` reads/writes from `users/{uid}/meetings` subcollection
+- [x] `PersonRepository` reads/writes from `users/{uid}/persons` subcollection
+- [x] `users/{uid}` document created on first login with `onboardingCompletedAt: Timestamp`
+- [x] Batch-copy of global categories runs only if `onboardingCompletedAt` is absent (idempotent)
+- [x] Security Rules for meetings and persons use path-based `userId` (not `resource.data.userId`)
+- [x] `firestore.indexes.json` updated with new subcollection paths
+- [x] `flutter analyze` passes with 0 issues
+- [x] All tests pass
+- [x] getAllCategories reads only from users/{uid}/activity_categories — root activity_categories collection is never queried from the UI layer
 
 **Tasks:**
 
-- [ ] **TASK-45.1:** Update `MeetingRepository` — change all Firestore paths from `/meetings` to `users/{uid}/meetings`; update `save`, `update`, `delete`, `stream`, `getMeetingsCountForPerson`, `removePersonFromMeetings`
-- [ ] **TASK-45.2:** Update `PersonRepository` — change all Firestore paths from `/persons` to `users/{uid}/persons`; update `getPersonsByUser`, `addPerson`, `updatePerson`, `deletePerson`, `getPersonsByIds`
-- [ ] **TASK-45.3:** Update Security Rules — replace `resource.data.userId` checks with path-based `userId` for meetings and persons; remove `userId` field dependency from read/delete rules
-- [ ] **TASK-45.4:** Update `AuthService` — create `users/{uid}` document with `onboardingCompletedAt: Timestamp` as part of first-login batch; guard batch-copy with `onboardingCompletedAt` field presence check
-- [ ] **TASK-45.5:** Update `firestore.indexes.json` — replace root collection paths with subcollection paths for meetings and persons indexes
-- [ ] **TASK-45.6:** Update all affected tests — `MeetingRepository`, `PersonRepository`, `AuthService`, `AddMeetingProvider`, `MeetingDetailProvider`, `PersonDetailProvider`, `PersonsListProvider`
+- [x] **TASK-45.1:** Update `MeetingRepository` — change all Firestore paths from `/meetings` to `users/{uid}/meetings`; update `save`, `update`, `delete`, `stream`, `getMeetingsCountForPerson`, `removePersonFromMeetings`
+- [x] **TASK-45.2:** Update `PersonRepository` — change all Firestore paths from `/persons` to `users/{uid}/persons`; update `getPersonsByUser`, `addPerson`, `updatePerson`, `deletePerson`, `getPersonsByIds`
+- [x] **TASK-45.3:** Update Security Rules — replace `resource.data.userId` checks with path-based `userId` for meetings and persons; remove `userId` field dependency from read/delete rules
+- [x] **TASK-45.4:** Update `AuthService` — create `users/{uid}` document with `onboardingCompletedAt: Timestamp` as part of first-login batch; guard batch-copy with `onboardingCompletedAt` field presence check
+- [x] **TASK-45.5:** Update `firestore.indexes.json` — replace root collection paths with subcollection paths for meetings and persons indexes
+- [x] **TASK-45.6:** Update all affected tests — `MeetingRepository`, `PersonRepository`, `AuthService`, `AddMeetingProvider`, `MeetingDetailProvider`, `PersonDetailProvider`, `PersonsListProvider`
+
+- [x] **TASK-45.7:**  Update ActivityCategoryRepository.getAllCategories — remove global root collection query; read only from users/{uid}/activity_categories; update affected tests in activity_category_repository_test.dart and activities_list_provider_test.dart
 
 ---
 

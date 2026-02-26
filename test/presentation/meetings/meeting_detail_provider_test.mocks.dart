@@ -81,11 +81,17 @@ class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
       ) as _i5.Future<_i2.Person>);
 
   @override
-  _i5.Future<List<_i2.Person>> getPersonsByIds(List<String>? ids) =>
+  _i5.Future<List<_i2.Person>> getPersonsByIds(
+    List<String>? ids,
+    String? userId,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #getPersonsByIds,
-          [ids],
+          [
+            ids,
+            userId,
+          ],
         ),
         returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
       ) as _i5.Future<List<_i2.Person>>);

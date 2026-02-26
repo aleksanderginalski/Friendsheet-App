@@ -251,9 +251,7 @@ Depth validation enforced in `ActivityCategoryRepository._validateDepth()`.
 **ActivitiesListProvider** owned by `MainScreen` — same lifecycle pattern as `PersonsListProvider`.
 Initialized via `addPostFrameCallback` on first load and re-initialized on every tab switch to index 3.
 
-**Data source:** `getAllCategories` merges two Firestore sources:
-- Root collection `activity_categories` (isGlobal: true) — global library
-- Subcollection `users/{userId}/activity_categories` (isGlobal: false) — user's private copy
+**Data source:** `getAllCategories` reads only from `users/{userId}/activity_categories` subcollection. Root `activity_categories` collection is used only by `AuthService` during onboarding batch-copy — never queried from the UI layer.
 
 **Edit/Delete guard:** Only categories with `isGlobal: false` expose long-press options.
 Global categories are read-only in the UI.
@@ -400,10 +398,6 @@ graph LR
 
 ## 6. Security Rules (Full)
 
-> ⚠️ **Planned change — US-045:** `meetings` and `persons` will be migrated to subcollections
-> under `users/{uid}`. Security Rules will be updated to path-based checks at that point.
-> Current rules below reflect pre-US-045 state.
-
 ```javascript
 rules_version = '2';
 service cloud.firestore {
@@ -417,43 +411,38 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    match /meetings/{meetingId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
-
-    match /persons/{personId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
-    }
-
     match /activity_categories/{categoryId} {
-      allow read: if isAuthenticated() &&
-                    (resource.data.isGlobal == true || isOwner(resource.data.userId));
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+      allow read: if isAuthenticated() && resource.data.isGlobal == true;
+      allow create: if isAuthenticated() &&
+                       request.resource.data.isGlobal == false &&
+                       isOwner(request.resource.data.userId);
     }
 
-    // User subcollections — path-based userId (resource.data unavailable for list queries)
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
+
     match /users/{userId}/activity_categories/{categoryId} {
       allow read, delete: if isAuthenticated() && isOwner(userId);
       allow create, update: if isAuthenticated() && isOwner(userId);
     }
 
-    // US-045: meetings and persons will move here
-    // match /users/{userId}/meetings/{meetingId} { ... }
-    // match /users/{userId}/persons/{personId} { ... }
+    match /users/{userId}/meetings/{meetingId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
+    }
 
-    // M5 - Invitation codes
+    match /users/{userId}/persons/{personId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
+    }
+
     match /invitation_codes/{codeId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isOwner(request.resource.data.senderId);
       allow update: if isAuthenticated();
     }
 
-    // M7 - Dashboard config (subcollection of users)
     match /users/{userId}/dashboard_config/{configId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
     }
@@ -547,5 +536,5 @@ graph TB
 ---
 
 **End of Document - Architecture Documentation**  
-**Last Updated:** February 24, 2026 (Activity Categories model and repository — US-019)
+**Last Updated:** February 26, 2026 (Firestore hierarchy migration — US-045)
 

@@ -5,10 +5,6 @@
                         "queryScope":  "COLLECTION",
                         "fields":  [
                                        {
-                                           "fieldPath":  "userId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
                                            "fieldPath":  "date",
                                            "order":  "DESCENDING"
                                        }
@@ -18,10 +14,6 @@
                         "collectionGroup":  "persons",
                         "queryScope":  "COLLECTION",
                         "fields":  [
-                                       {
-                                           "fieldPath":  "userId",
-                                           "order":  "ASCENDING"
-                                       },
                                        {
                                            "fieldPath":  "firstName",
                                            "order":  "ASCENDING"

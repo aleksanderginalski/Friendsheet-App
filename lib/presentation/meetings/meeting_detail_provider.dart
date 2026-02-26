@@ -40,7 +40,8 @@ class MeetingDetailProvider extends ChangeNotifier {
       // Skip persons fetch when no participant IDs to avoid unnecessary Firestore queries
       final personsFuture = meeting.participantIds.isEmpty
           ? Future.value(<Person>[])
-          : _personRepository.getPersonsByIds(meeting.participantIds);
+          : _personRepository.getPersonsByIds(
+              meeting.participantIds, meeting.userId);
 
       // Fetch participants and categories in parallel
       final results = await Future.wait([
