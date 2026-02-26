@@ -58,6 +58,9 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  // Prevents calling onboarding on every stream rebuild.
+  bool _hasRunOnboarding = false;
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -76,6 +79,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final bool isAuthenticated = snapshot.hasData && snapshot.data != null;
 
         if (isAuthenticated) {
+          if (!_hasRunOnboarding) {
+            _hasRunOnboarding = true;
+            // Run onboarding after the frame completes to avoid calling
+            // async work during build. The guard in AuthService makes this
+            // idempotent across app restarts and re-logins.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              widget.authService.runOnboardingIfNeeded(snapshot.data!.uid);
+            });
+          }
           return MainScreen(authService: widget.authService);
         } else {
           return LoginScreen(authService: widget.authService);

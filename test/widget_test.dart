@@ -62,9 +62,12 @@ void main() {
         (_) => Stream.value(mockUser),
       );
       // Tell mock what to return when MainScreen asks for user data
+      when(mockUser.uid).thenReturn('test-uid');
       when(mockAuthService.userDisplayName).thenReturn('Test User');
       when(mockAuthService.userEmail).thenReturn('test@example.com');
       when(mockAuthService.currentUser).thenReturn(null);
+      when(mockAuthService.runOnboardingIfNeeded('test-uid'))
+          .thenAnswer((_) async {});
 
       // Act: Build widget with injected mock
       await tester.pumpWidget(

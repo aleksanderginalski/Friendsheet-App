@@ -72,11 +72,17 @@ class MockPersonRepository extends _i1.Mock implements _i3.PersonRepository {
       ) as _i4.Future<_i2.Person>);
 
   @override
-  _i4.Future<List<_i2.Person>> getPersonsByIds(List<String>? ids) =>
+  _i4.Future<List<_i2.Person>> getPersonsByIds(
+    List<String>? ids,
+    String? userId,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #getPersonsByIds,
-          [ids],
+          [
+            ids,
+            userId,
+          ],
         ),
         returnValue: _i4.Future<List<_i2.Person>>.value(<_i2.Person>[]),
       ) as _i4.Future<List<_i2.Person>>);
@@ -153,10 +159,17 @@ class MockMeetingRepository extends _i1.Mock implements _i5.MeetingRepository {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> deleteMeeting(String? meetingId) => (super.noSuchMethod(
+  _i4.Future<void> deleteMeeting(
+    String? userId,
+    String? meetingId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #deleteMeeting,
-          [meetingId],
+          [
+            userId,
+            meetingId,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
@@ -224,6 +237,16 @@ class MockAuthService extends _i1.Mock implements _i8.AuthService {
         Invocation.method(
           #signOut,
           [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> runOnboardingIfNeeded(String? userId) => (super.noSuchMethod(
+        Invocation.method(
+          #runOnboardingIfNeeded,
+          [userId],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
