@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
@@ -33,6 +34,10 @@ void main() {
     );
   }
 
+  // Helper: returns the meetings subcollection reference for a given userId.
+  CollectionReference<Map<String, dynamic>> meetingsRef(String userId) =>
+      fakeFirestore.collection('users').doc(userId).collection('meetings');
+
   group('MeetingRepository', () {
     test('saveMeeting returns a non-empty document ID', () async {
       final meeting = makeMeeting();
@@ -40,11 +45,11 @@ void main() {
       expect(id, isNotEmpty);
     });
 
-    test('saveMeeting stores document in meetings collection', () async {
-      final meeting = makeMeeting();
+    test('saveMeeting stores document in subcollection', () async {
+      final meeting = makeMeeting(userId: 'user-1');
       final id = await repository.saveMeeting(meeting);
 
-      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      final doc = await meetingsRef('user-1').doc(id).get();
       expect(doc.exists, isTrue);
     });
 
@@ -52,7 +57,7 @@ void main() {
       final meeting = makeMeeting(userId: 'user-42');
       final id = await repository.saveMeeting(meeting);
 
-      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      final doc = await meetingsRef('user-42').doc(id).get();
       expect(doc.data()?['userId'], equals('user-42'));
     });
 
@@ -60,7 +65,7 @@ void main() {
       final meeting = makeMeeting(name: 'Lunch with Bob');
       final id = await repository.saveMeeting(meeting);
 
-      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      final doc = await meetingsRef('user-1').doc(id).get();
       expect(doc.data()?['name'], equals('Lunch with Bob'));
     });
 
@@ -68,7 +73,7 @@ void main() {
       final meeting = makeMeeting(weight: 8);
       final id = await repository.saveMeeting(meeting);
 
-      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      final doc = await meetingsRef('user-1').doc(id).get();
       expect(doc.data()?['weight'], equals(8));
     });
 
@@ -76,7 +81,7 @@ void main() {
       final meeting = makeMeeting(participantIds: ['p-1', 'p-2']);
       final id = await repository.saveMeeting(meeting);
 
-      final doc = await fakeFirestore.collection('meetings').doc(id).get();
+      final doc = await meetingsRef('user-1').doc(id).get();
       expect(doc.data()?['participantIds'], equals(['p-1', 'p-2']));
     });
 

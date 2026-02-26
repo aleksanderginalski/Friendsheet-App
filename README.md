@@ -133,7 +133,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (214)
+✅ All tests passing (232)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v2.9.0 - US-045 Firestore Hierarchy Migration (February 26, 2026)
+- ✅ MeetingRepository: all methods migrated to users/{uid}/meetings subcollection
+- ✅ PersonRepository: all methods migrated to users/{uid}/persons subcollection
+- ✅ ActivityCategoryRepository: getAllCategories reads only from users/{uid}/activity_categories
+- ✅ AuthService: batch-copy path fixed to users/{uid}/activity_categories subcollection
+- ✅ AuthWrapper: onboarding guard moved to session restore flow (idempotent across restarts)
+- ✅ Security Rules: path-based rules for meetings, persons and users/{uid} document
+- ✅ Fix: isSelectableAsActivity preserved on edit, always true on add from Activities tab
+- ✅ firestore.indexes.json updated for subcollection paths
+- ✅ Total test count: 232 (all passing)
 
 ### v2.8.0 - M2, US-042 Cleanup — Remove legacy Activity model (February 26, 2026)
 - ✅ Activity model removed (activity.dart + generated files)

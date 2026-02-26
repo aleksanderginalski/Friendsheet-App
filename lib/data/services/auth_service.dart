@@ -102,65 +102,88 @@ class AuthService {
   }
 
   // Copies all global categories to the user's private collection on first login.
-  // Returns early if the user already has private categories (idempotent guard).
+  // Uses onboardingCompletedAt on users/{uid} as an idempotent guard so that
+  // re-login and re-install do not duplicate categories.
   // parentCategoryId values are remapped to point to the new user-copy IDs.
   Future<void> _copyGlobalCategoriesToUser(String userId) async {
-    // 1. Check if the user already has private categories.
-    final existing = await _firestore
-        .collection('activity_categories')
-        .where('isGlobal', isEqualTo: false)
-        .where('userId', isEqualTo: userId)
-        .limit(1)
-        .get();
+    try {
+      // 1. Check if onboarding has already been completed for this user.
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.data()?['onboardingCompletedAt'] != null) {
+        // Already onboarded — skip batch-copy.
+        return;
+      }
 
-    if (existing.docs.isNotEmpty) {
-      // Already copied — nothing to do.
-      return;
+      // 2. Fetch all global categories.
+      final globalSnapshot = await _firestore
+          .collection('activity_categories')
+          .where('isGlobal', isEqualTo: true)
+          .get();
+
+      if (globalSnapshot.docs.isEmpty) {
+        return;
+      }
+
+      // 3. Pre-create document references to get new IDs before the batch write.
+      final newRefs = List.generate(
+        globalSnapshot.docs.length,
+        (_) => _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('activity_categories')
+            .doc(),
+      );
+
+      // Build mapping: globalId → newId for parentCategoryId remapping.
+      final globalToNewId = <String, String>{};
+      for (var i = 0; i < globalSnapshot.docs.length; i++) {
+        globalToNewId[globalSnapshot.docs[i].id] = newRefs[i].id;
+      }
+
+      // 4. Batch write user copies with remapped parentCategoryIds.
+      final batch = _firestore.batch();
+      for (var i = 0; i < globalSnapshot.docs.length; i++) {
+        final globalDoc = globalSnapshot.docs[i];
+        final globalData = globalDoc.data();
+
+        final globalParentId = globalData['parentCategoryId'] as String?;
+        final newParentId =
+            globalParentId != null ? globalToNewId[globalParentId] : null;
+
+        batch.set(newRefs[i], {
+          'userId': userId,
+          'name': globalData['name'],
+          'iconIdentifier': globalData['iconIdentifier'] ?? '',
+          'isGlobal': false,
+          'isSelectableAsActivity':
+              globalData['isSelectableAsActivity'] ?? false,
+          'parentCategoryId': newParentId,
+          'copiedFromId': globalDoc.id,
+          'createdAt': Timestamp.fromDate(DateTime.now()),
+        });
+      }
+
+      await batch.commit();
+
+      // 5. Mark onboarding as complete so this guard fires on subsequent logins.
+      await _firestore.collection('users').doc(userId).set(
+        {'onboardingCompletedAt': Timestamp.now()},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      rethrow;
     }
+  }
 
-    // 2. Fetch all global categories.
-    final globalSnapshot = await _firestore
-        .collection('activity_categories')
-        .where('isGlobal', isEqualTo: true)
-        .get();
-
-    if (globalSnapshot.docs.isEmpty) return;
-
-    // 3. Pre-create document references to get new IDs before the batch write.
-    final newRefs = List.generate(
-      globalSnapshot.docs.length,
-      (_) => _firestore.collection('activity_categories').doc(),
-    );
-
-    // Build mapping: globalId → newId for parentCategoryId remapping.
-    final globalToNewId = <String, String>{};
-    for (var i = 0; i < globalSnapshot.docs.length; i++) {
-      globalToNewId[globalSnapshot.docs[i].id] = newRefs[i].id;
+  /// Runs onboarding for the given user if it has not been completed yet.
+  /// Safe to call on every app launch — the onboardingCompletedAt guard
+  /// ensures the batch-copy executes only once per user.
+  Future<void> runOnboardingIfNeeded(String userId) async {
+    try {
+      await _copyGlobalCategoriesToUser(userId);
+    } catch (e) {
+      // Onboarding failure is non-fatal — the user can still proceed.
     }
-
-    // 4. Batch write user copies with remapped parentCategoryIds.
-    final batch = _firestore.batch();
-    for (var i = 0; i < globalSnapshot.docs.length; i++) {
-      final globalDoc = globalSnapshot.docs[i];
-      final globalData = globalDoc.data();
-
-      final globalParentId = globalData['parentCategoryId'] as String?;
-      final newParentId =
-          globalParentId != null ? globalToNewId[globalParentId] : null;
-
-      batch.set(newRefs[i], {
-        'userId': userId,
-        'name': globalData['name'],
-        'iconIdentifier': globalData['iconIdentifier'] ?? '',
-        'isGlobal': false,
-        'isSelectableAsActivity': globalData['isSelectableAsActivity'] ?? false,
-        'parentCategoryId': newParentId,
-        'copiedFromId': globalDoc.id,
-        'createdAt': Timestamp.fromDate(DateTime.now()),
-      });
-    }
-
-    await batch.commit();
   }
 
   // Exposed for unit-testing the guard logic without triggering Google Sign-In.
