@@ -265,6 +265,22 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Creates a new root selectable category in the user's subcollection and
+  // immediately selects it as a chip. Bypasses getAncestorIds because the
+  // newly created category is always a root (parentCategoryId: null).
+  Future<void> addNewActivity(String name, String userId) async {
+    final category = await _categoryRepository.createSelectableCategory(
+      name: name,
+      userId: userId,
+    );
+    _availableCategories.add(category);
+    if (!_selectedCategoryIds.contains(category.id)) {
+      _selectedCategoryIds.add(category.id);
+    }
+    _selectedCategories.add(category);
+    notifyListeners();
+  }
+
   // Removes a category chip. Only the leaf ID is removed; ancestors may still
   // be needed by other selected categories, so they are left in place.
   void removeCategory(ActivityCategory category) {

@@ -45,6 +45,22 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     _focusNode.unfocus();
   }
 
+  // Creates a new root selectable category and selects it as a chip.
+  Future<void> _addNewActivity(
+    BuildContext context,
+    AddMeetingProvider provider,
+    String name,
+  ) async {
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+    await provider.addNewActivity(name, userId);
+    _controller.clear();
+    setState(() {
+      _categorySuggestions = [];
+    });
+    _focusNode.unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AddMeetingProvider>();
@@ -94,6 +110,11 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
     BuildContext context,
     AddMeetingProvider provider,
   ) {
+    final query = _controller.text.trim();
+    final hasExactMatch = _categorySuggestions.any(
+      (c) => c.name.toLowerCase() == query.toLowerCase(),
+    );
+
     return Card(
       margin: const EdgeInsets.only(top: 4),
       elevation: 4,
@@ -120,6 +141,13 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
               );
             },
           ),
+          // "Add custom" option — creates a new root category in the user's subcollection
+          if (query.isNotEmpty && !hasExactMatch)
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: Text('Add "$query" as new activity'),
+              onTap: () => _addNewActivity(context, provider, query),
+            ),
         ],
       ),
     );
