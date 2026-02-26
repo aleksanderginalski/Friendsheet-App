@@ -52,6 +52,16 @@ void main() {
     createdAt: DateTime(2024),
   );
 
+  final newCategory = ActivityCategory(
+    id: 'new-cat',
+    userId: 'user1',
+    name: 'Climbing',
+    iconIdentifier: 'category',
+    isGlobal: false,
+    isSelectableAsActivity: true,
+    createdAt: DateTime(2024),
+  );
+
   setUp(() {
     mockPersonRepository = MockPersonRepository();
     mockCategoryRepository = MockActivityCategoryRepository();
@@ -71,6 +81,10 @@ void main() {
         .thenAnswer((_) async => []);
     when(mockCategoryRepository.getAncestorIds(any, any))
         .thenAnswer((_) async => ['cat1', 'cat-sport']);
+    when(mockCategoryRepository.createSelectableCategory(
+      name: anyNamed('name'),
+      userId: anyNamed('userId'),
+    )).thenAnswer((_) async => newCategory);
   });
 
   group('AddMeetingProvider - weight', () {
@@ -305,6 +319,28 @@ void main() {
 
       expect(provider.selectedCategories, isEmpty);
       expect(provider.selectedCategoryIds, isEmpty);
+    });
+
+    test('addNewActivity adds category to selectedCategories', () async {
+      await provider.addNewActivity('Climbing', 'user1');
+
+      expect(provider.selectedCategories, contains(newCategory));
+    });
+
+    test('addNewActivity adds category id to selectedCategoryIds', () async {
+      await provider.addNewActivity('Climbing', 'user1');
+
+      expect(provider.selectedCategoryIds, contains('new-cat'));
+    });
+
+    test('addNewActivity calls createSelectableCategory with correct args',
+        () async {
+      await provider.addNewActivity('Climbing', 'user1');
+
+      verify(mockCategoryRepository.createSelectableCategory(
+        name: 'Climbing',
+        userId: 'user1',
+      )).called(1);
     });
   });
 
