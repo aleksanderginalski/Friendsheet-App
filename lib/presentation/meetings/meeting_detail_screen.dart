@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
 import '../../data/repositories/activity_category_repository.dart';
-import '../../data/repositories/activity_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../screens/add_meeting_screen.dart';
@@ -41,7 +40,6 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
     return ChangeNotifierProvider(
       create: (_) => MeetingDetailProvider(
         personRepository: PersonRepository(),
-        activityRepository: ActivityRepository(),
         categoryRepository: ActivityCategoryRepository(),
       )..initialize(_meeting),
       child: Scaffold(
@@ -210,17 +208,12 @@ class _ActivityList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (provider.activities.isEmpty && provider.categories.isEmpty) {
+    if (provider.categories.isEmpty) {
       return const Text('No activities.');
     }
 
     return Column(
       children: [
-        ...provider.activities.map((a) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.local_activity_outlined),
-              title: Text(a.name),
-            )),
         ...provider.categories.map((c) => ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.sports_tennis),

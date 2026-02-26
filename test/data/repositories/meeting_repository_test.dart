@@ -19,7 +19,6 @@ void main() {
     String name = 'Coffee with Anna',
     int weight = 3,
     List<String> participantIds = const ['person-1'],
-    List<String> activityIds = const ['activity-1'],
   }) {
     final now = DateTime(2026, 2, 20);
     return Meeting(
@@ -29,7 +28,6 @@ void main() {
       date: now,
       weight: weight,
       participantIds: participantIds,
-      activityIds: activityIds,
       createdAt: now,
       updatedAt: now,
     );

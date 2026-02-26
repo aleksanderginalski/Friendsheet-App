@@ -27,7 +27,6 @@ void main() {
       date: date,
       weight: 3,
       participantIds: const ['person-1'],
-      activityIds: const ['activity-1'],
       createdAt: date,
       updatedAt: date,
     );
