@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -12,19 +13,26 @@ import 'package:provider/provider.dart';
 
 import 'home_screen_test.mocks.dart';
 
-@GenerateMocks([StatisticsRepository, AuthService])
+@GenerateMocks([StatisticsRepository, AuthService, ActivityCategoryRepository])
 void main() {
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
+  late MockActivityCategoryRepository mockCategoryRepository;
   late StatisticsProvider statisticsProvider;
 
   setUp(() {
     mockRepository = MockStatisticsRepository();
     mockAuthService = MockAuthService();
+    mockCategoryRepository = MockActivityCategoryRepository();
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
+      categoryRepository: mockCategoryRepository,
     );
+    // Default stub: breakdown returns empty list unless overridden per test.
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getActivityWeightBreakdown(any, any))
+        .thenAnswer((_) async => []);
   });
 
   tearDown(() {

@@ -1,33 +1,43 @@
 import 'package:flutter/foundation.dart';
 
+import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
 
-/// Manages statistics state: available years, selected year, and loading status.
+/// Manages statistics state: available years, selected year, activity
+/// breakdown, and loading status.
 class StatisticsProvider extends ChangeNotifier {
   final StatisticsRepository _repository;
   final AuthService _authService;
+  // Injected for DI consistency; breakdown is fetched via _repository.
+  // ignore: unused_field
+  final ActivityCategoryRepository _categoryRepository;
 
   List<int> _availableYears = [];
   int? _selectedYear;
   bool _isLoading = false;
   String? _errorMessage;
+  List<ActivityBreakdownEntry> _activityBreakdown = [];
 
   StatisticsProvider({
     required StatisticsRepository repository,
     required AuthService authService,
+    required ActivityCategoryRepository categoryRepository,
   })  : _repository = repository,
-        _authService = authService;
+        _authService = authService,
+        _categoryRepository = categoryRepository;
 
   List<int> get availableYears => _availableYears;
   int? get selectedYear => _selectedYear;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  List<ActivityBreakdownEntry> get activityBreakdown => _activityBreakdown;
 
   /// True when years have been loaded and at least one year is available.
   bool get hasData => _availableYears.isNotEmpty;
 
-  /// Fetches available years from Firestore and sets the selected year.
+  /// Fetches available years from Firestore, sets the selected year, then
+  /// loads the activity breakdown for that year.
   /// Selects the current calendar year if present; falls back to the most
   /// recent year in the list. Sets selectedYear to null when no data exists.
   /// No-op if a fetch is already in progress (prevents concurrent calls).
@@ -36,6 +46,7 @@ class StatisticsProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
+    _activityBreakdown = [];
     notifyListeners();
 
     try {
@@ -57,6 +68,13 @@ class StatisticsProvider extends ChangeNotifier {
       } else {
         _selectedYear = null;
       }
+
+      if (_selectedYear != null) {
+        _activityBreakdown = await _repository.getActivityWeightBreakdown(
+          _selectedYear!,
+          userId,
+        );
+      }
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
@@ -65,9 +83,25 @@ class StatisticsProvider extends ChangeNotifier {
     }
   }
 
-  /// Updates the selected year and notifies listeners.
-  void selectYear(int year) {
+  /// Updates the selected year, resets the breakdown immediately, then
+  /// reloads the breakdown for the new year in the background.
+  Future<void> selectYear(int year) async {
     _selectedYear = year;
+    _activityBreakdown = [];
     notifyListeners();
+
+    final userId = _authService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      _activityBreakdown = await _repository.getActivityWeightBreakdown(
+        year,
+        userId,
+      );
+    } catch (e) {
+      _errorMessage = 'Failed to load statistics';
+    } finally {
+      notifyListeners();
+    }
   }
 }

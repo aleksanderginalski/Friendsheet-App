@@ -1192,18 +1192,19 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
+**Status:** ✅ COMPLETED (February 27, 2026)
 
 **Acceptance Criteria:**
-- [ ] Ranked list of activities by sum of meeting weights in selected year
-- [ ] Each row shows: activity name | weight sum current year | weight sum previous year | delta (▲/▼)
-- [ ] Sorted by current year weight sum descending
-- [ ] Activities with 0 occurrences in current year but present in previous year shown at bottom
-- [ ] Weight treated as intensity score (higher = more significant meeting)
+- [x] Ranked list of activities by sum of meeting weights in selected year
+- [x] Each row shows: activity name | weight sum current year | weight sum previous year | delta (▲/▼)
+- [x] Sorted by current year weight sum descending
+- [x] Activities with 0 occurrences in current year but present in previous year shown at bottom
+- [x] Weight treated as intensity score (higher = more significant meeting)
 
 **Tasks:**
-- [ ] **TASK-028.1:** Implement `getActivityWeightBreakdown(year)` in StatisticsRepository
-- [ ] **TASK-028.2:** Build ActivityBreakdownWidget
-- [ ] **TASK-028.3:** Write tests
+- [x] **TASK-028.1:** Implement `getActivityWeightBreakdown(year)` in StatisticsRepository
+- [x] **TASK-028.2:** Build ActivityBreakdownWidget
+- [x] **TASK-028.3:** Write tests
 
 ---
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/statistics_provider.dart';
+import 'activity_breakdown_widget.dart';
 import 'year_stepper.dart';
 
 /// Displays the year selector and statistics content for the Home tab.
@@ -25,12 +26,14 @@ class StatisticsSection extends StatelessWidget {
           const CircularProgressIndicator()
         else if (!provider.hasData)
           const Text('No meetings found')
-        else
+        else ...[
           YearStepper(
             selectedYear: provider.selectedYear!,
             availableYears: provider.availableYears,
             onYearChanged: provider.selectYear,
           ),
+          ActivityBreakdownWidget(entries: provider.activityBreakdown),
+        ],
       ],
     );
   }
