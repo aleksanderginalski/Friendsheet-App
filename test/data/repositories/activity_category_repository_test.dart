@@ -165,6 +165,33 @@ void main() {
       });
     });
 
+    group('deleteWithChildren', () {
+      test('deletes parent and all direct children atomically', () async {
+        final parentId = await seedRootCategory(name: 'Parent');
+        final child1Id = await seedSubCategory(parentId, name: 'Child1');
+        final child2Id = await seedSubCategory(parentId, name: 'Child2');
+
+        await repository.deleteWithChildren(userId, parentId);
+
+        final parentDoc = await categoriesRef().doc(parentId).get();
+        final child1Doc = await categoriesRef().doc(child1Id).get();
+        final child2Doc = await categoriesRef().doc(child2Id).get();
+        expect(parentDoc.exists, isFalse);
+        expect(child1Doc.exists, isFalse);
+        expect(child2Doc.exists, isFalse);
+      });
+
+      test('deletes root category with no children (single delete in batch)',
+          () async {
+        final id = await seedRootCategory(name: 'Lone Root');
+
+        await repository.deleteWithChildren(userId, id);
+
+        final doc = await categoriesRef().doc(id).get();
+        expect(doc.exists, isFalse);
+      });
+    });
+
     group('getCategories', () {
       test('returns empty list when no categories exist', () async {
         final result = await repository.getCategories(userId).first;
