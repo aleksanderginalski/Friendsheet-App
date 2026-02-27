@@ -32,10 +32,10 @@ EPIC-001: Friendsheet M1 - Add Meeting
 ├── FEATURE-004: Add Meeting Feature ✅
 └── FEATURE-005: Testing & Quality Assurance ✅
 
-EPIC-002: Friendsheet M2 - Management & CRUD
-├── FEATURE-006: Meetings View 🔜
-├── FEATURE-007: Persons View
-└── FEATURE-008: Activities View & Categories
+EPIC-002: Friendsheet M2 - Management & CRUD ✅
+├── FEATURE-006: Meetings View ✅
+├── FEATURE-007: Persons View ✅
+└── FEATURE-008: Activities View & Categories ✅
 
 EPIC-003: Friendsheet M3 - Statistics & Export
 ├── FEATURE-009: Core Statistics
@@ -64,7 +64,7 @@ EPIC-008: Friendsheet M8 - AI Assistant
 **Goal:** Deliver minimum viable product allowing users to add meetings with friends
 
 **Business Value:** Enable users to track social interactions and lay foundation for future statistics features
-
+**Status:** ✅ COMPLETED 
 ---
 
 ## 🔧 FEATURE-001: Project Infrastructure Setup
@@ -183,7 +183,7 @@ EPIC-008: Friendsheet M8 - AI Assistant
 ## 🔐 FEATURE-002: User Authentication
 
 **Role:** Developer
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-004: User Registration
@@ -308,7 +308,7 @@ If you already created a GitHub issue for US-005, you can:
 ## 💾 FEATURE-003: Data Models
 
 **Role:** Developer + Solution Architect
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-007: Meeting Model
@@ -414,7 +414,7 @@ If you already created a GitHub issue for US-005, you can:
 ## ➕ FEATURE-004: Add Meeting Feature
 
 **Role:** Developer + UX Designer
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-010: Add Meeting Screen UI
@@ -611,7 +611,7 @@ If you already created a GitHub issue for US-005, you can:
 ## 🧪 FEATURE-005: Testing & Quality Assurance
 
 **Role:** QA Engineer + Developer
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-016: Unit Tests
@@ -678,20 +678,21 @@ If you already created a GitHub issue for US-005, you can:
 **As a** QA Engineer  
 **I want to** perform manual testing  
 **So that** the app is polished before release
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Test cases document created
-- [ ] All features manually tested
-- [ ] Bugs logged and prioritized
-- [ ] Critical bugs fixed
-- [ ] Regression testing performed
+- [x] Test cases document created
+- [x] All features manually tested
+- [x] Bugs logged and prioritized
+- [x] Critical bugs fixed
+- [x] Regression testing performed
 
 **Tasks:**
-- [ ] **TASK-097:** Create test cases document - 1h
-- [ ] **TASK-098:** Execute manual tests - 2h
-- [ ] **TASK-099:** Log bugs in issue tracker - 30min
-- [ ] **TASK-100:** Fix critical bugs - varies
-- [ ] **TASK-101:** Regression testing - 1h
+- [x] **TASK-097:** Create test cases document - 1h
+- [x] **TASK-098:** Execute manual tests - 2h
+- [x] **TASK-099:** Log bugs in issue tracker - 30min
+- [x] **TASK-100:** Fix critical bugs - varies
+- [x] **TASK-101:** Regression testing - 1h
 
 **Definition of Done:**
 - All test cases executed
@@ -706,7 +707,7 @@ If you already created a GitHub issue for US-005, you can:
 **Goal:** Give users full visibility and control over their meetings, persons and activities
 
 **Business Value:** App becomes a real management tool instead of just a data entry form. Foundation for statistics in M3.
-
+**Status:** ✅ COMPLETED 
 **Architecture Notes:**
 - Meetings view requires Firestore queries ordered by date DESC
 - Persons and Activities views reuse existing repositories
@@ -720,7 +721,7 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0  
 **Role:** Developer + UX Designer  
 **Status:** 📋 Planned
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-021: Meetings List Screen
@@ -811,7 +812,7 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0  
 **Role:** Developer + UX Designer  
 **Status:** 📋 Planned
-
+**Status:** ✅ COMPLETED 
 ---
 
 ### US-024: Persons List Screen
@@ -860,7 +861,7 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0  
 **Role:** Developer + UX Designer  
 **Status:** 📋 Planned
-
+**Status:** ✅ COMPLETED 
 **Architecture Note:** This feature delivers US-019 and US-020 which were designed in M1 but not implemented. The ActivityCategory model with parentCategoryId (max 3 levels) and icon support is the foundation for M3 statistics filtering.
 
 ---
@@ -1009,23 +1010,23 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0
 **Status:** 📋 Planned
 **Milestone:** M2
-
+**Status:** ✅ COMPLETED
 **Acceptance Criteria:**
 
-- [ ] Autocomplete in AddMeeting reads only from `users/{uid}/activity_categories` via `getSelectableCategories`
-- [ ] Typing a new activity name in AddMeeting and confirming creates a root category (`isSelectableAsActivity: true`) in `users/{uid}/activity_categories`
-- [ ] Newly created activity appears in Activities tab immediately after saving the meeting
-- [ ] Deleting a root category in Activities tab deletes all its children atomically (WriteBatch)
-- [ ] Deleting a child category does not affect its siblings or parent
-- [ ] `flutter analyze` passes with 0 issues
+- [x] Autocomplete in AddMeeting reads only from `users/{uid}/activity_categories` via `getSelectableCategories`
+- [x] Typing a new activity name in AddMeeting and confirming creates a root category (`isSelectableAsActivity: true`) in `users/{uid}/activity_categories`
+- [x] Newly created activity appears in Activities tab immediately after saving the meeting
+- [x] Deleting a root category in Activities tab deletes all its children atomically (WriteBatch)
+- [x] Deleting a child category does not affect its siblings or parent
+- [x] `flutter analyze` passes with 0 issues
 
 **Tasks:**
 
-- [ ] **TASK-43.1:** Update `ActivityAutocomplete` — remove `Activity` path, read only from `getSelectableCategories`
-- [ ] **TASK-43.2:** Update `AddMeetingProvider.addNewActivity` — saves to `users/{uid}/activity_categories` as root category with `isSelectableAsActivity: true`
-- [ ] **TASK-43.3:** Add `deleteWithChildren(String categoryId, String userId)` to `ActivityCategoryRepository` using `WriteBatch`
-- [ ] **TASK-43.4:** Update `ActivitiesListProvider` — call `deleteWithChildren` instead of `deleteCategory`
-- [ ] **TASK-43.5:** Write/update tests for repository and provider changes
+- [x] **TASK-43.1:** Update `ActivityAutocomplete` — remove `Activity` path, read only from `getSelectableCategories`
+- [x] **TASK-43.2:** Update `AddMeetingProvider.addNewActivity` — saves to `users/{uid}/activity_categories` as root category with `isSelectableAsActivity: true`
+- [x] **TASK-43.3:** Add `deleteWithChildren(String categoryId, String userId)` to `ActivityCategoryRepository` using `WriteBatch`
+- [x] **TASK-43.4:** Update `ActivitiesListProvider` — call `deleteWithChildren` instead of `deleteCategory`
+- [x] **TASK-43.5:** Write/update tests for repository and provider changes
 
 ---
 
@@ -1039,19 +1040,19 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0
 **Status:** 📋 Planned
 **Milestone:** M2
-
+**Status:** ✅ COMPLETED
 **Acceptance Criteria:**
 
-- [ ] `users/{uid}` document contains `onboardingCompletedAt: Timestamp` field after first login
-- [ ] Batch-copy of global categories runs only if `onboardingCompletedAt` is null (field absent)
-- [ ] Re-login or reinstall does not create duplicate entries in `users/{uid}/activity_categories`
-- [ ] `flutter analyze` passes with 0 issues
+- [x] `users/{uid}` document contains `onboardingCompletedAt: Timestamp` field after first login
+- [x] Batch-copy of global categories runs only if `onboardingCompletedAt` is null (field absent)
+- [x] Re-login or reinstall does not create duplicate entries in `users/{uid}/activity_categories`
+- [x] `flutter analyze` passes with 0 issues
 
 **Tasks:**
 
-- [ ] **TASK-44.1:** Add `onboardingCompletedAt: Timestamp` write to `users/{uid}` document as part of the first-login batch operation
-- [ ] **TASK-44.2:** Update `AuthService` — check `onboardingCompletedAt` flag before running batch-copy; skip if field exists
-- [ ] **TASK-44.3:** Write/update tests for `AuthService` covering idempotent onboarding behavior
+- [x] **TASK-44.1:** Add `onboardingCompletedAt: Timestamp` write to `users/{uid}` document as part of the first-login batch operation
+- [x] **TASK-44.2:** Update `AuthService` — check `onboardingCompletedAt` flag before running batch-copy; skip if field exists
+- [x] **TASK-44.3:** Write/update tests for `AuthService` covering idempotent onboarding behavior
 
 
 ### US-045: Firestore Hierarchy — Migrate meetings and persons to user subcollections

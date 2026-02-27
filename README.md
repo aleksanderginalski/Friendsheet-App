@@ -3,8 +3,8 @@
 | Milestone | Name | Status |
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ Completed |
-| M2 | Management & CRUD | 🔜 Next |
-| M3 | Statistics & Export | 📋 Planned |
+| M2 | Management & CRUD | ✅ Completed |
+| M3 | Statistics & Export | 🔜 Next |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Google Photos Integration | 📋 Planned |
@@ -48,11 +48,11 @@ lib/
 
 Comprehensive documentation is available in the project root:
 
-- [Requirements Documentation](friendsheet_requirements.md) - Functional and non-functional requirements
+- [Requirements Documentation](requirements.md) - Functional and non-functional requirements
 - [Architecture Documentation](architecture.md) - System design and diagrams
 - [UI/UX Documentation](wireframes.md) - Screen designs and user flows
 - [Code Examples](code_snippets.md) - Implementation snippets
-- [Project Structure](PROJECT_STRUCTURE.md) - Folder organization
+- [Project Structure](PROJECT_FILES.md) - Folder organization
 - [Product Backlog](BACKLOG.md) - Sprint planning and user stories
 
 ## 🚀 Getting Started
@@ -133,7 +133,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (232)
+✅ All tests passing (235)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -219,6 +219,19 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v2.10.1 - US-018 Manual Testing & Test Cases Document (February 27, 2026)
+- ✅ TEST_CASES.md created (docs/TEST_CASES.md) — 32 manual test cases for M1 + M2
+- ✅ US-044 confirmed completed (implemented in US-045, onboarding idempotency verified)
+- ✅ EPIC-002 Friendsheet M2 — Management & CRUD: COMPLETED
+
+### v2.10.0 - US-043 Fix — Unified activity flow (February 27, 2026)
+- ✅ deleteWithChildren added to ActivityCategoryRepository (WriteBatch — atomic cascade delete)
+- ✅ ActivitiesListProvider: deleteCategory replaced with deleteWithChildren
+- ✅ Deleting a parent category removes all direct children atomically
+- ✅ Orphaned records bug fixed — deleted categories no longer visible in AddMeeting autocomplete
+- ✅ Total test count: 235 (all passing)
+
 
 ### v2.9.0 - US-045 Firestore Hierarchy Migration (February 26, 2026)
 - ✅ MeetingRepository: all methods migrated to users/{uid}/meetings subcollection
