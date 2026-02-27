@@ -50,8 +50,7 @@ erDiagram
     USER ||--o{ ACTIVITY_CATEGORY : owns
     USER ||--o{ INVITATION_CODE : generates
     USER ||--o{ DASHBOARD_CONFIG : configures
-    MEETING }o--o{ PERSON : has_participants
-    MEETING }o--o{ ACTIVITY : has_activities
+    MEETING }o--o{ ACTIVITY_CATEGORY : has_categories
     ACTIVITY }o--o| ACTIVITY_CATEGORY : belongs_to
     ACTIVITY_CATEGORY }o--o| ACTIVITY_CATEGORY : has_parent
 
@@ -69,7 +68,7 @@ erDiagram
         datetime date
         int weight
         array participantIds
-        array activityIds
+        array categoryIds
         datetime createdAt
         datetime updatedAt
     }
@@ -82,24 +81,18 @@ erDiagram
         datetime createdAt
     }
     
-    ACTIVITY {
-        string id PK
-        string userId FK "null if global"
-        string name
-        string categoryId FK "optional"
-        bool isGlobal
-        datetime createdAt
-    }
-
     ACTIVITY_CATEGORY {
         string id PK
-        string userId FK "null if global"
+        string userId FK
         string name
         string iconIdentifier "references predefined icon set"
         bool isGlobal
-        string parentCategoryId FK "optional, max 3 levels"
+        bool isSelectableAsActivity
+        string copiedFromId FK "optional, links to global template"
+        string parentCategoryId FK "optional, max 2 levels"
         datetime createdAt
     }
+
 
     INVITATION_CODE {
         string id PK
@@ -143,23 +136,21 @@ graph TB
         B1[Auth Service]
         B2[Meeting Service]
         B3[Person Service]
-        B4[Activity Service]
-        B5[Activity Category Service - M2]
-        B6[Statistics Service - M3]
-        B7[Export Service - M3]
-        B8[Invitation Service - M5]
-        B9[Google Photos Service - M6]
-        B10[AI Context Builder - M8]
+        B4[Activity Category Service - M2]
+        B5[Statistics Service - M3]
+        B6[Export Service - M3]
+        B7[Invitation Service - M5]
+        B8[Google Photos Service - M6]
+        B9[AI Context Builder - M8]
     end
     
     subgraph "Data Layer"
         C1[Auth Repository]
         C2[Meeting Repository]
         C3[Person Repository]
-        C4[Activity Repository]
-        C5[Activity Category Repository - M2]
-        C6[Invitation Code Repository - M5]
-        C7[Dashboard Config Repository - M7]
+        C4[Activity Category Repository - M2]
+        C5[Invitation Code Repository - M5]
+        C6[Dashboard Config Repository - M7]
     end
     
     subgraph "External Services"
@@ -369,30 +360,31 @@ match /invitation_codes/{codeId} {
 ```mermaid
 graph LR
     subgraph "Firestore Collections"
-        A[users/]
-        B[meetings/]
-        C[persons/]
-        D[activities/]
-        E[activity_categories/] → E[users/{userId}/activity_categories/]
-        F[invitation_codes/ - M5]
+        A[activity_categories/]
+        U[users/]
     end
-    
-    A --> A1["{userId}/dashboard_config - M7"]
-    B --> B1["{meetingId}<br/>- userId<br/>- name<br/>- date<br/>- weight<br/>- participantIds[]<br/>- activityIds[]"]
-    C --> C1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?"]
-    D --> D1["{activityId}<br/>- userId: String?<br/>- name<br/>- categoryId: String?<br/>- isGlobal: bool"]
-    E --> E1["{categoryId}<br/>- userId: String?<br/>- name<br/>- iconIdentifier: String<br/>- isGlobal: bool<br/>- parentCategoryId: String?"]
-    F --> F1["{codeId}<br/>- code: String<br/>- senderId<br/>- targetPersonId<br/>- status<br/>- expiresAt"]
-    
-    B1 -.->|references| C1
-    B1 -.->|references| D1
-    D1 -.->|references| E1
-    E1 -.->|"self-reference (max 2 levels)"| E1
+
+    A --> A1["{categoryId}<br/>- isGlobal: true<br/>- userId: null<br/>- name<br/>- iconIdentifier<br/>- parentCategoryId?<br/>- isSelectableAsActivity"]
+
+    U --> UD["{uid} document<br/>- onboardingCompletedAt: Timestamp"]
+    U --> UAC["activity_categories/ (subcollection)"]
+    U --> UM["meetings/ (subcollection)"]
+    U --> UP["persons/ (subcollection)"]
+
+    UAC --> UAC1["{categoryId}<br/>- isGlobal: false<br/>- userId: String<br/>- name<br/>- iconIdentifier<br/>- parentCategoryId?<br/>- isSelectableAsActivity<br/>- copiedFromId?"]
+
+    UM --> UM1["{meetingId}<br/>- userId<br/>- name<br/>- date<br/>- weight<br/>- participantIds[]<br/>- categoryIds[]<br/>- createdAt<br/>- updatedAt"]
+
+    UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- createdAt"]
 ```
 
 **Global vs Private data pattern:**
-- `isGlobal: true` + `userId: null` → managed via Firebase Console, read-only for all users
-- `isGlobal: false` + `userId: String` → created and managed by individual user
+- Root `activity_categories/`: global template only (`isGlobal: true`, `userId: null`) — read-only for all users, managed via Firebase Console
+- `users/{uid}/activity_categories/`: user's private copies (`isGlobal: false`, `userId: String`) — batch-copied from global on first login, fully editable by owner
+
+**Rule:** Never query root `/meetings` or `/persons` — these collections do not exist post US-045.
+All user data lives under `users/{uid}/` subcollections.
+```
 
 ---
 

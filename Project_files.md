@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** lutego 26, 2026
+**Last Updated:** lutego 27, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -17,7 +17,7 @@
 - lib/data/models/person.dart - Person model (Freezed)
 - lib/data/models/person.freezed.dart - Generated
 - lib/data/models/person.g.dart - Generated
-- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation (US-019, US-020, US-026, US-042)
+- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, deleteWithChildren (WriteBatch cascade), getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation (US-019, US-020, US-026, US-042, US-043)
 - lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
 - lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)
@@ -28,7 +28,7 @@
 - lib/main.dart - App entry point, Firebase initialization, AuthWrapper, MainScreen as root
 
 ## lib/presentation/
-- lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD (US-026)
+- lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD with cascade delete (US-026, US-043)
 - lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, long-press edit/delete for private categories (US-026)
 - lib/presentation/activities/activity_icons.dart - Predefined icon set and resolveActivityIcon helper — maps string identifiers to Material IconData (US-026)
 - lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, icon picker (US-026)
@@ -57,13 +57,13 @@
 - test/data/models/activity_category_test.dart - ActivityCategory model tests — isSelectableAsActivity, copiedFromId, equality, serialization (US-019, US-020)
 - test/data/models/meeting_test.dart - Meeting model tests — categoryIds only, activityIds removed (US-042)
 - test/data/models/person_test.dart - Person model tests (11 tests)
-- test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042)
+- test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, deleteWithChildren, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042, US-043)
 - test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
 - test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
 
 ## test/presentation/
-- test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD (US-026)
+- test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD, deleteWithChildren verification (US-026, US-043)
 - test/presentation/activities/activities_list_provider_test.mocks.dart - Generated mocks for ActivitiesListProvider tests
 - test/presentation/meetings/meeting_detail_provider_test.dart - MeetingDetailProvider tests — categoryIds resolution, activityIds removed (US-020, US-042)
 - test/presentation/meetings/meeting_detail_provider_test.mocks.dart - Generated mocks for MeetingDetailProvider tests

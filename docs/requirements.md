@@ -24,8 +24,8 @@ The application enables users to track meetings with friends with the ability to
 | Milestone | Name | Status |
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ Completed |
-| M2 | Management & CRUD | 🔜 Next |
-| M3 | Statistics & Export | 📋 Planned |
+| M2 | Management & CRUD | ✅ Completed |
+| M3 | Statistics & Export | 🔜 Next |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Google Photos Integration | 📋 Planned |
@@ -113,7 +113,7 @@ Activities can be organized into a 3-level category hierarchy with icons.
 
 **Acceptance Criteria:**
 - ActivityCategory has: name, iconIdentifier, isGlobal, parentCategoryId (optional)
-- Maximum 3 levels of nesting (category → subcategory → activity)
+- Maximum 2 levels of nesting (category → subcategory)
 - Icons selected from predefined set of ~50 Material icons
 - Global categories: read-only for users, managed via Firebase Console
 - User can create private categories at any level
