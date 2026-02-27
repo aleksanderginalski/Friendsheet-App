@@ -262,6 +262,19 @@ Statistics are computed **client-side** in MVP (no Cloud Functions). This is acc
 
 **Export:** JSON file written to device Downloads folder using `path_provider` + `dart:io`. No server-side processing required.
 
+**StatisticsRepository:** Separate from MeetingRepository. Dedicated queries:
+- `getAvailableYears(userId)` — extracts unique years from meeting dates, sorted descending
+- `getMeetingsForYear(userId, year)` — date-range query (Jan 1 → Jan 1 next year)
+
+**StatisticsProvider:** Owned by `MainScreen` — same lifecycle pattern as `ActivitiesListProvider`.
+Initialized via `addPostFrameCallback` on tab switch to index 0.
+Persists `selectedYear` and `availableYears` during session.
+`initialize()` is idempotent — guarded against concurrent calls.
+
+**YearStepper:** Pure `StatelessWidget`. Receives `selectedYear`, `availableYears`, `onYearChanged` via constructor. No provider knowledge inside widget. Supports both arrow tap and swipe gesture.
+
+**UI Decision:** Year selector implemented as YearStepper (`← YYYY →`) with horizontal swipe support. Arrows disabled at year boundaries.
+
 ---
 
 ### M4 — Production Build
@@ -528,5 +541,6 @@ graph TB
 ---
 
 **End of Document - Architecture Documentation**  
-**Last Updated:** February 26, 2026 (Firestore hierarchy migration — US-045)
+
+**Last Updated:** February 27, 2026 (M3 Statistics infrastructure added — US-027)
 

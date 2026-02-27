@@ -220,6 +220,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.2.0 - US-027 Statistics Home Tab — Year Filter (February 27, 2026)
+- ✅ StatisticsRepository with getAvailableYears and getMeetingsForYear
+- ✅ StatisticsProvider owned by MainScreen (same lifecycle as ActivitiesListProvider)
+- ✅ StatisticsSection widget on HomeScreen replacing placeholder
+- ✅ YearStepper widget — ← YYYY → arrows + swipe gesture, disabled at boundaries
+- ✅ Total test count: 262 tests
+
 ### v3.1.0 - US-041 Python Migration Script — Excel to Firestore (February 27, 2026)
 - ✅ One-time Python migration script (`scripts/migration/migrate.py`)
 - ✅ Imports 857 meetings, 92 persons from Excel to Firestore
