@@ -20,6 +20,7 @@
 - lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, deleteWithChildren (WriteBatch cascade), getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation (US-019, US-020, US-026, US-042, US-043)
 - lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
 - lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
+- lib/data/repositories/statistics_repository.dart - StatisticsRepository — getAvailableYears (unique years from meetings), getMeetingsForYear (year-filtered Firestore query) (US-027)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)
 
 ## lib/
@@ -40,10 +41,11 @@
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen (stream, year grouping, expand/collapse)
+- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, loading state; initialize() guarded against concurrent calls; owned by MainScreen (US-027)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
-- lib/presentation/screens/home_screen.dart - Home screen (future dashboard/statistics placeholder)
+- lib/presentation/screens/home_screen.dart - Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider and ActivitiesListProvider lifecycle (US-026)
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
 - lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)
@@ -52,6 +54,8 @@
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget — pre-fills from provider in edit mode (US-023)
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 - lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget + AddPersonDialog — returns strings, save handled by Provider (BUG-42)
+- lib/presentation/widgets/statistics_section.dart - StatisticsSection — pure Consumer<StatisticsProvider> widget; loading / empty / YearStepper states (US-027)
+- lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget with ← YYYY → arrows and swipe gesture; disabled at year boundaries (US-027)
 
 ## test/data/
 - test/data/models/activity_category_test.dart - ActivityCategory model tests — isSelectableAsActivity, copiedFromId, equality, serialization (US-019, US-020)
@@ -60,6 +64,7 @@
 - test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, deleteWithChildren, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042, US-043)
 - test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
 - test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
+- test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears (sorted unique years, empty), getMeetingsForYear (year boundary) (US-027)
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
 
 ## test/presentation/
@@ -75,9 +80,11 @@
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests (11 tests)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
+- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize (current year default, fallback to recent, empty), selectYear (US-027)
+- test/presentation/providers/statistics_provider_test.mocks.dart - Generated mocks for StatisticsProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
-- test/presentation/screens/home_screen_test.dart - HomeScreen tests
+- test/presentation/screens/home_screen_test.dart - HomeScreen tests — StatisticsProvider integration, YearStepper rendering (US-027)
 - test/presentation/screens/home_screen_test.mocks.dart - Generated mocks for HomeScreen tests
 - test/presentation/screens/login_screen_test.dart - LoginScreen tests (8 tests)
 - test/presentation/screens/login_screen_test.mocks.dart - Generated mocks for LoginScreen tests
@@ -89,6 +96,7 @@
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
 - test/presentation/widgets/meeting_name_field_test.mocks.dart - Generated mocks for MeetingNameField tests
 - test/presentation/widgets/meeting_weight_stepper_test.dart - MeetingWeightStepper tests (5 tests)
+- test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case (US-027)
 
 ## test/
 - test/widget_test.dart - AuthWrapper tests

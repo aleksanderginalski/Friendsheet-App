@@ -1151,7 +1151,7 @@ If you already created a GitHub issue for US-005, you can:
 
 **Priority:** P0
 **Role:** Developer + UX Designer
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 ---
 
@@ -1163,20 +1163,24 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
+**Status:** ✅ COMPLETED (February 27, 2026)
 
 **Acceptance Criteria:**
-- [ ] Home tab displays statistics section
-- [ ] Year selector (chip row or dropdown) — defaults to current year
-- [ ] Available years derived from actual meeting data (no hardcoding)
-- [ ] Selected year persisted in provider state during session
-- [ ] Loading state while fetching data
-- [ ] Empty state when no meetings in selected year
+- [x] Home tab displays statistics section
+- [x] Year selector (YearStepper: ← YYYY → with swipe gesture) — defaults to current year
+- [x] Available years derived from actual meeting data (no hardcoding)
+- [x] Selected year persisted in provider state during session
+- [x] Loading state while fetching data
+- [x] Empty state when no meetings in selected year
 
 **Tasks:**
-- [ ] **TASK-027.1:** Create StatisticsSection widget on HomeScreen
-- [ ] **TASK-027.2:** Create StatisticsProvider with year selector state
-- [ ] **TASK-027.3:** Create StatisticsRepository with year-filtered Firestore queries
-- [ ] **TASK-027.4:** Write tests
+- [x] **TASK-027.1:** Create StatisticsRepository with getAvailableYears and getMeetingsForYear
+- [x] **TASK-027.2:** Create StatisticsProvider with year selector state
+- [x] **TASK-027.3:** Create StatisticsSection widget on HomeScreen
+- [x] **TASK-027.4:** Register StatisticsProvider lifecycle in MainScreen
+- [x] **TASK-027.5:** Update HomeScreen — replace placeholder with Consumer<StatisticsProvider>
+- [x] **TASK-027.6:** Write tests (repository + provider: 14 tests)
+- [x] **TASK-027.7:** Replace ChoiceChip row with YearStepper (← YYYY → + swipe gesture)
 
 ---
 
