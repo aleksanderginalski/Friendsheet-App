@@ -158,6 +158,18 @@ void main() {
       verify(mockRepository.getAllCategories('u1')).called(greaterThan(0));
     });
 
+    test('deleteCategory calls deleteWithChildren on repository', () async {
+      when(mockRepository.deleteWithChildren('u1', 'root-a'))
+          .thenAnswer((_) async {});
+      when(mockRepository.getAllCategories('u1'))
+          .thenAnswer((_) async => flatList);
+
+      await provider.deleteCategory('u1', 'root-a');
+
+      verify(mockRepository.deleteWithChildren('u1', 'root-a')).called(1);
+      verifyNever(mockRepository.deleteCategory(any, any));
+    });
+
     test('initialize sets errorMessage on exception', () async {
       when(mockRepository.getAllCategories('u1'))
           .thenThrow(Exception('network error'));

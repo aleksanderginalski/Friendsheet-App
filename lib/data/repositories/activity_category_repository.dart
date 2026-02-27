@@ -42,6 +42,25 @@ class ActivityCategoryRepository {
     await _categoriesRef(userId).doc(categoryId).delete();
   }
 
+  // Deletes the category and all its direct children atomically.
+  // Uses WriteBatch to ensure no orphaned records remain in Firestore.
+  Future<void> deleteWithChildren(String userId, String categoryId) async {
+    final batch = _firestore.batch();
+
+    // Delete the parent document.
+    batch.delete(_categoriesRef(userId).doc(categoryId));
+
+    // Find and delete all direct children.
+    final childrenSnapshot = await _categoriesRef(userId)
+        .where('parentCategoryId', isEqualTo: categoryId)
+        .get();
+    for (final doc in childrenSnapshot.docs) {
+      batch.delete(doc.reference);
+    }
+
+    await batch.commit();
+  }
+
   // Creates a new root selectable category in the user's subcollection and
   // returns the persisted ActivityCategory with its generated Firestore ID.
   Future<ActivityCategory> createSelectableCategory({
