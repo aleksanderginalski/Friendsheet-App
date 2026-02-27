@@ -952,50 +952,42 @@ Przykłady:
 - "Anna Kowalska" → firstName: "Anna", lastName: "Kowalska"
 - "Anna Maria Kowalska" → firstName: "Anna", lastName: "Maria Kowalska"
 
-## 17. Global + Private Data Pattern (US-014)
+## 17. Global + Private Data Pattern (post US-042, US-045)
 
-Pattern for fetching data from two sources: shared global library and user-private records.
-Used for Activities where some are available to all users (isGlobal: true) and some are private.
+Pattern for data that has a global read-only template and user-private copies.
+Used for ActivityCategory: global template in root collection, user copies in subcollection.
 
-### Repository side — two parallel queries merged into one list:
+### Repository side — subcollection path per user:
 ```dart
-Future<List<Activity>> getActivitiesByUser(String userId) async {
-  final globalQuery = await _firestore
-      .collection('activities')
-      .where('isGlobal', isEqualTo: true)
-      .get();
+// Global template — root collection, read-only
+CollectionReference _globalRef() =>
+    _firestore.collection('activity_categories');
 
-  final privateQuery = await _firestore
-      .collection('activities')
-      .where('userId', isEqualTo: userId)
-      .where('isGlobal', isEqualTo: false)
-      .get();
-
-  return [
-    ...globalQuery.docs.map((doc) => Activity.fromFirestore(doc)),
-    ...privateQuery.docs.map((doc) => Activity.fromFirestore(doc)),
-  ];
-}
+// User-private — subcollection under users/{uid}
+CollectionReference _userRef(String userId) => _firestore
+    .collection('users')
+    .doc(userId)
+    .collection('activity_categories');
 ```
 
-### Firestore Security Rules — allow global reads:
+### Firestore Security Rules — path-based userId:
 ```javascript
-match /activities/{activityId} {
-  // Global: readable by all authenticated users
-  allow read: if isAuthenticated() &&
-                (resource.data.isGlobal == true || isOwner(resource.data.userId));
-  // Private: writable only by owner
-  allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-  allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+match /users/{userId}/activity_categories/{categoryId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+
+match /activity_categories/{categoryId} {
+  allow read: if request.auth != null;
+  allow write: if false; // managed via Firebase Console only
 }
 ```
 
 ### Data model convention:
-- Global record: `isGlobal: true`, `userId: null` — managed via Firebase Console
-- Private record: `isGlobal: false`, `userId: <uid>` — created by user
+- Global record: `isGlobal: true`, `userId: null` — root collection, seeded via script
+- Private record: `isGlobal: false`, `userId: String` — user subcollection, batch-copied on first login
 
-Warning: Firestore field names are case-sensitive.
-`name` ≠ `Name` — always verify field names match your Dart model exactly.
+**Important:** Legacy `Activity` model and root `/activities` collection are removed (US-042).
+Only source of truth: `users/{uid}/activity_categories`.
 
 ## 18. Search/Filter Logic in Provider, not Repository (US-014)
 
@@ -1005,7 +997,7 @@ Repository is responsible only for communication with external data sources (Fir
 ### Wrong — filter in Repository:
 ```dart
 // BAD: Repository doing client-side filtering
-List<Activity> searchActivities(List<Activity> activities, String query) {
+List<ActivityCategory> searchCategories(List<ActivityCategory> categories, String query) {
   return activities.where((a) => a.name.contains(query)).toList();
 }
 ```
