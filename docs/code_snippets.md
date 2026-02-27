@@ -1147,4 +1147,27 @@ GestureDetector(
     // ... unchanged
   ),
 )
+
+## 23. SharedPreferences mock setup w testach (US-029)
+
+When a Provider uses `SharedPreferences.getInstance()` (e.g. in `loadHiddenPersons()`),
+every test file that creates this Provider — directly or via widget tree — must initialize
+mock values in `setUp`, otherwise tests hang or fail silently.
+```dart
+// Required import
+import 'package:shared_preferences/shared_preferences.dart';
+
+// In every setUp that touches a Provider using SharedPreferences:
+setUp(() async {
+  SharedPreferences.setMockInitialValues({});
+  // rest of setup...
+});
+```
+
+Affected test files: not only the Provider test itself, but also any widget test
+that builds a widget tree containing that Provider (e.g. home_screen_test.dart,
+statistics_section_test.dart).
+
+Rule: If you add SharedPreferences to any Provider, grep all test files that
+instantiate that Provider and add `setMockInitialValues({})` to their setUp.
 ```

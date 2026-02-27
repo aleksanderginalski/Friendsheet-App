@@ -2,19 +2,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
   late ActivityCategoryRepository categoryRepository;
+  late PersonRepository personRepository;
   late StatisticsRepository repository;
 
   setUp(() {
     fakeFirestore = FakeFirebaseFirestore();
     categoryRepository = ActivityCategoryRepository(firestore: fakeFirestore);
+    personRepository = PersonRepository(
+      firestore: fakeFirestore,
+      meetingRepository: MeetingRepository(firestore: fakeFirestore),
+    );
     repository = StatisticsRepository(
       firestore: fakeFirestore,
       categoryRepository: categoryRepository,
+      personRepository: personRepository,
     );
   });
 
@@ -24,6 +32,7 @@ void main() {
     DateTime date, {
     int weight = 3,
     List<String> categoryIds = const [],
+    List<String> participantIds = const ['person-1'],
   }) async {
     final now = Timestamp.now();
     await fakeFirestore
@@ -35,7 +44,7 @@ void main() {
       'name': 'Test Meeting',
       'date': Timestamp.fromDate(date),
       'weight': weight,
-      'participantIds': ['person-1'],
+      'participantIds': participantIds,
       'categoryIds': categoryIds,
       'createdAt': now,
       'updatedAt': now,
@@ -59,6 +68,24 @@ void main() {
       'iconIdentifier': 'category',
       'isGlobal': false,
       'isSelectableAsActivity': true,
+      'createdAt': Timestamp.now(),
+    });
+  }
+
+  // Helper: inserts a person document with an explicit ID.
+  Future<void> addPerson(
+    String userId,
+    String personId,
+    String firstName,
+  ) async {
+    await fakeFirestore
+        .collection('users')
+        .doc(userId)
+        .collection('persons')
+        .doc(personId)
+        .set({
+      'userId': userId,
+      'firstName': firstName,
       'createdAt': Timestamp.now(),
     });
   }
@@ -253,6 +280,148 @@ void main() {
 
         expect(breakdown, hasLength(1));
         expect(breakdown.first.categoryId, equals('cat-a'));
+      });
+    });
+
+    group('getPersonsForActivity()', () {
+      test('happy path: 2 meetings match, correct weight sums per person',
+          () async {
+        await addPerson('user-1', 'person-a', 'Alice');
+        await addPerson('user-1', 'person-b', 'Bob');
+
+        // Both meetings match 'sport'. Alice is in both; Bob is in one.
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['sport'],
+          participantIds: ['person-a', 'person-b'],
+        );
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 6, 1),
+          weight: 3,
+          categoryIds: ['sport'],
+          participantIds: ['person-a'],
+        );
+        // Non-matching meeting — should be excluded.
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 9, 1),
+          weight: 8,
+          categoryIds: ['tennis'],
+          participantIds: ['person-b'],
+        );
+
+        final result = await repository.getPersonsForActivity(
+          'sport',
+          2026,
+          'user-1',
+        );
+
+        expect(result, hasLength(2));
+        final alice = result.firstWhere((e) => e.personId == 'person-a');
+        final bob = result.firstWhere((e) => e.personId == 'person-b');
+        // Alice: 5 + 3 = 8, Bob: 5
+        expect(alice.weightSum, equals(8));
+        expect(bob.weightSum, equals(5));
+        // Sorted descending — Alice first.
+        expect(result.first.personId, equals('person-a'));
+      });
+
+      test(
+          'ancestor match: selecting parent categoryId matches meetings with child categoryIds',
+          () async {
+        await addPerson('user-1', 'person-a', 'Alice');
+
+        // Meeting stores both leaf and parent in categoryIds (ancestor chain).
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['rowing', 'sport'], // leaf + parent
+          participantIds: ['person-a'],
+        );
+
+        // Selecting parent 'sport' matches this meeting.
+        final result = await repository.getPersonsForActivity(
+          'sport',
+          2026,
+          'user-1',
+        );
+
+        expect(result, hasLength(1));
+        expect(result.first.personId, equals('person-a'));
+        expect(result.first.weightSum, equals(5));
+      });
+
+      test(
+          'weight counted once per person per meeting regardless of activity count',
+          () async {
+        await addPerson('user-1', 'person-a', 'Alice');
+
+        // Meeting has 2 matching activities — Alice's weight should be added once.
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['running', 'cycling'],
+          participantIds: ['person-a'],
+        );
+
+        // Select 'running' — Alice gets weight 5, not 10.
+        final result = await repository.getPersonsForActivity(
+          'running',
+          2026,
+          'user-1',
+        );
+
+        expect(result, hasLength(1));
+        expect(result.first.weightSum, equals(5));
+      });
+
+      test('person not found in repository: entry skipped gracefully',
+          () async {
+        await addPerson('user-1', 'person-a', 'Alice');
+        // 'person-missing' has no document in persons collection.
+
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['sport'],
+          participantIds: ['person-a', 'person-missing'],
+        );
+
+        final result = await repository.getPersonsForActivity(
+          'sport',
+          2026,
+          'user-1',
+        );
+
+        // Only Alice is returned; person-missing is skipped.
+        expect(result, hasLength(1));
+        expect(result.first.personId, equals('person-a'));
+      });
+
+      test('empty result: no meetings match selected categoryId', () async {
+        await addPerson('user-1', 'person-a', 'Alice');
+
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['tennis'],
+          participantIds: ['person-a'],
+        );
+
+        final result = await repository.getPersonsForActivity(
+          'sport',
+          2026,
+          'user-1',
+        );
+
+        expect(result, isEmpty);
       });
     });
   });
