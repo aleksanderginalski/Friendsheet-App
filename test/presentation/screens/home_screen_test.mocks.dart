@@ -3,13 +3,16 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
-import 'package:firebase_auth/firebase_auth.dart' as _i6;
-import 'package:friendsheet/data/models/meeting.dart' as _i4;
+import 'package:firebase_auth/firebase_auth.dart' as _i7;
+import 'package:friendsheet/data/models/activity_category.dart' as _i2;
+import 'package:friendsheet/data/models/meeting.dart' as _i5;
+import 'package:friendsheet/data/repositories/activity_category_repository.dart'
+    as _i8;
 import 'package:friendsheet/data/repositories/statistics_repository.dart'
-    as _i2;
-import 'package:friendsheet/data/services/auth_service.dart' as _i5;
+    as _i3;
+import 'package:friendsheet/data/services/auth_service.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -26,27 +29,38 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeActivityCategory_0 extends _i1.SmartFake
+    implements _i2.ActivityCategory {
+  _FakeActivityCategory_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [StatisticsRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockStatisticsRepository extends _i1.Mock
-    implements _i2.StatisticsRepository {
+    implements _i3.StatisticsRepository {
   MockStatisticsRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<List<int>> getAvailableYears(String? userId) =>
+  _i4.Future<List<int>> getAvailableYears(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getAvailableYears,
           [userId],
         ),
-        returnValue: _i3.Future<List<int>>.value(<int>[]),
-      ) as _i3.Future<List<int>>);
+        returnValue: _i4.Future<List<int>>.value(<int>[]),
+      ) as _i4.Future<List<int>>);
 
   @override
-  _i3.Future<List<_i4.Meeting>> getMeetingsForYear(
+  _i4.Future<List<_i5.Meeting>> getMeetingsForYear(
     String? userId,
     int? year,
   ) =>
@@ -58,61 +72,238 @@ class MockStatisticsRepository extends _i1.Mock
             year,
           ],
         ),
-        returnValue: _i3.Future<List<_i4.Meeting>>.value(<_i4.Meeting>[]),
-      ) as _i3.Future<List<_i4.Meeting>>);
+        returnValue: _i4.Future<List<_i5.Meeting>>.value(<_i5.Meeting>[]),
+      ) as _i4.Future<List<_i5.Meeting>>);
+
+  @override
+  _i4.Future<List<_i3.ActivityBreakdownEntry>> getActivityWeightBreakdown(
+    int? year,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getActivityWeightBreakdown,
+          [
+            year,
+            userId,
+          ],
+        ),
+        returnValue: _i4.Future<List<_i3.ActivityBreakdownEntry>>.value(
+            <_i3.ActivityBreakdownEntry>[]),
+      ) as _i4.Future<List<_i3.ActivityBreakdownEntry>>);
 }
 
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i5.AuthService {
+class MockAuthService extends _i1.Mock implements _i6.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Stream<_i6.User?> get authStateChanges => (super.noSuchMethod(
+  _i4.Stream<_i7.User?> get authStateChanges => (super.noSuchMethod(
         Invocation.getter(#authStateChanges),
-        returnValue: _i3.Stream<_i6.User?>.empty(),
-      ) as _i3.Stream<_i6.User?>);
+        returnValue: _i4.Stream<_i7.User?>.empty(),
+      ) as _i4.Stream<_i7.User?>);
 
   @override
-  _i3.Future<_i6.User?> signInWithGoogle() => (super.noSuchMethod(
+  _i4.Future<_i7.User?> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
           [],
         ),
-        returnValue: _i3.Future<_i6.User?>.value(),
-      ) as _i3.Future<_i6.User?>);
+        returnValue: _i4.Future<_i7.User?>.value(),
+      ) as _i4.Future<_i7.User?>);
 
   @override
-  _i3.Future<void> signOut() => (super.noSuchMethod(
+  _i4.Future<void> signOut() => (super.noSuchMethod(
         Invocation.method(
           #signOut,
           [],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> runOnboardingIfNeeded(String? userId) => (super.noSuchMethod(
+  _i4.Future<void> runOnboardingIfNeeded(String? userId) => (super.noSuchMethod(
         Invocation.method(
           #runOnboardingIfNeeded,
           [userId],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> copyGlobalCategoriesToUserForTest(String? userId) =>
+  _i4.Future<void> copyGlobalCategoriesToUserForTest(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #copyGlobalCategoriesToUserForTest,
           [userId],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}
+
+/// A class which mocks [ActivityCategoryRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockActivityCategoryRepository extends _i1.Mock
+    implements _i8.ActivityCategoryRepository {
+  MockActivityCategoryRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Stream<List<_i2.ActivityCategory>> getCategories(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCategories,
+          [userId],
+        ),
+        returnValue: _i4.Stream<List<_i2.ActivityCategory>>.empty(),
+      ) as _i4.Stream<List<_i2.ActivityCategory>>);
+
+  @override
+  _i4.Future<void> addCategory(_i2.ActivityCategory? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addCategory,
+          [category],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> updateCategory(_i2.ActivityCategory? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateCategory,
+          [category],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteCategory(
+    String? userId,
+    String? categoryId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteCategory,
+          [
+            userId,
+            categoryId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteWithChildren(
+    String? userId,
+    String? categoryId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteWithChildren,
+          [
+            userId,
+            categoryId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<_i2.ActivityCategory> createSelectableCategory({
+    required String? name,
+    required String? userId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createSelectableCategory,
+          [],
+          {
+            #name: name,
+            #userId: userId,
+          },
+        ),
+        returnValue:
+            _i4.Future<_i2.ActivityCategory>.value(_FakeActivityCategory_0(
+          this,
+          Invocation.method(
+            #createSelectableCategory,
+            [],
+            {
+              #name: name,
+              #userId: userId,
+            },
+          ),
+        )),
+      ) as _i4.Future<_i2.ActivityCategory>);
+
+  @override
+  _i4.Future<List<_i2.ActivityCategory>> getSelectableCategories(
+          String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSelectableCategories,
+          [userId],
+        ),
+        returnValue: _i4.Future<List<_i2.ActivityCategory>>.value(
+            <_i2.ActivityCategory>[]),
+      ) as _i4.Future<List<_i2.ActivityCategory>>);
+
+  @override
+  _i4.Future<List<String>> getAncestorIds(
+    String? categoryId,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAncestorIds,
+          [
+            categoryId,
+            userId,
+          ],
+        ),
+        returnValue: _i4.Future<List<String>>.value(<String>[]),
+      ) as _i4.Future<List<String>>);
+
+  @override
+  _i4.Future<List<_i2.ActivityCategory>> getAllCategories(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllCategories,
+          [userId],
+        ),
+        returnValue: _i4.Future<List<_i2.ActivityCategory>>.value(
+            <_i2.ActivityCategory>[]),
+      ) as _i4.Future<List<_i2.ActivityCategory>>);
+
+  @override
+  _i4.Future<List<_i2.ActivityCategory>> getCategoriesByIds(
+    List<String>? ids,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCategoriesByIds,
+          [
+            ids,
+            userId,
+          ],
+        ),
+        returnValue: _i4.Future<List<_i2.ActivityCategory>>.value(
+            <_i2.ActivityCategory>[]),
+      ) as _i4.Future<List<_i2.ActivityCategory>>);
 }
