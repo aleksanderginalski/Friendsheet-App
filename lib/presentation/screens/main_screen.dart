@@ -40,9 +40,13 @@ class _MainScreenState extends State<MainScreen> {
     _activitiesListProvider = ActivitiesListProvider(
       repository: ActivityCategoryRepository(),
     );
+    final activityCategoryRepository = ActivityCategoryRepository();
     _statisticsProvider = StatisticsProvider(
-      repository: StatisticsRepository(),
+      repository: StatisticsRepository(
+        categoryRepository: activityCategoryRepository,
+      ),
       authService: AuthService(),
+      categoryRepository: activityCategoryRepository,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = AuthService().currentUserId;

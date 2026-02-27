@@ -220,6 +220,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.3.0 - US-028 Activity Breakdown Metric (February 27, 2026)
+- ✅ ActivityBreakdownEntry DTO with delta getter
+- ✅ getActivityWeightBreakdown — ancestor-aware weight aggregation per categoryId
+- ✅ ActivityBreakdownWidget with ▲/▼/NEW delta indicators
+- ✅ ActivityCategoryRepository injected into StatisticsProvider and StatisticsRepository
+- ✅ Total test count: 271 tests
+
 ### v3.2.0 - US-027 Statistics Home Tab — Year Filter (February 27, 2026)
 - ✅ StatisticsRepository with getAvailableYears and getMeetingsForYear
 - ✅ StatisticsProvider owned by MainScreen (same lifecycle as ActivitiesListProvider)
