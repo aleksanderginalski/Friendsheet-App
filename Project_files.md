@@ -94,6 +94,13 @@
 - test/widget_test.dart - AuthWrapper tests
 - test/widget_test.mocks.dart - Generated mocks (Mockito)
 
+## scripts/migration/
+- scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.
+- scripts/migration/requirements.txt - Python dependencies: openpyxl, firebase-admin
+- scripts/migration/README.md - Setup and usage instructions for migration script
+- scripts/migration/serviceAccountKey.json - Firebase service account key (gitignored — never commit)
+- scripts/migration/Migracja.xlsx - Source data file (gitignored — personal data)
+
 ---
 
 ## Naming Conventions
@@ -107,3 +114,4 @@
 - firebase_options.dart is gitignored
 - .gitkeep files mark empty directories
 - CLAUDE.md is committed — shared instructions for Claude Code CLI
+- scripts/migration/serviceAccountKey.json and *.xlsx are gitignored — never commit secrets or personal data
