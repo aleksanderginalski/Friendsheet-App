@@ -121,10 +121,9 @@ class ActivitiesListProvider extends ChangeNotifier {
     await initialize(userId);
   }
 
-  // Deletes the given category document and refreshes the list.
-  // Children are not cascade-deleted (orphan handling is out of MVP scope).
+  // Deletes the given category and all its direct children, then refreshes the list.
   Future<void> deleteCategory(String userId, String categoryId) async {
-    await _repository.deleteCategory(userId, categoryId);
+    await _repository.deleteWithChildren(userId, categoryId);
     await initialize(userId);
   }
 }
