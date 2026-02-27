@@ -220,6 +220,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.4.0 - US-029 Who Per Activity Metric (February 27, 2026)
+- ✅ PersonActivityEntry DTO and getPersonsForActivity with ancestor-aware filtering
+- ✅ ActivitySelectorDialog with full category tree
+- ✅ WhoPerActivityWidget with vertical bar chart, legend, long-press hide/show
+- ✅ Hidden persons persistence (SharedPreferences: stats_hidden_persons_activity)
+- ✅ Total test count: 283 tests
+
 ### v3.3.0 - US-028 Activity Breakdown Metric (February 27, 2026)
 - ✅ ActivityBreakdownEntry DTO with delta getter
 - ✅ getActivityWeightBreakdown — ancestor-aware weight aggregation per categoryId
