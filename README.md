@@ -220,6 +220,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.1.0 - US-041 Python Migration Script — Excel to Firestore (February 27, 2026)
+- ✅ One-time Python migration script (`scripts/migration/migrate.py`)
+- ✅ Imports 857 meetings, 92 persons from Excel to Firestore
+- ✅ Pre-flight check — aborts if any activity name missing in `users/{uid}/activity_categories`
+- ✅ Idempotent — meetings matched by date + name, persons deduplicated by full name
+- ✅ Ancestor propagation — `categoryIds` includes leaf + all ancestor IDs (matches Flutter app behavior)
+- ✅ Batch writes (max 500/batch), progress reported to console
+- ✅ Weight mapping: 4 → 5 (only non-Fibonacci value in dataset)
+- ✅ Secrets and personal data protected via `.gitignore`
+
 ### v2.10.1 - US-018 Manual Testing & Test Cases Document (February 27, 2026)
 - ✅ TEST_CASES.md created (docs/TEST_CASES.md) — 32 manual test cases for M1 + M2
 - ✅ US-044 confirmed completed (implemented in US-045, onboarding idempotency verified)

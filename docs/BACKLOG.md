@@ -38,8 +38,10 @@ EPIC-002: Friendsheet M2 - Management & CRUD ✅
 └── FEATURE-008: Activities View & Categories ✅
 
 EPIC-003: Friendsheet M3 - Statistics & Export
-├── FEATURE-009: Core Statistics
+├── FEATURE-016: Data Import ✅
+└── FEATURE-009: Core Statistics
 └── FEATURE-010: Data Export
+└── FEATURE-017: Sideload Release
 
 EPIC-004: Friendsheet M4 - Google Play Release
 └── FEATURE-011: Store Release Preparation
@@ -1099,91 +1101,155 @@ If you already created a GitHub issue for US-005, you can:
 **Business Value:** Core value proposition of the app — transforms raw data into actionable insights. Export enables user trust and data portability.
 
 **Architecture Notes:**
-- Statistics require efficient Firestore queries — consider composite indexes
-- Heavy aggregation should happen client-side for MVP (Cloud Functions post-MVP)
-- Export generates JSON file saved to device storage
-- Statistics respect activity category hierarchy (filtering by parent = includes children)
+- Statistics computed client-side (no Cloud Functions) — acceptable for personal scale (~857 meetings)
+- Aggregation by year, filtered from `users/{uid}/meetings` subcollection
+- Hidden persons preferences stored in SharedPreferences (per-metric, local only)
+- Import is a one-time Python script — not part of the Flutter app
+
+---
+
+## 📥 FEATURE-016: Data Import
+
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-041: Python Migration Script — Excel to Firestore
+
+**As a** user
+**I want to** run a one-time Python script that reads my Excel file and writes all meetings, persons and activities to Firestore
+**So that** I have 20 years of social history available in Friendsheet
+
+**Story Points:** 5
+**Priority:** P0
+**Labels:** `migration`, `data`, `python`
+**Status:** ✅ COMPLETED 
+
+**Acceptance Criteria:**
+- [x] Script reads `.xlsx` file with columns: Data | Waga | Aktywność | Nazwa spotkania | persons as columns with "x"
+- [x] Activities separated by ";" are split and treated as separate `categoryIds`
+- [x] Persons are deduplicated — same name = same Firestore document
+- [x] Meetings written to `users/{uid}/meetings` subcollection
+- [x] Persons written to `users/{uid}/persons` subcollection
+- [x] Activities matched or created in `users/{uid}/activity_categories`
+- [x] Script is idempotent — running twice does not create duplicates (match by date + name)
+- [x] Progress reported to console (e.g. "Imported 450/857 meetings...")
+- [x] Script requires: `FIREBASE_UID`, path to `.xlsx`, path to Firebase service account JSON
+
+**Tasks:**
+- [x] **TASK-041.1:** Set up Python environment + dependencies (openpyxl, firebase-admin)
+- [x] **TASK-041.2:** Implement person deduplication and Firestore write
+- [x] **TASK-041.3:** Implement activity matching and Firestore write
+- [x] **TASK-041.4:** Implement meeting import with idempotency check
+- [x] **TASK-041..5:** Add progress reporting and error handling
 
 ---
 
 ## 📊 FEATURE-009: Core Statistics
 
-**Priority:** P0  
-**Role:** Developer + UX Designer  
+**Priority:** P0
+**Role:** Developer + UX Designer
 **Status:** 📋 Planned
 
 ---
 
-### US-027: Statistics Screen - Overview
+### US-027: Statistics Home Tab — Year Filter
 
-**As a** user  
-**I want to** see an overview of my social activity statistics  
-**So that** I can understand my social patterns at a glance
+**As a** user
+**I want to** see a statistics section on the Home tab with a year selector
+**So that** I can explore my social data year by year
 
-**Story Points:** 8  
+**Story Points:** 5
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Statistics screen accessible from bottom navigation
-- [ ] Default time range: last 12 months
-- [ ] Time range filter: last 3 months / 6 months / 12 months / all time
-- [ ] Shows: total meetings count, unique persons met, most frequent person
-- [ ] Loading state while calculating
+- [ ] Home tab displays statistics section
+- [ ] Year selector (chip row or dropdown) — defaults to current year
+- [ ] Available years derived from actual meeting data (no hardcoding)
+- [ ] Selected year persisted in provider state during session
+- [ ] Loading state while fetching data
+- [ ] Empty state when no meetings in selected year
 
 **Tasks:**
-- [ ] **TASK-138:** Create StatisticsScreen scaffold with time range filter - 2h
-- [ ] **TASK-139:** Create StatisticsRepository with aggregation queries - 3h
-- [ ] **TASK-140:** Implement StatisticsProvider - 2h
-- [ ] **TASK-141:** Build overview metrics widgets - 2h
-- [ ] **TASK-142:** Write tests - 1h
+- [ ] **TASK-027.1:** Create StatisticsSection widget on HomeScreen
+- [ ] **TASK-027.2:** Create StatisticsProvider with year selector state
+- [ ] **TASK-027.3:** Create StatisticsRepository with year-filtered Firestore queries
+- [ ] **TASK-027.4:** Write tests
 
 ---
 
-### US-028: Person Frequency Statistics
+### US-028: Activity Breakdown Metric
 
-**As a** user  
-**I want to** see who I meet most and least often  
-**So that** I can be more intentional about my relationships
+**As a** user
+**I want to** see a ranked list of activities by total weight compared to the previous year
+**So that** I can understand how my social habits are changing
 
-**Story Points:** 8  
+**Story Points:** 5
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Ranked list of persons by meeting count (descending)
-- [ ] Shows last meeting date per person
-- [ ] "Haven't seen in a while" section — persons not met in 60+ days
-- [ ] Filterable by time range
-- [ ] Tapping person navigates to Person Detail
+- [ ] Ranked list of activities by sum of meeting weights in selected year
+- [ ] Each row shows: activity name | weight sum current year | weight sum previous year | delta (▲/▼)
+- [ ] Sorted by current year weight sum descending
+- [ ] Activities with 0 occurrences in current year but present in previous year shown at bottom
+- [ ] Weight treated as intensity score (higher = more significant meeting)
 
 **Tasks:**
-- [ ] **TASK-143:** Implement person frequency aggregation - 2h
-- [ ] **TASK-144:** Build PersonFrequencyList widget - 2h
-- [ ] **TASK-145:** Implement "haven't seen" threshold logic - 1h
-- [ ] **TASK-146:** Write tests - 1h
+- [ ] **TASK-028.1:** Implement `getActivityWeightBreakdown(year)` in StatisticsRepository
+- [ ] **TASK-028.2:** Build ActivityBreakdownWidget
+- [ ] **TASK-028.3:** Write tests
 
 ---
 
-### US-029: Activity Statistics
+### US-029: Who Per Activity Metric
 
-**As a** user  
-**I want to** see which activities I do most and with whom  
-**So that** I understand how I spend my social time
+**As a** user
+**I want to** select an activity and see a ranked list of people I did it with
+**So that** I can understand my activity-relationship patterns
 
-**Story Points:** 8  
-**Priority:** P1
+**Story Points:** 5
+**Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Ranked list of activities by occurrence count
-- [ ] Category hierarchy respected — filtering by "Sport" includes "Kayaking", "Tennis" etc.
-- [ ] Per-activity breakdown: which persons are associated
-- [ ] Filterable by time range
-- [ ] Filterable by category
+- [ ] Activity selector (dropdown or chip) — defaults to most frequent activity in selected year
+- [ ] Ranked list of persons by number of meetings with that activity in selected year
+- [ ] Per-metric hidden persons toggle — excluded persons not shown in list
+- [ ] Hidden persons list stored in SharedPreferences key: `stats_hidden_persons_activity`
+- [ ] Long-press on person → option to hide/show
+- [ ] Hidden persons count shown as hint ("2 persons hidden — tap to show")
 
 **Tasks:**
-- [ ] **TASK-147:** Implement activity aggregation with category hierarchy - 3h
-- [ ] **TASK-148:** Build ActivityStatsWidget - 2h
-- [ ] **TASK-149:** Implement category filter logic - 2h
-- [ ] **TASK-150:** Write tests - 1h
+- [ ] **TASK-029.1:** Implement `getPersonsForActivity(activityId, year)` in StatisticsRepository
+- [ ] **TASK-029.2:** Build WhoPerActivityWidget with activity selector
+- [ ] **TASK-029.3:** Implement hidden persons persistence (SharedPreferences)
+- [ ] **TASK-029.4:** Write tests
+
+---
+
+### US-030: Interaction Distribution Metric
+
+**As a** user
+**I want to** see what percentage of my total social intensity each person accounts for
+**So that** I understand how my attention is distributed across relationships
+
+**Story Points:** 5
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Ranked list of persons by: `sum of weights of meetings they attended / total weight sum of all meetings in year`
+- [ ] Each row shows: person name | weight sum | percentage
+- [ ] Per-metric hidden persons (SharedPreferences key: `stats_hidden_persons_distribution`)
+- [ ] Percentages intentionally exceed 100% total — a meeting with 3 people counts for all 3
+- [ ] Info icon explaining the >100% behaviour
+
+**Tasks:**
+- [ ] **TASK-US-030.1:** Implement `getInteractionDistribution(year)` in StatisticsRepository
+- [ ] **TASK-US-030.2:** Build InteractionDistributionWidget
+- [ ] **TASK-US-030.3:** Reuse hidden persons pattern from US-029
+- [ ] **TASK-US-030.4:** Write tests
+
 
 ---
 
@@ -1195,30 +1261,85 @@ If you already created a GitHub issue for US-005, you can:
 
 ---
 
-### US-030: Export Data to JSON
+### US-031: JSON Export to Device
 
-**As a** user  
-**I want to** export all my data as a JSON file  
-**So that** I have a backup and can migrate if needed
+**As a** user
+**I want to** export all my meeting data as a JSON file to my device
+**So that** I can back up my data and ensure portability
 
-**Story Points:** 5  
+**Story Points:** 5
 **Priority:** P1
 
 **Acceptance Criteria:**
-- [ ] Export option accessible from Settings or Profile
-- [ ] Exports all meetings, persons, activities in JSON format
+- [ ] Export option accessible from Settings or Home tab
+- [ ] Exports all meetings from `users/{uid}/meetings` to JSON
 - [ ] File saved to device Downloads folder
-- [ ] File named: `friendsheet_export_YYYY-MM-DD.json`
-- [ ] Success confirmation with file path shown
-- [ ] Export works offline (data already in Firestore cache)
+- [ ] Success confirmation with file path shown to user
+- [ ] Error handling for storage permission issues
 
 **Tasks:**
-- [ ] **TASK-151:** Implement ExportService with JSON serialization - 2h
-- [ ] **TASK-152:** Add file system permissions for Android - 1h
-- [ ] **TASK-153:** Build export UI (button + progress + confirmation) - 1h
-- [ ] **TASK-154:** Write tests - 1h
+- [ ] **TASK-031.1:** Implement ExportService (Firestore → JSON)
+- [ ] **TASK-031.2:** Add file write using path_provider + dart:io
+- [ ] **TASK-031.3:** Build export trigger UI (button + confirmation)
+- [ ] **TASK-031.4:** Write tests
+
+## 📱 FEATURE-017: Sideload Release
+
+**Description:** Enables the developer to install Friendsheet on a personal Android device
+without Google Play — producing a signed release APK and configuring Firebase
+for the release signing key. Serves as the Epic 3 capstone: real data, real device.
+
+**Priority:** P0
+**Role:** Developer + DevOps
+**Status:** 📋 Planned
 
 ---
+
+### US-042: Install Friendsheet on Personal Device via APK
+
+**As a** developer
+**I want to** build a signed release APK and install it on my personal Android phone
+**So that** I can use Friendsheet daily with real data without needing a connected computer
+
+**Story Points:** 5
+**Priority:** P0
+**Labels:** `release`, `android`, `devops`
+
+**Acceptance Criteria:**
+- [ ] Keystore generated and stored securely outside the repository
+- [ ] `key.properties` configured and added to `.gitignore`
+- [ ] `build.gradle` configured with release signing config
+- [ ] `flutter build apk --release` completes without errors
+- [ ] APK installed on personal Android device (sideload via USB or file transfer)
+- [ ] SHA-1 fingerprint of release keystore added to Firebase Console
+- [ ] Google Sign-In works on the installed release build
+- [ ] App runs stably — no crash on launch, data loads correctly
+
+**Architecture Notes:**
+- Keystore generated once — reused in US-032 (Google Play release) without changes
+- `key.properties` format follows Flutter/Gradle convention:
+  ```
+  storePassword=...
+  keyPassword=...
+  keyAlias=...
+  storeFile=...
+  ```
+- SHA-1 for release build differs from debug SHA-1 — both must be registered in Firebase Console
+- APK vs AAB: `.apk` for sideload (this US), `.aab` for Google Play (US-032)
+
+**Tasks:**
+- [ ] **TASK-042.1:** Update `.gitignore` — add keystore and `key.properties` entries
+- [ ] **TASK-042.2:** Generate keystore with `keytool` and store securely outside repo
+- [ ] **TASK-042.3:** Create `android/key.properties` with signing config
+- [ ] **TASK-042.4:** Configure release signing in `android/app/build.gradle`
+- [ ] **TASK-042.5:** Run `flutter build apk --release` and verify output
+- [ ] **TASK-042.6:** Extract SHA-1 from release keystore and add to Firebase Console
+- [ ] **TASK-042.7:** Install APK on device and verify Google Sign-In + data load
+
+**Relation to US-032 (Google Play Release):**
+- Keystore created here is reused directly in US-032
+- `build.gradle` signing config created here requires only minor changes for AAB
+- US-032 adds: version name/code, ProGuard rules, App Bundle target
 
 ---
 
@@ -1240,7 +1361,7 @@ If you already created a GitHub issue for US-005, you can:
 
 ---
 
-### US-031: App Store Assets & Metadata
+### US-046: App Store Assets & Metadata
 
 **As a** developer  
 **I want to** prepare all required Google Play assets  
@@ -1607,7 +1728,7 @@ If you already created a GitHub issue for US-005, you can:
 
 ---
 
-### US-041: AI Assistant Screen
+### US-047: AI Assistant Screen
 
 **As a** user  
 **I want to** ask the AI assistant questions about my social life  
