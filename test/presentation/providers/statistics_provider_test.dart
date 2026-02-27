@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -7,19 +8,26 @@ import 'package:mockito/mockito.dart';
 
 import 'statistics_provider_test.mocks.dart';
 
-@GenerateMocks([StatisticsRepository, AuthService])
+@GenerateMocks([StatisticsRepository, AuthService, ActivityCategoryRepository])
 void main() {
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
+  late MockActivityCategoryRepository mockCategoryRepository;
   late StatisticsProvider provider;
 
   setUp(() {
     mockRepository = MockStatisticsRepository();
     mockAuthService = MockAuthService();
+    mockCategoryRepository = MockActivityCategoryRepository();
     provider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
+      categoryRepository: mockCategoryRepository,
     );
+    // Default stub: breakdown returns empty list unless overridden per test.
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getActivityWeightBreakdown(any, any))
+        .thenAnswer((_) async => []);
   });
 
   tearDown(() {
@@ -46,6 +54,10 @@ void main() {
 
       test('errorMessage is null', () {
         expect(provider.errorMessage, isNull);
+      });
+
+      test('activityBreakdown is empty', () {
+        expect(provider.activityBreakdown, isEmpty);
       });
     });
 
@@ -113,6 +125,43 @@ void main() {
         expect(provider.errorMessage, equals('Failed to load statistics'));
         expect(provider.isLoading, isFalse);
       });
+
+      test('activityBreakdown populated after initialize with data', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        const entry1 = ActivityBreakdownEntry(
+          categoryId: 'cat-a',
+          name: 'Running',
+          currentYearWeight: 10,
+          previousYearWeight: 5,
+        );
+        const entry2 = ActivityBreakdownEntry(
+          categoryId: 'cat-b',
+          name: 'Cycling',
+          currentYearWeight: 7,
+          previousYearWeight: 0,
+        );
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => [entry1, entry2]);
+
+        await provider.initialize();
+
+        expect(provider.activityBreakdown, hasLength(2));
+        expect(provider.activityBreakdown.first.categoryId, equals('cat-a'));
+        expect(provider.activityBreakdown.last.categoryId, equals('cat-b'));
+      });
+
+      test('activityBreakdown is empty after initialize with no meetings',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+
+        expect(provider.activityBreakdown, isEmpty);
+      });
     });
 
     group('selectYear()', () {
@@ -126,10 +175,36 @@ void main() {
         var notified = false;
         provider.addListener(() => notified = true);
 
-        provider.selectYear(2025);
+        await provider.selectYear(2025);
 
         expect(provider.selectedYear, equals(2025));
         expect(notified, isTrue);
+      });
+
+      test('activityBreakdown reset on year change to empty year', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026, 2023]);
+        // 2026 has breakdown data.
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => [
+                  const ActivityBreakdownEntry(
+                    categoryId: 'cat-a',
+                    name: 'Running',
+                    currentYearWeight: 5,
+                    previousYearWeight: 0,
+                  ),
+                ]);
+        // 2023 has no meetings — breakdown is empty.
+        when(mockRepository.getActivityWeightBreakdown(2023, 'user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+        expect(provider.activityBreakdown, hasLength(1));
+
+        await provider.selectYear(2023);
+
+        expect(provider.activityBreakdown, isEmpty);
       });
     });
   });
