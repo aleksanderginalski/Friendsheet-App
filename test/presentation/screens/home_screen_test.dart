@@ -74,16 +74,20 @@ void main() {
       expect(find.text('No meetings found'), findsOneWidget);
     });
 
-    testWidgets('shows year chips when years are available', (tester) async {
+    testWidgets('shows YearStepper with selected year when years are available',
+        (tester) async {
       when(mockAuthService.currentUserId).thenReturn('user-1');
+      // selectedYear will be 2026 (current year) since it is in the list.
       when(mockRepository.getAvailableYears('user-1'))
           .thenAnswer((_) async => [2026, 2025]);
 
       await statisticsProvider.initialize();
       await tester.pumpWidget(buildHomeScreen());
 
+      // Only the selected year is displayed as text in YearStepper.
       expect(find.text('2026'), findsOneWidget);
-      expect(find.text('2025'), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
     });
 
     testWidgets('shows "Statistics" section header', (tester) async {

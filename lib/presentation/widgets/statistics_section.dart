@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/statistics_provider.dart';
+import 'year_stepper.dart';
 
-/// Displays the year filter chip row for statistics.
+/// Displays the year selector and statistics content for the Home tab.
 /// Reads StatisticsProvider from context — no repository knowledge here.
 class StatisticsSection extends StatelessWidget {
   const StatisticsSection({super.key});
@@ -25,16 +26,10 @@ class StatisticsSection extends StatelessWidget {
         else if (!provider.hasData)
           const Text('No meetings found')
         else
-          Wrap(
-            spacing: 8,
-            children: provider.availableYears.map((year) {
-              final isSelected = year == provider.selectedYear;
-              return ChoiceChip(
-                label: Text(year.toString()),
-                selected: isSelected,
-                onSelected: (_) => provider.selectYear(year),
-              );
-            }).toList(),
+          YearStepper(
+            selectedYear: provider.selectedYear!,
+            availableYears: provider.availableYears,
+            onYearChanged: provider.selectYear,
           ),
       ],
     );
