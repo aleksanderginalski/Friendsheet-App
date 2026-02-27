@@ -1216,20 +1216,21 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
+**Status:** ✅ COMPLETED (February 27, 2026)
 
 **Acceptance Criteria:**
-- [ ] Activity selector (dropdown or chip) — defaults to most frequent activity in selected year
-- [ ] Ranked list of persons by number of meetings with that activity in selected year
-- [ ] Per-metric hidden persons toggle — excluded persons not shown in list
-- [ ] Hidden persons list stored in SharedPreferences key: `stats_hidden_persons_activity`
-- [ ] Long-press on person → option to hide/show
-- [ ] Hidden persons count shown as hint ("2 persons hidden — tap to show")
+- [x] Activity selector (dropdown or chip) — defaults to most frequent activity in selected year
+- [x] Ranked list of persons by sum of meeting weights with that activity in selected year
+- [x] Per-metric hidden persons toggle — excluded persons not shown in list
+- [x] Hidden persons list stored in SharedPreferences key: `stats_hidden_persons_activity`
+- [x] Long-press on person → option to hide/show
+- [x] Hidden persons count shown as hint ("2 persons hidden — tap to show")
 
 **Tasks:**
-- [ ] **TASK-029.1:** Implement `getPersonsForActivity(activityId, year)` in StatisticsRepository
-- [ ] **TASK-029.2:** Build WhoPerActivityWidget with activity selector
-- [ ] **TASK-029.3:** Implement hidden persons persistence (SharedPreferences)
-- [ ] **TASK-029.4:** Write tests
+- [x] **TASK-029.1:** Implement `getPersonsForActivity(activityId, year)` in StatisticsRepository
+- [x] **TASK-029.2:** Build WhoPerActivityWidget with activity selector
+- [x] **TASK-029.3:** Implement hidden persons persistence (SharedPreferences)
+- [x] **TASK-029.4:** Write tests
 
 ---
 
