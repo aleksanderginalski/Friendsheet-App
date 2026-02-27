@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
+import '../providers/statistics_provider.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
@@ -26,6 +28,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final PersonsListProvider _personsListProvider;
   late final ActivitiesListProvider _activitiesListProvider;
+  late final StatisticsProvider _statisticsProvider;
 
   @override
   void initState() {
@@ -37,11 +40,16 @@ class _MainScreenState extends State<MainScreen> {
     _activitiesListProvider = ActivitiesListProvider(
       repository: ActivityCategoryRepository(),
     );
+    _statisticsProvider = StatisticsProvider(
+      repository: StatisticsRepository(),
+      authService: AuthService(),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = AuthService().currentUserId;
       if (userId != null) {
         _activitiesListProvider.initialize(userId);
       }
+      _statisticsProvider.initialize();
     });
   }
 
@@ -49,6 +57,7 @@ class _MainScreenState extends State<MainScreen> {
   void dispose() {
     _personsListProvider.dispose();
     _activitiesListProvider.dispose();
+    _statisticsProvider.dispose();
     super.dispose();
   }
 
@@ -97,6 +106,7 @@ class _MainScreenState extends State<MainScreen> {
       providers: [
         ChangeNotifierProvider.value(value: _personsListProvider),
         ChangeNotifierProvider.value(value: _activitiesListProvider),
+        ChangeNotifierProvider.value(value: _statisticsProvider),
       ],
       child: _buildScaffold(context),
     );
@@ -119,11 +129,11 @@ class _MainScreenState extends State<MainScreen> {
       // IndexedStack keeps all tab widgets alive, preserving scroll state.
       body: IndexedStack(
         index: _currentIndex,
-        children: [
-          HomeScreen(authService: widget.authService),
-          const MeetingsListScreen(),
-          const PersonsListScreen(),
-          const ActivitiesListScreen(),
+        children: const [
+          HomeScreen(),
+          MeetingsListScreen(),
+          PersonsListScreen(),
+          ActivitiesListScreen(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -141,6 +151,8 @@ class _MainScreenState extends State<MainScreen> {
           selectedItemColor: const Color(0xFF4CAF50),
           type: BottomNavigationBarType.fixed,
           onTap: (index) {
+            // Re-fetch statistics every time the Home tab becomes active.
+            if (index == 0) _statisticsProvider.initialize();
             // Re-fetch persons every time the Friends tab becomes active so
             // people added via AddMeetingScreen are visible immediately.
             if (index == 2) _personsListProvider.initialize();
