@@ -73,3 +73,9 @@ docs/Instrukcja_*
 # Node.js
 node_modules/
 seed/package-lock.json
+
+# Migration script secrets and data files
+scripts/migration/serviceAccountKey.json
+scripts/migration/*.xlsx
+scripts/migration/__pycache__/
+scripts/migration/.venv/

@@ -124,6 +124,15 @@ foreach ($item in $files) {
     }
 }
 
+# scripts/migration — static section (not scanned, files are partial gitignored)
+$lines.Add("")
+$lines.Add("## scripts/migration/")
+$lines.Add("- scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.")
+$lines.Add("- scripts/migration/requirements.txt - Python dependencies: openpyxl, firebase-admin")
+$lines.Add("- scripts/migration/README.md - Setup and usage instructions for migration script")
+$lines.Add("- scripts/migration/serviceAccountKey.json - Firebase service account key (gitignored — never commit)")
+$lines.Add("- scripts/migration/Migracja.xlsx - Source data file (gitignored — personal data)")
+
 $lines.Add("")
 $lines.Add("---")
 $lines.Add("")
@@ -138,6 +147,7 @@ $lines.Add("- Generated files (*.freezed.dart, *.g.dart) ARE committed")
 $lines.Add("- firebase_options.dart is gitignored")
 $lines.Add("- .gitkeep files mark empty directories")
 $lines.Add("- CLAUDE.md is committed — shared instructions for Claude Code CLI")
+$lines.Add("- scripts/migration/serviceAccountKey.json and *.xlsx are gitignored — never commit secrets or personal data")
 
 [System.IO.File]::WriteAllLines("$PWD\PROJECT_FILES.md", $lines, [System.Text.Encoding]::UTF8)
 Write-Host "PROJECT_FILES.md generated!" -ForegroundColor Green
