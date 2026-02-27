@@ -1,32 +1,54 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'statistics_provider_test.mocks.dart';
 
-@GenerateMocks([StatisticsRepository, AuthService, ActivityCategoryRepository])
+@GenerateMocks([
+  StatisticsRepository,
+  AuthService,
+  ActivityCategoryRepository,
+  PersonRepository,
+])
 void main() {
+  // SharedPreferences requires the Flutter test binding.
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
+  late MockPersonRepository mockPersonRepository;
   late StatisticsProvider provider;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     mockRepository = MockStatisticsRepository();
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
+    mockPersonRepository = MockPersonRepository();
     provider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
+      personRepository: mockPersonRepository,
     );
-    // Default stub: breakdown returns empty list unless overridden per test.
+    // Default stubs — return empty lists unless overridden per test.
     // ignore: argument_type_not_assignable
     when(mockRepository.getActivityWeightBreakdown(any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getPersonsForActivity(any, any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockCategoryRepository.getAllCategories(any))
         .thenAnswer((_) async => []);
   });
 
@@ -58,6 +80,14 @@ void main() {
 
       test('activityBreakdown is empty', () {
         expect(provider.activityBreakdown, isEmpty);
+      });
+
+      test('whoPerActivity is empty', () {
+        expect(provider.whoPerActivity, isEmpty);
+      });
+
+      test('selectedActivityId is null', () {
+        expect(provider.selectedActivityId, isNull);
       });
     });
 
@@ -205,6 +235,72 @@ void main() {
         await provider.selectYear(2023);
 
         expect(provider.activityBreakdown, isEmpty);
+      });
+    });
+
+    group('selectActivity()', () {
+      test('whoPerActivity populated after selectActivity', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        await provider.initialize();
+
+        // Simulate a selected year.
+        const entry1 = PersonActivityEntry(
+          personId: 'p-1',
+          name: 'Alice',
+          weightSum: 10,
+        );
+        const entry2 = PersonActivityEntry(
+          personId: 'p-2',
+          name: 'Bob',
+          weightSum: 7,
+        );
+        when(mockRepository.getPersonsForActivity('sport', 2026, 'user-1'))
+            .thenAnswer((_) async => [entry1, entry2]);
+
+        await provider.selectActivity('sport');
+
+        expect(provider.whoPerActivity, hasLength(2));
+        expect(provider.whoPerActivity.first.personId, equals('p-1'));
+        expect(provider.selectedActivityId, equals('sport'));
+      });
+    });
+
+    group('toggleHiddenPerson()', () {
+      test('adds person to hiddenPersonsActivity set', () async {
+        expect(provider.hiddenPersonsActivity, isEmpty);
+
+        await provider.toggleHiddenPerson('person-1');
+
+        expect(provider.hiddenPersonsActivity, contains('person-1'));
+      });
+
+      test('removes person from hiddenPersonsActivity set when already hidden',
+          () async {
+        await provider.toggleHiddenPerson('person-1');
+        expect(provider.hiddenPersonsActivity, contains('person-1'));
+
+        await provider.toggleHiddenPerson('person-1');
+
+        expect(provider.hiddenPersonsActivity, isNot(contains('person-1')));
+      });
+
+      test('persists hidden set to SharedPreferences', () async {
+        await provider.toggleHiddenPerson('person-1');
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_persons_activity');
+        expect(stored, contains('person-1'));
+      });
+
+      test('removes from SharedPreferences when un-hidden', () async {
+        await provider.toggleHiddenPerson('person-1');
+        await provider.toggleHiddenPerson('person-1');
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_persons_activity');
+        expect(stored, isNot(contains('person-1')));
       });
     });
   });

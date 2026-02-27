@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/meeting.dart';
 import 'activity_category_repository.dart';
+import 'person_repository.dart';
 
 /// Display DTO representing one category's weight totals across two years.
 /// Not a domain model — plain Dart class, no Freezed.
@@ -22,18 +23,36 @@ class ActivityBreakdownEntry {
   int get delta => currentYearWeight - previousYearWeight;
 }
 
+/// Display DTO representing one person's total meeting weight for a
+/// specific activity in a given year.
+/// Not a domain model — plain Dart class, no Freezed.
+class PersonActivityEntry {
+  final String personId;
+  final String name;
+  final int weightSum;
+
+  const PersonActivityEntry({
+    required this.personId,
+    required this.name,
+    required this.weightSum,
+  });
+}
+
 /// Handles statistics-related Firestore queries.
 /// Kept separate from MeetingRepository to avoid mixing stream-based
 /// and one-shot query responsibilities.
 class StatisticsRepository {
   final FirebaseFirestore _firestore;
   final ActivityCategoryRepository _categoryRepository;
+  final PersonRepository _personRepository;
 
   StatisticsRepository({
     FirebaseFirestore? firestore,
     required ActivityCategoryRepository categoryRepository,
+    required PersonRepository personRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _categoryRepository = categoryRepository;
+        _categoryRepository = categoryRepository,
+        _personRepository = personRepository;
 
   CollectionReference _meetingsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('meetings');
@@ -140,6 +159,58 @@ class StatisticsRepository {
       return b.previousYearWeight.compareTo(a.previousYearWeight);
     });
 
+    return entries;
+  }
+
+  /// Returns persons ranked by total meeting weight for [categoryId] in [year].
+  ///
+  /// Filtering: a meeting matches if its categoryIds contains [categoryId].
+  /// Aggregation: each participant's weight is counted once per meeting,
+  /// regardless of how many activities that meeting has.
+  /// Persons not found in the persons collection are skipped.
+  /// Sorted descending by weightSum.
+  Future<List<PersonActivityEntry>> getPersonsForActivity(
+    String categoryId,
+    int year,
+    String userId,
+  ) async {
+    final meetings = await getMeetingsForYear(userId, year);
+
+    // Keep only meetings that include the selected category.
+    final filtered =
+        meetings.where((m) => m.categoryIds.contains(categoryId)).toList();
+
+    // Aggregate weight per participant across all filtered meetings.
+    final Map<String, int> weightByPerson = {};
+    for (final meeting in filtered) {
+      for (final personId in meeting.participantIds) {
+        weightByPerson[personId] =
+            (weightByPerson[personId] ?? 0) + meeting.weight;
+      }
+    }
+
+    if (weightByPerson.isEmpty) return [];
+
+    // Resolve person names in one batch query.
+    final persons = await _personRepository.getPersonsByIds(
+      weightByPerson.keys.toList(),
+      userId,
+    );
+    final personNameById = {for (final p in persons) p.id: p.fullName};
+
+    final entries = <PersonActivityEntry>[];
+    for (final kv in weightByPerson.entries) {
+      final name = personNameById[kv.key];
+      // Skip persons no longer in the collection.
+      if (name == null) continue;
+      entries.add(PersonActivityEntry(
+        personId: kv.key,
+        name: name,
+        weightSum: kv.value,
+      ));
+    }
+
+    entries.sort((a, b) => b.weightSum.compareTo(a.weightSum));
     return entries;
   }
 }
