@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -10,28 +11,44 @@ import 'package:friendsheet/presentation/screens/home_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen_test.mocks.dart';
 
-@GenerateMocks([StatisticsRepository, AuthService, ActivityCategoryRepository])
+@GenerateMocks([
+  StatisticsRepository,
+  AuthService,
+  ActivityCategoryRepository,
+  PersonRepository,
+])
 void main() {
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
+  late MockPersonRepository mockPersonRepository;
   late StatisticsProvider statisticsProvider;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     mockRepository = MockStatisticsRepository();
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
+    mockPersonRepository = MockPersonRepository();
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
+      personRepository: mockPersonRepository,
     );
-    // Default stub: breakdown returns empty list unless overridden per test.
+    // Default stubs: return empty lists unless overridden per test.
     // ignore: argument_type_not_assignable
     when(mockRepository.getActivityWeightBreakdown(any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getPersonsForActivity(any, any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockCategoryRepository.getAllCategories(any))
         .thenAnswer((_) async => []);
   });
 
