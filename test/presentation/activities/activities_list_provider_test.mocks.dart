@@ -94,6 +94,23 @@ class MockActivityCategoryRepository extends _i1.Mock
       ) as _i4.Future<void>);
 
   @override
+  _i4.Future<void> deleteWithChildren(
+    String? userId,
+    String? categoryId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteWithChildren,
+          [
+            userId,
+            categoryId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   _i4.Future<_i2.ActivityCategory> createSelectableCategory({
     required String? name,
     required String? userId,
