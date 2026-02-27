@@ -1,45 +1,21 @@
 import 'package:flutter/material.dart';
-import '../../data/services/auth_service.dart';
+import 'package:provider/provider.dart';
 
-/// Home screen shown to authenticated users
+import '../providers/statistics_provider.dart';
+import '../widgets/statistics_section.dart';
+
+/// Home tab showing year-filtered statistics for the authenticated user.
 class HomeScreen extends StatelessWidget {
-  // AuthService injected from outside - not hardcoded inside
-  final AuthService authService;
-
-  const HomeScreen({
-    super.key,
-    required this.authService,
-  });
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final String userName = authService.userDisplayName ?? 'Friend';
-    final String userEmail = authService.userEmail ?? '';
-
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Welcome back, $userName! 👋',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                userEmail,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
+    return Consumer<StatisticsProvider>(
+      builder: (context, _, __) => const Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: StatisticsSection(),
           ),
         ),
       ),
