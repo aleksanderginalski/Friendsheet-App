@@ -220,6 +220,24 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.5.0 - US-048 Activity Breakdown UX Improvements (March 01, 2026)
+- ✅ Animated vertical bar chart with Stack + absolute positioning
+- ✅ Stable color assignment per categoryId across year changes
+- ✅ Delta percentage indicator ▲/▼/NEW above each bar
+- ✅ ActivityVisibilityDialog with hierarchical tree + icons
+- ✅ Auto-select top 10 (excludes parents with children in breakdown)
+- ✅ Hidden activities persistence (SharedPreferences)
+- ✅ Smooth bar height animation on year change (1s easeInOut)
+- ✅ Total test count: 290 tests### v3.5.0 - US-048 Activity Breakdown UX Improvements (March 01, 2026)
+- ✅ Animated vertical bar chart with Stack + absolute positioning
+- ✅ Stable color assignment per categoryId across year changes
+- ✅ Delta percentage indicator ▲/▼/NEW above each bar
+- ✅ ActivityVisibilityDialog with hierarchical tree + icons
+- ✅ Auto-select top 10 (excludes parents with children in breakdown)
+- ✅ Hidden activities persistence (SharedPreferences)
+- ✅ Smooth bar height animation on year change (1s easeInOut)
+- ✅ Total test count: 290 tests
+
 ### v3.4.0 - US-029 Who Per Activity Metric (February 27, 2026)
 - ✅ PersonActivityEntry DTO and getPersonsForActivity with ancestor-aware filtering
 - ✅ ActivitySelectorDialog with full category tree
