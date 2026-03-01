@@ -5,6 +5,7 @@ import '../../data/models/activity_category.dart';
 import '../providers/statistics_provider.dart';
 import 'activity_breakdown_widget.dart';
 import 'activity_selector_dialog.dart';
+import 'activity_visibility_dialog.dart';
 import 'who_per_activity_widget.dart';
 import 'year_stepper.dart';
 
@@ -27,6 +28,22 @@ class StatisticsSection extends StatelessWidget {
     if (result == null) return;
     if (!context.mounted) return;
     context.read<StatisticsProvider>().selectActivity(result.id);
+  }
+
+  void _openVisibilityDialog(
+    BuildContext context,
+    StatisticsProvider provider,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => ActivityVisibilityDialog(
+        entries: provider.activityBreakdown,
+        categories: provider.allCategories,
+        hiddenActivities: provider.hiddenActivities,
+        onToggle: provider.toggleHiddenActivity,
+        onAutoSelectTop10: provider.applyTop10Selection,
+      ),
+    );
   }
 
   @override
@@ -52,7 +69,12 @@ class StatisticsSection extends StatelessWidget {
               availableYears: provider.availableYears,
               onYearChanged: provider.selectYear,
             ),
-            ActivityBreakdownWidget(entries: provider.activityBreakdown),
+            ActivityBreakdownWidget(
+              entries: provider.activityBreakdown,
+              hiddenActivities: provider.hiddenActivities,
+              onOpenVisibilityDialog: () =>
+                  _openVisibilityDialog(context, provider),
+            ),
             WhoPerActivityWidget(
               entries: provider.whoPerActivity,
               categories: provider.allCategories,
