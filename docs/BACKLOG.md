@@ -1145,6 +1145,7 @@ If you already created a GitHub issue for US-005, you can:
 - [x] **TASK-041.4:** Implement meeting import with idempotency check
 - [x] **TASK-041..5:** Add progress reporting and error handling
 
+
 ---
 
 ## 📊 FEATURE-009: Core Statistics
@@ -1234,6 +1235,42 @@ If you already created a GitHub issue for US-005, you can:
 
 ---
 
+### US-048: Activity Breakdown — UX Improvements
+
+**As a** user
+**I want to** see activity breakdown as a bar chart with ability to hide selected activities
+**So that**  I can focus on the activities that matter to me and read the data more clearly
+
+**Story Points:** 5
+**Priority:** P0
+**Status:** ✅ COMPLETED (March 01, 2026)
+
+**Acceptance Criteria:**
+- [x] Widget replaced with vertical bar chart (colored bars + legend)
+- [x] Each activity has a unique color consistent between bar and legend
+- [x] Scroll within widget — 10 activities visible at a time, rest scrollable
+⚙️ icon next to section title opens dialog with checkbox list of all activities
+- [x] User can check/uncheck activities to show/hide them
+- [x] Hidden activities stored in SharedPreferences key: stats_hidden_activities_breakdown
+- [x] Hint shown when activities are hidden: "X activities hidden"
+- [x] Chart re-renders immediately after closing dialog
+
+**Tasks:**
+- [x] **TASK-048.1:** Extend StatisticsProvider with hidden activities state
+- [x] **TASK-048.2:** Build ActivityVisibilityDialog
+- [x] **TASK-048.3:** Rebuild ActivityBreakdownWidget as vertical bar chart
+- [x] **TASK-048.4:** Wire dialog into StatisticsSection
+- [x] **TASK-048.5:** Write tests
+- [x] **TASK-048.6:** Activity Breakdown UI fixes
+- [x] **TASK-048.7:** Activity Breakdown further UX improvements
+- [x] **TASK-048.8:** — Fix top 10 logic + animated bar chart
+- [x] **TASK-048.9:** — Fix auto-select logic + fix animation on year change
+- [x] **TASK-048.10:** — Animated reordering + stable colors
+- [x] **TASK-048.11:** - Fix stationary bar poition jump
+- [x] **TASK-048.12:** - Debug and fix stationary bar reordering
+- [x] **TASK-048.13:** - Fix multiple didUpdateWidget calls corrupting tween state
+---
+
 ### US-030: Interaction Distribution Metric
 
 **As a** user
@@ -1244,18 +1281,49 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] Ranked list of persons by: `sum of weights of meetings they attended / total weight sum of all meetings in year`
-- [ ] Each row shows: person name | weight sum | percentage
-- [ ] Per-metric hidden persons (SharedPreferences key: `stats_hidden_persons_distribution`)
-- [ ] Percentages intentionally exceed 100% total — a meeting with 3 people counts for all 3
-- [ ] Info icon explaining the >100% behaviour
+- [ ] Vertical bar chart — one bar per person, same layout as Activity Breakdown (US-048)
+- [ ] Default mode: yearly view — bar = sum of weights of meetings with that person in selected year
+- [ ] Each row shows: person name | weight sum | delta vs previous year (▲/▼ + %)
+- [ ] Delta: NEW when person has no data in previous year
+- [ ] Toggle button "Total interactions" — switches to cumulative mode
+- [ ]  Cumulative mode: bar = sum of all weights from all years up to and including selected year
+- [ ] Cumulative mode: no delta indicator (not applicable)
+- [ ] Top 10 persons auto-selected by default for selected year (SharedPreferences key: stats_hidden_persons_distribution)
+- [ ] ⚙️ icon → dialog with checkbox list + "Auto-select top 10" button
+- [ ] Long-press on bar → hide/show person
+- [ ] Hidden persons hint: "X persons hidden"
+- [ ] Percentages intentionally exceed 100% total — meeting with 3 people counts for all 3
+- [ ] Info icon explaining >100% behaviour (yearly mode only)
 
 **Tasks:**
-- [ ] **TASK-US-030.1:** Implement `getInteractionDistribution(year)` in StatisticsRepository
-- [ ] **TASK-US-030.2:** Build InteractionDistributionWidget
-- [ ] **TASK-US-030.3:** Reuse hidden persons pattern from US-029
-- [ ] **TASK-US-030.4:** Write tests
+- [ ] **TASK-US-030.1:** Add getInteractionDistribution(year, userId) to StatisticsRepository — yearly weights per person
+- [ ] **TASK-US-030.2:** Add getCumulativeInteractions(year, userId) to StatisticsRepository — sum of all weights up to selected year per person
+- [ ] **TASK-US-030.3:** Extend StatisticsProvider with distribution state, toggle mode, hidden persons
+- [ ] **TASK-US-030.4:** Build InteractionDistributionWidget — bar chart reusing Activity Breakdown patterns
+- [ ] **TASK-US-030.5:** Build PersonVisibilityDialog — reuse ActivityVisibilityDialog pattern (checkboxes + auto-select top 10)
+- [ ] **TASK-US-030.6:** Write tests
 
+
+### US-049: Activity Breakdown — Smooth Bar Reordering Animation
+
+**As a** user
+**I want to** see bars stay in place when their ranking doesn't change between years
+**So that** I can visually track individual activities across year changes without confusion
+
+**Story Points:** 5
+**Priority:** P0
+
+**Acceptance Criteria:**
+- [ ] Bars that don't change rank position remain visually stationary during year change animation
+- [ ] Bars that change rank animate smoothly to their new position
+- [ ] Color assignments remain stable across year changes and reorders
+- [ ] No visual glitches (bars jumping to wrong position and back)
+
+**Tasks:**
+- [ ] **TASK-US-049.1:** Add debug logging to trace targetLeft values across rebuilds — identify root cause of spurious position changes
+- [ ] **TASK-US-049.2:** Fix tween initialization so stationary bars receive begin == end == targetLeft
+- [ ] **TASK-US-049.3:** Verify fix across multiple year changes (including mid-animation changes)
+- [ ] **TASK-US-049.4:** Remove debug logging, run dart format + flutter analyze + flutter test
 
 ---
 

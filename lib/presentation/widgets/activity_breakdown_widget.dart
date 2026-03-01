@@ -2,64 +2,371 @@ import 'package:flutter/material.dart';
 
 import '../../data/repositories/statistics_repository.dart';
 
-/// Displays a ranked list of activity categories by total meeting weight
-/// for the selected year, with a delta indicator vs. the previous year.
-class ActivityBreakdownWidget extends StatelessWidget {
-  final List<ActivityBreakdownEntry> entries;
+/// Color palette for activity bars — one color per activity (cycles if > 10).
+const _kPalette = [
+  Color(0xFF4CAF50), // green
+  Color(0xFF2196F3), // blue
+  Color(0xFFF44336), // red
+  Color(0xFFFF9800), // orange
+  Color(0xFF9C27B0), // purple
+  Color(0xFF00BCD4), // cyan
+  Color(0xFFFFEB3B), // yellow
+  Color(0xFFE91E63), // pink
+  Color(0xFF795548), // brown
+  Color(0xFF607D8B), // blue grey
+];
 
-  const ActivityBreakdownWidget({super.key, required this.entries});
+/// Fixed heights for bar column sections.
+const _kDeltaHeight = 20.0;
+const _kWeightHeight = 20.0;
+const _kNameHeight = 32.0;
+
+/// Total height of the horizontal-scrolling chart area.
+const _kChartHeight = 200.0;
+
+/// Maximum bar height = chart height minus the three fixed-height sections.
+const _kMaxBarHeight =
+    _kChartHeight - _kDeltaHeight - _kWeightHeight - _kNameHeight;
+
+/// Fixed width per item slot — includes padding on both sides.
+const _kItemWidth = 56.0;
+
+/// Duration for bar-height and position entrance/change animations.
+const _kAnimationDuration = Duration(milliseconds: 1000);
+
+List<ActivityBreakdownEntry> _computeVisible(
+  List<ActivityBreakdownEntry> entries,
+  Set<String> hidden,
+) =>
+    entries.where((e) => !hidden.contains(e.categoryId)).toList();
+
+int _maxWeight(List<ActivityBreakdownEntry> visible) => visible.fold<int>(
+      1,
+      (prev, e) => e.currentYearWeight > prev ? e.currentYearWeight : prev,
+    );
+
+double _barHeight(int weight, int maxW) =>
+    (weight / maxW * _kMaxBarHeight).clamp(2.0, _kMaxBarHeight);
+
+/// Displays the Activity Breakdown as a horizontal-scrolling vertical bar chart.
+/// Bar heights and positions animate on first render and on every year change.
+/// Bars are absolutely positioned inside a Stack so position changes animate
+/// smoothly when the ranking changes between years.
+class ActivityBreakdownWidget extends StatefulWidget {
+  final List<ActivityBreakdownEntry> entries;
+  final Set<String> hiddenActivities;
+  final VoidCallback onOpenVisibilityDialog;
+
+  const ActivityBreakdownWidget({
+    super.key,
+    required this.entries,
+    required this.hiddenActivities,
+    required this.onOpenVisibilityDialog,
+  });
+
+  @override
+  State<ActivityBreakdownWidget> createState() =>
+      _ActivityBreakdownWidgetState();
+}
+
+class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late CurvedAnimation _curvedAnimation;
+
+  // Last non-empty entries — retained during loading so bars stay
+  // visible instead of briefly showing "No visible activities."
+  List<ActivityBreakdownEntry> _displayedEntries = [];
+
+  // Entry order locked when a new year's data arrives, before the controller
+  // restarts. build() derives targetLeft from this list so the index of each
+  // bar is stable for the entire animation — even if the parent rebuilds due
+  // to an unrelated provider notification mid-animation.
+  List<ActivityBreakdownEntry> _animatingEntries = [];
+
+  // Stable color per categoryId — assigned once on first encounter,
+  // never reassigned so colors survive year changes and reorders.
+  final Map<String, Color> _categoryColors = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _displayedEntries = widget.entries;
+    _animatingEntries = widget.entries;
+    _ensureColors(widget.entries);
+    _controller = AnimationController(
+      vsync: this,
+      duration: _kAnimationDuration,
+    )..forward();
+    _curvedAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void didUpdateWidget(ActivityBreakdownWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update displayed entries when new data arrives — keep the
+    // previous set visible during the loading gap (empty entries).
+    if (widget.entries.isNotEmpty && widget.entries != oldWidget.entries) {
+      _ensureColors(widget.entries);
+      _displayedEntries = widget.entries;
+      // Lock order before restarting the controller so targetLeft values
+      // are stable for the entire animation duration.
+      _animatingEntries = widget.entries;
+      // Defer controller restart to the next frame so all _AnimatedBarItem
+      // children receive new targetLeft via didUpdateWidget first. This
+      // guarantees their tweens capture the correct current visual position
+      // (controller still at previous value) before the reset to 0.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.forward(from: 0.0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _curvedAnimation.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Assigns a palette color to each categoryId not yet in the map.
+  /// Insertion order determines the palette index so colors are stable.
+  void _ensureColors(List<ActivityBreakdownEntry> entries) {
+    for (final entry in entries) {
+      if (!_categoryColors.containsKey(entry.categoryId)) {
+        _categoryColors[entry.categoryId] =
+            _kPalette[_categoryColors.length % _kPalette.length];
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) return const SizedBox.shrink();
+    // _animatingEntries is locked at animation start — using it here
+    // ensures targetLeft indices are stable across parent rebuilds that
+    // happen mid-animation (e.g. unrelated provider notifications).
+    final visibleEntries =
+        _computeVisible(_animatingEntries, widget.hiddenActivities);
+    final maxW = _maxWeight(visibleEntries);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Text(
-          'Activity Breakdown',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        // Header row: title + settings icon.
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Activity Breakdown',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings, size: 20),
+              onPressed: widget.onOpenVisibilityDialog,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: 'Manage activity visibility',
+            ),
+          ],
         ),
+        // Hint showing how many activities are hidden.
+        if (widget.hiddenActivities.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              '${widget.hiddenActivities.length} activities hidden',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ),
         const SizedBox(height: 8),
-        ...entries.map((entry) => _ActivityBreakdownRow(entry: entry)),
+        // Use _displayedEntries (last non-empty data) for the guard so the
+        // chart never flashes an empty state during the loading gap between
+        // year changes.
+        if (_computeVisible(_displayedEntries, widget.hiddenActivities).isEmpty)
+          const Text(
+            'No visible activities.',
+            style: TextStyle(color: Colors.grey),
+          )
+        else
+          SizedBox(
+            height: _kChartHeight,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              // Fixed-width SizedBox so the Stack knows its extent.
+              child: SizedBox(
+                width: visibleEntries.length * _kItemWidth,
+                child: Stack(
+                  children: visibleEntries.asMap().entries.map((e) {
+                    final index = e.key;
+                    final entry = e.value;
+                    return _AnimatedBarItem(
+                      // ValueKey tracks bar identity across reorders.
+                      key: ValueKey(entry.categoryId),
+                      entry: entry,
+                      color: _categoryColors[entry.categoryId] ??
+                          _kPalette[index % _kPalette.length],
+                      controller: _curvedAnimation,
+                      targetLeft: index * _kItemWidth,
+                      targetBarHeight:
+                          _barHeight(entry.currentYearWeight, maxW),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
 }
 
-class _ActivityBreakdownRow extends StatelessWidget {
+/// A bar item absolutely positioned inside a Stack.
+/// Animates both its left position and bar height driven by the shared
+/// [controller] owned by the parent. Each instance maintains its own tweens
+/// so it can start from its previous position/height when the parent restarts
+/// the controller on a year change.
+class _AnimatedBarItem extends StatefulWidget {
   final ActivityBreakdownEntry entry;
+  final Color color;
+  final Animation<double> controller;
+  final double targetLeft;
+  final double targetBarHeight;
 
-  const _ActivityBreakdownRow({required this.entry});
+  const _AnimatedBarItem({
+    super.key,
+    required this.entry,
+    required this.color,
+    required this.controller,
+    required this.targetLeft,
+    required this.targetBarHeight,
+  });
+
+  @override
+  State<_AnimatedBarItem> createState() => _AnimatedBarItemState();
+}
+
+class _AnimatedBarItemState extends State<_AnimatedBarItem> {
+  late Tween<double> _leftTween;
+  late Tween<double> _heightTween;
+
+  @override
+  void initState() {
+    super.initState();
+    // First render: bar appears at its target position, height grows from 0.
+    _leftTween = Tween<double>(
+      begin: widget.targetLeft,
+      end: widget.targetLeft,
+    );
+    _heightTween = Tween<double>(begin: 0.0, end: widget.targetBarHeight);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBarItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Evaluate the current animated position/height before the controller
+    // resets. This fires while the controller is still at its previous value
+    // (reset is deferred via addPostFrameCallback in the parent), so
+    // evaluate() returns the actual visual state — not the old tween begin.
+    if (widget.targetLeft != oldWidget.targetLeft) {
+      final currentLeft = _leftTween.evaluate(widget.controller);
+      _leftTween = Tween<double>(
+        begin: currentLeft,
+        end: widget.targetLeft,
+      );
+    }
+    if (widget.targetBarHeight != oldWidget.targetBarHeight) {
+      final currentHeight = _heightTween.evaluate(widget.controller);
+      _heightTween = Tween<double>(
+        begin: currentHeight,
+        end: widget.targetBarHeight,
+      );
+    }
+  }
+
+  Widget _buildBarColumn(double barHeight) {
+    return Column(
+      children: [
+        // Delta indicator — FittedBox scales text if it overflows the slot.
+        SizedBox(
+          height: _kDeltaHeight,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: _DeltaLabel(entry: widget.entry),
+          ),
+        ),
+        // Bar area — Expanded fills remaining space; bar sits at bottom.
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: 32,
+              height: barHeight,
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(3),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Weight label — shows target value immediately (not animated).
+        SizedBox(
+          height: _kWeightHeight,
+          child: Center(
+            child: Text(
+              widget.entry.currentYearWeight.toString(),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        // Name label — fixed height, single line with ellipsis.
+        SizedBox(
+          height: _kNameHeight,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Text(
+              widget.entry.name,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 9),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(entry.name),
-          ),
-          Text(
-            entry.currentYearWeight.toString(),
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 72,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: _DeltaLabel(entry: entry),
-            ),
-          ),
-        ],
-      ),
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, _) {
+        final left = _leftTween.evaluate(widget.controller);
+        final barHeight =
+            _heightTween.evaluate(widget.controller).clamp(2.0, _kMaxBarHeight);
+        return Positioned(
+          left: left,
+          top: 0,
+          width: _kItemWidth,
+          height: _kChartHeight,
+          child: _buildBarColumn(barHeight),
+        );
+      },
     );
   }
 }
 
+/// Shows a coloured arrow + percentage indicating year-over-year weight change.
+/// Percentage formula: (delta / previousYearWeight * 100).round()
 class _DeltaLabel extends StatelessWidget {
   final ActivityBreakdownEntry entry;
 
@@ -67,32 +374,34 @@ class _DeltaLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // New activity this year — no previous data to compare against.
+    // New activity this year — no previous data to compute percentage against.
     if (entry.previousYearWeight == 0) {
       return const Text(
         'NEW',
-        style: TextStyle(color: Colors.grey, fontSize: 12),
+        style: TextStyle(color: Colors.grey, fontSize: 9),
       );
     }
 
+    final pct = (entry.delta / entry.previousYearWeight * 100).round().abs();
+
     if (entry.delta > 0) {
       return Text(
-        '▲ +${entry.delta}',
-        style: const TextStyle(color: Colors.green, fontSize: 12),
+        '▲ +$pct%',
+        style: const TextStyle(color: Colors.green, fontSize: 10),
       );
     }
 
     if (entry.delta < 0) {
       return Text(
-        '▼ ${entry.delta}',
-        style: const TextStyle(color: Colors.red, fontSize: 12),
+        '▼ -$pct%',
+        style: const TextStyle(color: Colors.red, fontSize: 10),
       );
     }
 
-    // delta == 0 and previous year had data.
+    // delta == 0 with data from both years.
     return const Text(
       '—',
-      style: TextStyle(color: Colors.grey, fontSize: 12),
+      style: TextStyle(color: Colors.grey, fontSize: 11),
     );
   }
 }

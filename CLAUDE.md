@@ -177,5 +177,24 @@ if (userDoc.data()?['onboardingCompletedAt'] == null) {
   await _batchCopyGlobalCategories(uid);
 }
 ```
+
+## Statistics Widget Patterns (US-028, US-029, US-048)
+
+### ActivityBreakdownWidget — animated bar chart
+- `StatefulWidget` with `SingleTickerProviderStateMixin`
+- `_animatingEntries` locked at animation start — never update mid-animation
+- `_displayedEntries` retained during loading gap — prevents empty state flash
+- `_categoryColors: Map<String, Color>` — stable color per categoryId, never reassigned
+- `addPostFrameCallback` required before `_controller.forward(from: 0.0)` — ensures child tweens update before controller resets
+
+### Hidden state pattern (SharedPreferences)
+- Every widget with hide/show must call `SharedPreferences.setMockInitialValues({})` in setUp
+- Affects not only Provider tests but ALL widget tests that build a tree containing that Provider
+- Key format: `stats_hidden_*` (e.g. `stats_hidden_activities_breakdown`, `stats_hidden_persons_activity`)
+
+### Top 10 auto-select logic
+- Candidate = category with NO children present in current year's breakdown
+- Check: scan allCats for parentCategoryId values that appear in breakdown → those parents are excluded
+- `isSelectableAsActivity` is NOT used for this check — pure hierarchy check only
 ---
 
