@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
@@ -264,6 +265,164 @@ void main() {
         expect(provider.whoPerActivity, hasLength(2));
         expect(provider.whoPerActivity.first.personId, equals('p-1'));
         expect(provider.selectedActivityId, equals('sport'));
+      });
+    });
+
+    group('toggleHiddenActivity()', () {
+      test('adds activity to hiddenActivities set', () async {
+        expect(provider.hiddenActivities, isEmpty);
+
+        await provider.toggleHiddenActivity('cat-1');
+
+        expect(provider.hiddenActivities, contains('cat-1'));
+      });
+
+      test('removes activity from hiddenActivities set when already hidden',
+          () async {
+        await provider.toggleHiddenActivity('cat-1');
+        expect(provider.hiddenActivities, contains('cat-1'));
+
+        await provider.toggleHiddenActivity('cat-1');
+
+        expect(provider.hiddenActivities, isNot(contains('cat-1')));
+      });
+
+      test('persists hidden activities to SharedPreferences', () async {
+        await provider.toggleHiddenActivity('cat-1');
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_activities_breakdown');
+        expect(stored, contains('cat-1'));
+      });
+
+      test('loadHiddenActivities restores state on initialize', () async {
+        // Pre-populate SharedPreferences before initialize().
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_activities_breakdown': ['cat-x', 'cat-y'],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+
+        expect(provider.hiddenActivities, containsAll(['cat-x', 'cat-y']));
+      });
+    });
+
+    group('loadHiddenActivities() — first launch', () {
+      // Helper: 12 entries sorted descending by currentYearWeight.
+      // Top 10 by weight: cat-12 … cat-3. Bottom 2: cat-2, cat-1.
+      List<ActivityBreakdownEntry> makeEntries() => List.generate(
+            12,
+            (i) => ActivityBreakdownEntry(
+              categoryId: 'cat-${12 - i}',
+              name: 'Cat ${12 - i}',
+              currentYearWeight: 12 - i,
+              previousYearWeight: 0,
+            ),
+          );
+
+      // Helper: matching categories, all selectable leaves.
+      List<ActivityCategory> makeCategories() => List.generate(
+            12,
+            (i) => ActivityCategory(
+              id: 'cat-${i + 1}',
+              userId: 'user-1',
+              name: 'Cat ${i + 1}',
+              iconIdentifier: 'sports_tennis',
+              isGlobal: false,
+              isSelectableAsActivity: true,
+              createdAt: DateTime(2024),
+            ),
+          );
+
+      test('auto-applies top 10 when SharedPreferences key is absent',
+          () async {
+        // setMockInitialValues({}) means key is absent → first launch.
+        SharedPreferences.setMockInitialValues({});
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => makeEntries());
+        when(mockCategoryRepository.getAllCategories('user-1'))
+            .thenAnswer((_) async => makeCategories());
+
+        await provider.initialize();
+
+        // Top 10 = cat-12 … cat-3; the remaining two are hidden.
+        expect(provider.hiddenActivities, hasLength(2));
+        expect(provider.hiddenActivities, containsAll(['cat-1', 'cat-2']));
+      });
+
+      test('subsequent launch uses stored hidden set without auto-apply',
+          () async {
+        // Key present → stored value used as-is, no top-10 recompute.
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_activities_breakdown': ['cat-5', 'cat-6'],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+
+        expect(provider.hiddenActivities, containsAll(['cat-5', 'cat-6']));
+        expect(provider.hiddenActivities, hasLength(2));
+      });
+    });
+
+    group('applyTop10Selection()', () {
+      test('replaces hidden set with all except top 10 leaf activities',
+          () async {
+        // Key present (empty list) to skip first-launch auto-apply.
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_activities_breakdown': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        final entries = List.generate(
+          12,
+          (i) => ActivityBreakdownEntry(
+            categoryId: 'cat-${12 - i}',
+            name: 'Cat ${12 - i}',
+            currentYearWeight: 12 - i,
+            previousYearWeight: 0,
+          ),
+        );
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => entries);
+
+        final categories = List.generate(
+          12,
+          (i) => ActivityCategory(
+            id: 'cat-${i + 1}',
+            userId: 'user-1',
+            name: 'Cat ${i + 1}',
+            iconIdentifier: 'sports_tennis',
+            isGlobal: false,
+            isSelectableAsActivity: true,
+            createdAt: DateTime(2024),
+          ),
+        );
+        when(mockCategoryRepository.getAllCategories('user-1'))
+            .thenAnswer((_) async => categories);
+
+        await provider.initialize();
+
+        // Pollute the hidden set before applying top 10.
+        await provider.toggleHiddenActivity('cat-12');
+        expect(provider.hiddenActivities, contains('cat-12'));
+
+        await provider.applyTop10Selection();
+
+        // After apply: hidden = cat-2 and cat-1 (bottom 2 by weight).
+        expect(provider.hiddenActivities, hasLength(2));
+        expect(provider.hiddenActivities, containsAll(['cat-1', 'cat-2']));
+        expect(provider.hiddenActivities, isNot(contains('cat-12')));
       });
     });
 
