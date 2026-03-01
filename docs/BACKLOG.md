@@ -1145,6 +1145,7 @@ If you already created a GitHub issue for US-005, you can:
 - [x] **TASK-041.4:** Implement meeting import with idempotency check
 - [x] **TASK-041..5:** Add progress reporting and error handling
 
+
 ---
 
 ## 📊 FEATURE-009: Core Statistics
@@ -1232,6 +1233,42 @@ If you already created a GitHub issue for US-005, you can:
 - [x] **TASK-029.3:** Implement hidden persons persistence (SharedPreferences)
 - [x] **TASK-029.4:** Write tests
 
+---
+
+### US-048: Activity Breakdown — UX Improvements
+
+**As a** user
+**I want to** see activity breakdown as a bar chart with ability to hide selected activities
+**So that**  I can focus on the activities that matter to me and read the data more clearly
+
+**Story Points:** 5
+**Priority:** P0
+
+
+**Acceptance Criteria:**
+- [ ] Widget replaced with vertical bar chart (colored bars + legend)
+- [ ] Each activity has a unique color consistent between bar and legend
+- [ ] Scroll within widget — 10 activities visible at a time, rest scrollable
+⚙️ icon next to section title opens dialog with checkbox list of all activities
+- [ ] User can check/uncheck activities to show/hide them
+- [ ] Hidden activities stored in SharedPreferences key: stats_hidden_activities_breakdown
+- [ ] Hint shown when activities are hidden: "X activities hidden"
+- [ ] Chart re-renders immediately after closing dialog
+
+**Tasks:**
+- [ ] **TASK-048.1:** Extend StatisticsProvider with hidden activities state
+- [ ] **TASK-048.2:** Build ActivityVisibilityDialog
+- [ ] **TASK-048.3:** Rebuild ActivityBreakdownWidget as vertical bar chart
+- [ ] **TASK-048.4:** Wire dialog into StatisticsSection
+- [ ] **TASK-048.5:** Write tests
+- [ ] **TASK-048.6:** Activity Breakdown UI fixes
+- [ ] **TASK-048.7:** Activity Breakdown further UX improvements
+- [] **TASK-048.8:** — Fix top 10 logic + animated bar chart
+- [] **TASK-048.9:** — Fix auto-select logic + fix animation on year change
+- [] **TASK-048.10:** — Animated reordering + stable colors
+- [] **TASK-048.11:** - Fix stationary bar poition jump
+- [] **TASK-048.12:** - Debug and fix stationary bar reordering
+- [] **TASK-048.13:** - Fix multiple didUpdateWidget calls corrupting tween state
 ---
 
 ### US-030: Interaction Distribution Metric
