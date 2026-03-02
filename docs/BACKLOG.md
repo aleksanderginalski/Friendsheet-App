@@ -1279,29 +1279,30 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
+**Status:** ✅ COMPLETED (March 02, 2026)
 
 **Acceptance Criteria:**
-- [ ] Vertical bar chart — one bar per person, same layout as Activity Breakdown (US-048)
-- [ ] Default mode: yearly view — bar = sum of weights of meetings with that person in selected year
-- [ ] Each row shows: person name | weight sum | delta vs previous year (▲/▼ + %)
-- [ ] Delta: NEW when person has no data in previous year
-- [ ] Toggle button "Total interactions" — switches to cumulative mode
-- [ ]  Cumulative mode: bar = sum of all weights from all years up to and including selected year
-- [ ] Cumulative mode: no delta indicator (not applicable)
-- [ ] Top 10 persons auto-selected by default for selected year (SharedPreferences key: stats_hidden_persons_distribution)
-- [ ] ⚙️ icon → dialog with checkbox list + "Auto-select top 10" button
-- [ ] Long-press on bar → hide/show person
-- [ ] Hidden persons hint: "X persons hidden"
-- [ ] Percentages intentionally exceed 100% total — meeting with 3 people counts for all 3
-- [ ] Info icon explaining >100% behaviour (yearly mode only)
+- [x] Vertical bar chart — one bar per person, same layout as Activity Breakdown (US-048)
+- [x] Default mode: yearly view — bar = sum of weights of meetings with that person in selected year
+- [x] Each row shows: person name | weight sum | delta vs previous year (▲/▼ + %)
+- [x] Delta: NEW when person has no data in previous year
+- [x] Toggle button "Total interactions" — switches to cumulative mode
+- [x]  Cumulative mode: bar = sum of all weights from all years up to and including selected year
+- [x] Cumulative mode: no delta indicator (not applicable)
+- [x] Top 10 persons auto-selected by default for selected year (SharedPreferences key: stats_hidden_persons_distribution)
+- [x] ⚙️ icon → dialog with checkbox list + "Auto-select top 10" button
+- [x] Long-press on bar → hide/show person
+- [x] Hidden persons hint: "X persons hidden"
+- [x] Percentages intentionally exceed 100% total — meeting with 3 people counts for all 3
+- [x] Info icon explaining >100% behaviour (yearly mode only)
 
 **Tasks:**
-- [ ] **TASK-US-030.1:** Add getInteractionDistribution(year, userId) to StatisticsRepository — yearly weights per person
-- [ ] **TASK-US-030.2:** Add getCumulativeInteractions(year, userId) to StatisticsRepository — sum of all weights up to selected year per person
-- [ ] **TASK-US-030.3:** Extend StatisticsProvider with distribution state, toggle mode, hidden persons
-- [ ] **TASK-US-030.4:** Build InteractionDistributionWidget — bar chart reusing Activity Breakdown patterns
-- [ ] **TASK-US-030.5:** Build PersonVisibilityDialog — reuse ActivityVisibilityDialog pattern (checkboxes + auto-select top 10)
-- [ ] **TASK-US-030.6:** Write tests
+- [x] **TASK-US-030.1:** Add getInteractionDistribution(year, userId) to StatisticsRepository — yearly weights per person
+- [x] **TASK-US-030.2:** Add getCumulativeInteractions(year, userId) to StatisticsRepository — sum of all weights up to selected year per person
+- [x] **TASK-US-030.3:** Extend StatisticsProvider with distribution state, toggle mode, hidden persons
+- [x] **TASK-US-030.4:** Build InteractionDistributionWidget — bar chart reusing Activity Breakdown patterns
+- [x] **TASK-US-030.5:** Build PersonVisibilityDialog — reuse ActivityVisibilityDialog pattern (checkboxes + auto-select top 10)
+- [x] **TASK-US-030.6:** Write tests
 
 
 ### US-049: Activity Breakdown — Smooth Bar Reordering Animation
@@ -1312,18 +1313,19 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
+**Status:** ✅ COMPLETED (March 02, 2026)
 
 **Acceptance Criteria:**
-- [ ] Bars that don't change rank position remain visually stationary during year change animation
-- [ ] Bars that change rank animate smoothly to their new position
-- [ ] Color assignments remain stable across year changes and reorders
-- [ ] No visual glitches (bars jumping to wrong position and back)
+- [x] Bars that don't change rank position remain visually stationary during year change animation
+- [x] Bars that change rank animate smoothly to their new position
+- [x] Color assignments remain stable across year changes and reorders
+- [x] No visual glitches (bars jumping to wrong position and back)
 
 **Tasks:**
-- [ ] **TASK-US-049.1:** Add debug logging to trace targetLeft values across rebuilds — identify root cause of spurious position changes
-- [ ] **TASK-US-049.2:** Fix tween initialization so stationary bars receive begin == end == targetLeft
-- [ ] **TASK-US-049.3:** Verify fix across multiple year changes (including mid-animation changes)
-- [ ] **TASK-US-049.4:** Remove debug logging, run dart format + flutter analyze + flutter test
+- [x] **TASK-US-049.1:** Add debug logging to trace targetLeft values across rebuilds — identify root cause of spurious position changes
+- [x] **TASK-US-049.2:** Fix tween initialization so stationary bars receive begin == end == targetLeft
+- [x] **TASK-US-049.3:** Verify fix across multiple year changes (including mid-animation changes)
+- [x] **TASK-US-049.4:** Remove debug logging, run dart format + flutter analyze + flutter test
 
 ---
 
