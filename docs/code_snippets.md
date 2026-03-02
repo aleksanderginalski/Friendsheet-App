@@ -32,16 +32,13 @@ import 'screens/home_screen.dart';
 
 /// Main entry point of the application
 /// 
-/// 🎨 THE METAPHOR: This is like the building's main entrance with
-/// automatic doors. It checks if you have an active badge (auth state)
-/// and opens the right door - either to reception (login) or directly
-/// to the office (home) if you're already checked in.
+
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
-  // 🎨 METAPHOR: Turn on the building's security system
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -65,8 +62,7 @@ class MyApp extends StatelessWidget {
       
       // This is the key part - AuthWrapper decides which screen to show
       // based on authentication state
-      // 🎨 METAPHOR: The automatic door system that routes you
-      // to reception or office based on your badge status
+
       home: const AuthWrapper(),
     );
   }
@@ -79,11 +75,7 @@ class MyApp extends StatelessWidget {
 /// - LoginScreen if user is NOT authenticated
 /// - HomeScreen if user IS authenticated
 /// 
-/// 🎨 THE METAPHOR: Think of this as a smart security guard who
-/// continuously checks your badge status. If you don't have a badge,
-/// they send you to reception. If you have a valid badge, they let
-/// you proceed to the office. They also notice when you check out
-/// and automatically redirect you back to reception.
+
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({Key? key}) : super(key: key);
 
@@ -92,13 +84,12 @@ class AuthWrapper extends StatelessWidget {
     final AuthService authService = AuthService();
     
     // StreamBuilder listens to auth state changes in real-time
-    // 🎨 METAPHOR: Like a security camera that continuously monitors
-    // who's entering and leaving, updating the display in real-time
+
     return StreamBuilder<User?>(
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
         // Show loading spinner while checking auth state
-        // 🎨 METAPHOR: The security system is booting up...
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
@@ -109,11 +100,11 @@ class AuthWrapper extends StatelessWidget {
         
         // Check if user is authenticated
         // snapshot.data contains the User object if signed in, null if not
-        // 🎨 METAPHOR: Check if this person has an active badge
+
         final bool isAuthenticated = snapshot.hasData && snapshot.data != null;
         
         // Show appropriate screen based on auth state
-        // 🎨 METAPHOR: Route them to the right place
+
         if (isAuthenticated) {
           return const HomeScreen(); // User has valid badge → go to office
         } else {
@@ -152,18 +143,15 @@ import '../services/auth_service.dart';
 
 /// Home screen shown to authenticated users
 /// 
-/// 🎨 THE METAPHOR: The main office area where authenticated users
-/// can work. It has a clearly marked exit (logout) for when they
-/// want to leave the building.
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   /// Handle logout button press
   /// 
-  /// 🎨 METAPHOR: User walks to the exit and taps out with their badge
+
   Future<void> _handleLogout(BuildContext context) async {
     // Show confirmation dialog
-    // 🎨 METAPHOR: "Are you sure you want to leave the building?"
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -186,18 +174,15 @@ class HomeScreen extends StatelessWidget {
     );
 
     // If user confirmed, proceed with logout
-    // 🎨 METAPHOR: User confirmed they want to leave - process checkout
     if (confirmed == true && context.mounted) {
       try {
         final AuthService authService = AuthService();
         await authService.signOut();
         
         // Navigation happens automatically via AuthWrapper
-        // 🎨 METAPHOR: Doors automatically redirect to reception after checkout
         
       } catch (e) {
         // Show error if logout fails
-        // 🎨 METAPHOR: Checkout system malfunction - show error
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -221,7 +206,6 @@ class HomeScreen extends StatelessWidget {
         title: const Text('FRIENDSHEET'),
         actions: [
           // Logout button in app bar
-          // 🎨 METAPHOR: Exit sign always visible
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Log Out',
@@ -231,7 +215,6 @@ class HomeScreen extends StatelessWidget {
       ),
       
       // Drawer with user info and logout option
-      // 🎨 METAPHOR: Side panel showing your badge info and exit option
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -431,13 +414,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // Helper function - is user authenticated (Google Sign-In or any method)
-    // 🎨 METAPHOR: Does this person have a valid badge (regardless of where they got it)?
     function isAuthenticated() {
       return request.auth != null;
     }
     
     // Helper function - does document belong to user
-    // 🎨 METAPHOR: Does this person's badge match the office they're trying to enter?
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
@@ -484,9 +465,7 @@ import 'package:friendsheet/screens/login_screen.dart';
 
 /// Tests for LoginScreen with Google Sign-In
 /// 
-/// 🎨 METAPHOR: These tests are like security audits - we check
-/// that the reception area (login screen) works correctly and
-/// handles all scenarios properly.
+
 void main() {
   group('LoginScreen Tests', () {
     
@@ -1162,12 +1141,43 @@ setUp(() async {
   SharedPreferences.setMockInitialValues({});
   // rest of setup...
 });
+
+
+## 24. Stable tween begin in animated bar chart (US-049)
+
+When animating bar position in `didUpdateWidget`, do NOT use `evaluate(controller)`
+as the tween begin value — it depends on controller timing and fires incorrectly
+when parent emits multiple rebuilds.
+
+Use `_lastTargetLeft` / `_lastTargetBarHeight` fields instead:
+```dart
+// In _AnimatedBarItemState:
+double _lastTargetLeft = 0.0;
+double _lastTargetBarHeight = 0.0;
+
+@override
+void initState() {
+  _lastTargetLeft = widget.targetLeft;
+  _lastTargetBarHeight = widget.targetBarHeight;
+  _leftTween = Tween(begin: widget.targetLeft, end: widget.targetLeft);
+  _heightTween = Tween(begin: 0.0, end: widget.targetBarHeight);
+  _opacityTween = Tween(begin: 0.0, end: 1.0); // fade-in on first render
+}
+
+@override
+void didUpdateWidget(_AnimatedBarItem oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  _leftTween = Tween(begin: _lastTargetLeft, end: widget.targetLeft);
+  _heightTween = Tween(begin: _lastTargetBarHeight, end: widget.targetBarHeight);
+  _opacityTween = Tween(begin: 1.0, end: 1.0);
+  // Update AFTER building tweens
+  _lastTargetLeft = widget.targetLeft;
+  _lastTargetBarHeight = widget.targetBarHeight;
+}
 ```
 
-Affected test files: not only the Provider test itself, but also any widget test
-that builds a widget tree containing that Provider (e.g. home_screen_test.dart,
-statistics_section_test.dart).
-
-Rule: If you add SharedPreferences to any Provider, grep all test files that
-instantiate that Provider and add `setMockInitialValues({})` to their setUp.
+Rule: Stationary bars always get `begin == end` — zero animation guaranteed.
+Reuse this pattern in every animated bar chart widget (InteractionDistributionWidget, etc.).
 ```
+
+---  
