@@ -655,8 +655,7 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('sorted descending by weight then alphabetically by name',
-          () async {
+      test('sorted descending by weight then alphabetically by name', () async {
         await addPerson('user-1', 'person-z', 'Zara');
         await addPerson('user-1', 'person-a', 'Anna');
         await addPerson('user-1', 'person-c', 'Carl');

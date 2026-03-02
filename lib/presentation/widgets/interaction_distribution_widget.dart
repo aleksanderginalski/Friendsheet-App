@@ -57,6 +57,7 @@ class InteractionDistributionWidget extends StatefulWidget {
   final List<InteractionDistributionEntry> entries;
   final Set<String> hiddenPersons;
   final bool isCumulativeMode;
+  final bool isLoading;
   final VoidCallback onOpenVisibilityDialog;
   final VoidCallback onToggleMode;
 
@@ -65,6 +66,7 @@ class InteractionDistributionWidget extends StatefulWidget {
     required this.entries,
     required this.hiddenPersons,
     required this.isCumulativeMode,
+    required this.isLoading,
     required this.onOpenVisibilityDialog,
     required this.onToggleMode,
   });
@@ -179,13 +181,26 @@ class _InteractionDistributionWidgetState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        // Header row: title on the left, action controls on the right.
+        // Header row: title (+ optional loading spinner) on the left,
+        // action controls on the right.
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Interaction Distribution',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Row(
+              children: [
+                const Text(
+                  'Interaction Distribution',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                if (widget.isLoading) ...[
+                  const SizedBox(width: 8),
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ],
+              ],
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
