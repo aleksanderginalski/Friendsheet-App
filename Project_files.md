@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 01, 2026
+**Last Updated:** marca 02, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -20,7 +20,7 @@
 - lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, deleteWithChildren (WriteBatch cascade), getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation (US-019, US-020, US-026, US-042, US-043)
 - lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
 - lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
-- lib/data/repositories/statistics_repository.dart - StatisticsRepository — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ActivityBreakdownEntry DTO), getPersonsForActivity (PersonActivityEntry DTO); injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029)
+- lib/data/repositories/statistics_repository.dart - StatisticsRepository — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ActivityBreakdownEntry DTO), getPersonsForActivity (PersonActivityEntry DTO), getInteractionDistribution (InteractionDistributionEntry DTO), getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)
 
 ## lib/
@@ -41,7 +41,7 @@
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen (stream, year grouping, expand/collapse)
-- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, loading state; initialize() guarded against concurrent calls; owned by MainScreen (US-027)
+- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric; initialize() guarded against concurrent calls; owned by MainScreen (US-027, US-028, US-029, US-030, US-048)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
@@ -49,15 +49,17 @@
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
 - lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)
-- lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic (US-028, US-048)
+- lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
 - lib/presentation/widgets/activity_visibility_dialog.dart - Dialog with hierarchical checkbox list + Auto-select top 10 button for managing activity visibility (US-048)
+- lib/presentation/widgets/interaction_distribution_widget.dart - Animated bar chart showing meeting weight per person — yearly/cumulative toggle, info icon (>100% explanation), ⚙️ visibility dialog, _lastTargetLeft animation architecture from US-049 (US-030)
 - lib/presentation/widgets/meeting_card.dart - Meeting card widget — displays name, date, participant count, weight (US-021)
 - lib/presentation/widgets/meeting_date_field.dart - Date picker widget (US-011)
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget — pre-fills from provider in edit mode (US-023)
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 - lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget + AddPersonDialog — returns strings, save handled by Provider (BUG-42)
-- lib/presentation/widgets/statistics_section.dart - StatisticsSection — Consumer<StatisticsProvider>; ActivityBreakdownWidget + WhoPerActivityWidget; visibility dialogs wired here (US-027, US-028, US-029, US-048)
+- lib/presentation/widgets/person_visibility_dialog.dart - Flat checkbox list dialog for managing person visibility in Interaction Distribution metric + Auto-select top 10 (US-030)
+- lib/presentation/widgets/statistics_section.dart - StatisticsSection — Consumer<StatisticsProvider>; ActivityBreakdownWidget + WhoPerActivityWidget + InteractionDistributionWidget; visibility dialogs wired here (US-027, US-028, US-029, US-030, US-048)
 - lib/presentation/widgets/who_per_activity_widget.dart - Vertical bar chart showing persons ranked by weight sum for selected activity; long-press hide/show; SharedPreferences hidden persons (US-029)
 - lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget with ← YYYY → arrows and swipe gesture; disabled at year boundaries (US-027)
 
@@ -68,7 +70,7 @@
 - test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, deleteWithChildren, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042, US-043)
 - test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
 - test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
-- test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ancestor-aware, unique per meeting), getPersonsForActivity (US-027, US-028, US-029)
+- test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown, getPersonsForActivity, getInteractionDistribution, getCumulativeInteractions (US-027, US-028, US-029, US-030)
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
 
 ## test/presentation/
@@ -84,7 +86,7 @@
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests (11 tests)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
-- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, toggleHiddenActivity, toggleHiddenPerson, applyTop10Selection, SharedPreferences persistence (US-027, US-028, US-029, US-048)
+- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, SharedPreferences persistence (US-027, US-028, US-029, US-030, US-048)
 - test/presentation/providers/statistics_provider_test.mocks.dart - Generated mocks for StatisticsProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
@@ -95,11 +97,13 @@
 - test/presentation/screens/main_screen_test.dart - MainScreen tests (5 tests)
 - test/presentation/screens/main_screen_test.mocks.dart - Generated mocks for MainScreen tests
 - test/presentation/screens/meetings_list_screen_test.dart - MeetingsListScreen tests (5 tests)
+- test/presentation/widgets/interaction_distribution_widget_test.dart - InteractionDistributionWidget tests — rendering, hidden hint, info icon visibility, toggle label, empty state (US-030)
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
 - test/presentation/widgets/meeting_date_field_test.mocks.dart - Generated mocks for MeetingDateField tests
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
 - test/presentation/widgets/meeting_name_field_test.mocks.dart - Generated mocks for MeetingNameField tests
 - test/presentation/widgets/meeting_weight_stepper_test.dart - MeetingWeightStepper tests (5 tests)
+- test/presentation/widgets/person_visibility_dialog_test.dart - PersonVisibilityDialog tests — checkbox state, toggle callback, auto-select top 10 (US-030)
 - test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case (US-027)
 
 ## test/

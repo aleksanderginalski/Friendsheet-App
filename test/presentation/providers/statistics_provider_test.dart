@@ -49,6 +49,12 @@ void main() {
     when(mockRepository.getPersonsForActivity(any, any, any))
         .thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
+    when(mockRepository.getInteractionDistribution(any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getCumulativeInteractions(any, any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
     when(mockCategoryRepository.getAllCategories(any))
         .thenAnswer((_) async => []);
   });
@@ -460,6 +466,213 @@ void main() {
         final prefs = await SharedPreferences.getInstance();
         final stored = prefs.getStringList('stats_hidden_persons_activity');
         expect(stored, isNot(contains('person-1')));
+      });
+    });
+
+    group('distribution initial state', () {
+      test('distributionEntries is empty', () {
+        expect(provider.distributionEntries, isEmpty);
+      });
+
+      test('isCumulativeMode is false', () {
+        expect(provider.isCumulativeMode, isFalse);
+      });
+
+      test('hiddenPersonsDistribution is empty', () {
+        expect(provider.hiddenPersonsDistribution, isEmpty);
+      });
+
+      test('isDistributionLoading is false', () {
+        expect(provider.isDistributionLoading, isFalse);
+      });
+    });
+
+    group('loadDistribution()', () {
+      test('populates distributionEntries after initialize with data', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        const entry = InteractionDistributionEntry(
+          personId: 'p-1',
+          name: 'Alice',
+          currentYearWeight: 10,
+          previousYearWeight: 5,
+        );
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => [entry]);
+
+        await provider.initialize();
+
+        expect(provider.distributionEntries, hasLength(1));
+        expect(provider.distributionEntries.first.personId, equals('p-1'));
+      });
+
+      test('isDistributionLoading is false after load completes', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        await provider.initialize();
+
+        expect(provider.isDistributionLoading, isFalse);
+      });
+
+      test('no-op when no year is selected', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+        // _selectedYear is null when no meetings exist — loadDistribution
+        // returns early without touching the repository.
+        await provider.loadDistribution();
+
+        expect(provider.distributionEntries, isEmpty);
+        expect(provider.isDistributionLoading, isFalse);
+      });
+
+      test('calls getCumulativeInteractions when isCumulativeMode is true',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        await provider.initialize();
+
+        await provider.toggleDistributionMode();
+
+        verify(mockRepository.getCumulativeInteractions(2026, 'user-1'))
+            .called(1);
+      });
+    });
+
+    group('toggleDistributionMode()', () {
+      test('flips isCumulativeMode and reloads', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        await provider.initialize();
+
+        expect(provider.isCumulativeMode, isFalse);
+
+        await provider.toggleDistributionMode();
+
+        expect(provider.isCumulativeMode, isTrue);
+
+        await provider.toggleDistributionMode();
+
+        expect(provider.isCumulativeMode, isFalse);
+      });
+    });
+
+    group('togglePersonDistributionVisibility()', () {
+      test('adds person to hiddenPersonsDistribution', () async {
+        await provider.togglePersonDistributionVisibility('p-1');
+
+        expect(provider.hiddenPersonsDistribution, contains('p-1'));
+      });
+
+      test('removes person when already hidden', () async {
+        await provider.togglePersonDistributionVisibility('p-1');
+        await provider.togglePersonDistributionVisibility('p-1');
+
+        expect(provider.hiddenPersonsDistribution, isNot(contains('p-1')));
+      });
+
+      test('persists to SharedPreferences', () async {
+        await provider.togglePersonDistributionVisibility('p-1');
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored =
+            prefs.getStringList('stats_hidden_persons_distribution');
+        expect(stored, contains('p-1'));
+      });
+    });
+
+    group('loadHiddenPersonsDistribution() — first launch', () {
+      test('auto-applies top 10 when SharedPreferences key is absent',
+          () async {
+        SharedPreferences.setMockInitialValues({});
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        // 12 entries sorted descending — top 10 = p-12 … p-3.
+        final entries = List.generate(
+          12,
+          (i) => InteractionDistributionEntry(
+            personId: 'p-${12 - i}',
+            name: 'Person ${12 - i}',
+            currentYearWeight: 12 - i,
+            previousYearWeight: 0,
+          ),
+        );
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => entries);
+
+        await provider.initialize();
+
+        // Bottom 2 (p-1, p-2) are hidden.
+        expect(provider.hiddenPersonsDistribution, hasLength(2));
+        expect(
+            provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+      });
+
+      test('restores stored hidden set on subsequent launch', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_distribution': ['p-5', 'p-6'],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+
+        await provider.initialize();
+
+        expect(
+            provider.hiddenPersonsDistribution, containsAll(['p-5', 'p-6']));
+        expect(provider.hiddenPersonsDistribution, hasLength(2));
+      });
+    });
+
+    group('autoSelectTopPersonsDistribution()', () {
+      test('hides all except top 10 by currentYearWeight', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_distribution': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        final entries = List.generate(
+          12,
+          (i) => InteractionDistributionEntry(
+            personId: 'p-${12 - i}',
+            name: 'Person ${12 - i}',
+            currentYearWeight: 12 - i,
+            previousYearWeight: 0,
+          ),
+        );
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => entries);
+
+        await provider.initialize();
+
+        // Pollute hidden set.
+        await provider.togglePersonDistributionVisibility('p-12');
+        expect(provider.hiddenPersonsDistribution, contains('p-12'));
+
+        await provider.autoSelectTopPersonsDistribution();
+
+        expect(provider.hiddenPersonsDistribution, hasLength(2));
+        expect(
+            provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+        expect(
+            provider.hiddenPersonsDistribution, isNot(contains('p-12')));
+      });
+
+      test('no-op when distributionEntries is empty', () async {
+        expect(provider.distributionEntries, isEmpty);
+
+        await provider.autoSelectTopPersonsDistribution();
+
+        expect(provider.hiddenPersonsDistribution, isEmpty);
       });
     });
   });

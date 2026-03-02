@@ -275,6 +275,17 @@ Persists `selectedYear` and `availableYears` during session.
 
 **UI Decision:** Year selector implemented as YearStepper (`← YYYY →`) with horizontal swipe support. Arrows disabled at year boundaries.
 
+**StatisticsRepository methods:**
+- `getAvailableYears(userId)` — extracts unique years from meeting dates, sorted descending
+- `getMeetingsForYear(userId, year)` — date-range query (Jan 1 → Jan 1 next year)
+- `getActivityWeightBreakdown(userId, year)` — ancestor-aware weight aggregation per categoryId (US-028)
+- `getPersonsForActivity(activityId, year, userId)` — weight per person for selected activity (US-029)
+- `getInteractionDistribution(year, userId)` — yearly weight sum per person, two-year comparison (US-030)
+- `getCumulativeInteractions(year, userId)` — cumulative weight sum per person up to selected year (US-030)
+
+**Animated bar chart pattern (US-048, US-049):**
+Use `_lastTargetLeft` / `_lastTargetBarHeight` fields (not `evaluate(controller)`) as tween begin values in `didUpdateWidget`. This guarantees stationary bars have `begin == end` regardless of controller timing or number of `didUpdateWidget` calls.
+
 ---
 
 ### M4 — Production Build
@@ -542,5 +553,5 @@ graph TB
 
 **End of Document - Architecture Documentation**  
 
-**Last Updated:** February 27, 2026 (M3 Statistics infrastructure added — US-027)
+**Last Updated:** March 02, 2026 (M3 Statistics — US-028, US-029, US-030, US-048, US-049)
 
