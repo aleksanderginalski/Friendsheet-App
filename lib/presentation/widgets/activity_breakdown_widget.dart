@@ -252,39 +252,46 @@ class _AnimatedBarItem extends StatefulWidget {
 class _AnimatedBarItemState extends State<_AnimatedBarItem> {
   late Tween<double> _leftTween;
   late Tween<double> _heightTween;
+  late Tween<double> _opacityTween;
+
+  // Track previous animation targets — used as begin values in didUpdateWidget
+  // so tweens are stable regardless of controller timing or rebuild count.
+  double _lastTargetLeft = 0.0;
+  double _lastTargetBarHeight = 0.0;
 
   @override
   void initState() {
     super.initState();
-    // First render: bar appears at its target position, height grows from 0.
+    // First render: bar fades in at target position, height grows from 0.
+    _lastTargetLeft = widget.targetLeft;
+    _lastTargetBarHeight = widget.targetBarHeight;
     _leftTween = Tween<double>(
       begin: widget.targetLeft,
       end: widget.targetLeft,
     );
     _heightTween = Tween<double>(begin: 0.0, end: widget.targetBarHeight);
+    _opacityTween = Tween<double>(begin: 0.0, end: 1.0);
   }
 
   @override
   void didUpdateWidget(_AnimatedBarItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Evaluate the current animated position/height before the controller
-    // resets. This fires while the controller is still at its previous value
-    // (reset is deferred via addPostFrameCallback in the parent), so
-    // evaluate() returns the actual visual state — not the old tween begin.
-    if (widget.targetLeft != oldWidget.targetLeft) {
-      final currentLeft = _leftTween.evaluate(widget.controller);
-      _leftTween = Tween<double>(
-        begin: currentLeft,
-        end: widget.targetLeft,
-      );
-    }
-    if (widget.targetBarHeight != oldWidget.targetBarHeight) {
-      final currentHeight = _heightTween.evaluate(widget.controller);
-      _heightTween = Tween<double>(
-        begin: currentHeight,
-        end: widget.targetBarHeight,
-      );
-    }
+    // Use _lastTargetLeft as begin — stable regardless of controller timing
+    // or number of didUpdateWidget calls.
+    _leftTween = Tween<double>(
+      begin: _lastTargetLeft,
+      end: widget.targetLeft,
+    );
+    _heightTween = Tween<double>(
+      begin: _lastTargetBarHeight,
+      end: widget.targetBarHeight,
+    );
+    // Bar already visible — no fade animation on subsequent updates.
+    _opacityTween = Tween<double>(begin: 1.0, end: 1.0);
+
+    // Update last targets AFTER building tweens.
+    _lastTargetLeft = widget.targetLeft;
+    _lastTargetBarHeight = widget.targetBarHeight;
   }
 
   Widget _buildBarColumn(double barHeight) {
@@ -353,12 +360,16 @@ class _AnimatedBarItemState extends State<_AnimatedBarItem> {
         final left = _leftTween.evaluate(widget.controller);
         final barHeight =
             _heightTween.evaluate(widget.controller).clamp(2.0, _kMaxBarHeight);
+        final opacity = _opacityTween.evaluate(widget.controller);
         return Positioned(
           left: left,
           top: 0,
           width: _kItemWidth,
           height: _kChartHeight,
-          child: _buildBarColumn(barHeight),
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: _buildBarColumn(barHeight),
+          ),
         );
       },
     );
