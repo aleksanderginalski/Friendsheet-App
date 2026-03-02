@@ -122,6 +122,40 @@ class MockStatisticsRepository extends _i1.Mock
         returnValue: _i5.Future<List<_i4.PersonActivityEntry>>.value(
             <_i4.PersonActivityEntry>[]),
       ) as _i5.Future<List<_i4.PersonActivityEntry>>);
+
+  @override
+  _i5.Future<List<_i4.InteractionDistributionEntry>> getInteractionDistribution(
+    int? year,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getInteractionDistribution,
+          [
+            year,
+            userId,
+          ],
+        ),
+        returnValue: _i5.Future<List<_i4.InteractionDistributionEntry>>.value(
+            <_i4.InteractionDistributionEntry>[]),
+      ) as _i5.Future<List<_i4.InteractionDistributionEntry>>);
+
+  @override
+  _i5.Future<List<_i4.InteractionDistributionEntry>> getCumulativeInteractions(
+    int? year,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getCumulativeInteractions,
+          [
+            year,
+            userId,
+          ],
+        ),
+        returnValue: _i5.Future<List<_i4.InteractionDistributionEntry>>.value(
+            <_i4.InteractionDistributionEntry>[]),
+      ) as _i5.Future<List<_i4.InteractionDistributionEntry>>);
 }
 
 /// A class which mocks [AuthService].

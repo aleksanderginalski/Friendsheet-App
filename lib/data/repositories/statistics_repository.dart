@@ -38,6 +38,26 @@ class PersonActivityEntry {
   });
 }
 
+/// Display DTO representing one person's total meeting weight across all
+/// meetings for the Interaction Distribution metric.
+/// Not a domain model — plain Dart class, no Freezed.
+class InteractionDistributionEntry {
+  final String personId;
+  final String name;
+  final int currentYearWeight;
+  final int previousYearWeight;
+
+  const InteractionDistributionEntry({
+    required this.personId,
+    required this.name,
+    required this.currentYearWeight,
+    required this.previousYearWeight,
+  });
+
+  /// Positive: weight grew vs. previous year. Negative: weight shrank.
+  int get delta => currentYearWeight - previousYearWeight;
+}
+
 /// Handles statistics-related Firestore queries.
 /// Kept separate from MeetingRepository to avoid mixing stream-based
 /// and one-shot query responsibilities.
@@ -211,6 +231,122 @@ class StatisticsRepository {
     }
 
     entries.sort((a, b) => b.weightSum.compareTo(a.weightSum));
+    return entries;
+  }
+
+  /// Returns persons ranked by total meeting weight for [year], compared to
+  /// [year - 1], across all meetings regardless of activity.
+  ///
+  /// For each meeting in [year]: each participantId accumulates meeting.weight.
+  /// Persons not found in the user's persons list are skipped.
+  /// Sorted descending by currentYearWeight; alphabetically by name for ties.
+  /// Persons with weight only in previous year appear at the bottom.
+  Future<List<InteractionDistributionEntry>> getInteractionDistribution(
+    int year,
+    String userId,
+  ) async {
+    final currentMeetings = await getMeetingsForYear(userId, year);
+    final previousMeetings = await getMeetingsForYear(userId, year - 1);
+    final persons = await _personRepository.getPersonsByUser(userId);
+    final personNameById = {for (final p in persons) p.id: p.fullName};
+
+    final Map<String, int> currentWeights = {};
+    for (final meeting in currentMeetings) {
+      for (final personId in meeting.participantIds) {
+        currentWeights[personId] =
+            (currentWeights[personId] ?? 0) + meeting.weight;
+      }
+    }
+
+    final Map<String, int> previousWeights = {};
+    for (final meeting in previousMeetings) {
+      for (final personId in meeting.participantIds) {
+        previousWeights[personId] =
+            (previousWeights[personId] ?? 0) + meeting.weight;
+      }
+    }
+
+    // Include persons with weight in either year.
+    final allPersonIds = {
+      ...currentWeights.keys,
+      ...previousWeights.keys,
+    };
+
+    final entries = <InteractionDistributionEntry>[];
+    for (final personId in allPersonIds) {
+      final name = personNameById[personId];
+      // Skip persons no longer in the collection.
+      if (name == null) continue;
+
+      entries.add(InteractionDistributionEntry(
+        personId: personId,
+        name: name,
+        currentYearWeight: currentWeights[personId] ?? 0,
+        previousYearWeight: previousWeights[personId] ?? 0,
+      ));
+    }
+
+    // Primary sort: descending currentYearWeight.
+    // Secondary sort: alphabetically by name for ties.
+    entries.sort((a, b) {
+      if (a.currentYearWeight != b.currentYearWeight) {
+        return b.currentYearWeight.compareTo(a.currentYearWeight);
+      }
+      return a.name.compareTo(b.name);
+    });
+
+    return entries;
+  }
+
+  /// Returns persons ranked by cumulative meeting weight from all years up to
+  /// and including [year].
+  ///
+  /// previousYearWeight is always 0 — delta is not applicable in cumulative mode.
+  /// Sorted descending by currentYearWeight; alphabetically by name for ties.
+  Future<List<InteractionDistributionEntry>> getCumulativeInteractions(
+    int year,
+    String userId,
+  ) async {
+    final endDate = Timestamp.fromDate(DateTime(year + 1));
+    final snapshot = await _meetingsRef(userId)
+        .where('date', isLessThan: endDate)
+        .get();
+    final meetings =
+        snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
+
+    final persons = await _personRepository.getPersonsByUser(userId);
+    final personNameById = {for (final p in persons) p.id: p.fullName};
+
+    final Map<String, int> weights = {};
+    for (final meeting in meetings) {
+      for (final personId in meeting.participantIds) {
+        weights[personId] = (weights[personId] ?? 0) + meeting.weight;
+      }
+    }
+
+    if (weights.isEmpty) return [];
+
+    final entries = <InteractionDistributionEntry>[];
+    for (final entry in weights.entries) {
+      final name = personNameById[entry.key];
+      // Skip persons no longer in the collection.
+      if (name == null) continue;
+
+      entries.add(InteractionDistributionEntry(
+        personId: entry.key,
+        name: name,
+        currentYearWeight: entry.value,
+        previousYearWeight: 0,
+      ));
+    }
+
+    entries.sort((a, b) {
+      if (a.currentYearWeight != b.currentYearWeight) {
+        return b.currentYearWeight.compareTo(a.currentYearWeight);
+      }
+      return a.name.compareTo(b.name);
+    });
+
     return entries;
   }
 }
