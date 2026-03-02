@@ -9,6 +9,7 @@ import '../../data/services/auth_service.dart';
 
 const _kHiddenPersonsKey = 'stats_hidden_persons_activity';
 const _kHiddenActivitiesKey = 'stats_hidden_activities_breakdown';
+const _kHiddenPersonsDistributionKey = 'stats_hidden_persons_distribution';
 
 /// Manages statistics state: available years, selected year, activity
 /// breakdown, who-per-activity, hidden persons, and loading status.
@@ -30,6 +31,10 @@ class StatisticsProvider extends ChangeNotifier {
   String? _selectedActivityId;
   Set<String> _hiddenPersonsActivity = {};
   Set<String> _hiddenActivities = {};
+  List<InteractionDistributionEntry> _distributionEntries = [];
+  bool _isCumulativeMode = false;
+  Set<String> _hiddenPersonsDistribution = {};
+  bool _isDistributionLoading = false;
 
   StatisticsProvider({
     required StatisticsRepository repository,
@@ -51,6 +56,11 @@ class StatisticsProvider extends ChangeNotifier {
   String? get selectedActivityId => _selectedActivityId;
   Set<String> get hiddenPersonsActivity => _hiddenPersonsActivity;
   Set<String> get hiddenActivities => _hiddenActivities;
+  List<InteractionDistributionEntry> get distributionEntries =>
+      _distributionEntries;
+  bool get isCumulativeMode => _isCumulativeMode;
+  Set<String> get hiddenPersonsDistribution => _hiddenPersonsDistribution;
+  bool get isDistributionLoading => _isDistributionLoading;
 
   /// True when years have been loaded and at least one year is available.
   bool get hasData => _availableYears.isNotEmpty;
@@ -113,6 +123,8 @@ class StatisticsProvider extends ChangeNotifier {
 
       await loadHiddenPersons();
       await loadHiddenActivities();
+      await loadDistribution();
+      await loadHiddenPersonsDistribution();
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
@@ -152,6 +164,7 @@ class StatisticsProvider extends ChangeNotifier {
           userId,
         );
       }
+      await loadDistribution();
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
@@ -304,5 +317,101 @@ class StatisticsProvider extends ChangeNotifier {
       // Non-critical: leave hidden set empty on read failure.
       _hiddenActivities = {};
     }
+  }
+
+  /// Loads distribution data for the selected year.
+  /// Uses yearly or cumulative mode based on [_isCumulativeMode].
+  /// No-op when no user is signed in or no year is selected.
+  Future<void> loadDistribution() async {
+    final userId = _authService.currentUserId;
+    if (userId == null || _selectedYear == null) return;
+
+    _isDistributionLoading = true;
+    notifyListeners();
+
+    try {
+      if (_isCumulativeMode) {
+        _distributionEntries = await _repository.getCumulativeInteractions(
+          _selectedYear!,
+          userId,
+        );
+      } else {
+        _distributionEntries = await _repository.getInteractionDistribution(
+          _selectedYear!,
+          userId,
+        );
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load distribution';
+    } finally {
+      _isDistributionLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Toggles between yearly and cumulative mode, then reloads distribution.
+  Future<void> toggleDistributionMode() async {
+    _isCumulativeMode = !_isCumulativeMode;
+    notifyListeners();
+    await loadDistribution();
+  }
+
+  /// Reads the persisted hidden-persons-distribution list from SharedPreferences.
+  /// Called once during initialize(), after loadDistribution() is populated.
+  ///
+  /// First launch (key absent): auto-applies top-10 default selection.
+  /// Subsequent launches (key present, even if empty): uses stored value as-is.
+  Future<void> loadHiddenPersonsDistribution() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getStringList(_kHiddenPersonsDistributionKey);
+      if (stored == null) {
+        // Key absent = first launch: auto-apply top-10 default.
+        await autoSelectTopPersonsDistribution();
+      } else {
+        _hiddenPersonsDistribution = stored.toSet();
+      }
+    } catch (_) {
+      // Non-critical: leave hidden set empty on read failure.
+      _hiddenPersonsDistribution = {};
+    }
+  }
+
+  /// Toggles [personId] in the hidden-persons-distribution set and persists
+  /// to SharedPreferences so the preference survives app restarts.
+  Future<void> togglePersonDistributionVisibility(String personId) async {
+    if (_hiddenPersonsDistribution.contains(personId)) {
+      _hiddenPersonsDistribution.remove(personId);
+    } else {
+      _hiddenPersonsDistribution.add(personId);
+    }
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenPersonsDistributionKey,
+      _hiddenPersonsDistribution.toList(),
+    );
+  }
+
+  /// Hides all persons except the top 10 by currentYearWeight.
+  /// Uses [_distributionEntries] (yearly mode data) for selection logic.
+  /// Persists result to SharedPreferences.
+  Future<void> autoSelectTopPersonsDistribution() async {
+    if (_distributionEntries.isEmpty) return;
+
+    final top10Ids =
+        _distributionEntries.take(10).map((e) => e.personId).toSet();
+    _hiddenPersonsDistribution = {
+      for (final e in _distributionEntries)
+        if (!top10Ids.contains(e.personId)) e.personId,
+    };
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenPersonsDistributionKey,
+      _hiddenPersonsDistribution.toList(),
+    );
   }
 }

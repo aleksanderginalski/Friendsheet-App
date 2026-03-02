@@ -6,6 +6,8 @@ import '../providers/statistics_provider.dart';
 import 'activity_breakdown_widget.dart';
 import 'activity_selector_dialog.dart';
 import 'activity_visibility_dialog.dart';
+import 'interaction_distribution_widget.dart';
+import 'person_visibility_dialog.dart';
 import 'who_per_activity_widget.dart';
 import 'year_stepper.dart';
 
@@ -42,6 +44,21 @@ class StatisticsSection extends StatelessWidget {
         hiddenActivities: provider.hiddenActivities,
         onToggle: provider.toggleHiddenActivity,
         onAutoSelectTop10: provider.applyTop10Selection,
+      ),
+    );
+  }
+
+  void _openPersonVisibilityDialog(
+    BuildContext context,
+    StatisticsProvider provider,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => PersonVisibilityDialog(
+        allEntries: provider.distributionEntries,
+        hiddenPersons: provider.hiddenPersonsDistribution,
+        onToggle: provider.togglePersonDistributionVisibility,
+        onAutoSelectTop10: provider.autoSelectTopPersonsDistribution,
       ),
     );
   }
@@ -85,6 +102,20 @@ class StatisticsSection extends StatelessWidget {
               onToggleHidden: (personId, _) =>
                   provider.toggleHiddenPerson(personId),
             ),
+            if (provider.isDistributionLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(),
+              )
+            else
+              InteractionDistributionWidget(
+                entries: provider.distributionEntries,
+                hiddenPersons: provider.hiddenPersonsDistribution,
+                isCumulativeMode: provider.isCumulativeMode,
+                onOpenVisibilityDialog: () =>
+                    _openPersonVisibilityDialog(context, provider),
+                onToggleMode: provider.toggleDistributionMode,
+              ),
           ],
         ],
       ),

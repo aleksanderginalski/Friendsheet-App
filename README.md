@@ -220,6 +220,23 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.7.0 - US-030 Interaction Distribution Metric (March 02, 2026)
+- ✅ InteractionDistributionEntry DTO with delta getter
+- ✅ getInteractionDistribution — yearly weights per person (two-year comparison)
+- ✅ getCumulativeInteractions — cumulative sum up to selected year
+- ✅ StatisticsProvider extended: distribution state, yearly/cumulative toggle, hidden persons
+- ✅ InteractionDistributionWidget — animated bar chart with _lastTargetLeft architecture
+- ✅ PersonVisibilityDialog — flat checkbox list + auto-select top 10
+- ✅ Info icon explaining >100% behaviour (yearly mode only)
+- ✅ Total test count: 339 tests
+
+### v3.6.0 - US-049 Activity Breakdown Smooth Bar Reordering Animation (March 02, 2026)
+- ✅ _lastTargetLeft / _lastTargetBarHeight fields replace evaluate(controller) as tween begin
+- ✅ Stationary bars guaranteed begin == end — no spurious animation
+- ✅ _opacityTween added — fade-in on first bar render
+- ✅ Eliminates timing-dependent bug from multiple didUpdateWidget calls
+- ✅ Total test count: 290 tests
+
 ### v3.5.0 - US-048 Activity Breakdown UX Improvements (March 01, 2026)
 - ✅ Animated vertical bar chart with Stack + absolute positioning
 - ✅ Stable color assignment per categoryId across year changes
