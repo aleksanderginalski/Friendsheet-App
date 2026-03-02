@@ -25,6 +25,7 @@ void main() {
     List<InteractionDistributionEntry> entries = const [],
     Set<String> hiddenPersons = const {},
     bool isCumulativeMode = false,
+    bool isLoading = false,
     VoidCallback? onOpenVisibilityDialog,
     VoidCallback? onToggleMode,
   }) {
@@ -35,6 +36,7 @@ void main() {
             entries: entries,
             hiddenPersons: hiddenPersons,
             isCumulativeMode: isCumulativeMode,
+            isLoading: isLoading,
             onOpenVisibilityDialog: onOpenVisibilityDialog ?? () {},
             onToggleMode: onToggleMode ?? () {},
           ),
@@ -156,6 +158,28 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings));
 
       expect(opened, isTrue);
+    });
+
+    testWidgets('isLoading: true renders CircularProgressIndicator in header',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(
+        entries: twoEntries(),
+        isLoading: true,
+      ));
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('isLoading: false does not render CircularProgressIndicator',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(
+        entries: twoEntries(),
+        isLoading: false,
+      ));
+      await tester.pump();
+
+      expect(find.byType(CircularProgressIndicator), findsNothing);
     });
   });
 }

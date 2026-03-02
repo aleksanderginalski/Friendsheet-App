@@ -218,6 +218,31 @@ void main() {
         expect(notified, isTrue);
       });
 
+      test('distributionEntries cleared immediately when selectYear is called',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026, 2025]);
+        const entry = InteractionDistributionEntry(
+          personId: 'p-1',
+          name: 'Alice',
+          currentYearWeight: 10,
+          previousYearWeight: 0,
+        );
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => [entry]);
+
+        await provider.initialize();
+        expect(provider.distributionEntries, hasLength(1));
+
+        // Start selectYear without awaiting — synchronous code before the first
+        // await already clears _distributionEntries and calls notifyListeners().
+        final future = provider.selectYear(2025);
+        expect(provider.distributionEntries, isEmpty);
+
+        await future;
+      });
+
       test('activityBreakdown reset on year change to empty year', () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
@@ -488,7 +513,8 @@ void main() {
     });
 
     group('loadDistribution()', () {
-      test('populates distributionEntries after initialize with data', () async {
+      test('populates distributionEntries after initialize with data',
+          () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -582,8 +608,7 @@ void main() {
         await provider.togglePersonDistributionVisibility('p-1');
 
         final prefs = await SharedPreferences.getInstance();
-        final stored =
-            prefs.getStringList('stats_hidden_persons_distribution');
+        final stored = prefs.getStringList('stats_hidden_persons_distribution');
         expect(stored, contains('p-1'));
       });
     });
@@ -612,8 +637,7 @@ void main() {
 
         // Bottom 2 (p-1, p-2) are hidden.
         expect(provider.hiddenPersonsDistribution, hasLength(2));
-        expect(
-            provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
       });
 
       test('restores stored hidden set on subsequent launch', () async {
@@ -626,8 +650,7 @@ void main() {
 
         await provider.initialize();
 
-        expect(
-            provider.hiddenPersonsDistribution, containsAll(['p-5', 'p-6']));
+        expect(provider.hiddenPersonsDistribution, containsAll(['p-5', 'p-6']));
         expect(provider.hiddenPersonsDistribution, hasLength(2));
       });
     });
@@ -661,10 +684,8 @@ void main() {
         await provider.autoSelectTopPersonsDistribution();
 
         expect(provider.hiddenPersonsDistribution, hasLength(2));
-        expect(
-            provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
-        expect(
-            provider.hiddenPersonsDistribution, isNot(contains('p-12')));
+        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+        expect(provider.hiddenPersonsDistribution, isNot(contains('p-12')));
       });
 
       test('no-op when distributionEntries is empty', () async {
@@ -673,6 +694,91 @@ void main() {
         await provider.autoSelectTopPersonsDistribution();
 
         expect(provider.hiddenPersonsDistribution, isEmpty);
+      });
+    });
+
+    group('carousel state', () {
+      group('toggleCardVisibility()', () {
+        test('hides a card — visibleCards no longer contains it', () async {
+          expect(
+            provider.visibleCards,
+            contains(StatCardType.activityBreakdown),
+          );
+
+          await provider.toggleCardVisibility(StatCardType.activityBreakdown);
+
+          expect(
+            provider.visibleCards,
+            isNot(contains(StatCardType.activityBreakdown)),
+          );
+        });
+
+        test('called again — card restored to visibleCards', () async {
+          await provider.toggleCardVisibility(StatCardType.activityBreakdown);
+          expect(
+            provider.visibleCards,
+            isNot(contains(StatCardType.activityBreakdown)),
+          );
+
+          await provider.toggleCardVisibility(StatCardType.activityBreakdown);
+
+          expect(
+            provider.visibleCards,
+            contains(StatCardType.activityBreakdown),
+          );
+        });
+
+        test('allCardsHidden returns true when all three cards hidden',
+            () async {
+          expect(provider.allCardsHidden, isFalse);
+
+          await provider.toggleCardVisibility(StatCardType.activityBreakdown);
+          await provider.toggleCardVisibility(StatCardType.whoPerActivity);
+          await provider
+              .toggleCardVisibility(StatCardType.interactionDistribution);
+
+          expect(provider.allCardsHidden, isTrue);
+        });
+      });
+
+      group('restoreAllCards()', () {
+        test('visibleCards contains all three cards after restore', () async {
+          await provider.toggleCardVisibility(StatCardType.activityBreakdown);
+          await provider.toggleCardVisibility(StatCardType.whoPerActivity);
+          await provider
+              .toggleCardVisibility(StatCardType.interactionDistribution);
+          expect(provider.allCardsHidden, isTrue);
+
+          await provider.restoreAllCards();
+
+          expect(provider.visibleCards, containsAll(StatCardType.values));
+        });
+      });
+
+      group('loadHiddenCards()', () {
+        test('reads from SharedPreferences and restores state', () async {
+          SharedPreferences.setMockInitialValues({
+            'stats_carousel_hidden_cards': [
+              'activityBreakdown',
+              'whoPerActivity',
+            ],
+          });
+
+          await provider.loadHiddenCards();
+
+          expect(
+            provider.visibleCards,
+            isNot(contains(StatCardType.activityBreakdown)),
+          );
+          expect(
+            provider.visibleCards,
+            isNot(contains(StatCardType.whoPerActivity)),
+          );
+          expect(
+            provider.visibleCards,
+            contains(StatCardType.interactionDistribution),
+          );
+        });
       });
     });
   });

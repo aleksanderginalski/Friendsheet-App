@@ -46,7 +46,8 @@ void main() {
       expect(find.text('Manage persons'), findsOneWidget);
     });
 
-    testWidgets('renders all person names as CheckboxListTiles', (tester) async {
+    testWidgets('renders all person names as CheckboxListTiles',
+        (tester) async {
       await tester.pumpWidget(buildDialog(entries: [alice, bob]));
 
       expect(find.byType(CheckboxListTile), findsNWidgets(2));

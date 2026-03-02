@@ -7,9 +7,13 @@ import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
 
+/// Card types shown in the statistics carousel.
+enum StatCardType { activityBreakdown, whoPerActivity, interactionDistribution }
+
 const _kHiddenPersonsKey = 'stats_hidden_persons_activity';
 const _kHiddenActivitiesKey = 'stats_hidden_activities_breakdown';
 const _kHiddenPersonsDistributionKey = 'stats_hidden_persons_distribution';
+const _kHiddenCardsKey = 'stats_carousel_hidden_cards';
 
 /// Manages statistics state: available years, selected year, activity
 /// breakdown, who-per-activity, hidden persons, and loading status.
@@ -35,6 +39,7 @@ class StatisticsProvider extends ChangeNotifier {
   bool _isCumulativeMode = false;
   Set<String> _hiddenPersonsDistribution = {};
   bool _isDistributionLoading = false;
+  List<StatCardType> _hiddenCards = [];
 
   StatisticsProvider({
     required StatisticsRepository repository,
@@ -61,6 +66,13 @@ class StatisticsProvider extends ChangeNotifier {
   bool get isCumulativeMode => _isCumulativeMode;
   Set<String> get hiddenPersonsDistribution => _hiddenPersonsDistribution;
   bool get isDistributionLoading => _isDistributionLoading;
+
+  /// Cards currently visible in the carousel — hidden cards excluded.
+  List<StatCardType> get visibleCards =>
+      StatCardType.values.where((c) => !_hiddenCards.contains(c)).toList();
+
+  /// True when every card has been hidden by the user.
+  bool get allCardsHidden => visibleCards.isEmpty;
 
   /// True when years have been loaded and at least one year is available.
   bool get hasData => _availableYears.isNotEmpty;
@@ -123,14 +135,19 @@ class StatisticsProvider extends ChangeNotifier {
 
       await loadHiddenPersons();
       await loadHiddenActivities();
-      await loadDistribution();
-      await loadHiddenPersonsDistribution();
+      await loadHiddenCards();
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+
+    // Load distribution independently — always runs regardless of earlier failures.
+    // loadHiddenPersonsDistribution depends on _distributionEntries being populated
+    // (auto-select top 10 reads the list), so it must follow loadDistribution().
+    await loadDistribution();
+    await loadHiddenPersonsDistribution();
   }
 
   /// Updates the selected year, resets breakdowns immediately, then
@@ -139,11 +156,13 @@ class StatisticsProvider extends ChangeNotifier {
     _selectedYear = year;
     _activityBreakdown = [];
     _whoPerActivity = [];
+    _distributionEntries = [];
     notifyListeners();
 
     final userId = _authService.currentUserId;
     if (userId == null) return;
 
+    // Load breakdown and who-per-activity — failures do not block distribution.
     try {
       _activityBreakdown = await _repository.getActivityWeightBreakdown(
         year,
@@ -164,12 +183,14 @@ class StatisticsProvider extends ChangeNotifier {
           userId,
         );
       }
-      await loadDistribution();
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
       notifyListeners();
     }
+
+    // Load distribution independently — always runs regardless of breakdown result.
+    await loadDistribution();
   }
 
   /// Sets the selected activity and loads who-per-activity for it.
@@ -413,5 +434,51 @@ class StatisticsProvider extends ChangeNotifier {
       _kHiddenPersonsDistributionKey,
       _hiddenPersonsDistribution.toList(),
     );
+  }
+
+  /// Reads the persisted hidden-cards list from SharedPreferences.
+  /// Called once during initialize(). Key absent or empty → all cards visible.
+  Future<void> loadHiddenCards() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getStringList(_kHiddenCardsKey);
+      if (stored == null) {
+        _hiddenCards = [];
+      } else {
+        _hiddenCards = stored
+            .where((name) => StatCardType.values.any((c) => c.name == name))
+            .map(
+                (name) => StatCardType.values.firstWhere((c) => c.name == name))
+            .toList();
+      }
+    } catch (_) {
+      // Non-critical: leave hidden set empty on read failure.
+      _hiddenCards = [];
+    }
+  }
+
+  /// Toggles [card] in the hidden-cards list and persists to SharedPreferences.
+  Future<void> toggleCardVisibility(StatCardType card) async {
+    if (_hiddenCards.contains(card)) {
+      _hiddenCards.remove(card);
+    } else {
+      _hiddenCards.add(card);
+    }
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenCardsKey,
+      _hiddenCards.map((c) => c.name).toList(),
+    );
+  }
+
+  /// Restores all cards to visible and clears the persisted hidden-cards key.
+  Future<void> restoreAllCards() async {
+    _hiddenCards = [];
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kHiddenCardsKey);
   }
 }
