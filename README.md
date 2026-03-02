@@ -220,6 +220,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.8.0 - US-051 Statistics Carousel (March 02, 2026)
+- ✅ StatisticsSection refactored from Column to horizontal PageView carousel
+- ✅ YearStepper pinned above carousel — single global year selector for all cards
+- ✅ Long-press on card hides it + SnackBar feedback; Restore all empty state
+- ✅ _CarouselPage with AutomaticKeepAliveClientMixin — colors and animations survive swipe
+- ✅ InteractionDistributionWidget always stays in widget tree (isLoading inline spinner)
+- ✅ loadDistribution() isolated outside try/catch in initialize() and selectYear() — prevents silent failures
+- ✅ Total test count: 351 tests
+```
+
 ### v3.7.0 - US-030 Interaction Distribution Metric (March 02, 2026)
 - ✅ InteractionDistributionEntry DTO with delta getter
 - ✅ getInteractionDistribution — yearly weights per person (two-year comparison)

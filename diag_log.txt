@@ -1,0 +1,148 @@
+Launching lib\main.dart on sdk gphone64 x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                             11,9s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        2 981ms
+D/FlutterJNI(24655): Beginning load of flutter...
+D/FlutterJNI(24655): flutter (null) was loaded normally!
+I/flutter (24655): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+D/FlutterRenderer(24655): Width is zero. 0,0
+I/WindowExtensionsImpl(24655): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+Syncing files to device sdk gphone64 x86 64...                      76ms
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on sdk gphone64 x86 64 is available at: http://127.0.0.1:64421/jXrbjI1jot8=/
+The Flutter DevTools debugger and profiler on sdk gphone64 x86 64 is available at: http://127.0.0.1:64421/jXrbjI1jot8=/devtools/?uri=ws://127.0.0.1:64421/jXrbjI1jot8=/ws
+D/FlutterRenderer(24655): Width is zero. 0,0
+D/FlutterJNI(24655): Sending viewport metrics to the engine.
+I/friendsheet.app(24655): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(24655): Skipped 104 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(24655): Register WindowLayoutInfoListener on Context=com.friendsheet.app.MainActivity@cf2631f, of which baseContext=android.app.ContextImpl@8be8704
+D/FlutterJNI(24655): Sending viewport metrics to the engine.
+D/ProfileInstaller(24655): Installing profile for com.friendsheet.app
+D/FirebaseAuth(24655): Notifying id token listeners about user ( ZGO9LvtOqpQr7EJ51EZZgXLeL4u1 ).
+I/Choreographer(24655): Skipped 135 frames!  The application may be doing too much work on its main thread.
+W/DynamiteModule(24655): Local module descriptor class for com.google.android.gms.providerinstaller.dynamite not found.
+I/DynamiteModule(24655): Considering local module com.google.android.gms.providerinstaller.dynamite:0 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/ProviderInstaller(24655): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+D/ApplicationLoaders(24655): Returning zygote-cached class loader: /system/framework/org.apache.http.legacy.jar
+D/ApplicationLoaders(24655): Returning zygote-cached class loader: /system/framework/com.android.location.provider.jar
+D/ApplicationLoaders(24655): Returning zygote-cached class loader: /system/framework/com.android.media.remotedisplay.jar
+D/ApplicationLoaders(24655): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+D/ApplicationLoaders(24655): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+W/friendsheet.app(24655): Loading /data/app/~~ZrGNrYCRHQsHbl4W_ux6tQ==/com.google.android.gms-HWeD4D-NDjCU7BoYZ3MlWA==/oat/x86_64/base.odex non-executable as it requires an image which we failed to load
+I/friendsheet.app(24655): AssetManager2(0x7bf5ce1a9ff8) locale list changing from [] to [en-US]
+I/Choreographer(24655): Skipped 35 frames!  The application may be doing too much work on its main thread.
+D/nativeloader(24655): Configuring clns-10 for other apk /data/app/~~ZrGNrYCRHQsHbl4W_ux6tQ==/com.google.android.gms-HWeD4D-NDjCU7BoYZ3MlWA==/base.apk. target_sdk_version=36, uses_libraries=, library_path=/data/app/~~ZrGNrYCRHQsHbl4W_ux6tQ==/com.google.android.gms-HWeD4D-NDjCU7BoYZ3MlWA==/lib/x86_64:/data/app/~~ZrGNrYCRHQsHbl4W_ux6tQ==/com.google.android.gms-HWeD4D-NDjCU7BoYZ3MlWA==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 3945KB AllocSpace bytes, 18(504KB) LOS objects, 49% free, 3510KB/7020KB, paused 8.903ms,3.470ms total 112.005ms
+I/friendsheet.app(24655): AssetManager2(0x7bf5ce199978) locale list changing from [] to [en-US]
+W/ProviderInstaller(24655): Failed to report request stats: com.google.android.gms.common.security.ProviderInstallerImpl.reportRequestStats [class android.content.Context, long, long]
+I/HWUI    (24655): Davey! duration=732ms; Flags=1, FrameTimelineVsyncId=444565, IntendedVsync=34998632968032, Vsync=34999216301342, InputEventId=0, HandleInputStart=34999237822700, AnimationStart=34999237892300, PerformTraversalsStart=34999238017000, DrawStart=34999263154200, FrameDeadline=34998649634698, FrameStartTime=34999230765900, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=34999267395800, SyncStart=34999268490400, IssueDrawCommandsStart=34999269032100, SwapBuffers=34999332760200, FrameCompleted=34999366593300, DequeueBufferDuration=31077000, QueueBufferDuration=1269200, GpuCompleted=34999352444400, SwapBuffersCompleted=34999366593300, DisplayPresentTime=136283613605377, CommandSubmissionCompleted=34999332760200, 
+D/InsetsController(24655): hide(ime(), fromIme=false)
+I/ImeTracker(24655): com.friendsheet.app:b2e7a41f: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+W/friendsheet.app(24655): Verification of com.google.firestore.v1.FirestoreGrpc$FirestoreFutureStub com.google.firestore.v1.FirestoreGrpc.newFutureStub(io.grpc.Channel) took 149.801ms (80.11 bytecodes/s) (0B arena alloc)
+I/friendsheet.app(24655): hiddenapi: Accessing hidden method Ldalvik/system/VMStack;->getStackClass2()Ljava/lang/Class; (runtime_flags=0, domain=core-platform, api=unsupported) from Lgshv; (domain=app) using reflection: allowed
+D/nativeloader(24655): Load /data/app/~~ZrGNrYCRHQsHbl4W_ux6tQ==/com.google.android.gms-HWeD4D-NDjCU7BoYZ3MlWA==/base.apk!/lib/x86_64/libconscrypt_gmscore_jni.so using class loader ns clns-10 (caller=/data/app/~~rysJ4R_aRJYstWK2tzZzUQ==/com.google.android.gms-dbsH-qfPJuYVzvSd56da8A==/base.apk): ok
+V/NativeCrypto(24655): Registering com/google/android/gms/org/conscrypt/NativeCrypto's 334 native methods...
+I/fzke    (24655): Unable to retrieve flag snapshot for com.google.android.gms.providerinstaller#com.friendsheet.app, using defaults.
+I/friendsheet.app(24655): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->getCurveName()Ljava/lang/String; (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+E/GoogleApiManager(24655): Failed to get service from broker. 
+E/GoogleApiManager(24655): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+E/GoogleApiManager(24655): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3340)
+E/GoogleApiManager(24655): 	at android.os.Parcel.createException(Parcel.java:3324)
+E/GoogleApiManager(24655): 	at android.os.Parcel.readException(Parcel.java:3307)
+E/GoogleApiManager(24655): 	at android.os.Parcel.readException(Parcel.java:3249)
+E/GoogleApiManager(24655): 	at bepc.a(:com.google.android.gms@260438038@26.04.38 (260800-867839860):36)
+E/GoogleApiManager(24655): 	at bend.z(:com.google.android.gms@260438038@26.04.38 (260800-867839860):143)
+E/GoogleApiManager(24655): 	at bdtj.run(:com.google.android.gms@260438038@26.04.38 (260800-867839860):42)
+E/GoogleApiManager(24655): 	at android.os.Handler.handleCallback(Handler.java:995)
+E/GoogleApiManager(24655): 	at android.os.Handler.dispatchMessage(Handler.java:103)
+E/GoogleApiManager(24655): 	at csuj.mz(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+E/GoogleApiManager(24655): 	at csuj.dispatchMessage(:com.google.android.gms@260438038@26.04.38 (260800-867839860):5)
+E/GoogleApiManager(24655): 	at android.os.Looper.loopOnce(Looper.java:248)
+E/GoogleApiManager(24655): 	at android.os.Looper.loop(Looper.java:338)
+E/GoogleApiManager(24655): 	at android.os.HandlerThread.run(HandlerThread.java:85)
+W/GoogleApiManager(24655): Not showing notification since connectionResult is not user-facing: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(24655): Failed to register com.google.android.gms.providerinstaller#com.friendsheet.app
+W/FlagRegistrar(24655): fzkq: 17: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(24655): 	at fzks.a(:com.google.android.gms@260438038@26.04.38 (260800-867839860):13)
+W/FlagRegistrar(24655): 	at gxsb.d(:com.google.android.gms@260438038@26.04.38 (260800-867839860):3)
+W/FlagRegistrar(24655): 	at gxsd.run(:com.google.android.gms@260438038@26.04.38 (260800-867839860):130)
+W/FlagRegistrar(24655): 	at gxuk.execute(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+W/FlagRegistrar(24655): 	at gxsl.f(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+W/FlagRegistrar(24655): 	at gxsl.m(:com.google.android.gms@260438038@26.04.38 (260800-867839860):99)
+W/FlagRegistrar(24655): 	at gxsl.r(:com.google.android.gms@260438038@26.04.38 (260800-867839860):17)
+W/FlagRegistrar(24655): 	at fryw.hz(:com.google.android.gms@260438038@26.04.38 (260800-867839860):35)
+W/FlagRegistrar(24655): 	at ffcr.run(:com.google.android.gms@260438038@26.04.38 (260800-867839860):12)
+W/FlagRegistrar(24655): 	at gxuk.execute(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+W/FlagRegistrar(24655): 	at ffcs.b(:com.google.android.gms@260438038@26.04.38 (260800-867839860):18)
+W/FlagRegistrar(24655): 	at ffdh.b(:com.google.android.gms@260438038@26.04.38 (260800-867839860):34)
+W/FlagRegistrar(24655): 	at ffdj.d(:com.google.android.gms@260438038@26.04.38 (260800-867839860):25)
+W/FlagRegistrar(24655): 	at bdqs.c(:com.google.android.gms@260438038@26.04.38 (260800-867839860):9)
+W/FlagRegistrar(24655): 	at bdth.q(:com.google.android.gms@260438038@26.04.38 (260800-867839860):48)
+W/FlagRegistrar(24655): 	at bdth.d(:com.google.android.gms@260438038@26.04.38 (260800-867839860):10)
+W/FlagRegistrar(24655): 	at bdth.g(:com.google.android.gms@260438038@26.04.38 (260800-867839860):191)
+W/FlagRegistrar(24655): 	at bdth.onConnectionFailed(:com.google.android.gms@260438038@26.04.38 (260800-867839860):2)
+W/FlagRegistrar(24655): 	at bdtj.run(:com.google.android.gms@260438038@26.04.38 (260800-867839860):70)
+W/FlagRegistrar(24655): 	at android.os.Handler.handleCallback(Handler.java:995)
+W/FlagRegistrar(24655): 	at android.os.Handler.dispatchMessage(Handler.java:103)
+W/FlagRegistrar(24655): 	at csuj.mz(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+W/FlagRegistrar(24655): 	at csuj.dispatchMessage(:com.google.android.gms@260438038@26.04.38 (260800-867839860):5)
+W/FlagRegistrar(24655): 	at android.os.Looper.loopOnce(Looper.java:248)
+W/FlagRegistrar(24655): 	at android.os.Looper.loop(Looper.java:338)
+W/FlagRegistrar(24655): 	at android.os.HandlerThread.run(HandlerThread.java:85)
+W/FlagRegistrar(24655): Caused by: bdoz: 17: API: Phenotype.API is not available on this device. Connection failed with: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+W/FlagRegistrar(24655): 	at bemp.a(:com.google.android.gms@260438038@26.04.38 (260800-867839860):15)
+W/FlagRegistrar(24655): 	at bdqv.a(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+W/FlagRegistrar(24655): 	at bdqs.c(:com.google.android.gms@260438038@26.04.38 (260800-867839860):5)
+W/FlagRegistrar(24655): 	... 12 more
+I/ProviderInstaller(24655): Installed default security provider GmsCore_OpenSSL
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 3680KB AllocSpace bytes, 0(0B) LOS objects, 49% free, 4678KB/9357KB, paused 2.630ms,6.198ms total 45.900ms
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 4836KB AllocSpace bytes, 0(0B) LOS objects, 49% free, 9254KB/18MB, paused 4.206ms,2.940ms total 100.917ms
+I/friendsheet.app(24655): hiddenapi: Accessing hidden field Ljava/net/Socket;->impl:Ljava/net/SocketImpl; (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+I/friendsheet.app(24655): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->setCurveName(Ljava/lang/String;)V (runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 8313KB AllocSpace bytes, 16(3316KB) LOS objects, 49% free, 10MB/21MB, paused 5.260ms,7.259ms total 173.941ms
+E/GoogleApiManager(24655): Failed to get service from broker. 
+E/GoogleApiManager(24655): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+E/GoogleApiManager(24655): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3340)
+E/GoogleApiManager(24655): 	at android.os.Parcel.createException(Parcel.java:3324)
+E/GoogleApiManager(24655): 	at android.os.Parcel.readException(Parcel.java:3307)
+E/GoogleApiManager(24655): 	at android.os.Parcel.readException(Parcel.java:3249)
+E/GoogleApiManager(24655): 	at bepc.a(:com.google.android.gms@260438038@26.04.38 (260800-867839860):36)
+E/GoogleApiManager(24655): 	at bend.z(:com.google.android.gms@260438038@26.04.38 (260800-867839860):143)
+E/GoogleApiManager(24655): 	at bdtj.run(:com.google.android.gms@260438038@26.04.38 (260800-867839860):42)
+E/GoogleApiManager(24655): 	at android.os.Handler.handleCallback(Handler.java:995)
+E/GoogleApiManager(24655): 	at android.os.Handler.dispatchMessage(Handler.java:103)
+E/GoogleApiManager(24655): 	at csuj.mz(:com.google.android.gms@260438038@26.04.38 (260800-867839860):1)
+E/GoogleApiManager(24655): 	at csuj.dispatchMessage(:com.google.android.gms@260438038@26.04.38 (260800-867839860):5)
+E/GoogleApiManager(24655): 	at android.os.Looper.loopOnce(Looper.java:248)
+E/GoogleApiManager(24655): 	at android.os.Looper.loop(Looper.java:338)
+E/GoogleApiManager(24655): 	at android.os.HandlerThread.run(HandlerThread.java:85)
+W/GoogleApiManager(24655): Not showing notification since connectionResult is not user-facing: ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null, clientMethodKey=null}
+I/flutter (24655): [DIAG] selectYear(2025) called — distributionEntries cleared
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=0, old=0, same=false, isLoading=false
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=0, old=0, same=true, isLoading=false
+I/flutter (24655): [DIAG] selectYear(2024) called — distributionEntries cleared
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=0, old=0, same=false, isLoading=false
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=0, old=0, same=true, isLoading=false
+I/flutter (24655): [DIAG] loadDistribution() start — year=2024, isCumulative=true
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=0, old=0, same=true, isLoading=true
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 7385KB AllocSpace bytes, 5(424KB) LOS objects, 49% free, 8784KB/17MB, paused 4.393ms,5.250ms total 86.181ms
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 8804KB AllocSpace bytes, 0(0B) LOS objects, 49% free, 9356KB/18MB, paused 2.520ms,5.075ms total 65.262ms
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 10MB AllocSpace bytes, 0(0B) LOS objects, 49% free, 10076KB/19MB, paused 3.837ms,5.733ms total 75.530ms
+I/flutter (24655): [DIAG] loadDistribution() got 78 entries for year=2024
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=78, old=0, same=false, isLoading=false
+I/flutter (24655): [DIAG] didUpdateWidget — animation triggered
+I/flutter (24655): [DIAG] loadDistribution() start — year=2024, isCumulative=false
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=78, old=78, same=true, isLoading=true
+I/friendsheet.app(24655): Background concurrent mark compact GC freed 6932KB AllocSpace bytes, 5(424KB) LOS objects, 49% free, 7792KB/15MB, paused 6.817ms,23.170ms total 304.928ms
+I/flutter (24655): [DIAG] loadDistribution() got 70 entries for year=2024
+I/flutter (24655): [DIAG] didUpdateWidget — entries.length=70, old=78, same=false, isLoading=false
+I/flutter (24655): [DIAG] didUpdateWidget — animation triggered
+Lost connection to device.
