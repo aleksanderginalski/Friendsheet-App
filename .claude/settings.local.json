@@ -9,7 +9,9 @@
       "Bash(dart format .)",
       "Bash(/c/Programowanie/Friendsheet-App/lib/presentation/providers/add_meeting_provider.dart:*)",
       "Bash(python3:*)",
-      "Bash(dart format:*)"
+      "Bash(dart format:*)",
+      "Bash(flutter run)",
+      "Bash(tee diag_log.txt)"
     ]
   }
 }
