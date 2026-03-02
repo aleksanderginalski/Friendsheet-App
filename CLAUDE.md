@@ -187,6 +187,13 @@ if (userDoc.data()?['onboardingCompletedAt'] == null) {
 - `_categoryColors: Map<String, Color>` — stable color per categoryId, never reassigned
 - `addPostFrameCallback` required before `_controller.forward(from: 0.0)` — ensures child tweens update before controller resets
 
+### Widget stability in Page View
+Widgets inside PageView lose their State when scrolled off-screen.
+Always wrap PageView children in _CarouselPage (AutomaticKeepAliveClientMixin)
+when the child holds stateful data (color maps, animation controllers).
+Never conditionally replace a stateful widget with a different widget type
+during loading — pass isLoading as parameter instead.
+
 ### Hidden state pattern (SharedPreferences)
 - Every widget with hide/show must call `SharedPreferences.setMockInitialValues({})` in setUp
 - Affects not only Provider tests but ALL widget tests that build a tree containing that Provider

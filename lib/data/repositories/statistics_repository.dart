@@ -308,9 +308,8 @@ class StatisticsRepository {
     String userId,
   ) async {
     final endDate = Timestamp.fromDate(DateTime(year + 1));
-    final snapshot = await _meetingsRef(userId)
-        .where('date', isLessThan: endDate)
-        .get();
+    final snapshot =
+        await _meetingsRef(userId).where('date', isLessThan: endDate).get();
     final meetings =
         snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
 
