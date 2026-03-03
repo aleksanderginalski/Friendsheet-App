@@ -211,11 +211,8 @@ class StatisticsRepository {
 
     if (weightByPerson.isEmpty) return [];
 
-    // Resolve person names in one batch query.
-    final persons = await _personRepository.getPersonsByIds(
-      weightByPerson.keys.toList(),
-      userId,
-    );
+    // Fetch all persons and filter in-memory — avoids Firestore whereIn 30-item limit.
+    final persons = await _personRepository.getPersonsByUser(userId);
     final personNameById = {for (final p in persons) p.id: p.fullName};
 
     final entries = <PersonActivityEntry>[];
