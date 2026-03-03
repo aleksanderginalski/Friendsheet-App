@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/export_service.dart';
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
+import '../providers/export_provider.dart';
 import '../providers/statistics_provider.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
 import 'persons_list_screen.dart';
+import 'settings_screen.dart';
 
 /// Main screen with bottom navigation, hosting all top-level tabs.
 class MainScreen extends StatefulWidget {
@@ -132,6 +136,51 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () => _handleLogout(context),
           ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF4CAF50)),
+              child: Text(
+                'FRIENDSHEET',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider(
+                      create: (_) => ExportProvider(
+                        exportService: ExportService(
+                          meetingRepository: MeetingRepository(),
+                          personRepository: PersonRepository(),
+                          activityCategoryRepository:
+                              ActivityCategoryRepository(),
+                        ),
+                      ),
+                      child: const SettingsScreen(),
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Log Out'),
+              onTap: () {
+                Navigator.pop(context);
+                _handleLogout(context);
+              },
+            ),
+          ],
+        ),
       ),
       // IndexedStack keeps all tab widgets alive, preserving scroll state.
       body: IndexedStack(
