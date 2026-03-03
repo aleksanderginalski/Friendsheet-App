@@ -260,7 +260,11 @@ Statistics are computed **client-side** in MVP (no Cloud Functions). This is acc
 2. Aggregation cache document updated on each meeting save
 3. Cloud Functions for heavy computation (post-MVP upgrade path)
 
-**Export:** JSON file written to device Downloads folder using `path_provider` + `dart:io`. No server-side processing required.
+**ExportService** (`lib/data/services/export_service.dart`): fetches meetings,
+persons and activityCategories for the authenticated user, serializes to JSON
+and writes to `getExternalStorageDirectory()` (null-safe fallback to
+`getApplicationDocumentsDirectory()`). Injectable `directoryProvider` parameter
+enables test isolation without mocking platform channels.
 
 **StatisticsRepository:** Separate from MeetingRepository. Dedicated queries:
 - `getAvailableYears(userId)` — extracts unique years from meeting dates, sorted descending
@@ -527,7 +531,7 @@ graph TB
 | Milestone | Addition | Purpose |
 |-----------|----------|---------|
 | M2 | No new packages | Reuses existing stack |
-| M3 | `path_provider`, `dart:io` | JSON export to device storage |
+| M3 | `path_provider`, `dart:io` ✅ | JSON export to device storage |
 | M4 | Release signing config | Production build |
 | M5 | No new packages | Firestore batch writes |
 | M6 | `google_sign_in` (extended scope), `flutter_secure_storage`, Google Photos REST API | Photo OAuth + token storage |
