@@ -37,6 +37,9 @@ dependencies:
   # Key-value persistence for user preferences (hidden persons list)
   shared_preferences: ^2.3.2
 
+  # Device file system paths for export feature
+  path_provider: ^2.1.0
+
   # UI Icons
   cupertino_icons: ^1.0.6
 
