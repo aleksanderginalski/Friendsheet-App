@@ -220,6 +220,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.7.0 - US-050 Bug Fix — Who Per Activity (March 03, 2026)
+- ✅ Fixed getPersonsForActivity returning empty list when activity has >30 unique participants (Firestore whereIn limit)
+- ✅ Replaced getPersonsByIds with getPersonsByUser + in-memory filtering in StatisticsRepository
+- ✅ WhoPerActivityWidget: removed left legend, fixed column alignment, animated reordering with stable colors per personId
+- ✅ Fixed "No data" flash on year change — whoPerActivity preserved during fetch
+- ✅ Regression test: >30 participants scenario
+- ✅ Total test count: 352 tests
+
 ### v3.8.0 - US-051 Statistics Carousel (March 02, 2026)
 - ✅ StatisticsSection refactored from Column to horizontal PageView carousel
 - ✅ YearStepper pinned above carousel — single global year selector for all cards
