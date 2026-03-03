@@ -423,6 +423,30 @@ void main() {
 
         expect(result, isEmpty);
       });
+
+      test('returns all persons when participant count exceeds 30', () async {
+        final manyParticipantIds = List.generate(31, (i) => 'person_$i');
+        for (int i = 0; i < 31; i++) {
+          await addPerson('user-1', 'person_$i', 'Person$i');
+        }
+
+        await addMeeting(
+          'user-1',
+          DateTime(2025, 6, 1),
+          weight: 2,
+          categoryIds: ['cat_planszowki'],
+          participantIds: manyParticipantIds,
+        );
+
+        final result = await repository.getPersonsForActivity(
+          'cat_planszowki',
+          2025,
+          'user-1',
+        );
+
+        expect(result.length, equals(31));
+        expect(result.first.weightSum, equals(2));
+      });
     });
 
     group('getInteractionDistribution()', () {
