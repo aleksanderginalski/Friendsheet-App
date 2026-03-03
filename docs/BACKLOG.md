@@ -12,8 +12,9 @@
 | Milestone | Name | Status |
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ COMPLETED |
-| M2 | Management & CRUD | 🔜 Next |
-| M3 | Statistics & Export | 📋 Planned |
+| M2 | Management & CRUD | ✅ COMPLETED |
+| M3 | Statistics & Export | 🔜 Next |
+| M3.5 | Visual Design & Brand Identity | 📋 Planned |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Google Photos Integration | 📋 Planned |
@@ -42,6 +43,11 @@ EPIC-003: Friendsheet M3 - Statistics & Export
 └── FEATURE-009: Core Statistics
 └── FEATURE-010: Data Export
 └── FEATURE-017: Sideload Release
+
+EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
+├── FEATURE-018: Design System & Theme
+├── FEATURE-019: App Assets (Icon + Splash)
+└── FEATURE-020: Illustrations & Empty States
 
 EPIC-004: Friendsheet M4 - Google Play Release
 └── FEATURE-011: Store Release Preparation
@@ -2163,5 +2169,316 @@ Attach if available
 - [ ] PR blocked if coverage drops below threshold
 - [ ] Coverage trend tracked over time
 
+
+# 📦 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
+
+**Goal:** Establish a consistent visual identity for Friendsheet — color system, typography, app icon, splash screen, and illustrations — so the app looks professional before Google Play release.
+
+**Business Value:** A polished UI is the difference between a portfolio project and a portfolio project that impresses. Recruiters and users judge apps in the first 5 seconds.
+
+**Prerequisites:** M2 completed. Runs in parallel with M3 development.
+
+**Design Tools:** Figma (free plan), Midjourney (subscribed), Flutter ThemeData.
+
+**Status:** 📋 Planned
+
+---
+
+## 🎨 FEATURE-018: Design System & Theme
+
+**Description:** Defines the visual foundation of the app — color palette, typography, spacing and shape system — and implements it as Flutter ThemeData so all screens inherit the style automatically.
+
+**Priority:** P0
+**Role:** UX Designer + Developer
+**Status:** 📋 Planned
+
+---
+
+### US-049: Figma Setup — Color System & Typography
+
+**As a** designer
+**I want to** set up a Figma file with color styles and text styles
+**So that** I have a single source of truth for all design decisions before implementing them in code
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `design`, `figma`
+**Mode:** 🎨 Design (no Claude Code)
+
+**Acceptance Criteria:**
+- [ ] Figma file created with frame size 390×844 (standard mobile)
+- [ ] Color styles defined: Primary, Primary Light, Primary Dark, Secondary, Surface, On Surface, Subtle, Error
+- [ ] Text styles defined: Display, H1, H2, Body, Caption
+- [ ] Nunito font imported via Google Fonts plugin
+- [ ] 8dp grid configured on frames
+- [ ] Color palette exported as reference (screenshot or PDF)
+
+**Reference:** `friendsheet_design_brief.md` — Sections 2 & 3
+
+**Tasks:**
+- [ ] **TASK-049.1:** Create Figma account and new project file
+- [ ] **TASK-049.2:** Install Google Fonts plugin, import Nunito
+- [ ] **TASK-049.3:** Define Color Styles from design brief palette
+- [ ] **TASK-049.4:** Define Text Styles (Display / H1 / H2 / Body / Caption)
+- [ ] **TASK-049.5:** Configure 8dp grid on base frame
+
+---
+
+### US-050: Flutter Theme Implementation
+
+**As a** developer
+**I want to** implement the design system as Flutter ThemeData
+**So that** all screens automatically use the correct colors, typography and shape system
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `flutter`, `theme`, `dev`
+**Mode:** ⚙️ Task (Claude Code)
+**Depends on:** US-049
+
+**Acceptance Criteria:**
+- [ ] `AppTheme` class created in `lib/core/theme/app_theme.dart`
+- [ ] `ColorScheme.light()` configured with design brief palette
+- [ ] `google_fonts` package added, Nunito set as `fontFamily`
+- [ ] `CardTheme` with `borderRadius: 16dp`
+- [ ] `ElevatedButton` theme with `borderRadius: 12dp`
+- [ ] `ThemeData` applied in `FriendsheetApp` widget
+- [ ] All existing screens visually verified — no layout breaks
+- [ ] `flutter analyze` passes with no warnings
+
+**Tasks:**
+- [ ] **TASK-050.1:** Add `google_fonts` to pubspec.yaml, run `flutter pub get`
+- [ ] **TASK-050.2:** Create `lib/core/theme/app_theme.dart` with `AppTheme` class
+- [ ] **TASK-050.3:** Implement `ColorScheme`, `TextTheme`, `CardTheme`, `ButtonTheme`
+- [ ] **TASK-050.4:** Apply theme in `main.dart` → `FriendsheetApp`
+- [ ] **TASK-050.5:** Visual smoke test on all 4 main screens
+- [ ] **TASK-050.6:** Run `dart format .` and `flutter analyze`
+
+---
+
+## 🖼️ FEATURE-019: App Assets
+
+**Description:** Creates the visual entry points of the app — the app icon visible in Google Play and on device, and the splash screen shown on launch. Both are required for M4 (Google Play Release).
+
+**Priority:** P0
+**Role:** UX Designer + Developer
+**Status:** 📋 Planned
+
+---
+
+### US-051: App Icon Design & Integration
+
+**As a** developer
+**I want to** have a custom app icon that reflects Friendsheet's brand
+**So that** the app looks professional in Google Play and on the user's device
+
+**Story Points:** 5
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `design`, `midjourney`, `android`, `release`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-049 (color palette defined)
+
+**Acceptance Criteria:**
+- [ ] Icon generated in Midjourney using design brief prompt (warm green + amber palette)
+- [ ] Icon reviewed and approved (flat 2D style, rounded, character-driven)
+- [ ] Icon exported as 1024×1024 PNG from Figma
+- [ ] `flutter_launcher_icons` package configured and icons generated
+- [ ] Adaptive icon configured for Android (foreground + background layers)
+- [ ] Icon verified on emulator and physical device
+
+**Midjourney Prompt (starting point — iterate as needed):**
+```
+friendly mobile app icon, two cartoon characters hugging or waving,
+flat 2D illustration, rounded shapes, bold outlines,
+warm green #43A047 and amber #FFB300 color palette,
+white background, simple geometric style, duolingo-inspired,
+app store icon format, square composition, --ar 1:1 --style raw --v 6
+```
+
+**Tasks:**
+- [ ] **TASK-051.1:** Generate 4–6 icon variants in Midjourney, select best
+- [ ] **TASK-051.2:** Refine in Figma — adjust colors to match palette exactly
+- [ ] **TASK-051.3:** Export 1024×1024 PNG
+- [ ] **TASK-051.4:** Add `flutter_launcher_icons` to pubspec.yaml
+- [ ] **TASK-051.5:** Configure adaptive icon (foreground + `#FAFAF7` background)
+- [ ] **TASK-051.6:** Run `dart run flutter_launcher_icons` and verify output
+
+---
+
+### US-052: Splash Screen
+
+**As a** user
+**I want to** see a branded splash screen when the app launches
+**So that** the app feels polished and professional from the first moment
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `design`, `flutter`, `release`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-051 (icon/branding established)
+
+**Acceptance Criteria:**
+- [ ] Splash screen shows Friendsheet logo/icon centered on warm white background (`#FAFAF7`)
+- [ ] App name "Friendsheet" displayed in Nunito ExtraBold below icon
+- [ ] Primary green `#43A047` used as accent
+- [ ] Splash disappears automatically after auth check completes (no fixed timer)
+- [ ] Implemented using `flutter_native_splash` package
+- [ ] Tested on both emulator and physical device
+
+**Tasks:**
+- [ ] **TASK-052.1:** Add `flutter_native_splash` to pubspec.yaml
+- [ ] **TASK-052.2:** Configure splash in `pubspec.yaml` (color, image)
+- [ ] **TASK-052.3:** Run `dart run flutter_native_splash:create`
+- [ ] **TASK-052.4:** Verify splash → auth check → home flow
+
+---
+
+## 🧩 FEATURE-020: Illustrations & Empty States
+
+**Description:** Adds human character illustrations to key screens — Login and empty states — giving the app personality and making it feel alive when there's no data yet.
+
+**Priority:** P1
+**Role:** UX Designer + Developer
+**Status:** 📋 Planned
+
+---
+
+### US-053: Login Screen Illustration
+
+**As a** user
+**I want to** see a welcoming illustration on the login screen
+**So that** the app feels warm and friendly from the first interaction
+
+**Story Points:** 3
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `design`, `midjourney`, `flutter`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-050 (theme in place)
+
+**Acceptance Criteria:**
+- [ ] Illustration generated in Midjourney (group of friends, warm scene)
+- [ ] Illustration exported as SVG or PNG (max 200KB)
+- [ ] Displayed above Google Sign-In button on LoginScreen
+- [ ] Responsive — scales correctly on different screen sizes
+- [ ] Does not push Sign-In button below visible area on small screens (min 360dp height)
+
+**Midjourney Prompt (starting point):**
+```
+flat illustration, group of 3-4 diverse cartoon friends,
+laughing and spending time together, warm and joyful scene,
+rounded character style, green and amber color palette,
+white background, simple geometric shapes, duolingo-inspired style,
+horizontal composition, mobile app onboarding illustration,
+--ar 16:9 --style raw --v 6
+```
+
+**Tasks:**
+- [ ] **TASK-053.1:** Generate illustration in Midjourney, iterate to approval
+- [ ] **TASK-053.2:** Export and optimize (SVG preferred, PNG fallback)
+- [ ] **TASK-053.3:** Add to `assets/images/` and register in `pubspec.yaml`
+- [ ] **TASK-053.4:** Integrate into `LoginScreen` layout
+- [ ] **TASK-053.5:** Test on small screen (360dp width) — verify button visibility
+
+---
+
+### US-054: Empty States — Meetings & Friends
+
+**As a** user
+**I want to** see a friendly illustration when my meetings or friends list is empty
+**So that** the app feels welcoming even before I've added any data
+
+**Story Points:** 3
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `design`, `midjourney`, `flutter`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-050
+
+**Acceptance Criteria:**
+- [ ] Empty state illustration for MeetingsListScreen (no meetings added yet)
+- [ ] Empty state illustration for PersonsListScreen (no friends added yet)
+- [ ] Each empty state: illustration + short friendly message + optional CTA button
+- [ ] Illustrations consistent in style (same Midjourney style parameters)
+- [ ] Messages are warm and encouraging, not generic ("No data found")
+
+**Empty State Copy:**
+- Meetings: *"No meetings yet — tap + to add your first one!"*
+- Friends: *"No friends added yet — tap + to get started!"*
+
+**Midjourney Prompts (starting points):**
+
+Meetings empty state:
+```
+small flat illustration, two cartoon friends sitting at a cafe table,
+smiling and talking, simple rounded characters, warm colors,
+green and amber palette, white background, minimal detail,
+mobile app empty state style, duolingo character energy,
+--ar 4:3 --style raw --v 6
+```
+
+Friends empty state:
+```
+flat 2D illustration, single cartoon character waving hello,
+friendly pose, simple rounded shapes, bold outline,
+warm green color scheme, white background, minimal,
+mobile app illustration, --ar 1:1 --style raw --v 6
+```
+
+**Tasks:**
+- [ ] **TASK-054.1:** Generate both illustrations in Midjourney
+- [ ] **TASK-054.2:** Create reusable `EmptyStateWidget(image, message, onAction)` component
+- [ ] **TASK-054.3:** Integrate into `MeetingsListScreen`
+- [ ] **TASK-054.4:** Integrate into `PersonsListScreen`
+- [ ] **TASK-054.5:** Write widget test for `EmptyStateWidget`
+
+---
+
+### US-055: Empty State — Activities
+
+**As a** user
+**I want to** see a friendly illustration when my activities list is empty
+**So that** the app feels consistent and polished across all tabs
+
+**Story Points:** 2
+**Priority:** P2
+**Status:** 📋 Planned
+**Labels:** `design`, `flutter`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-054 (reuse EmptyStateWidget from US-054)
+
+**Acceptance Criteria:**
+- [ ] Empty state displayed in ActivitiesListScreen when no categories exist
+- [ ] Uses `EmptyStateWidget` component from US-054
+- [ ] Illustration consistent with Meetings and Friends empty states
+- [ ] Message: *"No activities yet — tap + to create your first category!"*
+
+**Tasks:**
+- [ ] **TASK-055.1:** Generate illustration in Midjourney (reuse style params from US-054)
+- [ ] **TASK-055.2:** Integrate `EmptyStateWidget` into `ActivitiesListScreen`
+
+## 📋 Design Dependency Map
+
+```
+US-049 Figma Setup
+    └── US-050 Flutter Theme ──────────────┐
+                                           ├── US-053 Login Illustration
+US-051 App Icon ────────────────────────   ├── US-054 Empty States (Meetings + Friends)
+    └── US-052 Splash Screen               └── US-055 Empty State (Activities)
+```
+
+**Blocking M4 (Google Play Release):**
+- US-051 App Icon ← required by store
+- US-052 Splash Screen ← required for polish
+- US-050 Flutter Theme ← required for visual consistency
+
+**Non-blocking (can ship to M4 without these):**
+- US-053 Login Illustration
+- US-054 Empty States
+- US-055 Empty State Activities
 
 **End of Backlog Document**
