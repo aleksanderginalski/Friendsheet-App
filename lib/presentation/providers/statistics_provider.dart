@@ -155,7 +155,6 @@ class StatisticsProvider extends ChangeNotifier {
   Future<void> selectYear(int year) async {
     _selectedYear = year;
     _activityBreakdown = [];
-    _whoPerActivity = [];
     _distributionEntries = [];
     notifyListeners();
 

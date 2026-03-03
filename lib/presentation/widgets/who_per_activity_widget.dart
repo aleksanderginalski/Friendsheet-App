@@ -18,8 +18,24 @@ const _kPalette = [
 /// Maximum rendered height for a single bar, in logical pixels.
 const _kMaxBarHeight = 110.0;
 
+/// Fixed heights for bar column sections.
+const _kWeightHeight = 20.0;
+const _kNameHeight = 32.0;
+
+/// Total height of the horizontal-scrolling chart area.
+const _kChartHeight = _kMaxBarHeight + _kWeightHeight + _kNameHeight;
+
+/// Fixed width per item slot — includes padding on both sides.
+const _kItemWidth = 56.0;
+
+/// Duration for bar-height and position entrance/change animations.
+const _kAnimationDuration = Duration(milliseconds: 600);
+
+double _barHeight(int weight, int maxW) =>
+    (weight / maxW * _kMaxBarHeight).clamp(2.0, _kMaxBarHeight);
+
 /// Displays a vertical bar chart of persons ranked by meeting weight for
-/// the selected activity, with a left-side legend and hide/show controls.
+/// the selected activity, with hide/show controls.
 class WhoPerActivityWidget extends StatelessWidget {
   final List<PersonActivityEntry> entries;
   final List<ActivityCategory> categories;
@@ -80,7 +96,7 @@ class WhoPerActivityWidget extends StatelessWidget {
             style: TextStyle(color: Colors.grey),
           )
         else
-          _BarChartWithLegend(
+          _BarChart(
             visibleEntries: visibleEntries,
             onToggleHidden: onToggleHidden,
           ),
@@ -141,79 +157,95 @@ class WhoPerActivityWidget extends StatelessWidget {
   }
 }
 
-/// Row with a scrollable left legend and a horizontally scrollable bar chart.
-class _BarChartWithLegend extends StatelessWidget {
+/// Horizontally scrollable animated bar chart for person activity ranking.
+/// Bar heights and positions animate on first render and on every data change.
+/// Bars are absolutely positioned inside a Stack so position changes animate
+/// smoothly when the ranking changes between years.
+class _BarChart extends StatefulWidget {
   final List<PersonActivityEntry> visibleEntries;
   final void Function(String personId, String name) onToggleHidden;
 
-  const _BarChartWithLegend({
+  const _BarChart({
     required this.visibleEntries,
     required this.onToggleHidden,
   });
 
-  int get _maxWeight => visibleEntries.fold<int>(
-        1,
-        (prev, e) => e.weightSum > prev ? e.weightSum : prev,
-      );
+  @override
+  State<_BarChart> createState() => _BarChartState();
+}
+
+class _BarChartState extends State<_BarChart>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late CurvedAnimation _curvedAnimation;
+
+  // Last non-empty entries — retained during data changes so bars stay
+  // visible instead of briefly showing an empty state.
+  List<PersonActivityEntry> _displayedEntries = [];
+
+  // Entry order locked when new data arrives, before the controller restarts.
+  // build() derives targetLeft from this list so bar indices are stable for
+  // the entire animation duration.
+  List<PersonActivityEntry> _animatingEntries = [];
+
+  // Stable color per personId — assigned once on first encounter,
+  // never reassigned so colors survive year changes and reorders.
+  final Map<String, Color> _personColors = {};
 
   @override
-  Widget build(BuildContext context) {
-    final maxWeight = _maxWeight;
-
-    return SizedBox(
-      height: 180,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Left legend — shows color swatch + person name.
-          SizedBox(
-            width: 90,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (int i = 0; i < visibleEntries.length; i++)
-                    _LegendItem(
-                      entry: visibleEntries[i],
-                      color: _kPalette[i % _kPalette.length],
-                      onLongPress: () => _showOptions(
-                        context,
-                        visibleEntries[i].personId,
-                        visibleEntries[i].name,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Bar chart — horizontally scrollable; top-7 visible, rest on scroll.
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (int i = 0; i < visibleEntries.length; i++)
-                    GestureDetector(
-                      onLongPress: () => _showOptions(
-                        context,
-                        visibleEntries[i].personId,
-                        visibleEntries[i].name,
-                      ),
-                      child: _BarColumn(
-                        entry: visibleEntries[i],
-                        color: _kPalette[i % _kPalette.length],
-                        maxWeight: maxWeight,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+  void initState() {
+    super.initState();
+    _displayedEntries = widget.visibleEntries;
+    _animatingEntries = widget.visibleEntries;
+    _ensureColors(widget.visibleEntries);
+    _controller = AnimationController(
+      vsync: this,
+      duration: _kAnimationDuration,
+    )..forward();
+    _curvedAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
     );
+  }
+
+  @override
+  void didUpdateWidget(_BarChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update displayed entries when new data arrives — keep the
+    // previous set visible during any transient empty state.
+    if (widget.visibleEntries.isNotEmpty &&
+        widget.visibleEntries != oldWidget.visibleEntries) {
+      _ensureColors(widget.visibleEntries);
+      _displayedEntries = widget.visibleEntries;
+      // Lock order before restarting the controller so targetLeft values
+      // are stable for the entire animation duration.
+      _animatingEntries = widget.visibleEntries;
+      // Defer controller restart to the next frame so all _AnimatedBarItem
+      // children receive new targetLeft via didUpdateWidget first. This
+      // guarantees their tweens capture the correct current visual position
+      // (controller still at previous value) before the reset to 0.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.forward(from: 0.0);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _curvedAnimation.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Assigns a palette color to each personId not yet in the map.
+  /// Insertion order determines the palette index so colors are stable.
+  void _ensureColors(List<PersonActivityEntry> entries) {
+    for (final entry in entries) {
+      if (!_personColors.containsKey(entry.personId)) {
+        _personColors[entry.personId] =
+            _kPalette[_personColors.length % _kPalette.length];
+      }
+    }
   }
 
   void _showOptions(BuildContext context, String personId, String name) {
@@ -228,7 +260,7 @@ class _BarChartWithLegend extends StatelessWidget {
               title: Text('Hide $name'),
               onTap: () {
                 Navigator.of(context).pop();
-                onToggleHidden(personId, name);
+                widget.onToggleHidden(personId, name);
               },
             ),
           ],
@@ -236,101 +268,197 @@ class _BarChartWithLegend extends StatelessWidget {
       ),
     );
   }
-}
-
-class _LegendItem extends StatelessWidget {
-  final PersonActivityEntry entry;
-  final Color color;
-  final VoidCallback onLongPress;
-
-  const _LegendItem({
-    required this.entry,
-    required this.color,
-    required this.onLongPress,
-  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: onLongPress,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                entry.name,
-                style: const TextStyle(fontSize: 11),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-          ],
+    // _animatingEntries is locked at animation start — using it here
+    // ensures targetLeft indices are stable across parent rebuilds that
+    // happen mid-animation.
+    final visibleEntries = _animatingEntries;
+    final maxW = visibleEntries.fold<int>(
+      1,
+      (prev, e) => e.weightSum > prev ? e.weightSum : prev,
+    );
+
+    if (_displayedEntries.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: _kChartHeight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        // Fixed-width SizedBox so the Stack knows its extent.
+        child: SizedBox(
+          width: visibleEntries.length * _kItemWidth,
+          child: Stack(
+            children: visibleEntries.asMap().entries.map((e) {
+              final index = e.key;
+              final entry = e.value;
+              return _AnimatedBarItem(
+                // ValueKey tracks bar identity across reorders.
+                key: ValueKey(entry.personId),
+                entry: entry,
+                color: _personColors[entry.personId] ??
+                    _kPalette[index % _kPalette.length],
+                controller: _curvedAnimation,
+                targetLeft: index * _kItemWidth,
+                targetBarHeight: _barHeight(entry.weightSum, maxW),
+                onLongPress: () =>
+                    _showOptions(context, entry.personId, entry.name),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
   }
 }
 
-class _BarColumn extends StatelessWidget {
+/// A person bar absolutely positioned inside a Stack.
+/// Animates both its left position and bar height driven by the shared
+/// [controller] owned by the parent. Each instance maintains its own tweens
+/// so it can start from its previous position/height when the parent restarts
+/// the controller on a year change.
+class _AnimatedBarItem extends StatefulWidget {
   final PersonActivityEntry entry;
   final Color color;
-  final int maxWeight;
+  final Animation<double> controller;
+  final double targetLeft;
+  final double targetBarHeight;
+  final VoidCallback onLongPress;
 
-  const _BarColumn({
+  const _AnimatedBarItem({
+    super.key,
     required this.entry,
     required this.color,
-    required this.maxWeight,
+    required this.controller,
+    required this.targetLeft,
+    required this.targetBarHeight,
+    required this.onLongPress,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final barHeight = (entry.weightSum / maxWeight * _kMaxBarHeight)
-        .clamp(2.0, _kMaxBarHeight);
+  State<_AnimatedBarItem> createState() => _AnimatedBarItemState();
+}
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            entry.weightSum.toString(),
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 2),
-          Container(
-            width: 36,
-            height: barHeight,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(3),
+class _AnimatedBarItemState extends State<_AnimatedBarItem> {
+  late Tween<double> _leftTween;
+  late Tween<double> _heightTween;
+  late Tween<double> _opacityTween;
+
+  // Track previous animation targets — used as begin values in didUpdateWidget
+  // so tweens are stable regardless of controller timing or rebuild count.
+  double _lastTargetLeft = 0.0;
+  double _lastTargetBarHeight = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // First render: bar fades in at target position, height grows from 0.
+    _lastTargetLeft = widget.targetLeft;
+    _lastTargetBarHeight = widget.targetBarHeight;
+    _leftTween = Tween<double>(
+      begin: widget.targetLeft,
+      end: widget.targetLeft,
+    );
+    _heightTween = Tween<double>(begin: 0.0, end: widget.targetBarHeight);
+    _opacityTween = Tween<double>(begin: 0.0, end: 1.0);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBarItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Use _lastTargetLeft as begin — stable regardless of controller timing
+    // or number of didUpdateWidget calls.
+    _leftTween = Tween<double>(
+      begin: _lastTargetLeft,
+      end: widget.targetLeft,
+    );
+    _heightTween = Tween<double>(
+      begin: _lastTargetBarHeight,
+      end: widget.targetBarHeight,
+    );
+    // Bar already visible — no fade animation on subsequent updates.
+    _opacityTween = Tween<double>(begin: 1.0, end: 1.0);
+
+    // Update last targets AFTER building tweens.
+    _lastTargetLeft = widget.targetLeft;
+    _lastTargetBarHeight = widget.targetBarHeight;
+  }
+
+  Widget _buildBarColumn(double barHeight) {
+    return Column(
+      children: [
+        // Weight label — fixed height above the bar area.
+        SizedBox(
+          height: _kWeightHeight,
+          child: Center(
+            child: Text(
+              widget.entry.weightSum.toString(),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(height: 2),
-          SizedBox(
-            width: 42,
+        ),
+        // Bar area — Expanded fills remaining space; bar aligns to bottom
+        // so all bars share the same baseline regardless of height.
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: 32,
+              height: barHeight,
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(3),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Name label — fixed height prevents uneven column tops.
+        SizedBox(
+          height: _kNameHeight,
+          child: Align(
+            alignment: Alignment.topCenter,
             child: Text(
-              entry.name,
+              widget.entry.name,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 9),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.controller,
+      builder: (context, _) {
+        final left = _leftTween.evaluate(widget.controller);
+        final barHeight =
+            _heightTween.evaluate(widget.controller).clamp(2.0, _kMaxBarHeight);
+        final opacity = _opacityTween.evaluate(widget.controller);
+        return Positioned(
+          left: left,
+          top: 0,
+          width: _kItemWidth,
+          height: _kChartHeight,
+          child: GestureDetector(
+            onLongPress: widget.onLongPress,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: _buildBarColumn(barHeight),
+            ),
+          ),
+        );
+      },
     );
   }
 }
