@@ -1338,27 +1338,28 @@ If you already created a GitHub issue for US-005, you can:
 **Labels:** `statistics`, `ux`, `home-screen`
 **Status:** 📋 Planned
 **Milestone:** M3
+✅ COMPLETED (March 02, 2026)
 
 **Acceptance Criteria:**
-- [ ] Home screen replaces stacked statistics widgets with a horizontal `PageView` (carousel)
-- [ ] Swiping left/right switches between metric cards (ActivityBreakdown, WhoPerActivity, InteractionDistribution)
-- [ ] `YearStepper` lives above the carousel — single year selector applies to all cards
-- [ ] Long-press on a card hides it; long-press on any remaining card shows a "Restore hidden" option
-- [ ] Hidden cards persisted in `SharedPreferences` key: `stats_carousel_hidden_cards`
-- [ ] If all cards are hidden: empty state shown with hint „Long-press any card to restore"
-- [ ] No dot indicators — swipe gesture is the only navigation
-- [ ] Each card is independently scrollable (handles variable widget heights)
-- [ ] `flutter analyze` passes with 0 issues
-- [ ] All existing statistics tests pass without modification
+- [x] Home screen replaces stacked statistics widgets with a horizontal `PageView` (carousel)
+- [x] Swiping left/right switches between metric cards (ActivityBreakdown, WhoPerActivity, InteractionDistribution)
+- [x] `YearStepper` lives above the carousel — single year selector applies to all cards
+- [x] Long-press on a card hides it; long-press on any remaining card shows a "Restore hidden" option
+- [x] Hidden cards persisted in `SharedPreferences` key: `stats_carousel_hidden_cards`
+- [x] If all cards are hidden: empty state shown with hint „Long-press any card to restore"
+- [x] No dot indicators — swipe gesture is the only navigation
+- [x] Each card is independently scrollable (handles variable widget heights)
+- [x] `flutter analyze` passes with 0 issues
+- [x] All existing statistics tests pass without modification
 
 **Tasks:**
-- [ ] **TASK-051.1:** Refactor `StatisticsSection` — replace `Column` with `PageView` + `PageController`
-- [ ] **TASK-051.2:** Extract `YearStepper` above `PageView` (shared across all cards)
-- [ ] **TASK-051.3:** Wrap each `PageView` page in `GestureDetector(onLongPress)` + `SingleChildScrollView`
-- [ ] **TASK-051.4:** Add `visibleCards` state + `toggleCardVisibility()` to `StatisticsProvider`
-- [ ] **TASK-051.5:** Implement `SharedPreferences` persistence for hidden cards (`stats_carousel_hidden_cards`)
-- [ ] **TASK-051.6:** Implement empty state when all cards hidden
-- [ ] **TASK-051.7:** Write tests for provider changes (toggleCardVisibility, persistence)
+- [x] **TASK-051.1:** Refactor `StatisticsSection` — replace `Column` with `PageView` + `PageController`
+- [x] **TASK-051.2:** Extract `YearStepper` above `PageView` (shared across all cards)
+- [x] **TASK-051.3:** Wrap each `PageView` page in `GestureDetector(onLongPress)` + `SingleChildScrollView`
+- [x] **TASK-051.4:** Add `visibleCards` state + `toggleCardVisibility()` to `StatisticsProvider`
+- [x] **TASK-051.5:** Implement `SharedPreferences` persistence for hidden cards (`stats_carousel_hidden_cards`)
+- [x] **TASK-051.6:** Implement empty state when all cards hidden
+- [x] **TASK-051.7:** Write tests for provider changes (toggleCardVisibility, persistence)
 
 **Architecture Notes:**
 - `GestureDetector` for long-press lives at `PageView` page level — above child widgets that use their own long-press (bars in charts). This avoids gesture conflict.
@@ -1379,6 +1380,7 @@ If you already created a GitHub issue for US-005, you can:
 **Labels:** `bug`, `statistics`, `who-per-activity`
 **Status:** 📋 Planned
 **Milestone:** M3
+✅ COMPLETED (March 03, 2026)
 
 **Problem Description:**
 Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but Who Per Activity shows an empty list for the same activity and year. The two metrics use different data access paths — the bug likely lies in `getPersonsForActivity` filtering logic.
@@ -1387,12 +1389,12 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 `getPersonsForActivity` filters meetings by matching `categoryIds` using the selected activity's ID. Meetings migrated via the Python script may store `categoryIds` as the category name string rather than the Firestore document ID — or the ancestor propagation differs between the migration script and the Flutter app's write path.
 
 **Acceptance Criteria:**
-- [ ] Selecting „Planszówki" (or any activity with meetings) in Who Per Activity for year 2023 shows a non-empty ranked list of persons
-- [ ] Result is consistent with Activity Breakdown — same activity, same year, same meeting pool
-- [ ] Fix applies to both migrated data and meetings added natively through the app
-- [ ] No regression in Activity Breakdown or Interaction Distribution
-- [ ] `flutter analyze` passes with 0 issues
-- [ ] Existing tests pass; new test added covering the identified root cause
+- [x] Selecting „Planszówki" (or any activity with meetings) in Who Per Activity for year 2023 shows a non-empty ranked list of persons
+- [x] Result is consistent with Activity Breakdown — same activity, same year, same meeting pool
+- [x] Fix applies to both migrated data and meetings added natively through the app
+- [x] No regression in Activity Breakdown or Interaction Distribution
+- [x] `flutter analyze` passes with 0 issues
+- [x] Existing tests pass; new test added covering the identified root cause
 
 **Diagnostic Steps (before implementation):**
 1. Log raw `categoryIds` from a 2023 „Planszówki" meeting in Firestore console
@@ -1400,9 +1402,11 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 3. Check `getPersonsForActivity` query — verify it matches by document ID, not by name
 
 **Tasks:**
-- [ ] **TASK-050.1:** Diagnose — compare `categoryIds` stored in meetings vs IDs used in `getPersonsForActivity` query (add debug logging or inspect Firestore directly)
-- [ ] **TASK-050.2:** Fix `getPersonsForActivity` filtering to correctly match migrated and native data
-- [ ] **TASK-050.3:** Write regression test covering the root cause scenario
+- [x] **TASK-050.1:** Diagnose — compare `categoryIds` stored in meetings vs IDs used in `getPersonsForActivity` query (add debug logging or inspect Firestore directly)
+- [x] **TASK-050.2:** Fix `getPersonsForActivity` filtering to correctly match migrated and native data
+- [x] **TASK-050.3:** Write regression test covering the root cause scenario
+- [x] **TASK-050.4:** WhoPerActivityWidget UI improvements
+- [x] **TASK-050.5:** Fix "No data" flash on year change
 ---
 
 ## 💾 FEATURE-010: Data Export
