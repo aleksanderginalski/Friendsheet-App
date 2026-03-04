@@ -69,17 +69,26 @@ dev_dependencies:
   # Firebase Core test utilities (setupFirebaseCoreMocks)
   firebase_core_platform_interface: ^6.0.2
 
+  # App icon generation for Android
+  flutter_launcher_icons: ^0.14.1
+
 # Flutter configuration
 flutter:
   uses-material-design: true
 
-  # Add assets here when needed
-  # assets:
-  #   - images/
-  #   - icons/
+  assets:
+    - assets/icons/
 
   # Add custom fonts here when needed
   # fonts:
   #   - family: Roboto
   #     fonts:
   #       - asset: fonts/Roboto-Regular.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: 'assets/icons/icon.png'
+  adaptive_icon_background: 'assets/icons/icon.png'
+  adaptive_icon_foreground: 'assets/icons/icon.png'
+  min_sdk_android: 21
