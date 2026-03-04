@@ -2311,30 +2311,27 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 
 ### US-052: Splash Screen
 
-**As a** user
-**I want to** see a branded splash screen when the app launches
-**So that** the app feels polished and professional from the first moment
-
-**Story Points:** 3
-**Priority:** P0
 **Status:** 📋 Planned
 **Labels:** `design`, `flutter`, `release`
 **Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-051 (icon/branding established)
+**Depends on:** US-056 (icon/branding established)
 
 **Acceptance Criteria:**
-- [ ] Splash screen shows Friendsheet logo/icon centered on warm white background (`#FAFAF7`)
-- [ ] App name "Friendsheet" displayed in Nunito ExtraBold below icon
-- [ ] Primary green `#43A047` used as accent
-- [ ] Splash disappears automatically after auth check completes (no fixed timer)
-- [ ] Implemented using `flutter_native_splash` package
-- [ ] Tested on both emulator and physical device
+- [ ] MP4 animation asset added to `assets/animations/splash.mp4`
+- [ ] `video_player` package added for MP4 playback
+- [ ] `SplashScreen` widget created — plays MP4 + shows "Friendsheet" in Nunito ExtraBold below
+- [ ] Splash disappears automatically when MP4 finishes playing
+- [ ] After splash completes → navigate to `AuthWrapper` (auth check happens in background)
+- [ ] Background color: `#FAFAF7` (warm white)
+- [ ] "Friendsheet" text color: `#43A047` (primary green)
+- [ ] Tested on emulator — no jank, smooth playback
 
 **Tasks:**
-- [ ] **TASK-052.1:** Add `flutter_native_splash` to pubspec.yaml
-- [ ] **TASK-052.2:** Configure splash in `pubspec.yaml` (color, image)
-- [ ] **TASK-052.3:** Run `dart run flutter_native_splash:create`
-- [ ] **TASK-052.4:** Verify splash → auth check → home flow
+- [ ] **TASK-052.1:** Add MP4 to `assets/animations/` and register in `pubspec.yaml`
+- [ ] **TASK-052.2:** Add `video_player` to `pubspec.yaml`
+- [ ] **TASK-052.3:** Create `SplashScreen` widget with `VideoPlayerController`
+- [ ] **TASK-052.4:** Wire `SplashScreen` as first route in `main.dart` — navigates to `AuthWrapper` on completion
+- [ ] **TASK-052.5:** Write widget test for `SplashScreen`
 
 ---
 

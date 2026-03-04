@@ -9,6 +9,7 @@ import 'data/services/auth_service.dart';
 import 'firebase_options.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/splash_screen.dart';
 
 /// Main entry point of the application
 void main() async {
@@ -31,7 +32,7 @@ class FriendsheetApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       // Inject real AuthService in production
-      home: AuthWrapper(authService: AuthService()),
+      home: SplashScreen(nextScreen: AuthWrapper(authService: AuthService())),
     );
   }
 }
