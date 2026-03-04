@@ -77,9 +77,43 @@ Before adding new packages or files — check if .gitignore needs updating:
 ## Never Do
 - Never use `--dangerously-skip-permissions`
 - Never commit firebase_options.dart or google-services.json
+- Never commit *.jks, *.keystore, key.properties, android/key.properties
 - Never push with failing tests
 - Never use names: MyApp, MainApp, ExampleApp, TestApp
 - Never push directly to main — always PR
+
+## Release Signing (Android)
+- Keystore file: stored OUTSIDE project directory, never committed
+- Convention: one level above project root (e.g. `C:\Programowanie\Friendsheet-unpublic\friendsheet.jks`)
+- `android/key.properties`: gitignored, contains absolute path to keystore and passwords
+- `android/app/build.gradle.kts` uses **Kotlin DSL** — use `=` assignments and `create("release")` syntax
+- PKCS12 format (default in keytool v21+): `storePassword == keyPassword` always
+- Firebase Console must have **both** SHA-1 fingerprints: debug keystore + release keystore
+- Required order when setting up new device/keystore:
+  1. Generate keystore
+  2. Extract SHA-1 from release keystore
+  3. Add SHA-1 to Firebase Console
+  4. Download updated google-services.json
+  5. Rebuild APK
+  6. Install APK
+- Skipping SHA-1 step causes `ApiException: 10` on Google Sign-In
+```gradle
+// Kotlin DSL signing config pattern (build.gradle.kts):
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+signingConfigs {
+    create("release") {
+        keyAlias = keystoreProperties["keyAlias"] as String
+        keyPassword = keystoreProperties["keyPassword"] as String
+        storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+        storePassword = keystoreProperties["storePassword"] as String
+    }
+}
+```
 
 ## Provider Navigation Pattern
 
