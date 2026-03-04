@@ -289,19 +289,21 @@ Persists `selectedYear` and `availableYears` during session.
 
 **Animated bar chart pattern (US-048, US-049):**
 Use `_lastTargetLeft` / `_lastTargetBarHeight` fields (not `evaluate(controller)`) as tween begin values in `didUpdateWidget`. This guarantees stationary bars have `begin == end` regardless of controller timing or number of `didUpdateWidget` calls.
-
+```
 ---
 
 ### M4 — Production Build
 
+**Status:** Signing config implemented (US-042)
+
 **Keystore management:**
 - Keystore file: stored outside project directory, never committed
-- `key.properties`: gitignored, contains keystore path and passwords
-- CI/CD: keystore provided via GitHub Secrets for automated release builds
+- Location convention: one level above project root
+- `key.properties`: gitignored, contains absolute keystore path and passwords
+- `android/app/build.gradle.kts`: signing config loaded from key.properties (Kotlin DSL)
+- CI/CD: keystore provided via GitHub Secrets for automated release builds (planned)
 
-**New gitignore entries required:**
-```
-# Keystore
+**New gitignore entries added:**
 *.jks
 *.keystore
 key.properties

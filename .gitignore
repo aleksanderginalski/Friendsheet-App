@@ -46,6 +46,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android signing keystore — NEVER commit
+*.jks
+*.keystore
+key.properties
+android/key.properties
+
 # CRITICAL: Firebase Configuration Files
 # These files contain sensitive API keys and project IDs
 # Each developer must create their own Firebase project

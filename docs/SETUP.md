@@ -77,7 +77,15 @@ Got dependencies!
 2. **Android package name:** `com.friendsheet.app`
    - ⚠️ **CRITICAL:** Must be exactly `com.friendsheet.app`
 3. **App nickname:** `Friendsheet`
-4. **SHA-1 certificate:** Leave empty for now
+4. **SHA-1 certificate:** Add your debug SHA-1 fingerprint
+   - Run in PowerShell from project root:
+```powershell
+     cd android
+     ./gradlew signingReport
+```
+   - Copy SHA1 from `Variant: debug` section
+   - Paste into Firebase Console
+   - After adding SHA-1, download updated `google-services.json`
 5. Click **"Register app"**
 
 #### 3.3 Download google-services.json
@@ -113,35 +121,39 @@ friendsheet/
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
-    
-    // Meetings - user can only access their own
-    match /meetings/{meetingId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+
+    match /activity_categories/{categoryId} {
+      allow read: if isAuthenticated() && resource.data.isGlobal == true;
+      allow create: if isAuthenticated() &&
+                       request.resource.data.isGlobal == false &&
+                       isOwner(request.resource.data.userId);
     }
-    
-    // Persons - user can only access their own contacts
-    match /persons/{personId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
     }
-    
-    // Activities - user can only access their own
-    match /activities/{activityId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
-      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+
+    match /users/{userId}/activity_categories/{categoryId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
+    }
+
+    match /users/{userId}/meetings/{meetingId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
+    }
+
+    match /users/{userId}/persons/{personId} {
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId);
     }
   }
 }
@@ -308,6 +320,57 @@ icacls "C:\path\to\friendsheet" /grant "YourUsername:(OI)(CI)F" /T
 
 ---
 
+---
+
+## 📦 Release APK (Install on Physical Device)
+
+To build and install a release APK on your personal Android device:
+
+### Prerequisites
+- Keystore file generated and stored outside project directory
+- `android/key.properties` configured with keystore path and passwords
+- Release SHA-1 added to Firebase Console
+
+### Step 1 — Generate keystore (one-time)
+
+Run in PowerShell from the parent folder of the project:
+```powershell
+keytool -genkey -v `
+  -keystore friendsheet.jks `
+  -keyalg RSA `
+  -keysize 2048 `
+  -validity 10000 `
+  -alias friendsheet-key
+```
+
+Store the keystore file outside the project directory (e.g. `C:\Keys\friendsheet.jks`).
+**Write down your password — it cannot be recovered.**
+
+### Step 2 — Create `android/key.properties`
+```properties
+storePassword=YOUR_PASSWORD
+keyPassword=YOUR_PASSWORD
+keyAlias=friendsheet-key
+storeFile=C:\\full\\path\\to\\friendsheet.jks
+```
+
+### Step 3 — Add release SHA-1 to Firebase
+```powershell
+keytool -list -v `
+  -keystore C:\path\to\friendsheet.jks `
+  -alias friendsheet-key
+```
+
+Copy SHA1 → Firebase Console → Project Settings → Your apps → Add fingerprint → Download updated `google-services.json`.
+
+### Step 4 — Build and install
+```powershell
+flutter build apk --release
+```
+
+Transfer `build\app\outputs\flutter-apk\app-release.apk` to your device via Google Drive or USB.
+On device: enable "Install unknown apps" when prompted.
+
 ## 📝 Next Steps
 
 After successful setup:
@@ -335,8 +398,10 @@ After successful setup:
 **NEVER commit these files:**
 - ❌ `android/app/google-services.json`
 - ❌ `lib/firebase_options.dart`
+- ❌ `*.jks` / `*.keystore` — keystore files
+- ❌ `android/key.properties` — contains keystore passwords
 
-These files contain sensitive API keys and are gitignored!
+These files contain sensitive API keys and credentials and are gitignored!
 
 Each developer must create their own Firebase project and configuration.
 
