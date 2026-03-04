@@ -1111,14 +1111,14 @@ If you already created a GitHub issue for US-005, you can:
 - Aggregation by year, filtered from `users/{uid}/meetings` subcollection
 - Hidden persons preferences stored in SharedPreferences (per-metric, local only)
 - Import is a one-time Python script — not part of the Flutter app
-
+**Status:** ✅ COMPLETED
 ---
 
 ## 📥 FEATURE-016: Data Import
 
 **Priority:** P0
 **Role:** Developer
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -1158,7 +1158,7 @@ If you already created a GitHub issue for US-005, you can:
 
 **Priority:** P0
 **Role:** Developer + UX Designer
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -1419,7 +1419,7 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 
 **Priority:** P1  
 **Role:** Developer  
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -1431,19 +1431,20 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 
 **Story Points:** 5
 **Priority:** P1
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Export option accessible from Settings or Home tab
-- [ ] Exports all meetings from `users/{uid}/meetings` to JSON
-- [ ] File saved to device Downloads folder
-- [ ] Success confirmation with file path shown to user
-- [ ] Error handling for storage permission issues
+- [x] Export option accessible from Settings or Home tab
+- [x] Exports all meetings from `users/{uid}/meetings` to JSON
+- [x] File saved to device Downloads folder
+- [x] Success confirmation with file path shown to user
+- [x] Error handling for storage permission issues
 
 **Tasks:**
-- [ ] **TASK-031.1:** Implement ExportService (Firestore → JSON)
-- [ ] **TASK-031.2:** Add file write using path_provider + dart:io
-- [ ] **TASK-031.3:** Build export trigger UI (button + confirmation)
-- [ ] **TASK-031.4:** Write tests
+- [x] **TASK-031.1:** Implement ExportService (Firestore → JSON)
+- [x] **TASK-031.2:** Add file write using path_provider + dart:io
+- [x] **TASK-031.3:** Build export trigger UI (button + confirmation)
+- [x] **TASK-031.4:** Write tests
 
 ## 📱 FEATURE-017: Sideload Release
 
@@ -1453,12 +1454,11 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 **Priority:** P0
 **Role:** Developer + DevOps
-**Status:** 📋 Planned
-
+**Status:** ✅ COMPLETED
 ---
 
 ### US-042: Install Friendsheet on Personal Device via APK
-
+**Status:** ✅ COMPLETED
 **As a** developer
 **I want to** build a signed release APK and install it on my personal Android phone
 **So that** I can use Friendsheet daily with real data without needing a connected computer
@@ -1468,14 +1468,14 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 **Labels:** `release`, `android`, `devops`
 
 **Acceptance Criteria:**
-- [ ] Keystore generated and stored securely outside the repository
-- [ ] `key.properties` configured and added to `.gitignore`
-- [ ] `build.gradle` configured with release signing config
-- [ ] `flutter build apk --release` completes without errors
-- [ ] APK installed on personal Android device (sideload via USB or file transfer)
-- [ ] SHA-1 fingerprint of release keystore added to Firebase Console
-- [ ] Google Sign-In works on the installed release build
-- [ ] App runs stably — no crash on launch, data loads correctly
+- [x] Keystore generated and stored securely outside the repository
+- [x] `key.properties` configured and added to `.gitignore`
+- [x] `build.gradle` configured with release signing config
+- [x] `flutter build apk --release` completes without errors
+- [x] APK installed on personal Android device (sideload via USB or file transfer)
+- [x] SHA-1 fingerprint of release keystore added to Firebase Console
+- [x] Google Sign-In works on the installed release build
+- [x] App runs stably — no crash on launch, data loads correctly
 
 **Architecture Notes:**
 - Keystore generated once — reused in US-032 (Google Play release) without changes
@@ -1490,13 +1490,13 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 - APK vs AAB: `.apk` for sideload (this US), `.aab` for Google Play (US-032)
 
 **Tasks:**
-- [ ] **TASK-042.1:** Update `.gitignore` — add keystore and `key.properties` entries
-- [ ] **TASK-042.2:** Generate keystore with `keytool` and store securely outside repo
-- [ ] **TASK-042.3:** Create `android/key.properties` with signing config
-- [ ] **TASK-042.4:** Configure release signing in `android/app/build.gradle`
-- [ ] **TASK-042.5:** Run `flutter build apk --release` and verify output
-- [ ] **TASK-042.6:** Extract SHA-1 from release keystore and add to Firebase Console
-- [ ] **TASK-042.7:** Install APK on device and verify Google Sign-In + data load
+- [x] **TASK-042.1:** Update `.gitignore` — add keystore and `key.properties` entries
+- [x] **TASK-042.2:** Generate keystore with `keytool` and store securely outside repo
+- [x] **TASK-042.3:** Create `android/key.properties` with signing config
+- [x] **TASK-042.4:** Configure release signing in `android/app/build.gradle`
+- [x] **TASK-042.5:** Run `flutter build apk --release` and verify output
+- [x] **TASK-042.6:** Extract SHA-1 from release keystore and add to Firebase Console
+- [x] **TASK-042.7:** Install APK on device and verify Google Sign-In + data load
 
 **Relation to US-032 (Google Play Release):**
 - Keystore created here is reused directly in US-032
