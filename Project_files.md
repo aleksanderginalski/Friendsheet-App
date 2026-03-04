@@ -28,7 +28,7 @@
 ## lib/
 - lib/firebase_options.dart - Firebase config (gitignored)
 - lib/firebase_options.example.dart - Mock config for CI/CD
-- lib/main.dart - App entry point, Firebase initialization, AuthWrapper, MainScreen as root
+- lib/main.dart - App entry point, Firebase initialization, AuthWrapper, SplashScreen as home (US-052)
 
 ## lib/presentation/
 - lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD with cascade delete (US-026, US-043)
@@ -52,6 +52,7 @@
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
 - lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
 - lib/presentation/screens/settings_screen.dart - Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)
+- lib/presentation/screens/splash_screen.dart - SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Nunito ExtraBold below video, navigates to AuthWrapper on completion via pushReplacement (US-052)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)
 - lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
@@ -105,6 +106,8 @@
 - test/presentation/screens/main_screen_test.dart - MainScreen tests (5 tests)
 - test/presentation/screens/main_screen_test.mocks.dart - Generated mocks for MainScreen tests
 - test/presentation/screens/meetings_list_screen_test.dart - MeetingsListScreen tests (5 tests)
+- test/presentation/screens/splash_screen_test.dart - SplashScreen tests — 'Friendsheet' text rendered, background color #FAFAF7; uses MockVideoPlayerControllerInterface (US-052)
+- test/presentation/screens/splash_screen_test.mocks.dart
 - test/presentation/widgets/interaction_distribution_widget_test.dart - InteractionDistributionWidget tests — rendering, hidden hint, info icon visibility, toggle label, empty state, isLoading spinner presence/absence (US-030, US-051)
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
 - test/presentation/widgets/meeting_date_field_test.mocks.dart - Generated mocks for MeetingDateField tests
@@ -122,6 +125,7 @@
 
 ## assets/
 - assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)
+- assets/animations/splash.mp4 - Splash screen animation — 3s MP4, Midjourney-generated, played by SplashScreen widget on app launch (US-052)
 
 ## scripts/migration/
 - scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.
