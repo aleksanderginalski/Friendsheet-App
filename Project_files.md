@@ -120,6 +120,9 @@
 - test/widget_test.dart - AuthWrapper tests
 - test/widget_test.mocks.dart - Generated mocks (Mockito)
 
+## assets/
+- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)
+
 ## scripts/migration/
 - scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.
 - scripts/migration/requirements.txt - Python dependencies: openpyxl, firebase-admin
