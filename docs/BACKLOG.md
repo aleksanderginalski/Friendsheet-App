@@ -2268,7 +2268,7 @@ Attach if available
 
 ---
 
-### US-051: App Icon Design & Integration
+### US-056: App Icon Design & Integration
 
 **As a** developer
 **I want to** have a custom app icon that reflects Friendsheet's brand
@@ -2299,12 +2299,12 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 ```
 
 **Tasks:**
-- [ ] **TASK-051.1:** Generate 4–6 icon variants in Midjourney, select best
-- [ ] **TASK-051.2:** Refine in Figma — adjust colors to match palette exactly
-- [ ] **TASK-051.3:** Export 1024×1024 PNG
-- [ ] **TASK-051.4:** Add `flutter_launcher_icons` to pubspec.yaml
-- [ ] **TASK-051.5:** Configure adaptive icon (foreground + `#FAFAF7` background)
-- [ ] **TASK-051.6:** Run `dart run flutter_launcher_icons` and verify output
+- [ ] **TASK-056.1:** Generate 4–6 icon variants in Midjourney, select best
+- [ ] **TASK-056.2:** Refine in Figma — adjust colors to match palette exactly
+- [ ] **TASK-056.3:** Export 1024×1024 PNG
+- [ ] **TASK-056.4:** Add `flutter_launcher_icons` to pubspec.yaml
+- [ ] **TASK-056.5:** Configure adaptive icon (foreground + `#FAFAF7` background)
+- [ ] **TASK-056.6:** Run `dart run flutter_launcher_icons` and verify output
 
 ---
 
