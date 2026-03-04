@@ -16,7 +16,8 @@
       "Bash(keytool -list -v -keystore \"C:\\\\Programowanie\\\\Friendsheet-unpulbic\\\\friendsheet.jks\" -alias friendsheet-key -storepass 'Matic$$$$1914')",
       "Bash(keytool -list -v -keystore \"C:\\\\Programowanie\\\\Friendsheet-unpublic\\\\friendsheet.jks\" -alias friendsheet-key -storepass 'Matic$$$$1914')",
       "Bash(flutter build apk --release)",
-      "Bash(flutter devices)"
+      "Bash(flutter devices)",
+      "Bash(dart run flutter_launcher_icons)"
     ]
   }
 }
