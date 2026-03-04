@@ -4,7 +4,8 @@
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ Completed |
 | M2 | Management & CRUD | ✅ Completed |
-| M3 | Statistics & Export | 🔜 Next |
+| M3 | Statistics & Export | ✅ Completed |
+| M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Google Photos Integration | 📋 Planned |
@@ -219,6 +220,36 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.10.1 - US-050 Flutter Theme Implementation — Design System (March 04, 2026)
+- ✅ AppTheme class created in lib/core/theme/app_theme.dart
+- ✅ ColorScheme.light() with full Friendsheet palette (#43A047 primary, #FAFAF7 surface, #FFB300 secondary)
+- ✅ Nunito typography via google_fonts — ExtraBold/Bold/Regular/SemiBold across all text roles
+- ✅ CardThemeData with 16dp border radius
+- ✅ ElevatedButton theme with 12dp border radius
+- ✅ AppBar, FAB, BottomNavigationBar styled consistently
+- ✅ AppTheme.light applied in FriendsheetApp — replaces legacy primarySwatch: Colors.green
+- ✅ Visual smoke test passed on Login, Home, Meetings, Friends screens
+- ✅ Total test count: 363 tests
+
+### v3.10.0 - US-049 Figma Design System Setup (March 04, 2026)
+- ✅ Figma file created: Friendsheet — Design System
+- ✅ 8 Color Styles defined (Primary/Default/Light/Dark, Secondary, Surface/Default/Subtle, Text/Primary, Status/Error)
+- ✅ 6 Text Styles defined (Display 30/36, H1 24/29, H2 20/24, Body 16/24, Body Small 14/21, Caption 12/17)
+- ✅ Nunito imported via Google Fonts plugin (Regular 400, SemiBold 600, Bold 700, ExtraBold 800)
+- ✅ Base frame 390×844 with 8dp grid configured
+- ✅ Design system serves as single source of truth for EPIC-009
+
+### v3.9.0 - US-042 Release APK & Device Installation (March 04, 2026)
+- ✅ Keystore generated and stored securely outside repository
+- ✅ `android/key.properties` configured with absolute keystore path (gitignored)
+- ✅ `android/app/build.gradle.kts` updated with release signing config (Kotlin DSL)
+- ✅ `.gitignore` updated — added `*.jks`, `*.keystore`, `key.properties`, `android/key.properties`
+- ✅ Release SHA-1 fingerprint added to Firebase Console (Google Sign-In works on device)
+- ✅ `flutter build apk --release` — app-release.apk (51.3MB) generated successfully
+- ✅ APK installed on personal Android device via sideload
+- ✅ Smoke test passed: Sign-In, data load, add meeting all working on physical device
+- ✅ Total test count: 363 tests
 
 ### v3.8.0 - US-031 JSON Export to Device (March 03, 2026)
 - ✅ ExportService — fetches meetings, persons, activityCategories from Firestore

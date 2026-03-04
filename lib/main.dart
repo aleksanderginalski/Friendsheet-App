@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'core/theme/app_theme.dart';
 import 'data/services/auth_service.dart';
 import 'firebase_options.dart';
 import 'presentation/screens/login_screen.dart';
@@ -28,11 +29,7 @@ class FriendsheetApp extends StatelessWidget {
     return MaterialApp(
       title: 'Friendsheet',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        primaryColor: const Color(0xFF4CAF50),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       // Inject real AuthService in production
       home: AuthWrapper(authService: AuthService()),
     );
