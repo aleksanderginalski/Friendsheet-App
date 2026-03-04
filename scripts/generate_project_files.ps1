@@ -148,6 +148,11 @@ foreach ($item in $files) {
     }
 }
 
+# assets — static section (not scanned by lib/test crawler)
+$lines.Add("")
+$lines.Add("## assets/")
+$lines.Add("- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)")
+
 # scripts/migration — static section (not scanned, files are partial gitignored)
 $lines.Add("")
 $lines.Add("## scripts/migration/")
