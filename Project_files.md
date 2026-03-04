@@ -1,10 +1,11 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 03, 2026
+**Last Updated:** marca 04, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
 
 ## lib/core/
+- lib/core/theme/app_theme.dart - AppTheme — ThemeData with Nunito typography, ColorScheme from design brief, CardThemeData (16dp), ElevatedButton (12dp), AppBar, FAB, BottomNavigationBar (US-050)
 - lib/core/utils/firebase_test.dart - Firebase connection test
 
 ## lib/data/
@@ -22,6 +23,7 @@
 - lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
 - lib/data/repositories/statistics_repository.dart - StatisticsRepository — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ActivityBreakdownEntry DTO), getPersonsForActivity (PersonActivityEntry DTO — uses getPersonsByUser + in-memory filter, no whereIn limit), getInteractionDistribution (InteractionDistributionEntry DTO), getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030, US-050)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)
+- lib/data/services/export_service.dart - ExportService — fetches meetings, persons, activityCategories for userId, serializes to JSON, writes to external storage; injectable directoryProvider for test isolation (US-031)
 
 ## lib/
 - lib/firebase_options.dart - Firebase config (gitignored)
@@ -40,14 +42,16 @@
 - lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)
+- lib/presentation/providers/export_provider.dart - ExportProvider — isLoading, errorMessage, lastExportPath; no-op guard when already loading; clearError() (US-031)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen (stream, year grouping, expand/collapse)
 - lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); initialize() and selectYear() isolate loadDistribution() outside try/catch to prevent silent failures; selectYear() preserves whoPerActivity during fetch to avoid empty-state flash (US-050); owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB, owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027)
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027, US-031)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list grouped by year with expand/collapse sections (US-021)
 - lib/presentation/screens/persons_list_screen.dart - Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)
+- lib/presentation/screens/settings_screen.dart - Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)
 - lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
@@ -72,6 +76,8 @@
 - test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
 - test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown, getPersonsForActivity (incl. >30 participants regression test), getInteractionDistribution, getCumulativeInteractions (US-027, US-028, US-029, US-030, US-050)
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
+- test/data/services/export_service_test.dart - ExportService tests — happy path, empty data, repository throws (US-031)
+- test/data/services/export_service_test.mocks.dart
 
 ## test/presentation/
 - test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD, deleteWithChildren verification (US-026, US-043)
@@ -84,6 +90,8 @@
 - test/presentation/persons/persons_list_provider_test.mocks.dart - Generated mocks for PersonsListProvider tests
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests — categories, ancestor propagation, addNewActivity (US-020, US-042)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
+- test/presentation/providers/export_provider_test.dart - ExportProvider tests — loading transitions, ExportException, generic exception, no-op guard, clearError (US-031)
+- test/presentation/providers/export_provider_test.mocks.dart - Generated mocks for ExportProvider tests
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests (11 tests)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
 - test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, carousel state (toggleCardVisibility, restoreAllCards, allCardsHidden), SharedPreferences persistence (US-027, US-028, US-029, US-030, US-048, US-050, US-051)
