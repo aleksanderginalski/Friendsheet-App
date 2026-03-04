@@ -13,8 +13,8 @@
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ COMPLETED |
 | M2 | Management & CRUD | ✅ COMPLETED |
-| M3 | Statistics & Export | 🔜 Next |
-| M3.5 | Visual Design & Brand Identity | 📋 Planned |
+| M3 | Statistics & Export | ✅ COMPLETED |
+| M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Google Photos Integration | 📋 Planned |
@@ -2190,7 +2190,7 @@ Attach if available
 
 **Priority:** P0
 **Role:** UX Designer + Developer
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -2202,26 +2202,26 @@ Attach if available
 
 **Story Points:** 3
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Labels:** `design`, `figma`
 **Mode:** 🎨 Design (no Claude Code)
 
 **Acceptance Criteria:**
-- [ ] Figma file created with frame size 390×844 (standard mobile)
-- [ ] Color styles defined: Primary, Primary Light, Primary Dark, Secondary, Surface, On Surface, Subtle, Error
-- [ ] Text styles defined: Display, H1, H2, Body, Caption
-- [ ] Nunito font imported via Google Fonts plugin
-- [ ] 8dp grid configured on frames
-- [ ] Color palette exported as reference (screenshot or PDF)
+- [x] Figma file created with frame size 390×844 (standard mobile)
+- [x] Color styles defined: Primary, Primary Light, Primary Dark, Secondary, Surface, On Surface, Subtle, Error
+- [x] Text styles defined: Display, H1, H2, Body, Caption
+- [x] Nunito font imported via Google Fonts plugin
+- [x] 8dp grid configured on frames
+- [x] Color palette exported as reference (screenshot or PDF)
 
 **Reference:** `friendsheet_design_brief.md` — Sections 2 & 3
 
 **Tasks:**
-- [ ] **TASK-049.1:** Create Figma account and new project file
-- [ ] **TASK-049.2:** Install Google Fonts plugin, import Nunito
-- [ ] **TASK-049.3:** Define Color Styles from design brief palette
-- [ ] **TASK-049.4:** Define Text Styles (Display / H1 / H2 / Body / Caption)
-- [ ] **TASK-049.5:** Configure 8dp grid on base frame
+- [x] **TASK-049.1:** Create Figma account and new project file
+- [x] **TASK-049.2:** Install Google Fonts plugin, import Nunito
+- [x] **TASK-049.3:** Define Color Styles from design brief palette
+- [x] **TASK-049.4:** Define Text Styles (Display / H1 / H2 / Body / Caption)
+- [x] **TASK-049.5:** Configure 8dp grid on base frame
 
 ---
 
@@ -2233,28 +2233,28 @@ Attach if available
 
 **Story Points:** 3
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Labels:** `flutter`, `theme`, `dev`
 **Mode:** ⚙️ Task (Claude Code)
 **Depends on:** US-049
 
 **Acceptance Criteria:**
-- [ ] `AppTheme` class created in `lib/core/theme/app_theme.dart`
-- [ ] `ColorScheme.light()` configured with design brief palette
-- [ ] `google_fonts` package added, Nunito set as `fontFamily`
-- [ ] `CardTheme` with `borderRadius: 16dp`
-- [ ] `ElevatedButton` theme with `borderRadius: 12dp`
-- [ ] `ThemeData` applied in `FriendsheetApp` widget
-- [ ] All existing screens visually verified — no layout breaks
-- [ ] `flutter analyze` passes with no warnings
+- [x] `AppTheme` class created in `lib/core/theme/app_theme.dart`
+- [x] `ColorScheme.light()` configured with design brief palette
+- [x] `google_fonts` package added, Nunito set as `fontFamily`
+- [x] `CardTheme` with `borderRadius: 16dp`
+- [x] `ElevatedButton` theme with `borderRadius: 12dp`
+- [x] `ThemeData` applied in `FriendsheetApp` widget
+- [x] All existing screens visually verified — no layout breaks
+- [x] `flutter analyze` passes with no warnings
 
 **Tasks:**
-- [ ] **TASK-050.1:** Add `google_fonts` to pubspec.yaml, run `flutter pub get`
-- [ ] **TASK-050.2:** Create `lib/core/theme/app_theme.dart` with `AppTheme` class
-- [ ] **TASK-050.3:** Implement `ColorScheme`, `TextTheme`, `CardTheme`, `ButtonTheme`
-- [ ] **TASK-050.4:** Apply theme in `main.dart` → `FriendsheetApp`
-- [ ] **TASK-050.5:** Visual smoke test on all 4 main screens
-- [ ] **TASK-050.6:** Run `dart format .` and `flutter analyze`
+- [x] **TASK-050.1:** Add `google_fonts` to pubspec.yaml, run `flutter pub get`
+- [x] **TASK-050.2:** Create `lib/core/theme/app_theme.dart` with `AppTheme` class
+- [x] **TASK-050.3:** Implement `ColorScheme`, `TextTheme`, `CardTheme`, `ButtonTheme`
+- [x] **TASK-050.4:** Apply theme in `main.dart` → `FriendsheetApp`
+- [x] **TASK-050.5:** Visual smoke test on all 4 main screens
+- [x] **TASK-050.6:** Run `dart format .` and `flutter analyze`
 
 ---
 

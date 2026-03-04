@@ -3,6 +3,7 @@
     "lib/main.dart"                                                         = "App entry point, Firebase initialization, AuthWrapper, MainScreen as root"
     "lib/firebase_options.dart"                                             = "Firebase config (gitignored)"
     "lib/firebase_options.example.dart"                                     = "Mock config for CI/CD"
+    "lib/core/theme/app_theme.dart"                                         = "AppTheme — ThemeData with Nunito typography, ColorScheme from design brief, CardThemeData (16dp), ElevatedButton (12dp), AppBar, FAB, BottomNavigationBar (US-050)"
     "lib/core/utils/firebase_test.dart"                                     = "Firebase connection test"
     "lib/data/models/activity_category.dart"                                = "ActivityCategory model (Freezed) — nullable createdAt fallback, isSelectableAsActivity, copiedFromId, parentCategoryId, iconIdentifier (US-019, US-020, US-026)"
     "lib/data/models/activity_category.freezed.dart"                        = "Generated"
