@@ -40,6 +40,9 @@ dependencies:
   # Device file system paths for export feature
   path_provider: ^2.1.0
 
+  # Google Fonts for Nunito typography (US-050)
+  google_fonts: ^6.2.1
+
   # UI Icons
   cupertino_icons: ^1.0.6
 
