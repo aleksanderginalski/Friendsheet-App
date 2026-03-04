@@ -1556,21 +1556,22 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 **Story Points:** 5  
 **Priority:** P0
+**Status:** ✅ COMPLETED (March 04, 2026)
 
 **Acceptance Criteria:**
-- [ ] Keystore generated and securely stored (NOT in git)
-- [ ] `key.properties` file configured and gitignored
-- [ ] Release build variant configured in build.gradle
-- [ ] App Bundle (.aab) generated successfully
-- [ ] Version code and version name set
-- [ ] ProGuard/R8 rules configured if needed
+- [x] Keystore generated and securely stored (NOT in git)
+- [x] `key.properties` file configured and gitignored
+- [x] Release build variant configured in build.gradle
+- [x] App Bundle (.aab) generated successfully
+- [x] Version code and version name set
+- [x] ProGuard/R8 rules configured if needed
 
 **Tasks:**
-- [ ] **TASK-159:** Generate keystore and document storage - 1h
-- [ ] **TASK-160:** Configure signing in build.gradle - 1h
-- [ ] **TASK-161:** Update .gitignore for keystore files - 30min
-- [ ] **TASK-162:** Build and test release AAB - 1h
-- [ ] **TASK-163:** Update CI/CD for release builds - 1h
+- [x] **TASK-159:** Generate keystore and document storage - 1h
+- [x] **TASK-160:** Configure signing in build.gradle - 1h
+- [x] **TASK-161:** Update .gitignore for keystore files - 30min
+- [x] **TASK-162:** Build and test release AAB - 1h
+- [x] **TASK-163:** Update CI/CD for release builds - 1h
 
 ---
 
@@ -2276,11 +2277,11 @@ Attach if available
 
 **Story Points:** 5
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 04, 2026)
 **Labels:** `design`, `midjourney`, `android`, `release`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-049 (color palette defined)
-✅ COMPLETED (March 04, 2026)
+
 
 **Acceptance Criteria:**
 - [x] Icon generated in Midjourney using design brief prompt (warm green + amber palette)
@@ -2311,30 +2312,27 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 
 ### US-052: Splash Screen
 
-**As a** user
-**I want to** see a branded splash screen when the app launches
-**So that** the app feels polished and professional from the first moment
-
-**Story Points:** 3
-**Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 04, 2026)
 **Labels:** `design`, `flutter`, `release`
 **Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-051 (icon/branding established)
+**Depends on:** US-056 (icon/branding established)
 
 **Acceptance Criteria:**
-- [ ] Splash screen shows Friendsheet logo/icon centered on warm white background (`#FAFAF7`)
-- [ ] App name "Friendsheet" displayed in Nunito ExtraBold below icon
-- [ ] Primary green `#43A047` used as accent
-- [ ] Splash disappears automatically after auth check completes (no fixed timer)
-- [ ] Implemented using `flutter_native_splash` package
-- [ ] Tested on both emulator and physical device
+- [x] MP4 animation asset added to `assets/animations/splash.mp4`
+- [x] `video_player` package added for MP4 playback
+- [x] `SplashScreen` widget created — plays MP4 + shows "Friendsheet" in Nunito ExtraBold below
+- [x] Splash disappears automatically when MP4 finishes playing
+- [x] After splash completes → navigate to `AuthWrapper` (auth check happens in background)
+- [x] Background color: `#FAFAF7` (warm white)
+- [x] "Friendsheet" text color: `#43A047` (primary green)
+- [x] Tested on emulator — no jank, smooth playback
 
 **Tasks:**
-- [ ] **TASK-052.1:** Add `flutter_native_splash` to pubspec.yaml
-- [ ] **TASK-052.2:** Configure splash in `pubspec.yaml` (color, image)
-- [ ] **TASK-052.3:** Run `dart run flutter_native_splash:create`
-- [ ] **TASK-052.4:** Verify splash → auth check → home flow
+- [x] **TASK-052.1:** Add MP4 to `assets/animations/` and register in `pubspec.yaml`
+- [x] **TASK-052.2:** Add `video_player` to `pubspec.yaml`
+- [x] **TASK-052.3:** Create `SplashScreen` widget with `VideoPlayerController`
+- [x] **TASK-052.4:** Wire `SplashScreen` as first route in `main.dart` — navigates to `AuthWrapper` on completion
+- [x] **TASK-052.5:** Write widget test for `SplashScreen`
 
 ---
 

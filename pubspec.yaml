@@ -43,6 +43,9 @@ dependencies:
   # Google Fonts for Nunito typography (US-050)
   google_fonts: ^6.2.1
 
+  # Video playback for animated splash screen (US-052)
+  video_player: ^2.9.2
+
   # UI Icons
   cupertino_icons: ^1.0.6
 
@@ -78,6 +81,7 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/animations/
 
   # Add custom fonts here when needed
   # fonts:
