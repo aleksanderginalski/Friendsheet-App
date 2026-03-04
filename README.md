@@ -220,6 +220,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.8.0 - US-031 JSON Export to Device (March 03, 2026)
+- ✅ ExportService — fetches meetings, persons, activityCategories from Firestore
+- ✅ JSON file written to device external storage (app-specific folder)
+- ✅ Filename: `friendsheet_export_YYYY-MM-DD.json`
+- ✅ ExportProvider — standard loading/error/path pattern
+- ✅ SettingsScreen — new screen, reactive UI with SnackBar feedback
+- ✅ Drawer extended with Settings tile (above logout)
+- ✅ path_provider ^2.1.0 added
+- ✅ Total test count: 363 tests (all passing)
+
 ### v3.7.0 - US-050 Bug Fix — Who Per Activity (March 03, 2026)
 - ✅ Fixed getPersonsForActivity returning empty list when activity has >30 unique participants (Firestore whereIn limit)
 - ✅ Replaced getPersonsByIds with getPersonsByUser + in-memory filtering in StatisticsRepository
