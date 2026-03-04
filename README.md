@@ -221,6 +221,9 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.11.0— Visual Design & Brand Identity 
+- US-056: Custom app icon — Midjourney-generated, flutter_launcher_icons, adaptive icon Android
+
 ### v3.10.1 - US-050 Flutter Theme Implementation — Design System (March 04, 2026)
 - ✅ AppTheme class created in lib/core/theme/app_theme.dart
 - ✅ ColorScheme.light() with full Friendsheet palette (#43A047 primary, #FAFAF7 surface, #FFB300 secondary)
