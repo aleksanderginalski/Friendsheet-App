@@ -63,7 +63,8 @@ void main() {
       final stub = _StubMeetingsListProvider();
       await tester.pumpWidget(buildScreen(stub));
 
-      expect(find.text('No meetings yet!'), findsOneWidget);
+      expect(find.text('No meetings yet — tap + to add your first one!'),
+          findsOneWidget);
     });
 
     testWidgets('shows year header when meetings exist', (tester) async {
