@@ -1,6 +1,9 @@
 // lib/presentation/screens/login_screen.dart
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/services/auth_service.dart';
 
 /// Login screen with Google Sign-In button
@@ -19,6 +22,36 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
+  late final TapGestureRecognizer _tosRecognizer;
+  late final TapGestureRecognizer _ppRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _tosRecognizer = TapGestureRecognizer()
+      ..onTap = () => _launchUrl(
+            'https://aleksanderginalski.github.io/Friendsheet-App/terms',
+          );
+    _ppRecognizer = TapGestureRecognizer()
+      ..onTap = () => _launchUrl(
+            'https://aleksanderginalski.github.io/Friendsheet-App/privacy',
+          );
+  }
+
+  @override
+  void dispose() {
+    _tosRecognizer.dispose();
+    _ppRecognizer.dispose();
+    super.dispose();
+  }
+
+  /// Opens URL in external browser
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   /// Handle Google Sign-In button press
   Future<void> _handleGoogleSignIn() async {
@@ -61,6 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -71,19 +106,11 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // App branding
-                const Icon(
-                  Icons.people_alt,
-                  size: 80,
-                  color: Color(0xFF4CAF50),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'FRIENDSHEET',
-                  style: TextStyle(
+                Text(
+                  'Friendsheet',
+                  style: GoogleFonts.pacifico(
                     fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF4CAF50),
-                    letterSpacing: 2,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -94,7 +121,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 64),
+                const SizedBox(height: 32),
+
+                // Login illustration — shrinks on small screens, never pushes button off screen
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: Image.asset(
+                      'assets/images/login_illustration.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
 
                 // Google Sign-In button
                 _isLoading
@@ -146,13 +185,33 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // Terms of service
-                const Text(
-                  'By signing in, you agree to our\nTerms of Service',
+                // Terms of Service and Privacy Policy — tap to open in external browser
+                RichText(
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+                  text: TextSpan(
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    children: [
+                      const TextSpan(
+                        text: 'By signing in, you agree to our\n',
+                      ),
+                      TextSpan(
+                        text: 'Terms of Service',
+                        style: TextStyle(
+                          color: primaryColor,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: _tosRecognizer,
+                      ),
+                      const TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: TextStyle(
+                          color: primaryColor,
+                          decoration: TextDecoration.underline,
+                        ),
+                        recognizer: _ppRecognizer,
+                      ),
+                    ],
                   ),
                 ),
               ],
