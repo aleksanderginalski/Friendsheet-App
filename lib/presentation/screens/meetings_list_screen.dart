@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../data/services/auth_service.dart';
 import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/meeting_card.dart';
 
 /// Screen that displays all meetings for the current user, grouped by year.
@@ -69,7 +70,10 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             final meetingsByYear = provider.meetingsByYear;
 
             if (meetingsByYear.isEmpty) {
-              return _EmptyState();
+              return const EmptyStateWidget(
+                imagePath: 'assets/images/empty_state_meetings.png',
+                message: 'No meetings yet — tap + to add your first one!',
+              );
             }
 
             return ListView(
@@ -117,25 +121,6 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             );
           },
         ),
-      ),
-    );
-  }
-}
-
-/// Shown when the user has no meetings yet.
-class _EmptyState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.calendar_today, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('No meetings yet!'),
-          SizedBox(height: 4),
-          Text('Tap + to add your first meeting.'),
-        ],
       ),
     );
   }
