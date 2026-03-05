@@ -68,7 +68,9 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             }
 
             final meetingsByYear = provider.meetingsByYear;
+            final filtered = provider.filteredMeetingsByYear;
 
+            // No meetings at all — prompt to create the first one.
             if (meetingsByYear.isEmpty) {
               return const EmptyStateWidget(
                 imagePath: 'assets/images/empty_state_meetings.png',
@@ -76,47 +78,76 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
               );
             }
 
-            return ListView(
+            return Column(
               children: [
-                for (final entry in meetingsByYear.entries) ...[
-                  // Year section header
-                  ListTile(
-                    title: Text(
-                      entry.key.toString(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    trailing: Icon(
-                      provider.isYearExpanded(entry.key)
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                    ),
-                    onTap: () => provider.toggleYear(entry.key),
-                  ),
-                  // Meeting cards shown only when the year is expanded
-                  if (provider.isYearExpanded(entry.key))
-                    for (final meeting in entry.value)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        child: MeetingCard(
-                          meeting: meeting,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MeetingDetailScreen(meeting: meeting),
-                              ),
-                            );
-                          },
-                        ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search meetings...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                ],
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 16,
+                      ),
+                    ),
+                    onChanged: provider.setSearchQuery,
+                  ),
+                ),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? EmptyStateWidget(
+                          imagePath: 'assets/images/empty_state_meetings.png',
+                          message: 'No results for "${provider.searchQuery}"',
+                        )
+                      : ListView(
+                          children: [
+                            for (final entry in filtered.entries) ...[
+                              // Year section header
+                              ListTile(
+                                title: Text(
+                                  entry.key.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                trailing: Icon(
+                                  provider.isYearExpanded(entry.key)
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                ),
+                                onTap: () => provider.toggleYear(entry.key),
+                              ),
+                              // Meeting cards shown only when the year is expanded
+                              if (provider.isYearExpanded(entry.key))
+                                for (final meeting in entry.value)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    child: MeetingCard(
+                                      meeting: meeting,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MeetingDetailScreen(
+                                                    meeting: meeting),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                            ],
+                          ],
+                        ),
+                ),
               ],
             );
           },

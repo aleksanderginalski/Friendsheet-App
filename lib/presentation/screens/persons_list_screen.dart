@@ -140,20 +140,9 @@ class _PersonsListBody extends StatelessWidget {
     }
 
     if (persons.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            'No results for "${provider.searchQuery}"',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ),
+      return EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_friends.png',
+        message: 'No results for "${provider.searchQuery}"',
       );
     }
 
