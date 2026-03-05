@@ -36,12 +36,12 @@
     "lib/presentation/providers/statistics_provider.dart"                   = "StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); initialize() and selectYear() isolate loadDistribution() outside try/catch to prevent silent failures; selectYear() preserves whoPerActivity during fetch to avoid empty-state flash (US-050); owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051)"
     "lib/presentation/screens/add_meeting_screen.dart"                      = "Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)"
     "lib/presentation/screens/home_screen.dart"                             = "Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)"
-    "lib/presentation/screens/login_screen.dart"                            = "Google Sign-In screen"
+    "lib/presentation/screens/login_screen.dart"                            = "Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)"    
     "lib/presentation/screens/main_screen.dart"                             = "Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027, US-031)"
     "lib/presentation/screens/meetings_list_screen.dart"                    = "Meetings list grouped by year with expand/collapse sections (US-021)"
     "lib/presentation/screens/persons_list_screen.dart"                     = "Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)"
     "lib/presentation/screens/settings_screen.dart"                         = "Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)"
-    "lib/presentation/screens/splash_screen.dart"                           = "SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Nunito ExtraBold below video, navigates to AuthWrapper on completion via pushReplacement (US-052)"
+    "lib/presentation/screens/splash_screen.dart"                           = "SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)"    
     "lib/presentation/widgets/activity_autocomplete.dart"                   = "Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)"
     "lib/presentation/widgets/activity_breakdown_widget.dart"               = "Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)"
     "lib/presentation/widgets/activity_selector_dialog.dart"                = "Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)"
@@ -155,6 +155,7 @@ $lines.Add("")
 $lines.Add("## assets/")
 $lines.Add("- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)")
 $lines.Add("- assets/animations/splash.mp4 - Splash screen animation — 3s MP4, Midjourney-generated, played by SplashScreen widget on app launch (US-052)")
+
 
 # scripts/migration — static section (not scanned, files are partial gitignored)
 $lines.Add("")

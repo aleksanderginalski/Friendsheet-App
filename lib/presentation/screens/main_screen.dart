@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/repositories/activity_category_repository.dart';
@@ -126,7 +127,13 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FRIENDSHEET'),
+        title: Text(
+          'Friendsheet',
+          style: GoogleFonts.pacifico(
+            fontSize: 22,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         actions: [
@@ -141,11 +148,14 @@ class _MainScreenState extends State<MainScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Color(0xFF4CAF50)),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
               child: Text(
-                'FRIENDSHEET',
-                style: TextStyle(color: Colors.white, fontSize: 24),
+                'Friendsheet',
+                style: GoogleFonts.pacifico(
+                  fontSize: 28,
+                  color: Colors.white,
+                ),
               ),
             ),
             ListTile(
