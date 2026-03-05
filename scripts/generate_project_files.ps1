@@ -32,20 +32,21 @@
     "lib/presentation/persons/persons_list_provider.dart"                   = "State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)"
     "lib/presentation/providers/add_meeting_provider.dart"                  = "State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)"
     "lib/presentation/providers/export_provider.dart"                       = "ExportProvider — isLoading, errorMessage, lastExportPath; no-op guard when already loading; clearError() (US-031)"
-    "lib/presentation/providers/meetings_list_provider.dart"                = "State for Meetings List screen (stream, year grouping, expand/collapse)"
+    "lib/presentation/providers/meetings_list_provider.dart"                = "State for Meetings List screen — stream, year grouping, expand/collapse, client-side search (filteredMeetingsByYear computed getter) (US-021, US-054)"
     "lib/presentation/providers/statistics_provider.dart"                   = "StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); initialize() and selectYear() isolate loadDistribution() outside try/catch to prevent silent failures; selectYear() preserves whoPerActivity during fetch to avoid empty-state flash (US-050); owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051)"
     "lib/presentation/screens/add_meeting_screen.dart"                      = "Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)"
     "lib/presentation/screens/home_screen.dart"                             = "Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)"
-    "lib/presentation/screens/login_screen.dart"                            = "Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)"    
+    "lib/presentation/screens/login_screen.dart"                            = "Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)"
     "lib/presentation/screens/main_screen.dart"                             = "Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027, US-031)"
-    "lib/presentation/screens/meetings_list_screen.dart"                    = "Meetings list grouped by year with expand/collapse sections (US-021)"
-    "lib/presentation/screens/persons_list_screen.dart"                     = "Persons list with search/filter and navigation to PersonDetailScreen — reads PersonsListProvider from MainScreen (US-024)"
+    "lib/presentation/screens/meetings_list_screen.dart"                    = "Meetings list — grouped by year, expand/collapse, persistent search field, EmptyStateWidget for empty list and no search results (US-021, US-054)"
+    "lib/presentation/screens/persons_list_screen.dart"                     = "Persons list — search/filter, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054)"
     "lib/presentation/screens/settings_screen.dart"                         = "Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)"
-    "lib/presentation/screens/splash_screen.dart"                           = "SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)"    
+    "lib/presentation/screens/splash_screen.dart"                           = "SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)"
     "lib/presentation/widgets/activity_autocomplete.dart"                   = "Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)"
     "lib/presentation/widgets/activity_breakdown_widget.dart"               = "Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)"
     "lib/presentation/widgets/activity_selector_dialog.dart"                = "Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)"
     "lib/presentation/widgets/activity_visibility_dialog.dart"              = "Dialog with hierarchical checkbox list + Auto-select top 10 button for managing activity visibility (US-048)"
+    "lib/presentation/widgets/empty_state_widget.dart"                      = "Reusable empty state component — illustration + message; used by MeetingsListScreen and PersonsListScreen (US-054), ActivitiesListScreen (US-055)"
     "lib/presentation/widgets/interaction_distribution_widget.dart"         = "Animated bar chart showing meeting weight per person — yearly/cumulative toggle, isLoading inline spinner (widget always stays in tree), info icon (>100% explanation), ⚙️ visibility dialog, _lastTargetLeft animation architecture (US-030, US-051)"
     "lib/presentation/widgets/meeting_card.dart"                            = "Meeting card widget — displays name, date, participant count, weight (US-021)"
     "lib/presentation/widgets/meeting_date_field.dart"                      = "Date picker widget (US-011)"
@@ -80,7 +81,7 @@
     "test/presentation/providers/add_meeting_provider_test.mocks.dart"      = "Generated mocks for AddMeetingProvider tests"
     "test/presentation/providers/export_provider_test.dart"                 = "ExportProvider tests — loading transitions, ExportException, generic exception, no-op guard, clearError (US-031)"
     "test/presentation/providers/export_provider_test.mocks.dart"           = "Generated mocks for ExportProvider tests"
-    "test/presentation/providers/meetings_list_provider_test.dart"          = "MeetingsListProvider tests (11 tests)"
+    "test/presentation/providers/meetings_list_provider_test.dart"          = "MeetingsListProvider tests — stream grouping, expand/collapse, search filtering, no-results state (US-021, US-054)"
     "test/presentation/providers/meetings_list_provider_test.mocks.dart"    = "Generated mocks for MeetingsListProvider tests"
     "test/presentation/providers/statistics_provider_test.dart"             = "StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, carousel state (toggleCardVisibility, restoreAllCards, allCardsHidden), SharedPreferences persistence (US-027, US-028, US-029, US-030, US-048, US-050, US-051)"
     "test/presentation/providers/statistics_provider_test.mocks.dart"       = "Generated mocks for StatisticsProvider tests"
@@ -92,8 +93,9 @@
     "test/presentation/screens/login_screen_test.mocks.dart"                = "Generated mocks for LoginScreen tests"
     "test/presentation/screens/main_screen_test.dart"                       = "MainScreen tests (5 tests)"
     "test/presentation/screens/main_screen_test.mocks.dart"                 = "Generated mocks for MainScreen tests"
-    "test/presentation/screens/meetings_list_screen_test.dart"              = "MeetingsListScreen tests (5 tests)"
+    "test/presentation/screens/meetings_list_screen_test.dart"              = "MeetingsListScreen tests — rendering, search field, filtering by name, no-results EmptyStateWidget (US-021, US-054)"
     "test/presentation/screens/splash_screen_test.dart"                     = "SplashScreen tests — 'Friendsheet' text rendered, background color #FAFAF7; uses MockVideoPlayerControllerInterface (US-052)"
+    "test/presentation/widgets/empty_state_widget_test.dart"                = "EmptyStateWidget tests — renders image asset, renders message, different messages render correctly (US-054)"
     "test/presentation/widgets/interaction_distribution_widget_test.dart"   = "InteractionDistributionWidget tests — rendering, hidden hint, info icon visibility, toggle label, empty state, isLoading spinner presence/absence (US-030, US-051)"
     "test/presentation/widgets/meeting_date_field_test.dart"                = "MeetingDateField tests (4 tests)"
     "test/presentation/widgets/meeting_date_field_test.mocks.dart"          = "Generated mocks for MeetingDateField tests"
@@ -155,7 +157,9 @@ $lines.Add("")
 $lines.Add("## assets/")
 $lines.Add("- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)")
 $lines.Add("- assets/animations/splash.mp4 - Splash screen animation — 3s MP4, Midjourney-generated, played by SplashScreen widget on app launch (US-052)")
-
+$lines.Add("- assets/images/login_illustration.png - Login screen illustration — flat 2D cartoon friends, Midjourney-generated, displayed above Google Sign-In button (US-053)")
+$lines.Add("- assets/images/empty_state_meetings.png - Meetings empty state illustration — two cartoon friends at a cafe table, Midjourney-generated (US-054)")
+$lines.Add("- assets/images/empty_state_friends.png - Friends empty state illustration — single cartoon character waving, Midjourney-generated (US-054)")
 
 # scripts/migration — static section (not scanned, files are partial gitignored)
 $lines.Add("")
