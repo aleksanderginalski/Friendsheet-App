@@ -9,6 +9,7 @@ import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/presentation/providers/meetings_list_provider.dart';
 import 'package:friendsheet/presentation/screens/meetings_list_screen.dart';
+import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
 import 'package:friendsheet/presentation/widgets/meeting_card.dart';
 
 void main() {
@@ -20,12 +21,16 @@ void main() {
     await Firebase.initializeApp();
   });
 
-  // Helper: creates a Meeting fixture with a controlled date.
-  Meeting makeMeeting({required String id, required DateTime date}) {
+  // Helper: creates a Meeting fixture with a controlled date and optional name.
+  Meeting makeMeeting({
+    required String id,
+    required DateTime date,
+    String name = 'Coffee with Anna',
+  }) {
     return Meeting(
       id: id,
       userId: 'user-1',
-      name: 'Coffee with Anna',
+      name: name,
       date: date,
       weight: 3,
       participantIds: const ['p-1'],
@@ -63,7 +68,8 @@ void main() {
       final stub = _StubMeetingsListProvider();
       await tester.pumpWidget(buildScreen(stub));
 
-      expect(find.text('No meetings yet!'), findsOneWidget);
+      expect(find.text('No meetings yet — tap + to add your first one!'),
+          findsOneWidget);
     });
 
     testWidgets('shows year header when meetings exist', (tester) async {
@@ -92,6 +98,66 @@ void main() {
       await tester.pumpWidget(buildScreen(stub));
 
       expect(find.byType(MeetingCard), findsOneWidget);
+    });
+
+    testWidgets('shows search field when meetings exist', (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {},
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
+      expect(find.byType(TextField), findsOneWidget);
+      expect(
+        find.byWidgetPredicate((w) =>
+            w is TextField && w.decoration?.hintText == 'Search meetings...'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('filters meetings by name when search query is entered',
+        (tester) async {
+      final coffee = makeMeeting(
+          id: 'm1', date: DateTime(2026, 2, 15), name: 'Coffee with Anna');
+      final dinner = makeMeeting(
+          id: 'm2', date: DateTime(2026, 3, 10), name: 'Dinner with Bob');
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [coffee, dinner]
+        },
+        expandedYears: {2026},
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
+      // Both cards visible before search.
+      expect(find.byType(MeetingCard), findsNWidgets(2));
+
+      await tester.enterText(find.byType(TextField), 'Coffee');
+      await tester.pump();
+
+      // Only the matching card remains.
+      expect(find.byType(MeetingCard), findsOneWidget);
+    });
+
+    testWidgets('shows no-results empty state when search yields no matches',
+        (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {2026},
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
+      await tester.enterText(find.byType(TextField), 'xyz');
+      await tester.pump();
+
+      expect(find.byType(EmptyStateWidget), findsOneWidget);
+      expect(find.text('No results for "xyz"'), findsOneWidget);
     });
   });
 }

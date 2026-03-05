@@ -85,7 +85,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/animations/
-    - assets/images/login_illustration.png
+    - assets/images/
 
   # Add custom fonts here when needed
   # fonts:
