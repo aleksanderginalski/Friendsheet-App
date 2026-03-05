@@ -129,10 +129,9 @@ class _SplashScreenState extends State<SplashScreen> {
           const SizedBox(height: 16),
           Text(
             'Friendsheet',
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.pacifico(
               fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF43A047),
+              color: const Color(0xFF4CAF50),
             ),
           ),
         ],
