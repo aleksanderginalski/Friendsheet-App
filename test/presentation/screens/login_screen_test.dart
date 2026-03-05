@@ -24,14 +24,9 @@ void main() {
   }
 
   group('LoginScreen', () {
-    testWidgets('displays app icon', (tester) async {
-      await tester.pumpWidget(buildLoginScreen());
-      expect(find.byIcon(Icons.people_alt), findsOneWidget);
-    });
-
     testWidgets('displays app name', (tester) async {
       await tester.pumpWidget(buildLoginScreen());
-      expect(find.text('FRIENDSHEET'), findsOneWidget);
+      expect(find.text('Friendsheet'), findsOneWidget);
     });
 
     testWidgets('displays tagline', (tester) async {
@@ -49,10 +44,31 @@ void main() {
       expect(find.text('One tap to get started! 🚀'), findsOneWidget);
     });
 
-    testWidgets('displays terms of service text', (tester) async {
+    testWidgets('displays terms of service and privacy policy links',
+        (tester) async {
+      await tester.pumpWidget(buildLoginScreen());
+      // Both links live inside a single RichText — check plain text content
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is RichText &&
+              widget.text.toPlainText().contains('Terms of Service') &&
+              widget.text.toPlainText().contains('Privacy Policy'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('displays login illustration', (tester) async {
       await tester.pumpWidget(buildLoginScreen());
       expect(
-        find.text('By signing in, you agree to our\nTerms of Service'),
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName ==
+                  'assets/images/login_illustration.png',
+        ),
         findsOneWidget,
       );
     });
