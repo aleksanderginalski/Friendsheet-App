@@ -22,9 +22,16 @@ class MeetingsListProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   final Set<int> _expandedYears = {};
+  String _searchQuery = '';
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String get searchQuery => _searchQuery;
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
 
   // Groups meetings by year and returns a map sorted by year descending.
   Map<int, List<Meeting>> get meetingsByYear {
@@ -35,6 +42,21 @@ class MeetingsListProvider extends ChangeNotifier {
     }
     final sortedKeys = map.keys.toList()..sort((a, b) => b.compareTo(a));
     return {for (final key in sortedKeys) key: map[key]!};
+  }
+
+  // Filters meetingsByYear by _searchQuery (case-insensitive name match).
+  // Returns full meetingsByYear when search is empty.
+  Map<int, List<Meeting>> get filteredMeetingsByYear {
+    if (_searchQuery.trim().isEmpty) return meetingsByYear;
+    final lower = _searchQuery.toLowerCase();
+    final result = <int, List<Meeting>>{};
+    for (final entry in meetingsByYear.entries) {
+      final filtered = entry.value
+          .where((m) => m.name.toLowerCase().contains(lower))
+          .toList();
+      if (filtered.isNotEmpty) result[entry.key] = filtered;
+    }
+    return result;
   }
 
   bool isYearExpanded(int year) => _expandedYears.contains(year);
