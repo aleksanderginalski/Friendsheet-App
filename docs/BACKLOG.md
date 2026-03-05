@@ -40,13 +40,13 @@ EPIC-002: Friendsheet M2 - Management & CRUD ✅
 
 EPIC-003: Friendsheet M3 - Statistics & Export
 ├── FEATURE-016: Data Import ✅
-└── FEATURE-009: Core Statistics
-└── FEATURE-010: Data Export
-└── FEATURE-017: Sideload Release
+└── FEATURE-009: Core Statistics ✅
+└── FEATURE-010: Data Export ✅
+└── FEATURE-017: Sideload Release ✅
 
 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
-├── FEATURE-018: Design System & Theme
-├── FEATURE-019: App Assets (Icon + Splash)
+├── FEATURE-018: Design System & Theme ✅
+├── FEATURE-019: App Assets (Icon + Splash) ✅
 └── FEATURE-020: Illustrations & Empty States
 
 EPIC-004: Friendsheet M4 - Google Play Release
@@ -2346,42 +2346,77 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 
 ---
 
-### US-053: Login Screen Illustration
+### US-053: Login Screen Illustration & App-wide Typography Polish
 
 **As a** user
-**I want to** see a welcoming illustration on the login screen
-**So that** the app feels warm and friendly from the first interaction
+**I want to** see a welcoming illustration and consistent branding on the login screen and throughout the app
+**So that** the app feels warm, friendly and visually consistent from the first interaction
 
-**Story Points:** 3
+**Story Points:** 5
 **Priority:** P1
-**Status:** 📋 Planned
-**Labels:** `design`, `midjourney`, `flutter`
+**Status:** ✅ COMPLETED (March 2026)
+**Labels:** `design`, `midjourney`, `flutter`, `typography`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-050 (theme in place)
 
 **Acceptance Criteria:**
-- [ ] Illustration generated in Midjourney (group of friends, warm scene)
-- [ ] Illustration exported as SVG or PNG (max 200KB)
-- [ ] Displayed above Google Sign-In button on LoginScreen
-- [ ] Responsive — scales correctly on different screen sizes
-- [ ] Does not push Sign-In button below visible area on small screens (min 360dp height)
+- [x] Illustration generated in Midjourney (two friendly characters, warm scene)
+- [x] Illustration exported as PNG (max 200KB)
+- [x] Displayed above Google Sign-In button on LoginScreen
+- [x] Responsive — scales correctly on different screen sizes
+- [x] Does not push Sign-In button below visible area on small screens (min 360dp height)
+- [x] People icon removed from LoginScreen
+- [x] App title "Friendsheet" uses Pacifico font on LoginScreen
+- [x] App title "Friendsheet" uses Pacifico font in AppBar (MainScreen)
+- [x] App title "Friendsheet" uses Pacifico font in Drawer header
+- [x] App title "Friendsheet" uses Pacifico font on SplashScreen
+- [x] "Settings" title uses white color in SettingsScreen AppBar
+- [x] Terms of Service link added to LoginScreen (opens in external browser)
+- [x] Privacy Policy link added to LoginScreen (opens in external browser)
+- [x] ToS and Privacy Policy hosted on GitHub Pages
 
-**Midjourney Prompt (starting point):**
+**Midjourney Prompt (used):**
 ```
-flat illustration, group of 3-4 diverse cartoon friends,
+flat 2D illustration, group of 3-4 diverse cartoon friends,
 laughing and spending time together, warm and joyful scene,
-rounded character style, green and amber color palette,
+rounded character style, green #43A047 and amber #FFB300 color palette,
 white background, simple geometric shapes, duolingo-inspired style,
 horizontal composition, mobile app onboarding illustration,
---ar 16:9 --style raw --v 6
+no text, no letters, clean edges
+--ar 3:2 --style raw --v 6.1
 ```
 
 **Tasks:**
-- [ ] **TASK-053.1:** Generate illustration in Midjourney, iterate to approval
-- [ ] **TASK-053.2:** Export and optimize (SVG preferred, PNG fallback)
-- [ ] **TASK-053.3:** Add to `assets/images/` and register in `pubspec.yaml`
-- [ ] **TASK-053.4:** Integrate into `LoginScreen` layout
-- [ ] **TASK-053.5:** Test on small screen (360dp width) — verify button visibility
+- [x] **TASK-053.1:** Illustration already present in `assets/images/`
+- [x] **TASK-053.2:** Register `login_illustration.png` in `pubspec.yaml`
+- [x] **TASK-053.3:** Integrate illustration into `LoginScreen` layout
+- [x] **TASK-053.4:** Test on small screen (360dp width) — verify button visibility
+- [x] **TASK-053.5:** Add `'displays login illustration'` test
+- [x] **TASK-053.6:** Remove `Icon(Icons.people_alt)` from LoginScreen
+- [x] **TASK-053.7:** Replace title font with Pacifico on LoginScreen
+- [x] **TASK-053.8:** Add ToS as plain text with TODO comment (url_launcher pending)
+- [x] **TASK-053.9:** Verify `url_launcher` gitignore — no changes needed
+- [x] **TASK-053.10:** Add `url_launcher: ^6.3.0` to `pubspec.yaml`
+- [x] **TASK-053.11:** Add `https` scheme intent to `AndroidManifest.xml`
+- [x] **TASK-053.12:** Replace ToS text with tappable RichText (ToS + Privacy Policy)
+- [x] **TASK-053.13:** Update LoginScreen tests for RichText links
+- [x] **TASK-053.14:** Apply Pacifico to AppBar title (MainScreen)
+- [x] **TASK-053.15:** Apply Pacifico to Drawer header (MainScreen)
+- [x] **TASK-053.16:** Apply Pacifico to SplashScreen title
+- [x] **TASK-053.17:** Fix Settings AppBar title color to white
+
+**GitHub Pages:**
+- Terms of Service: `https://aleksanderginalski.github.io/Friendsheet-App/terms`
+- Privacy Policy: `https://aleksanderginalski.github.io/Friendsheet-App/privacy`
+
+**Definition of Done:**
+- [x] Illustration visible on LoginScreen
+- [x] Pacifico font consistent across LoginScreen, AppBar, Drawer, SplashScreen
+- [x] ToS and Privacy Policy links functional
+- [x] GitHub Pages live with both documents
+- [x] 365/365 tests passing
+- [x] `flutter analyze` — no issues
+- [x] Code reviewed and committed
 
 ---
 
