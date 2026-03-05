@@ -35,7 +35,7 @@ Friendsheet uses Google Sign-In for authentication. By signing in, you authorize
 
 We collect only the data you explicitly enter into the app. We do not use your data for advertising or analytics beyond basic app functionality.
 
-For more details, see our [Privacy Policy](https://aleksanderginalski.github.io/friendsheet-app/privacy).
+For more details, see our [Privacy Policy](https://aleksanderginalski.github.io/Friendsheet-App/privacy).
 
 ---
 
