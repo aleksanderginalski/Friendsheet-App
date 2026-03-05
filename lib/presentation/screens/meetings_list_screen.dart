@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../data/services/auth_service.dart';
 import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/meeting_card.dart';
 
 /// Screen that displays all meetings for the current user, grouped by year.
@@ -67,75 +68,90 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             }
 
             final meetingsByYear = provider.meetingsByYear;
+            final filtered = provider.filteredMeetingsByYear;
 
+            // No meetings at all — prompt to create the first one.
             if (meetingsByYear.isEmpty) {
-              return _EmptyState();
+              return const EmptyStateWidget(
+                imagePath: 'assets/images/empty_state_meetings.png',
+                message: 'No meetings yet — tap + to add your first one!',
+              );
             }
 
-            return ListView(
+            return Column(
               children: [
-                for (final entry in meetingsByYear.entries) ...[
-                  // Year section header
-                  ListTile(
-                    title: Text(
-                      entry.key.toString(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    trailing: Icon(
-                      provider.isYearExpanded(entry.key)
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                    ),
-                    onTap: () => provider.toggleYear(entry.key),
-                  ),
-                  // Meeting cards shown only when the year is expanded
-                  if (provider.isYearExpanded(entry.key))
-                    for (final meeting in entry.value)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        child: MeetingCard(
-                          meeting: meeting,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    MeetingDetailScreen(meeting: meeting),
-                              ),
-                            );
-                          },
-                        ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search meetings...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                ],
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 16,
+                      ),
+                    ),
+                    onChanged: provider.setSearchQuery,
+                  ),
+                ),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? EmptyStateWidget(
+                          imagePath: 'assets/images/empty_state_meetings.png',
+                          message: 'No results for "${provider.searchQuery}"',
+                        )
+                      : ListView(
+                          children: [
+                            for (final entry in filtered.entries) ...[
+                              // Year section header
+                              ListTile(
+                                title: Text(
+                                  entry.key.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                trailing: Icon(
+                                  provider.isYearExpanded(entry.key)
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                ),
+                                onTap: () => provider.toggleYear(entry.key),
+                              ),
+                              // Meeting cards shown only when the year is expanded
+                              if (provider.isYearExpanded(entry.key))
+                                for (final meeting in entry.value)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    child: MeetingCard(
+                                      meeting: meeting,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MeetingDetailScreen(
+                                                    meeting: meeting),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                            ],
+                          ],
+                        ),
+                ),
               ],
             );
           },
         ),
-      ),
-    );
-  }
-}
-
-/// Shown when the user has no meetings yet.
-class _EmptyState extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.calendar_today, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('No meetings yet!'),
-          SizedBox(height: 4),
-          Text('Tap + to add your first meeting.'),
-        ],
       ),
     );
   }

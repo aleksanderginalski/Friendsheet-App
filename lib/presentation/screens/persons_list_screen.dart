@@ -9,6 +9,7 @@ import '../persons/person_detail_provider.dart';
 import '../persons/person_detail_screen.dart';
 import '../persons/person_list_tile.dart';
 import '../persons/persons_list_provider.dart';
+import '../widgets/empty_state_widget.dart';
 import '../widgets/person_autocomplete.dart';
 
 /// Displays the list of all persons for the current user with search support.
@@ -132,36 +133,16 @@ class _PersonsListBody extends StatelessWidget {
     final persons = provider.persons;
 
     if (persons.isEmpty && provider.searchQuery.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.people_outline, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No people yet!\nAdd participants when creating a meeting.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_friends.png',
+        message: 'No friends added yet — tap + to get started!',
       );
     }
 
     if (persons.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.search_off, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              'No results for "${provider.searchQuery}"',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
+      return EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_friends.png',
+        message: 'No results for "${provider.searchQuery}"',
       );
     }
 
