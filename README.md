@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (365)
+✅ All tests passing (371)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,17 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.13.0 - US-054 Empty States — Meetings & Friends (March 05, 2026)
+- ✅ EmptyStateWidget — reusable component (imagePath + message, no CTA)
+- ✅ MeetingsListScreen: EmptyStateWidget for empty list + persistent search field above list
+- ✅ MeetingsListProvider: filteredMeetingsByYear computed getter, setSearchQuery()
+- ✅ PersonsListScreen: EmptyStateWidget for both empty list and no search results states
+- ✅ empty_state_meetings.png and empty_state_friends.png — Midjourney flat 2D style
+- ✅ pubspec.yaml: single-file asset replaced with full assets/images/ directory registration
+- ✅ withValues(alpha: 0.6) used instead of deprecated withOpacity
+- ✅ Total test count: 365 → 371 tests (+6)
+```
 
 ### v3.12.0 - US-053 Login Screen Illustration & Typography Polish (March 2026)
 - ✅ Login screen illustration added (Midjourney, flat 2D style)
