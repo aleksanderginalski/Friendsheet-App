@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (235)
+✅ All tests passing (365)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -221,8 +221,18 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.12.0 - US-053 Login Screen Illustration & Typography Polish (March 2026)
+- ✅ Login screen illustration added (Midjourney, flat 2D style)
+- ✅ Pacifico font applied to app title across LoginScreen, AppBar, Drawer, SplashScreen
+- ✅ People icon removed from LoginScreen
+- ✅ Terms of Service and Privacy Policy links added to LoginScreen
+- ✅ GitHub Pages live: terms and privacy policy hosted at aleksanderginalski.github.io/Friendsheet-App
+- ✅ Settings AppBar title color fixed to white
+- ✅ url_launcher added for external browser link handling
+- ✅ Total test count: 366 → 365 tests (removed obsolete icon test)
+
 ### v3.11.0— Visual Design & Brand Identity 
-- US-056: Custom app icon — Midjourney-generated, flutter_launcher_icons, adaptive icon Android
+-✅ US-056: Custom app icon — Midjourney-generated, flutter_launcher_icons, adaptive icon Android
 
 ### v3.10.1 - US-050 Flutter Theme Implementation — Design System (March 04, 2026)
 - ✅ AppTheme class created in lib/core/theme/app_theme.dart
