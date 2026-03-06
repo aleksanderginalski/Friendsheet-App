@@ -62,7 +62,7 @@ EPIC-007: Friendsheet M7 - AI Assistant
 └── FEATURE-016-AI: AI-powered Insights
 ```
 
----
+
 
 # 📦 EPIC-001: Friendsheet MVP
 
@@ -1673,7 +1673,7 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 
 **Priority:** P1
 **Role:** UX Designer + Developer
-**Status:** 🔄 In Progress  (US-053 ✅, US-054 ✅, US-055 📋)
+**Status:** ✅ Compleated
 ---
 
 ### US-053: Login Screen Illustration & App-wide Typography Polish
@@ -1859,7 +1859,247 @@ US-051 App Icon ─────────────────────�
 - US-054 Empty States
 - US-055 Empty State Activities
 
+## 🎨 FEATURE-021: UX/UI Improvements — Statistics, Meetings & Friends
 
+**Description:** Polishes the existing app experience across three core areas — statistics readability, meeting history navigation, and friends management — so Friendsheet feels production-ready before Google Play release.
+**Priority:** P1
+**Role:** Developer + UX Designer
+**Status:** 📋 Planned
+
+### US-056: Statistics Home — Illustration & Enhanced Year Picker
+
+**As a** user
+**I want to** see a decorative illustration on the Home statistics screen and a more intuitive year selector
+**So that** the statistics tab feels polished and the year navigation is visually clear
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `design`, `statistics`, `ux`
+**Mode:** 🎨 Design → ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] Empty space above YearStepper filled with provided `statistics_illustration` asset
+- [ ] Illustration is responsive — does not obscure content on small screens
+- [ ] YearStepper horizontally centered; active year visually prominent (size/color)
+- [ ] Adjacent years (±1) visible but dimmed — suggest swipeability
+- [ ] Arrows spaced further from the year label to encourage swipe gesture usage
+- [ ] Year boundary logic preserved (no arrow when no data beyond boundary)
+
+**Tasks:**
+- [ ] **TASK-056.1:** Add `statistics_illustration` asset to `assets/images/`, register in `pubspec.yaml`
+- [ ] **TASK-056.2:** Integrate illustration into `StatisticsSection` above `YearStepper`
+- [ ] **TASK-056.3:** Refactor `YearStepper` — centered layout, dimmed neighbour years, wider arrow spacing
+- [ ] **TASK-056.4:** Write widget tests for updated `YearStepper`
+
+---
+
+### US-057: Filter Icon & Select All / Deselect All
+
+**As a** user
+**I want to** open activity/person filters via a filter icon and quickly select or deselect all items
+**So that** the filter control is more intuitive and faster to use
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `statistics`, `ux`, `filter`
+**Mode:** ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] Gear icon (⚙️) replaced with provided `filter_icon` asset in all statistics widgets
+- [ ] `ActivityVisibilityDialog` has "Select all" / "Deselect all" buttons
+- [ ] `PersonVisibilityDialog` has "Select all" / "Deselect all" buttons
+- [ ] Deselecting all items does not crash — chart shows empty/no-data state
+- [ ] Existing "Auto-select top 10" logic unchanged
+
+**Tasks:**
+- [ ] **TASK-057.1:** Add `filter_icon` asset to `assets/images/`, register in `pubspec.yaml`
+- [ ] **TASK-057.2:** Replace gear icon with `filter_icon` in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget`
+- [ ] **TASK-057.3:** Add "Select all" / "Deselect all" to `ActivityVisibilityDialog`
+- [ ] **TASK-057.4:** Add "Select all" / "Deselect all" to `PersonVisibilityDialog`
+- [ ] **TASK-057.5:** Write tests for select/deselect all logic
+
+---
+
+### US-058: Who Per Activity — Person Filter Dialog & Activity Tree Picker
+
+**As a** user
+**I want to** filter persons in Who Per Activity via a dialog and pick activities from a visual tree
+**So that** I can manage which people I see and navigate the activity hierarchy intuitively
+
+**Story Points:** 8
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `statistics`, `who-per-activity`, `ux`
+**Mode:** ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] `ActivitySelectorDialog` refactored to show full category tree with icons (parent → child hierarchy)
+- [ ] Selecting an activity in the tree refreshes the chart immediately
+- [ ] Person filtering available via filter icon (same pattern as US-057)
+- [ ] Person filter dialog has checkboxes + "Select all" / "Deselect all"
+- [ ] Long-press on bar remains as a secondary shortcut (hide/show person) — both mechanisms coexist
+- [ ] Activity icons consistent with Activities tab
+
+**Tasks:**
+- [ ] **TASK-058.1:** Refactor `ActivitySelectorDialog` — replace flat list with tree layout using `ActivityCategory` hierarchy and icons
+- [ ] **TASK-058.2:** Add filter icon to `WhoPerActivityWidget` header
+- [ ] **TASK-058.3:** Build `WhoPerActivityPersonFilterDialog` — checkboxes + select/deselect all
+- [ ] **TASK-058.4:** Wire dialog into `WhoPerActivityWidget`; preserve long-press as shortcut
+- [ ] **TASK-058.5:** Write tests
+
+---
+
+### US-059: Meetings — Monthly Grouping, Compact Cards & Expandable Search
+
+**As a** user
+**I want to** see meetings grouped by month within each year, with smaller cards and an expandable search bar
+**So that** I can navigate my meeting history more efficiently
+
+**Story Points:** 8
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `meetings`, `ux`, `search`
+**Mode:** ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] Meetings grouped: Year → Month (e.g. "March 2026 · 4 meetings")
+- [ ] `MeetingCard` uses compact layout — reduced padding and font sizes
+- [ ] Month sections are collapsible (same pattern as current year sections)
+- [ ] Current month expanded by default; previous month expanded; older months collapsed
+- [ ] Search icon in `MeetingsListScreen` AppBar — tap opens text input field (same UX as `ActivitiesListScreen`)
+- [ ] Same expandable search pattern applied to `PersonsListScreen` (Friends tab)
+- [ ] Search results work correctly with new month-grouped structure
+
+**Tasks:**
+- [ ] **TASK-059.1:** Extend `MeetingsListProvider` — add month-level grouping logic (`Map<int, Map<int, List<Meeting>>>`)
+- [ ] **TASK-059.2:** Refactor `MeetingsListScreen` — render year → month sections with collapse/expand
+- [ ] **TASK-059.3:** Update `MeetingCard` — compact variant (reduced padding, smaller font)
+- [ ] **TASK-059.4:** Implement expandable `SearchBar` in `MeetingsListScreen` AppBar (mirror `ActivitiesListScreen` pattern)
+- [ ] **TASK-059.5:** Implement expandable `SearchBar` in `PersonsListScreen` AppBar
+- [ ] **TASK-059.6:** Write widget tests for month grouping and search behavior
+
+---
+
+### US-060: Statistics Visibility Panel
+
+**As a** user
+**I want to** manage which statistics cards are visible via a settings panel instead of long-press
+**So that** I have a clear and discoverable way to configure my dashboard
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `statistics`, `ux`, `home-screen`
+**Mode:** ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] Long-press on carousel card removed as a hide mechanism
+- [ ] Provided `stats_options_icon` asset shown in statistics section header
+- [ ] Tapping icon opens a dialog with one checkbox per statistics card
+- [ ] Unchecking a card hides it from the carousel
+- [ ] Minimum 1 card must remain visible — last checkbox cannot be unchecked
+- [ ] Persistence in `SharedPreferences` key `stats_carousel_hidden_cards` unchanged
+- [ ] US-051 empty state ("Long-press to restore") removed; replaced by dialog-driven restore
+
+**Tasks:**
+- [ ] **TASK-060.1:** Add `stats_options_icon` asset, register in `pubspec.yaml`
+- [ ] **TASK-060.2:** Remove `GestureDetector(onLongPress)` from carousel pages in `StatisticsSection`
+- [ ] **TASK-060.3:** Build `StatisticsVisibilityDialog` — checkbox per `StatCard` enum value, enforce min 1 visible
+- [ ] **TASK-060.4:** Wire dialog into `StatisticsSection` header
+- [ ] **TASK-060.5:** Update `StatisticsProvider` — remove long-press toggle path, keep dialog toggle
+- [ ] **TASK-060.6:** Update existing US-051 tests to reflect removed long-press behavior
+
+---
+
+### US-061: Friends — Nicknames & Autocomplete
+
+**As a** user
+**I want to** add nicknames to friends and search for them by nickname when adding meetings
+**So that** I can find people faster without remembering their full name
+
+**Story Points:** 8
+**Priority:** P2
+**Status:** 📋 Planned
+**Labels:** `friends`, `data-model`, `autocomplete`
+**Mode:** ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] `Person` model extended with `nicknames: List<String>` (empty list = no nicknames)
+- [ ] `PersonDetailScreen` allows adding, editing and removing nicknames
+- [ ] Autocomplete in `AddMeetingScreen` searches `firstName`, `lastName` **and** all `nicknames`
+- [ ] Suggestion displays: full name + nickname in parentheses, e.g. `Małgorzata Bielawska (Gosia)`
+- [ ] Firestore schema change is backwards-compatible — missing field treated as empty list
+- [ ] Data migration not required (field is optional)
+
+**Tasks:**
+- [ ] **TASK-061.1:** Extend `Person` Freezed model — add `nicknames: List<String>`, update `fromFirestore`/`toFirestore`, regenerate `.freezed.dart`
+- [ ] **TASK-061.2:** Update `PersonRepository` — persist and read `nicknames` field
+- [ ] **TASK-061.3:** Add nickname management UI to `PersonDetailScreen` (add/remove chips)
+- [ ] **TASK-061.4:** Extend `PersonAutocomplete` — include nicknames in search, update suggestion label format
+- [ ] **TASK-061.5:** Write tests (model, repository, autocomplete search logic)
+
+---
+
+### US-062: Friends — Groups
+
+**As a** user
+**I want to** organize friends into named groups
+**So that** I can find and browse friends more easily
+
+**Story Points:** 8
+**Priority:** P2
+**Status:** 📋 Planned
+**Labels:** `friends`, `data-model`, `groups`
+**Mode:** ⚙️ Task
+**Depends on:** US-061 (stable `Person` model)
+
+**Acceptance Criteria:**
+- [ ] New `FriendGroup` model (`id`, `name`, `personIds: List<String>`)
+- [ ] `FriendGroupRepository` with full CRUD stored under `users/{uid}/friend_groups`
+- [ ] `PersonsListScreen` shows friends grouped into named sections
+- [ ] User can create, rename and delete groups from the Friends tab
+- [ ] A person can belong to multiple groups
+- [ ] People without a group shown in an "Ungrouped" section
+- [ ] Search works globally across all groups
+
+**Tasks:**
+- [ ] **TASK-062.1:** Create `FriendGroup` Freezed model + `FriendGroupRepository`
+- [ ] **TASK-062.2:** Add Firestore security rules for `friend_groups` subcollection
+- [ ] **TASK-062.3:** Build `FriendGroupsProvider` — CRUD + loading state
+- [ ] **TASK-062.4:** Refactor `PersonsListScreen` — render group sections with "Ungrouped" fallback
+- [ ] **TASK-062.5:** Build group management UI (create/rename/delete group, assign persons)
+- [ ] **TASK-062.6:** Write tests (model, repository, provider)
+
+---
+
+### US-063: Chart Visual Enhancement — Colors & Depth Effect
+
+**As a** user
+**I want to** see statistics charts with richer colors and a depth effect
+**So that** the data visualizations feel more engaging and premium
+
+**Story Points:** 5
+**Priority:** P2
+**Status:** 📋 Planned
+**Labels:** `statistics`, `design`, `charts`
+**Mode:** 🎨 Design → ⚙️ Task
+
+**Acceptance Criteria:**
+- [ ] Bars in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget` use a new color palette (not constrained to existing app palette)
+- [ ] Each bar rendered with a vertical gradient (e.g. lighter top → darker bottom or accent-based)
+- [ ] Color-per-id assignment remains stable (`categoryId` / `personId` → same color every render)
+- [ ] Visual effect does not reduce label or value readability
+- [ ] All existing chart tests pass without modification
+
+**Tasks:**
+- [ ] **TASK-063.1:** Design new chart color palette (6–10 colors) — optimised for visual depth
+- [ ] **TASK-063.2:** Implement `ChartGradientBar` helper — `LinearGradient` applied to bar paint in `CustomPainter`
+- [ ] **TASK-063.3:** Replace flat color bars in `ActivityBreakdownWidget` with `ChartGradientBar`
+- [ ] **TASK-063.4:** Replace flat color bars in `WhoPerActivityWidget` with `ChartGradientBar`
+- [ ] **TASK-063.5:** Replace flat color bars in `InteractionDistributionWidget` with `ChartGradientBar`
+- [ ] **TASK-063.6:** Verify all chart tests pass; update color assertions if needed
 
 # 📦 EPIC-004: Friendsheet M4 - Google Play Release
 
