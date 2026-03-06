@@ -435,6 +435,45 @@ class StatisticsProvider extends ChangeNotifier {
     );
   }
 
+  /// Sets all activities as visible (true) or hidden (false).
+  /// Persists updated state to SharedPreferences.
+  /// Returns the new hidden set so callers (e.g. dialog) can update local state.
+  Future<Set<String>> setAllActivitiesVisibility(bool visible) async {
+    if (visible) {
+      _hiddenActivities = {};
+    } else {
+      _hiddenActivities = _activityBreakdown.map((e) => e.categoryId).toSet();
+    }
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenActivitiesKey,
+      _hiddenActivities.toList(),
+    );
+    return Set.from(_hiddenActivities);
+  }
+
+  /// Sets all persons in the distribution chart as visible (true) or hidden (false).
+  /// Persists updated state to SharedPreferences.
+  /// Returns the new hidden set so callers (e.g. dialog) can update local state.
+  Future<Set<String>> setAllPersonsVisibility(bool visible) async {
+    if (visible) {
+      _hiddenPersonsDistribution = {};
+    } else {
+      _hiddenPersonsDistribution =
+          _distributionEntries.map((e) => e.personId).toSet();
+    }
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenPersonsDistributionKey,
+      _hiddenPersonsDistribution.toList(),
+    );
+    return Set.from(_hiddenPersonsDistribution);
+  }
+
   /// Reads the persisted hidden-cards list from SharedPreferences.
   /// Called once during initialize(). Key absent or empty → all cards visible.
   Future<void> loadHiddenCards() async {
