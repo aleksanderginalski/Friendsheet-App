@@ -11,6 +11,7 @@ import '../persons/person_list_tile.dart';
 import '../persons/persons_list_provider.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/person_autocomplete.dart';
+import '../widgets/shared_search_bar.dart';
 
 /// Displays the list of all persons for the current user with search support.
 /// PersonsListProvider is provided by MainScreen via ChangeNotifierProvider.value.
@@ -23,8 +24,21 @@ class PersonsListScreen extends StatelessWidget {
   }
 }
 
-class _PersonsListView extends StatelessWidget {
+class _PersonsListView extends StatefulWidget {
   const _PersonsListView();
+
+  @override
+  State<_PersonsListView> createState() => _PersonsListViewState();
+}
+
+class _PersonsListViewState extends State<_PersonsListView> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,27 +57,11 @@ class _PersonsListView extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search people...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: provider.searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => context
-                            .read<PersonsListProvider>()
-                            .setSearchQuery(''),
-                      )
-                    : null,
-                border: const OutlineInputBorder(),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-              onChanged: (value) =>
-                  context.read<PersonsListProvider>().setSearchQuery(value),
-            ),
+          SharedSearchBar(
+            controller: _searchController,
+            hintText: 'Search friends...',
+            onChanged: (value) =>
+                context.read<PersonsListProvider>().setSearchQuery(value),
           ),
           Expanded(
             child: _PersonsListBody(provider: provider),
