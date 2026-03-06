@@ -24,6 +24,27 @@ Not corporate. Not clinical. Not cold.
 
 ## 2. Color System
 
+### Chart Color System
+
+Independent palette for statistics bar charts — not constrained by app UI palette.
+Reference: `lib/core/theme/chart_colors.dart`
+
+**Gradient style:** Horizontal 4-stop cylinder/glass effect
+**Stops:** 0% edge → 30% reflection → 70% reflection → 100% edge
+**Reflection color:** `#F5F0E8` (Warm Off-White) — same for all bars
+**Stroke:** 1.5px center, edge color @ 60% opacity, corner radius 4dp
+
+| Index | Name | Edge color |
+|-------|------|------------|
+| 0 | Forest Green | `#2E7D32` |
+| 1 | Lime Green | `#558B2F` |
+| 2 | Mint Green | `#00796B` |
+| 3 | Deep Orange | `#E65100` |
+| 4 | Warm Amber | `#F57F17` |
+| 5 | Burnt Orange | `#BF360C` |
+| 6 | Coral | `#C62828` |
+| 7 | Sky | `#1565C0` |
+
 ### Primary Palette
 
 | Role | Name | Hex | Usage |

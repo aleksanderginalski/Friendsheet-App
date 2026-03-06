@@ -1,20 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/chart_colors.dart';
 import '../../data/repositories/statistics_repository.dart';
-
-/// Color palette for activity bars — one color per activity (cycles if > 10).
-const _kPalette = [
-  Color(0xFF4CAF50), // green
-  Color(0xFF2196F3), // blue
-  Color(0xFFF44336), // red
-  Color(0xFFFF9800), // orange
-  Color(0xFF9C27B0), // purple
-  Color(0xFF00BCD4), // cyan
-  Color(0xFFFFEB3B), // yellow
-  Color(0xFFE91E63), // pink
-  Color(0xFF795548), // brown
-  Color(0xFF607D8B), // blue grey
-];
 
 /// Fixed heights for bar column sections.
 const _kDeltaHeight = 20.0;
@@ -84,16 +71,11 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
   // to an unrelated provider notification mid-animation.
   List<ActivityBreakdownEntry> _animatingEntries = [];
 
-  // Stable color per categoryId — assigned once on first encounter,
-  // never reassigned so colors survive year changes and reorders.
-  final Map<String, Color> _categoryColors = {};
-
   @override
   void initState() {
     super.initState();
     _displayedEntries = widget.entries;
     _animatingEntries = widget.entries;
-    _ensureColors(widget.entries);
     _controller = AnimationController(
       vsync: this,
       duration: _kAnimationDuration,
@@ -110,7 +92,6 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
     // Only update displayed entries when new data arrives — keep the
     // previous set visible during the loading gap (empty entries).
     if (widget.entries.isNotEmpty && widget.entries != oldWidget.entries) {
-      _ensureColors(widget.entries);
       _displayedEntries = widget.entries;
       // Lock order before restarting the controller so targetLeft values
       // are stable for the entire animation duration.
@@ -130,17 +111,6 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
     _curvedAnimation.dispose();
     _controller.dispose();
     super.dispose();
-  }
-
-  /// Assigns a palette color to each categoryId not yet in the map.
-  /// Insertion order determines the palette index so colors are stable.
-  void _ensureColors(List<ActivityBreakdownEntry> entries) {
-    for (final entry in entries) {
-      if (!_categoryColors.containsKey(entry.categoryId)) {
-        _categoryColors[entry.categoryId] =
-            _kPalette[_categoryColors.length % _kPalette.length];
-      }
-    }
   }
 
   @override
@@ -207,8 +177,7 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
                       // ValueKey tracks bar identity across reorders.
                       key: ValueKey(entry.categoryId),
                       entry: entry,
-                      color: _categoryColors[entry.categoryId] ??
-                          _kPalette[index % _kPalette.length],
+                      categoryId: entry.categoryId,
                       controller: _curvedAnimation,
                       targetLeft: index * _kItemWidth,
                       targetBarHeight:
@@ -231,7 +200,7 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
 /// the controller on a year change.
 class _AnimatedBarItem extends StatefulWidget {
   final ActivityBreakdownEntry entry;
-  final Color color;
+  final String categoryId;
   final Animation<double> controller;
   final double targetLeft;
   final double targetBarHeight;
@@ -239,7 +208,7 @@ class _AnimatedBarItem extends StatefulWidget {
   const _AnimatedBarItem({
     super.key,
     required this.entry,
-    required this.color,
+    required this.categoryId,
     required this.controller,
     required this.targetLeft,
     required this.targetBarHeight,
@@ -313,9 +282,13 @@ class _AnimatedBarItemState extends State<_AnimatedBarItem> {
               width: 32,
               height: barHeight,
               decoration: BoxDecoration(
-                color: widget.color,
+                gradient: ChartColors.getGradient(widget.categoryId),
+                border: Border.all(
+                  color: ChartColors.getStrokeColor(widget.categoryId),
+                  width: 1.5,
+                ),
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(3),
+                  top: Radius.circular(4),
                 ),
               ),
             ),
