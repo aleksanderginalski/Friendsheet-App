@@ -24,6 +24,7 @@ void main() {
     Set<String> hiddenPersons = const {},
     VoidCallback? onAutoSelectTop10,
     void Function(String)? onToggle,
+    VoidCallback? onToggleSelectAll,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -33,6 +34,7 @@ void main() {
             hiddenPersons: hiddenPersons,
             onAutoSelectTop10: onAutoSelectTop10 ?? () {},
             onToggle: onToggle ?? (_) {},
+            onToggleSelectAll: onToggleSelectAll ?? () {},
           ),
         ),
       ),

@@ -1126,6 +1126,7 @@ GestureDetector(
     // ... unchanged
   ),
 )
+```
 
 ## 23. SharedPreferences mock setup w testach (US-029)
 
@@ -1141,7 +1142,8 @@ setUp(() async {
   SharedPreferences.setMockInitialValues({});
   // rest of setup...
 });
-
+```
+---
 
 ## 24. Stable tween begin in animated bar chart (US-049)
 
@@ -1178,6 +1180,34 @@ void didUpdateWidget(_AnimatedBarItem oldWidget) {
 
 Rule: Stationary bars always get `begin == end` — zero animation guaranteed.
 Reuse this pattern in every animated bar chart widget (InteractionDistributionWidget, etc.).
+---
+
+## 25. Three-state select-all toggle icon in checkbox dialogs (US-057)
+
+Pattern for a single toggle IconButton that reflects full / partial / empty selection state.
+Used in ActivityVisibilityDialog and PersonVisibilityDialog.
+```dart
+// Derive icon from hidden set state
+final IconData toggleIcon;
+if (hiddenIds.isEmpty) {
+  toggleIcon = Icons.check_box; // all selected
+} else if (hiddenIds.length == allIds.length) {
+  toggleIcon = Icons.check_box_outline_blank; // none selected
+} else {
+  toggleIcon = Icons.indeterminate_check_box; // partial
+}
+
+// Tap logic: all selected → deselect all, otherwise → select all
+void _applyToggleSelectAll() {
+  if (hiddenIds.isEmpty) {
+    onToggleSelectAll(false); // deselect all
+  } else {
+    onToggleSelectAll(true); // select all
+  }
+}
 ```
 
----  
+Rule: always three states — never binary bool for "select all" toggle.
+Reuse this pattern in any future dialog with a checkbox list.
+---
+
