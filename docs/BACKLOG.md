@@ -1815,16 +1815,29 @@ mobile app illustration, --ar 1:1 --style raw --v 6
 **Labels:** `design`, `flutter`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-054 (reuse EmptyStateWidget from US-054)
+**Status:** ✅ COMPLETED (March 06, 2026)
 
 **Acceptance Criteria:**
-- [ ] Empty state displayed in ActivitiesListScreen when no categories exist
-- [ ] Uses `EmptyStateWidget` component from US-054
-- [ ] Illustration consistent with Meetings and Friends empty states
-- [ ] Message: *"No activities yet — tap + to create your first category!"*
+- [x] Empty state displayed in ActivitiesListScreen when no categories exist
+- [x] Empty state displayed when search returns no results
+- [x] Uses EmptyStateWidget component from US-054
+- [x] Illustration consistent with Meetings and Friends empty states
+- [x] Message: "No activities yet — tap + to create your first category!"
+- [x] 51 custom PNG icons replacing Material Icons
+- [x] ActivityIcon widget with Icons.category fallback
+- [x] Subcategory indentation with T/L tree lines (CustomPainter)
+- [x] SharedSearchBar reusable across Activities, Friends, Meetings
+- [x] Icon picker rebuilt as 2D scrollable GridView
+- [x] AlertDialog replaced with Dialog (RenderIntrinsicWidth fix)
 
 **Tasks:**
-- [ ] **TASK-055.1:** Generate illustration in Midjourney (reuse style params from US-054)
-- [ ] **TASK-055.2:** Integrate `EmptyStateWidget` into `ActivitiesListScreen`
+- [x] **TASK-055.1:** Generate illustration in Midjourney (reuse style params from US-054)
+- [x] **TASK-055.2:** Integrate `EmptyStateWidget` into `ActivitiesListScreen`
+- [x] **TASK-055.3:** Shared search bar + Activities search fix
+- [x] **TASK-055.4:** Empty State + icon color + icon picker grid
+- [x] **TASK-055.5:**  Restore GridView scrolling in icon picker
+- [x] **TASK-055.6:** Update activity_icons_test.dart for PNG API
+
 
 ## 📋 Design Dependency Map
 
