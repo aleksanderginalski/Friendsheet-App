@@ -141,5 +141,42 @@ void main() {
       expect(leftButton.onPressed, isNull);
       expect(rightButton.onPressed, isNull);
     });
+
+    testWidgets('shows dimmed previous year when available', (tester) async {
+      await tester.pumpWidget(buildStepper(
+        selectedYear: 2024,
+        availableYears: const [2023, 2024, 2025],
+        onYearChanged: (_) {},
+      ));
+
+      // Both neighbour years must be visible alongside the active year.
+      expect(find.text('2023'), findsOneWidget);
+      expect(find.text('2025'), findsOneWidget);
+    });
+
+    testWidgets('hides neighbour slot when no previous year available',
+        (tester) async {
+      await tester.pumpWidget(buildStepper(
+        selectedYear: 2024,
+        availableYears: const [2024, 2025],
+        onYearChanged: (_) {},
+      ));
+
+      // 2023 is not in availableYears, so it must not appear in the tree.
+      expect(find.text('2023'), findsNothing);
+    });
+
+    testWidgets('shows no neighbours for single year', (tester) async {
+      await tester.pumpWidget(buildStepper(
+        selectedYear: 2024,
+        availableYears: const [2024],
+        onYearChanged: (_) {},
+      ));
+
+      // Only the active year label must be present.
+      expect(find.text('2024'), findsOneWidget);
+      expect(find.text('2023'), findsNothing);
+      expect(find.text('2025'), findsNothing);
+    });
   });
 }

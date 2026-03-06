@@ -69,7 +69,7 @@
 - lib/presentation/widgets/shared_search_bar.dart - Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens (US-055)
 - lib/presentation/widgets/statistics_section.dart
 - lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); long-press hide/show; SharedPreferences hidden persons (US-029, US-050, US-063)
-- lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget with ← YYYY → arrows and swipe gesture; disabled at year boundaries (US-027)
+- lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget; 5-slot row layout: [←] [prev year dimmed] [active year centered, bold, primary color] [next year dimmed] [→]; arrows disabled at year boundaries; neighbour slots fixed width 48dp for stable layout; swipe gesture preserved (US-027, US-071)
 
 ## test/core/
 - test/core/theme/chart_colors_test.dart - ChartColors tests — stable id→index assignment, palette bounds (0–7), gradient shape (4 colors, 4 stops), stop values [0.0, 0.3, 0.7, 1.0], stroke color charcoal full opacity (US-063)
@@ -127,20 +127,21 @@
 - test/presentation/widgets/shared_search_bar_test.dart - SharedSearchBar tests — hint text, onChanged callback, clear button visibility and behavior (US-055)
 - test/presentation/widgets/statistics_section_test.dart - StatisticsSection tests — PageView present when cards visible, empty state when all hidden, InteractionDistributionWidget always in tree regardless of isDistributionLoading (US-051)
 - test/presentation/widgets/statistics_section_test.mocks.dart
-- test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case (US-027)
+- test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case, dimmed neighbour years visible/hidden (US-027, US-071)
 
 ## test/
 - test/widget_test.dart - AuthWrapper tests
 - test/widget_test.mocks.dart - Generated mocks (Mockito)
 
 ## assets/
-- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)
+- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-071)
 - assets/icons/activities/ - 51 custom PNG activity icons — Midjourney-generated, flat 2D style, used by ActivityIcon widget via kActivityIcons map (US-055)
 - assets/animations/splash.mp4 - Splash screen animation — 3s MP4, Midjourney-generated, played by SplashScreen widget on app launch (US-052)
 - assets/images/login_illustration.png - Login screen illustration — flat 2D cartoon friends, Midjourney-generated, displayed above Google Sign-In button (US-053)
 - assets/images/empty_state_meetings.png - Meetings empty state illustration — two cartoon friends at a cafe table, Midjourney-generated (US-054)
 - assets/images/empty_state_friends.png - Friends empty state illustration — single cartoon character waving, Midjourney-generated (US-054)
 - assets/images/empty_state_activities.png - Activities empty state illustration — cartoon character with clipboard, Midjourney-generated (US-055)
+- assets/images/statistics_illustration.png - Statistics Home illustration — Midjourney-generated, displayed at bottom of HomeScreen left-aligned (US-071)
 
 ## scripts/migration/
 - scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.
