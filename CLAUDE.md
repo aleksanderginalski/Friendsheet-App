@@ -20,6 +20,12 @@ Clean Architecture with three layers:
 - `lib/domain/` — scaffolded for future use
 - `lib/presentation/` — screens, widgets, providers
 
+## Chart Colors
+Chart bar colors are managed exclusively by `ChartColors` class in
+`lib/core/theme/chart_colors.dart`. Never assign bar colors manually
+in widgets — always use `ChartColors.getGradient(id)` and
+`ChartColors.getBaseColor(id)`.
+
 ## Code Standards
 - Code comments: English only
 - Style: explain WHAT and WHY, no metaphors in comments

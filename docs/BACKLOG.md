@@ -2082,24 +2082,51 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 5
 **Priority:** P2
-**Status:** 📋 Planned
 **Labels:** `statistics`, `design`, `charts`
 **Mode:** 🎨 Design → ⚙️ Task
+**Status:** ✅ COMPLETED (March 06, 2026)
 
 **Acceptance Criteria:**
-- [ ] Bars in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget` use a new color palette (not constrained to existing app palette)
-- [ ] Each bar rendered with a vertical gradient (e.g. lighter top → darker bottom or accent-based)
-- [ ] Color-per-id assignment remains stable (`categoryId` / `personId` → same color every render)
-- [ ] Visual effect does not reduce label or value readability
-- [ ] All existing chart tests pass without modification
+- [x] Bars in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget` use a new color palette (not constrained to existing app palette)
+- [x] Each bar rendered with a vertical gradient (e.g. lighter top → darker bottom or accent-based)
+- [x] Color-per-id assignment remains stable (`categoryId` / `personId` → same color every render)
+- [x] Visual effect does not reduce label or value readability
+- [x] All existing chart tests pass without modification
 
 **Tasks:**
-- [ ] **TASK-063.1:** Design new chart color palette (6–10 colors) — optimised for visual depth
-- [ ] **TASK-063.2:** Implement `ChartGradientBar` helper — `LinearGradient` applied to bar paint in `CustomPainter`
-- [ ] **TASK-063.3:** Replace flat color bars in `ActivityBreakdownWidget` with `ChartGradientBar`
-- [ ] **TASK-063.4:** Replace flat color bars in `WhoPerActivityWidget` with `ChartGradientBar`
-- [ ] **TASK-063.5:** Replace flat color bars in `InteractionDistributionWidget` with `ChartGradientBar`
-- [ ] **TASK-063.6:** Verify all chart tests pass; update color assertions if needed
+- [x] **TASK-063.1:** Design new chart color palette (6–10 colors) — optimised for visual depth
+- [x] **TASK-063.2:** Implement `ChartGradientBar` helper — `LinearGradient` applied to bar paint in `CustomPainter`
+- [x] **TASK-063.3:** Replace flat color bars in `ActivityBreakdownWidget` with `ChartGradientBar`
+- [x] **TASK-063.4:** Replace flat color bars in `WhoPerActivityWidget` with `ChartGradientBar`
+- [x] **TASK-063.5:** Replace flat color bars in `InteractionDistributionWidget` with `ChartGradientBar`
+- [x] **TASK-063.6:** Verify all chart tests pass; update color assertions if needed
+
+### US-064: Easter Egg — Special Thanks
+
+**As a** developer
+**I want to** hide a special thanks message triggered by tapping the app title 8 times within 4 seconds
+**So that** I can acknowledge the person who named Friendsheet in a fun, discoverable way
+
+**Story Points:** 2
+**Priority:** P3
+**Status:** 📋 Planned
+**Labels:** `easter-egg`, `ux`
+**Mode:** ⚙️ Task
+**Dependencies:** None
+
+**Acceptance Criteria:**
+- [ ] Tapping "Friendsheet" label in Home tab header 8 times within 4 seconds triggers the easter egg
+- [ ] Timer resets if 4 seconds pass between taps without reaching 8
+- [ ] Pop-up displays: provided `easter_egg_icon` asset + text *"Special thanks to Agata Wippich who came up with the name for this app 💚"*
+- [ ] Tapping anywhere on the pop-up dismisses it
+- [ ] Easter egg can be triggered again after dismissal
+- [ ] No visual hint that the easter egg exists
+
+**Tasks:**
+- [ ] **TASK-064.1:** Add `easter_egg_icon` asset to `assets/images/`, register in `pubspec.yaml`
+- [ ] **TASK-064.2:** Add tap counter + timer logic to `HomeScreen` (8 taps / 4s window)
+- [ ] **TASK-064.3:** Build `EasterEggDialog` — `easter_egg_icon` + thank-you message, dismiss on tap
+- [ ] **TASK-064.4:** Write widget test for tap counter logic
 
 # 📦 EPIC-004: Friendsheet M4 - Google Play Release
 

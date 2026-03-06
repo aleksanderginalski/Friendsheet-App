@@ -1,20 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/chart_colors.dart';
 import '../../data/repositories/statistics_repository.dart';
-
-/// Color palette for person bars — one color per person (cycles if > 10).
-const _kPalette = [
-  Color(0xFF4CAF50), // green
-  Color(0xFF2196F3), // blue
-  Color(0xFFF44336), // red
-  Color(0xFFFF9800), // orange
-  Color(0xFF9C27B0), // purple
-  Color(0xFF00BCD4), // cyan
-  Color(0xFFFFEB3B), // yellow
-  Color(0xFFE91E63), // pink
-  Color(0xFF795548), // brown
-  Color(0xFF607D8B), // blue grey
-];
 
 /// Fixed heights for bar column sections.
 const _kDeltaHeight = 20.0;
@@ -91,16 +78,11 @@ class _InteractionDistributionWidgetState
   // the entire animation duration.
   List<InteractionDistributionEntry> _animatingEntries = [];
 
-  // Stable color per personId — assigned once on first encounter,
-  // never reassigned so colors survive year changes and reorders.
-  final Map<String, Color> _personColors = {};
-
   @override
   void initState() {
     super.initState();
     _displayedEntries = widget.entries;
     _animatingEntries = widget.entries;
-    _ensureColors(widget.entries);
     _controller = AnimationController(
       vsync: this,
       duration: _kAnimationDuration,
@@ -117,7 +99,6 @@ class _InteractionDistributionWidgetState
     // Only update displayed entries when new data arrives — keep the
     // previous set visible during the loading gap (empty entries).
     if (widget.entries.isNotEmpty && widget.entries != oldWidget.entries) {
-      _ensureColors(widget.entries);
       _displayedEntries = widget.entries;
       // Lock order before restarting the controller so targetLeft values
       // are stable for the entire animation duration.
@@ -137,17 +118,6 @@ class _InteractionDistributionWidgetState
     _curvedAnimation.dispose();
     _controller.dispose();
     super.dispose();
-  }
-
-  /// Assigns a palette color to each personId not yet in the map.
-  /// Insertion order determines the palette index so colors are stable.
-  void _ensureColors(List<InteractionDistributionEntry> entries) {
-    for (final entry in entries) {
-      if (!_personColors.containsKey(entry.personId)) {
-        _personColors[entry.personId] =
-            _kPalette[_personColors.length % _kPalette.length];
-      }
-    }
   }
 
   void _showInfoDialog(BuildContext context) {
@@ -272,8 +242,7 @@ class _InteractionDistributionWidgetState
                       // ValueKey tracks bar identity across reorders.
                       key: ValueKey(entry.personId),
                       entry: entry,
-                      color: _personColors[entry.personId] ??
-                          _kPalette[index % _kPalette.length],
+                      personId: entry.personId,
                       controller: _curvedAnimation,
                       targetLeft: index * _kItemWidth,
                       targetBarHeight:
@@ -296,7 +265,7 @@ class _InteractionDistributionWidgetState
 /// so it can start from its previous position/height on controller restart.
 class _AnimatedPersonBarItem extends StatefulWidget {
   final InteractionDistributionEntry entry;
-  final Color color;
+  final String personId;
   final Animation<double> controller;
   final double targetLeft;
   final double targetBarHeight;
@@ -305,7 +274,7 @@ class _AnimatedPersonBarItem extends StatefulWidget {
   const _AnimatedPersonBarItem({
     super.key,
     required this.entry,
-    required this.color,
+    required this.personId,
     required this.controller,
     required this.targetLeft,
     required this.targetBarHeight,
@@ -383,9 +352,13 @@ class _AnimatedPersonBarItemState extends State<_AnimatedPersonBarItem> {
               width: 32,
               height: barHeight,
               decoration: BoxDecoration(
-                color: widget.color,
+                gradient: ChartColors.getGradient(widget.personId),
+                border: Border.all(
+                  color: ChartColors.getStrokeColor(widget.personId),
+                  width: 2.0,
+                ),
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(3),
+                  top: Radius.circular(4),
                 ),
               ),
             ),
