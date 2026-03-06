@@ -42,6 +42,13 @@ class ActivitiesListProvider extends ChangeNotifier {
 
   bool isExpanded(String categoryId) => _expandedIds.contains(categoryId);
 
+  // Returns false when a non-empty search query matches no child categories.
+  // Used by the screen to switch to an empty state instead of showing empty parents.
+  bool get hasSearchResults {
+    if (_searchQuery.isEmpty) return true;
+    return rootCategories.any((root) => childrenOf(root.id).isNotEmpty);
+  }
+
   // Fetches all categories for [userId] from the repository.
   Future<void> initialize(String userId) async {
     _isLoading = true;

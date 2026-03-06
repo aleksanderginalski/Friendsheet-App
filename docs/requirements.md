@@ -1,13 +1,14 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 2.0  
-**Date:** February 20, 2026  
+**Version:** 2.1  
+**Date:** March 05, 2026  
 **Author:** Product Owner  
-**Status:** Updated — Full Roadmap M1-M8
+**Status:** Updated — M6 redesigned as Meeting Import Hub
 
 **Change Log:**
 - v1.1 — Authentication changed from email/password to Google Sign-In
 - v2.0 — Full roadmap requirements added for M2-M8
+- v2.1 — M6 redesigned: Google Photos replaced by Meeting Import Hub (Google Calendar + Google Photos); ImportCandidate architecture introduced
 
 ---
 
@@ -25,12 +26,12 @@ The application enables users to track meetings with friends with the ability to
 |-----------|------|--------|
 | M1 | Add Meeting | ✅ Completed |
 | M2 | Management & CRUD | ✅ Completed |
-| M3 | Statistics & Export | 🔜 Next |
+| M3 | Statistics & Export | ✅ Completed |
+| M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
-| M6 | Google Photos Integration | 📋 Planned |
-| M7 | Custom Dashboard | 📋 Planned |
-| M8 | AI Assistant | 💡 Future |
+| M6 | Custom Dashboard | 📋 Planned |
+| M7 | AI Assistant | 💡 Future |
 
 ---
 
@@ -53,9 +54,9 @@ Signs out from both Google Sign-In and Firebase Auth. Clears local auth state. R
 
 ---
 
-## 3. Functional Requirements — M2: Management & CRUD
+## 3. Functional Requirements — M2: Management & CRUD (Completed)
 
-### FR-006: Meetings List View
+### FR-006: Meetings List View ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -72,7 +73,7 @@ User can view all their meetings in a chronological list grouped by year.
 
 ---
 
-### FR-007: Meeting Detail & Edit
+### FR-007: Meeting Detail & Edit ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -88,7 +89,7 @@ User can view full meeting details and edit or delete a meeting.
 
 ---
 
-### FR-008: Persons List & Management
+### FR-008: Persons List & Management ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -105,7 +106,7 @@ User can view, search, edit and delete persons.
 
 ---
 
-### FR-009: Activity Categories
+### FR-009: Activity Categories ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -121,7 +122,7 @@ Activities can be organized into a 3-level category hierarchy with icons.
 
 ---
 
-### FR-010: Activities List & Management
+### FR-010: Activities List & Management ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -137,7 +138,7 @@ User can view, add, edit and delete activities organized in category tree.
 
 ---
 
-### FR-011: Global Activity Library
+### FR-011: Global Activity Library ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -152,9 +153,9 @@ A prebuilt library of common activities available to all users.
 
 ---
 
-## 4. Functional Requirements — M3: Statistics & Export
+## 4. Functional Requirements — M3: Statistics & Export ✅
 
-### FR-012: Statistics Overview
+### FR-012: Statistics Overview ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -169,7 +170,7 @@ User can view aggregated statistics about their social activity.
 
 ---
 
-### FR-013: Person Frequency Statistics
+### FR-013: Person Frequency Statistics ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -184,7 +185,7 @@ User can see who they meet most and least often.
 
 ---
 
-### FR-014: Activity Statistics
+### FR-014: Activity Statistics ✅
 **Priority:** MUST HAVE
 
 **Description:**
@@ -198,7 +199,7 @@ User can see which activities they do most and with whom.
 
 ---
 
-### FR-015: Data Export
+### FR-015: Data Export ✅
 **Priority:** SHOULD HAVE
 
 **Description:**
@@ -214,7 +215,7 @@ User can export all their data as a JSON file for backup purposes.
 
 ---
 
-## 5. Functional Requirements — M4: Google Play Release
+## 5. Functional Requirements — M4: Google Play Release 
 
 ### FR-016: Production Release
 **Priority:** MUST HAVE
@@ -228,9 +229,14 @@ App published on Google Play Store as a publicly downloadable application.
 - App passes Google Play review
 - Version numbered as 1.0.0
 
+
 ---
 
-## 6. Functional Requirements — M5: Social Data Sharing
+## 6. Functional Requirements — M5: Meeting Import Hub
+
+**Overview:** M5 introduces an extensible import system that allows users to create meetings from external data sources. The shared `MeetingInbox` (review queue) is source-agnostic — both Calendar and Photos produce `ImportCandidate` objects that flow into the same review UX.
+
+**Architecture principle:** Adding a new import source in future milestones requires only a new data-fetching layer, not a new inbox implementation.
 
 ### FR-017: Generate Invitation Code
 **Priority:** MUST HAVE
@@ -267,42 +273,89 @@ New user enters an invitation code and receives shared meeting history.
 
 ---
 
-## 7. Functional Requirements — M6: Google Photos Integration
-
-### FR-019: Connect Google Photos
+### FR-019: Home Screen Onboarding CTA
 **Priority:** MUST HAVE
+**Feature:** FEATURE-013 (Calendar Import)
 
 **Description:**
-User grants Friendsheet read-only access to their Google Photos.
+New users with fewer than 50 meetings see a prompt encouraging them to import past meetings from Google Calendar.
 
 **Acceptance Criteria:**
-- "Browse Photos" option in Add Meeting flow
-- Clear permission request explaining why photo access is needed
-- Google Photos OAuth consent shown on first use
-- Permission revocable from app Settings
-- Graceful degradation if permission denied
+- CTA card shown on Home Screen when user has < 50 total meetings
+- Card: icon, headline, subtext, "Import from Calendar" button, dismiss (X)
+- Dismissed state persisted in SharedPreferences (key: `onboarding_calendar_cta_dismissed`)
+- CTA never shown again after dismiss or after ≥ 50 meetings reached
+- Tapping button navigates to Calendar Permission screen
 
 ---
 
-### FR-020: Create Meeting from Photo
+### FR-020: Google Calendar Import
 **Priority:** MUST HAVE
+**Feature:** FEATURE-013 (Calendar Import)
 
 **Description:**
-User browses their photos and selects one to pre-fill meeting date.
+User grants read-only Google Calendar access, selects a date range and calendars, picks qualifying events, and reviews them in the Meeting Inbox before saving.
 
 **Acceptance Criteria:**
-- Photo grid showing device photos (paginated, performance-optimized)
-- Tapping photo shows "Create meeting from this photo" option
-- Meeting date pre-filled from photo's creation date
-- User proceeds to Add Meeting screen with pre-filled date
-- Photo itself is NOT stored in Firestore
-- Back navigation returns to photo grid without data loss
+- OAuth consent via `google_sign_in` with scope `calendar.readonly`
+- Token stored via `flutter_secure_storage`
+- Settings section in SettingsScreen:
+  - Calendar selection (checkboxes per calendar; default: primary)
+  - ALL-DAY events toggle (default: OFF — excluded)
+  - "Revoke Calendar Access" option
+- Date range picker (default: last 12 months)
+- Events filtered: past only, ≥ 2 attendees, respects ALL-DAY setting
+- Multi-select with "Select All / Deselect All"
+- Selected events converted to `ImportCandidate` list and passed to Meeting Inbox
+- Permission revocable; graceful handling if denied
 
 ---
 
-## 8. Functional Requirements — M7: Custom Dashboard
+### FR-021: Meeting Inbox — Review & Confirm
+**Priority:** MUST HAVE
+**Feature:** FEATURE-013 (Calendar Import) + FEATURE-014 (Photos Import — shared)
 
-### FR-021: Default Dashboard
+**Description:**
+User reviews import candidates from any source one by one, enriches each with meeting details, and confirms or skips each entry.
+
+**Acceptance Criteria:**
+- Inbox list shows all pending `ImportCandidate` cards with progress indicator ("X of Y reviewed")
+- Tapping card opens edit screen with pre-filled fields:
+  - Name (from event title or empty for photos, editable, max 50 chars)
+  - Date (from event start or photo creation date, editable)
+  - Weight (default: 3, Fibonacci stepper)
+  - Participants (email heuristic suggestions for Calendar; manual for Photos)
+  - Activities (standard autocomplete, no pre-fill)
+- "Confirm" saves meeting to Firestore, removes card from inbox
+- "Skip" removes card without saving
+- Inbox stored in memory only (not Firestore) — resets if app is closed
+- Empty inbox → success screen with count of added meetings + "Go to Meetings" CTA
+
+---
+
+### FR-022: Google Photos Import
+**Priority:** SHOULD HAVE
+**Feature:** FEATURE-014 (Photos Import)
+**Target:** Post Google Play release
+
+**Description:**
+User grants read-only Google Photos access, browses their photo library, selects photos that remind them of past meetings, and reviews them in the shared Meeting Inbox.
+
+**Acceptance Criteria:**
+- OAuth consent via `google_sign_in` with scope `photoslibrary.readonly`
+- Token stored via `flutter_secure_storage` (same service as Calendar)
+- Photo grid: paginated, first page < 2 seconds
+- Each photo shows thumbnail and creation date
+- Multi-select; selected photos create `ImportCandidate` with date from photo metadata, empty title
+- Flows into shared `MeetingInboxScreen` (FR-021)
+- Photo NOT stored — only creation date used
+- Permission revocable from Settings
+
+---
+
+## 7. Functional Requirements — M6: Custom Dashboard
+
+### FR-023: Default Dashboard
 **Priority:** MUST HAVE
 
 **Description:**
@@ -315,7 +368,7 @@ User sees a configurable home screen with key metrics.
 
 ---
 
-### FR-022: Dashboard Customization
+### FR-024: Dashboard Customization
 **Priority:** SHOULD HAVE
 
 **Description:**
@@ -332,9 +385,9 @@ User can add, remove and reorder dashboard widgets.
 
 ---
 
-## 9. Functional Requirements — M8: AI Assistant
+## 8. Functional Requirements — M7: AI Assistant
 
-### FR-023: AI-powered Insights
+### FR-025: AI-powered Insights
 **Priority:** COULD HAVE
 
 **Description:**
@@ -350,7 +403,7 @@ User can ask natural language questions about their social data.
 
 ---
 
-## 10. Non-Functional Requirements
+## 9. Non-Functional Requirements
 
 ### NFR-001: Data Storage
 - Data stored in Firestore
@@ -362,19 +415,22 @@ User can ask natural language questions about their social data.
 - Autocomplete response: < 500ms
 - Google Sign-In: < 5 seconds (excluding user interaction)
 - Statistics screen load: < 3 seconds (client-side aggregation)
-- Photo grid load: paginated, first page < 2 seconds
+- Calendar events fetch (first page): < 3 seconds
+- Photo grid load (first page): < 2 seconds
 
 ### NFR-003: Security
 - All Firestore operations require authenticated user
 - Row-level security via userId field
 - Global data (isGlobal: true) read-only for all authenticated users
-- OAuth 2.0 tokens managed by Firebase SDK (Firebase Auth) and flutter_secure_storage (Google Photos)
+- OAuth 2.0 tokens managed by Firebase SDK (Firebase Auth) and `flutter_secure_storage` (Calendar + Photos)
 - No credentials stored in app code or committed to repository
 - Keystore never committed to version control (M4+)
 - Raw user data never sent to LLM without explicit consent (M8)
 
 ### NFR-004: Privacy
-- Google Photos access: read-only, only date metadata used, no photos stored
+- Google Calendar access: read-only, only event metadata used (title, date, attendee emails), no calendar data stored permanently
+- Google Photos access: read-only, only photo creation date used, no photos stored
+- Meeting Inbox: local memory only — not persisted to Firestore, clears on app close
 - AI context: aggregated statistics only, no raw meeting data
 - Data export: user owns their data and can extract it at any time
 - Invitation code sharing: user explicitly initiates, no automatic data sharing
@@ -385,6 +441,7 @@ User can ask natural language questions about their social data.
 - New authentication requires internet connection
 - Statistics computed from cached data when offline
 - Export available offline (uses local cache)
+- Calendar and Photos import require active internet connection
 
 ### NFR-006: Compatibility
 - Android API Level 21+ (Android 5.0)
@@ -400,14 +457,15 @@ User can ask natural language questions about their social data.
 
 ### NFR-008: Cost Constraints
 - Firestore: free tier (Spark plan) sufficient for personal use and small user base
+- Google Calendar API: free quota (1M requests/day) sufficient for personal use
 - Google Photos API: free quota sufficient for expected usage
 - LLM API (M8): cost per query must be evaluated in spike before implementation — feature may be limited or paywalled if costs are significant
 
 ---
 
-## 11. Data Model
+## 10. Data Model
 
-### 11.1 Core Entities (M1 — implemented)
+### 10.1 Core Entities (M1 — implemented)
 
 #### Meeting
 ```
@@ -441,7 +499,7 @@ User can ask natural language questions about their social data.
 - createdAt: DateTime
 ```
 
-### 11.2 New Entities (M2+)
+### 10.2 New Entities (M2+)
 
 #### ActivityCategory (M2)
 ```
@@ -467,7 +525,16 @@ User can ask natural language questions about their social data.
 - createdAt: DateTime
 ```
 
-#### DashboardConfig (M7)
+#### ImportCandidate (M5 — local memory only, NOT stored in Firestore)
+```
+- id: string (local UUID, session-only)
+- title: string (pre-filled from event title or empty)
+- date: DateTime (from event start date or photo creation date)
+- attendeeEmails: List<string> (Calendar only; empty for Photos)
+- sourceType: enum (calendar | photos)
+```
+
+#### DashboardConfig (M6)
 ```
 - id: string (auto-generated)
 - userId: string (owner)
@@ -475,31 +542,36 @@ User can ask natural language questions about their social data.
 - updatedAt: DateTime
 ```
 
-### 11.3 Relationships
+### 10.3 Relationships
 - Meeting ↔ Person (many-to-many) via participantIds
 - Meeting ↔ Activity (many-to-many) via activityIds
 - Activity → ActivityCategory (optional) via categoryId
 - ActivityCategory → ActivityCategory (self-reference) via parentCategoryId
 - InvitationCode → Person via targetPersonId
 - InvitationCode → User via senderId
+- ImportCandidate → Meeting (1:1, created on Confirm action in Inbox)
 
 ---
 
-## 12. Technical Dependencies
+## 11. Technical Dependencies
 
-### 12.1 Current Stack (M1)
+### 11.1 Current Stack (M1)
 - Flutter SDK 3.0+, Dart 2.17+
 - Firebase Auth, Cloud Firestore, Firebase Core
 - google_sign_in, provider, freezed, json_serializable
 
-### 12.2 Planned Additions
+### 11.2 Planned Additions
 
 | Milestone | Package | Purpose |
 |-----------|---------|---------|
 | M3 | path_provider | File system access for export |
 | M4 | Release signing config | Production build |
-| M6 | flutter_secure_storage | OAuth token storage |
-| M8 | HTTP / LLM SDK (TBD) | AI API calls |
+| M5 (FEATURE-013) | `google_sign_in` (extended scope: calendar.readonly) | Calendar OAuth |
+| M5 (FEATURE-013) | `flutter_secure_storage` | OAuth token storage |
+| M5 (FEATURE-013) | Google Calendar REST API (HTTP) | Fetch calendar events |
+| M5 (FEATURE-014) | `google_sign_in` (extended scope: photoslibrary.readonly) | Photos OAuth |
+| M5 (FEATURE-014) | Google Photos REST API (HTTP) | Fetch photos metadata |
+| M7 | HTTP client (already available), LLM SDK TBD | AI API calls |
 
 ---
 
@@ -512,8 +584,11 @@ User can ask natural language questions about their social data.
 - **Copy-based sharing** — data duplicated to recipient's Firestore, no real-time sync after import
 - **TTL** — Time To Live, automatic expiry of invitation codes after 48 hours
 - **iconIdentifier** — string key (e.g. "sports_tennis") referencing a predefined icon in the app
+- **ImportCandidate** — transient in-memory model representing an event or photo selected for import; never persisted to Firestore
+- **Meeting Inbox** — shared review queue (MeetingInboxScreen) that accepts ImportCandidate objects from any source; source-agnostic
+- **sourceType** — enum field on ImportCandidate indicating the origin: `calendar` or `photos`
 
 ---
 
 **End of Document**  
-**Version 2.0 — Full Roadmap M1-M8**
+**Version 2.1 — M5 redesigned as Meeting Import Hub**
