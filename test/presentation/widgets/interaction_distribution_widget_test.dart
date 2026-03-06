@@ -146,7 +146,7 @@ void main() {
       expect(find.text('No visible persons.'), findsOneWidget);
     });
 
-    testWidgets('tapping settings icon calls onOpenVisibilityDialog',
+    testWidgets('tapping filter icon calls onOpenVisibilityDialog',
         (tester) async {
       var opened = false;
       await tester.pumpWidget(buildWidget(
@@ -155,7 +155,7 @@ void main() {
       ));
       await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.settings));
+      await tester.tap(find.byType(IconButton).last);
 
       expect(opened, isTrue);
     });

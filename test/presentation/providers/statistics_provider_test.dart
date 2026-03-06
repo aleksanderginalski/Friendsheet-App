@@ -697,6 +697,164 @@ void main() {
       });
     });
 
+    group('setAllActivitiesVisibility()', () {
+      test('false hides all activity IDs from activityBreakdown', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_activities_breakdown': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => [
+                  const ActivityBreakdownEntry(
+                    categoryId: 'cat-a',
+                    name: 'Running',
+                    currentYearWeight: 10,
+                    previousYearWeight: 0,
+                  ),
+                  const ActivityBreakdownEntry(
+                    categoryId: 'cat-b',
+                    name: 'Cycling',
+                    currentYearWeight: 5,
+                    previousYearWeight: 0,
+                  ),
+                ]);
+
+        await provider.initialize();
+
+        final returned = await provider.setAllActivitiesVisibility(false);
+
+        expect(provider.hiddenActivities, containsAll(['cat-a', 'cat-b']));
+        expect(provider.hiddenActivities, hasLength(2));
+        expect(returned, containsAll(['cat-a', 'cat-b']));
+      });
+
+      test('true clears all hidden activities', () async {
+        await provider.toggleHiddenActivity('cat-a');
+        await provider.toggleHiddenActivity('cat-b');
+        expect(provider.hiddenActivities, hasLength(2));
+
+        final returned = await provider.setAllActivitiesVisibility(true);
+
+        expect(provider.hiddenActivities, isEmpty);
+        expect(returned, isEmpty);
+      });
+
+      test('false persists all IDs to SharedPreferences', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_activities_breakdown': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
+            .thenAnswer((_) async => [
+                  const ActivityBreakdownEntry(
+                    categoryId: 'cat-a',
+                    name: 'Running',
+                    currentYearWeight: 10,
+                    previousYearWeight: 0,
+                  ),
+                ]);
+
+        await provider.initialize();
+        await provider.setAllActivitiesVisibility(false);
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_activities_breakdown');
+        expect(stored, contains('cat-a'));
+      });
+
+      test('true persists empty list to SharedPreferences', () async {
+        await provider.toggleHiddenActivity('cat-a');
+        await provider.setAllActivitiesVisibility(true);
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_activities_breakdown');
+        expect(stored, isEmpty);
+      });
+    });
+
+    group('setAllPersonsVisibility()', () {
+      test('false hides all person IDs from distributionEntries', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_distribution': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => [
+                  const InteractionDistributionEntry(
+                    personId: 'p-1',
+                    name: 'Alice',
+                    currentYearWeight: 10,
+                    previousYearWeight: 0,
+                  ),
+                  const InteractionDistributionEntry(
+                    personId: 'p-2',
+                    name: 'Bob',
+                    currentYearWeight: 5,
+                    previousYearWeight: 0,
+                  ),
+                ]);
+
+        await provider.initialize();
+
+        final returned = await provider.setAllPersonsVisibility(false);
+
+        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+        expect(provider.hiddenPersonsDistribution, hasLength(2));
+        expect(returned, containsAll(['p-1', 'p-2']));
+      });
+
+      test('true clears all hidden persons', () async {
+        await provider.togglePersonDistributionVisibility('p-1');
+        await provider.togglePersonDistributionVisibility('p-2');
+        expect(provider.hiddenPersonsDistribution, hasLength(2));
+
+        final returned = await provider.setAllPersonsVisibility(true);
+
+        expect(provider.hiddenPersonsDistribution, isEmpty);
+        expect(returned, isEmpty);
+      });
+
+      test('false persists all IDs to SharedPreferences', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_distribution': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
+            .thenAnswer((_) async => [
+                  const InteractionDistributionEntry(
+                    personId: 'p-1',
+                    name: 'Alice',
+                    currentYearWeight: 10,
+                    previousYearWeight: 0,
+                  ),
+                ]);
+
+        await provider.initialize();
+        await provider.setAllPersonsVisibility(false);
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_persons_distribution');
+        expect(stored, contains('p-1'));
+      });
+
+      test('true persists empty list to SharedPreferences', () async {
+        await provider.togglePersonDistributionVisibility('p-1');
+        await provider.setAllPersonsVisibility(true);
+
+        final prefs = await SharedPreferences.getInstance();
+        final stored = prefs.getStringList('stats_hidden_persons_distribution');
+        expect(stored, isEmpty);
+      });
+    });
+
     group('carousel state', () {
       group('toggleCardVisibility()', () {
         test('hides a card — visibleCards no longer contains it', () async {
