@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (371)
+✅ All tests passing (396)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.15.0 - US-063 Chart Visual Enhancement — Colors & Depth Effect (March 06, 2026)
+- ✅ ChartColors class — 8-color Vivid Social palette independent from app theme
+- ✅ Horizontal 4-stop cylinder/glass gradient (edge → center → center → edge)
+- ✅ Stroke #1C1B1F 2px full opacity — clear bar separation
+- ✅ ActivityBreakdownWidget, WhoPerActivityWidget, InteractionDistributionWidget refactored
+- ✅ Removed local _categoryColors/_personColors maps — centralised in ChartColors
+- ✅ 7 unit tests for ChartColors (stability, gradient shape, stroke color)
+- ✅ Total test count: 403 tests
 
 ### v3.14.0 - US-055 Activities Polish — Icons, Tree View, Search (March 06, 2026)
 - ✅ 51 custom Midjourney PNG icons replacing Material Icons in Activities
