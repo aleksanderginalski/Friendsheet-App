@@ -27,12 +27,15 @@ class _TreeRow {
 ///
 /// [onAutoSelectTop10] returns the new hidden set after applying the top-10
 /// default so the dialog can update its local checkbox state without closing.
+/// [onToggleSelectAll] is a simple callback — the dialog updates local state
+/// itself and notifies the provider via this callback.
 class ActivityVisibilityDialog extends StatefulWidget {
   final List<ActivityBreakdownEntry> entries;
   final List<ActivityCategory> categories;
   final Set<String> hiddenActivities;
   final void Function(String categoryId) onToggle;
   final Future<Set<String>> Function() onAutoSelectTop10;
+  final VoidCallback onToggleSelectAll;
 
   const ActivityVisibilityDialog({
     super.key,
@@ -41,6 +44,7 @@ class ActivityVisibilityDialog extends StatefulWidget {
     required this.hiddenActivities,
     required this.onToggle,
     required this.onAutoSelectTop10,
+    required this.onToggleSelectAll,
   });
 
   @override
@@ -63,6 +67,23 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
   Future<void> _applyTop10() async {
     final newHidden = await widget.onAutoSelectTop10();
     if (mounted) setState(() => _hidden = newHidden);
+  }
+
+  /// Toggles all activities:
+  /// - All visible (nothing hidden) → deselect all (hide everything).
+  /// - Any hidden → select all (clear hidden set).
+  /// Updates local state immediately, then notifies the provider.
+  void _applyToggleSelectAll() {
+    if (_hidden.isEmpty) {
+      // All visible → deselect all.
+      setState(
+        () => _hidden = widget.entries.map((e) => e.categoryId).toSet(),
+      );
+    } else {
+      // Some hidden → select all.
+      setState(() => _hidden = {});
+    }
+    widget.onToggleSelectAll();
   }
 
   void _toggle(String categoryId) {
@@ -137,7 +158,7 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
           children: [
             // Indentation: 16dp per depth level.
             SizedBox(width: 16.0 * row.depth),
-            ActivityIcon(identifier: row.category?.iconIdentifier, size: 18),
+            ActivityIcon(identifier: row.category?.iconIdentifier, size: 31),
             const SizedBox(width: 8),
             Expanded(child: Text(row.entry.name)),
             Checkbox(
@@ -153,6 +174,22 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
   @override
   Widget build(BuildContext context) {
     final rows = _buildTree();
+    // Three-state selection: all selected, none selected, or partial.
+    final allSelected = _hidden.isEmpty;
+    final noneSelected = widget.entries.isNotEmpty &&
+        widget.entries.every((e) => _hidden.contains(e.categoryId));
+    final IconData toggleIcon;
+    final String toggleTooltip;
+    if (allSelected) {
+      toggleIcon = Icons.check_box;
+      toggleTooltip = 'Deselect all';
+    } else if (noneSelected) {
+      toggleIcon = Icons.check_box_outline_blank;
+      toggleTooltip = 'Select all';
+    } else {
+      toggleIcon = Icons.indeterminate_check_box;
+      toggleTooltip = 'Select all';
+    }
 
     return AlertDialog(
       title: const Text('Activity Visibility'),
@@ -162,9 +199,19 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            OutlinedButton(
-              onPressed: _applyTop10,
-              child: const Text('Auto-select top 10'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton(
+                  onPressed: _applyTop10,
+                  child: const Text('Auto-select top 10'),
+                ),
+                IconButton(
+                  icon: Icon(toggleIcon),
+                  tooltip: toggleTooltip,
+                  onPressed: _applyToggleSelectAll,
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             ...rows.map(_buildRow),
