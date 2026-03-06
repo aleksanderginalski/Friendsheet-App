@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (406)
+✅ All tests passing (414)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.17.0 - US-057 Filter Icon + Select All / Deselect All Toggle (March 06, 2026)
+- ✅ Gear icon (⚙️) replaced with filter_icon.png asset in ActivityBreakdownWidget and InteractionDistributionWidget
+- ✅ Filter icon size: 40×40
+- ✅ setAllActivitiesVisibility(bool) and setAllPersonsVisibility(bool) added to StatisticsProvider
+- ✅ Three-state toggle icon in ActivityVisibilityDialog and PersonVisibilityDialog (check_box / indeterminate_check_box / check_box_outline_blank)
+- ✅ Activity icons in visibility dialog increased to 31px
+- ✅ Total test count: 414 tests
 
 ### v3.16.0 - US-071 Statistics Home — Illustration & Enhanced Year Picker (March 06, 2026)
 - ✅ statistics_illustration asset added to HomeScreen — bottom of screen, left-aligned
