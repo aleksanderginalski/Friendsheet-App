@@ -1902,23 +1902,23 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 5
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 06, 2026)
 **Labels:** `statistics`, `ux`, `filter`
 **Mode:** ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] Gear icon (⚙️) replaced with provided `filter_icon` asset in all statistics widgets
-- [ ] `ActivityVisibilityDialog` has "Select all" / "Deselect all" buttons
-- [ ] `PersonVisibilityDialog` has "Select all" / "Deselect all" buttons
-- [ ] Deselecting all items does not crash — chart shows empty/no-data state
-- [ ] Existing "Auto-select top 10" logic unchanged
+- [x] Gear icon (⚙️) replaced with provided `filter_icon` asset in all statistics widgets
+- [x] `ActivityVisibilityDialog` has "Select all" / "Deselect all" buttons
+- [x] `PersonVisibilityDialog` has "Select all" / "Deselect all" buttons
+- [x] Deselecting all items does not crash — chart shows empty/no-data state
+- [x] Existing "Auto-select top 10" logic unchanged
 
 **Tasks:**
-- [ ] **TASK-057.1:** Add `filter_icon` asset to `assets/images/`, register in `pubspec.yaml`
-- [ ] **TASK-057.2:** Replace gear icon with `filter_icon` in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget`
-- [ ] **TASK-057.3:** Add "Select all" / "Deselect all" to `ActivityVisibilityDialog`
-- [ ] **TASK-057.4:** Add "Select all" / "Deselect all" to `PersonVisibilityDialog`
-- [ ] **TASK-057.5:** Write tests for select/deselect all logic
+- [x] **TASK-057.1:** Add `filter_icon` asset to `assets/images/`, register in `pubspec.yaml`
+- [x] **TASK-057.2:** Replace gear icon with `filter_icon` in `ActivityBreakdownWidget`, `WhoPerActivityWidget`, `InteractionDistributionWidget`
+- [x] **TASK-057.3:** Add "Select all" / "Deselect all" to `ActivityVisibilityDialog`
+- [x] **TASK-057.4:** Add "Select all" / "Deselect all" to `PersonVisibilityDialog`
+- [x] **TASK-057.5:** Write tests for select/deselect all logic
 
 ---
 
