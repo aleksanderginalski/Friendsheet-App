@@ -33,7 +33,9 @@ void main() {
       expect(gradient.stops, equals([0.0, 0.3, 0.7, 1.0]));
     });
 
-    test('getStrokeColor returns fixed charcoal color (0xFF1C1B1F) regardless of id', () {
+    test(
+        'getStrokeColor returns fixed charcoal color (0xFF1C1B1F) regardless of id',
+        () {
       const id = 'test-id';
       final stroke = ChartColors.getStrokeColor(id);
       // High-contrast dark stroke — full opacity, independent of palette entry.

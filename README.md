@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (396)
+✅ All tests passing (406)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.16.0 - US-071 Statistics Home — Illustration & Enhanced Year Picker (March 06, 2026)
+- ✅ statistics_illustration asset added to HomeScreen — bottom of screen, left-aligned
+- ✅ YearStepper refactored — 5-slot layout: [←] [prev year dimmed] [active year] [next year dimmed] [→]
+- ✅ Active year visually prominent (bold, primary color, fontSize 22)
+- ✅ Neighbour year slots fixed width 48dp — layout stable when slot empty
+- ✅ IconButton padding zeroed — active year stays visually centered
+- ✅ Total test count: 406 tests
 
 ### v3.15.0 - US-063 Chart Visual Enhancement — Colors & Depth Effect (March 06, 2026)
 - ✅ ChartColors class — 8-color Vivid Social palette independent from app theme
