@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/services/auth_service.dart';
+import '../activities/activity_icons.dart';
 import '../providers/add_meeting_provider.dart';
 
 class ActivityAutocomplete extends StatefulWidget {
@@ -94,7 +95,8 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
               children: [
                 ...selectedCategories.map(
                   (c) => Chip(
-                    avatar: const Icon(Icons.category_outlined, size: 16),
+                    avatar:
+                        ActivityIcon(identifier: c.iconIdentifier, size: 16),
                     label: Text(c.name),
                     onDeleted: () => provider.removeCategory(c),
                   ),
@@ -125,7 +127,8 @@ class _ActivityAutocompleteState extends State<ActivityAutocomplete> {
             (category) {
               final parentName = provider.getParentName(category);
               return ListTile(
-                leading: const Icon(Icons.category_outlined),
+                leading:
+                    ActivityIcon(identifier: category.iconIdentifier, size: 24),
                 title: Text(category.name),
                 trailing: parentName != null
                     ? Chip(

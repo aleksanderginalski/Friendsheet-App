@@ -1,8 +1,8 @@
 # Friendsheet - Product Backlog
 
 **Project:** Friendsheet  
-**Version:** 2.0  
-**Last Updated:** February 20, 2026  
+**Version:** 2.1  
+**Last Updated:** March 05, 2026  
 **Product Owner:** Aleksander Ginalski  
 
 ---
@@ -16,11 +16,9 @@
 | M3 | Statistics & Export | ✅ COMPLETED |
 | M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
 | M4 | Google Play Release | 📋 Planned |
-| M5 | Social: Data Sharing | 📋 Planned |
-| M6 | Google Photos Integration | 📋 Planned |
-| M7 | Custom Dashboard | 📋 Planned |
-| M8 | AI Assistant | 💡 Future |
-
+| M5 | Meeting Import Hub | 📋 Planned |
+| M6 | Custom Dashboard | 📋 Planned |
+| M7 | AI Assistant | 💡 Future |
 ---
 
 ## 🎯 Epic Structure
@@ -52,17 +50,16 @@ EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
 EPIC-004: Friendsheet M4 - Google Play Release
 └── FEATURE-011: Store Release Preparation
 
-EPIC-005: Friendsheet M5 - Social: Data Sharing
+EPIC-005: Friendsheet M5 - Meeting Import Hub
+├── FEATURE-013: Google Calendar Import      ← before Google Play
+├── FEATURE-014: Google Photos Import        ← post Google Play, backlog
 └── FEATURE-012: Invitation Code System
 
-EPIC-006: Friendsheet M6 - Google Photos Integration
-└── FEATURE-013: Photo-based Meeting Creation
+EPIC-006: Friendsheet M6 - Custom Dashboard
+└── FEATURE-015: Configurable Metrics Dashboard
 
-EPIC-007: Friendsheet M7 - Custom Dashboard
-└── FEATURE-014: Configurable Metrics Dashboard
-
-EPIC-008: Friendsheet M8 - AI Assistant
-└── FEATURE-015: AI-powered Insights
+EPIC-007: Friendsheet M7 - AI Assistant
+└── FEATURE-016-AI: AI-powered Insights
 ```
 
 ---
@@ -1505,6 +1502,365 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ---
 
+# 📦 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
+
+**Goal:** Establish a consistent visual identity for Friendsheet — color system, typography, app icon, splash screen, and illustrations — so the app looks professional before Google Play release.
+
+**Business Value:** A polished UI is the difference between a portfolio project and a portfolio project that impresses. Recruiters and users judge apps in the first 5 seconds.
+
+**Prerequisites:** M2 completed. Runs in parallel with M3 development.
+
+**Design Tools:** Figma (free plan), Midjourney (subscribed), Flutter ThemeData.
+
+**Status:** 📋 Planned
+
+---
+
+## 🎨 FEATURE-018: Design System & Theme
+
+**Description:** Defines the visual foundation of the app — color palette, typography, spacing and shape system — and implements it as Flutter ThemeData so all screens inherit the style automatically.
+
+**Priority:** P0
+**Role:** UX Designer + Developer
+**Status:** ✅ COMPLETED
+
+---
+
+### US-049: Figma Setup — Color System & Typography
+
+**As a** designer
+**I want to** set up a Figma file with color styles and text styles
+**So that** I have a single source of truth for all design decisions before implementing them in code
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** ✅ COMPLETED
+**Labels:** `design`, `figma`
+**Mode:** 🎨 Design (no Claude Code)
+
+**Acceptance Criteria:**
+- [x] Figma file created with frame size 390×844 (standard mobile)
+- [x] Color styles defined: Primary, Primary Light, Primary Dark, Secondary, Surface, On Surface, Subtle, Error
+- [x] Text styles defined: Display, H1, H2, Body, Caption
+- [x] Nunito font imported via Google Fonts plugin
+- [x] 8dp grid configured on frames
+- [x] Color palette exported as reference (screenshot or PDF)
+
+**Reference:** `friendsheet_design_brief.md` — Sections 2 & 3
+
+**Tasks:**
+- [x] **TASK-049.1:** Create Figma account and new project file
+- [x] **TASK-049.2:** Install Google Fonts plugin, import Nunito
+- [x] **TASK-049.3:** Define Color Styles from design brief palette
+- [x] **TASK-049.4:** Define Text Styles (Display / H1 / H2 / Body / Caption)
+- [x] **TASK-049.5:** Configure 8dp grid on base frame
+
+---
+
+### US-050: Flutter Theme Implementation
+
+**As a** developer
+**I want to** implement the design system as Flutter ThemeData
+**So that** all screens automatically use the correct colors, typography and shape system
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** ✅ COMPLETED
+**Labels:** `flutter`, `theme`, `dev`
+**Mode:** ⚙️ Task (Claude Code)
+**Depends on:** US-049
+
+**Acceptance Criteria:**
+- [x] `AppTheme` class created in `lib/core/theme/app_theme.dart`
+- [x] `ColorScheme.light()` configured with design brief palette
+- [x] `google_fonts` package added, Nunito set as `fontFamily`
+- [x] `CardTheme` with `borderRadius: 16dp`
+- [x] `ElevatedButton` theme with `borderRadius: 12dp`
+- [x] `ThemeData` applied in `FriendsheetApp` widget
+- [x] All existing screens visually verified — no layout breaks
+- [x] `flutter analyze` passes with no warnings
+
+**Tasks:**
+- [x] **TASK-050.1:** Add `google_fonts` to pubspec.yaml, run `flutter pub get`
+- [x] **TASK-050.2:** Create `lib/core/theme/app_theme.dart` with `AppTheme` class
+- [x] **TASK-050.3:** Implement `ColorScheme`, `TextTheme`, `CardTheme`, `ButtonTheme`
+- [x] **TASK-050.4:** Apply theme in `main.dart` → `FriendsheetApp`
+- [x] **TASK-050.5:** Visual smoke test on all 4 main screens
+- [x] **TASK-050.6:** Run `dart format .` and `flutter analyze`
+
+---
+
+## 🖼️ FEATURE-019: App Assets
+
+**Description:** Creates the visual entry points of the app — the app icon visible in Google Play and on device, and the splash screen shown on launch. Both are required for M4 (Google Play Release).
+
+**Priority:** P0
+**Role:** UX Designer + Developer
+**Status:** 📋 Planned
+
+---
+
+### US-056: App Icon Design & Integration
+
+**As a** developer
+**I want to** have a custom app icon that reflects Friendsheet's brand
+**So that** the app looks professional in Google Play and on the user's device
+
+**Story Points:** 5
+**Priority:** P0
+**Status:** ✅ COMPLETED (March 04, 2026)
+**Labels:** `design`, `midjourney`, `android`, `release`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-049 (color palette defined)
+
+
+**Acceptance Criteria:**
+- [x] Icon generated in Midjourney using design brief prompt (warm green + amber palette)
+- [x] Icon reviewed and approved (flat 2D style, rounded, character-driven)
+- [x] Icon exported as 1024×1024 PNG from Figma
+- [x] `flutter_launcher_icons` package configured and icons generated
+- [x] Adaptive icon configured for Android (foreground + background layers)
+- [x] Icon verified on emulator and physical device
+
+**Midjourney Prompt (starting point — iterate as needed):**
+```
+friendly mobile app icon, two cartoon characters hugging or waving,
+flat 2D illustration, rounded shapes, bold outlines,
+warm green #43A047 and amber #FFB300 color palette,
+white background, simple geometric style, duolingo-inspired,
+app store icon format, square composition, --ar 1:1 --style raw --v 6
+```
+
+**Tasks:**
+- [x] **TASK-056.1:** Generate 4–6 icon variants in Midjourney, select best
+- [x] **TASK-056.2:** Refine in Figma — adjust colors to match palette exactly
+- [x] **TASK-056.3:** Export 1024×1024 PNG
+- [x] **TASK-056.4:** Add `flutter_launcher_icons` to pubspec.yaml
+- [x] **TASK-056.5:** Configure adaptive icon (foreground + `#FAFAF7` background)
+- [x] **TASK-056.6:** Run `dart run flutter_launcher_icons` and verify output
+
+---
+
+### US-052: Splash Screen
+
+**Status:** ✅ COMPLETED (March 04, 2026)
+**Labels:** `design`, `flutter`, `release`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-056 (icon/branding established)
+
+**Acceptance Criteria:**
+- [x] MP4 animation asset added to `assets/animations/splash.mp4`
+- [x] `video_player` package added for MP4 playback
+- [x] `SplashScreen` widget created — plays MP4 + shows "Friendsheet" in Nunito ExtraBold below
+- [x] Splash disappears automatically when MP4 finishes playing
+- [x] After splash completes → navigate to `AuthWrapper` (auth check happens in background)
+- [x] Background color: `#FAFAF7` (warm white)
+- [x] "Friendsheet" text color: `#43A047` (primary green)
+- [x] Tested on emulator — no jank, smooth playback
+
+**Tasks:**
+- [x] **TASK-052.1:** Add MP4 to `assets/animations/` and register in `pubspec.yaml`
+- [x] **TASK-052.2:** Add `video_player` to `pubspec.yaml`
+- [x] **TASK-052.3:** Create `SplashScreen` widget with `VideoPlayerController`
+- [x] **TASK-052.4:** Wire `SplashScreen` as first route in `main.dart` — navigates to `AuthWrapper` on completion
+- [x] **TASK-052.5:** Write widget test for `SplashScreen`
+
+---
+
+## 🧩 FEATURE-020: Illustrations & Empty States
+
+**Description:** Adds human character illustrations to key screens — Login and empty states — giving the app personality and making it feel alive when there's no data yet.
+
+**Priority:** P1
+**Role:** UX Designer + Developer
+**Status:** 🔄 In Progress  (US-053 ✅, US-054 ✅, US-055 📋)
+---
+
+### US-053: Login Screen Illustration & App-wide Typography Polish
+
+**As a** user
+**I want to** see a welcoming illustration and consistent branding on the login screen and throughout the app
+**So that** the app feels warm, friendly and visually consistent from the first interaction
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** ✅ COMPLETED (March 2026)
+**Labels:** `design`, `midjourney`, `flutter`, `typography`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-050 (theme in place)
+
+**Acceptance Criteria:**
+- [x] Illustration generated in Midjourney (two friendly characters, warm scene)
+- [x] Illustration exported as PNG (max 200KB)
+- [x] Displayed above Google Sign-In button on LoginScreen
+- [x] Responsive — scales correctly on different screen sizes
+- [x] Does not push Sign-In button below visible area on small screens (min 360dp height)
+- [x] People icon removed from LoginScreen
+- [x] App title "Friendsheet" uses Pacifico font on LoginScreen
+- [x] App title "Friendsheet" uses Pacifico font in AppBar (MainScreen)
+- [x] App title "Friendsheet" uses Pacifico font in Drawer header
+- [x] App title "Friendsheet" uses Pacifico font on SplashScreen
+- [x] "Settings" title uses white color in SettingsScreen AppBar
+- [x] Terms of Service link added to LoginScreen (opens in external browser)
+- [x] Privacy Policy link added to LoginScreen (opens in external browser)
+- [x] ToS and Privacy Policy hosted on GitHub Pages
+
+**Midjourney Prompt (used):**
+```
+flat 2D illustration, group of 3-4 diverse cartoon friends,
+laughing and spending time together, warm and joyful scene,
+rounded character style, green #43A047 and amber #FFB300 color palette,
+white background, simple geometric shapes, duolingo-inspired style,
+horizontal composition, mobile app onboarding illustration,
+no text, no letters, clean edges
+--ar 3:2 --style raw --v 6.1
+```
+
+**Tasks:**
+- [x] **TASK-053.1:** Illustration already present in `assets/images/`
+- [x] **TASK-053.2:** Register `login_illustration.png` in `pubspec.yaml`
+- [x] **TASK-053.3:** Integrate illustration into `LoginScreen` layout
+- [x] **TASK-053.4:** Test on small screen (360dp width) — verify button visibility
+- [x] **TASK-053.5:** Add `'displays login illustration'` test
+- [x] **TASK-053.6:** Remove `Icon(Icons.people_alt)` from LoginScreen
+- [x] **TASK-053.7:** Replace title font with Pacifico on LoginScreen
+- [x] **TASK-053.8:** Add ToS as plain text with TODO comment (url_launcher pending)
+- [x] **TASK-053.9:** Verify `url_launcher` gitignore — no changes needed
+- [x] **TASK-053.10:** Add `url_launcher: ^6.3.0` to `pubspec.yaml`
+- [x] **TASK-053.11:** Add `https` scheme intent to `AndroidManifest.xml`
+- [x] **TASK-053.12:** Replace ToS text with tappable RichText (ToS + Privacy Policy)
+- [x] **TASK-053.13:** Update LoginScreen tests for RichText links
+- [x] **TASK-053.14:** Apply Pacifico to AppBar title (MainScreen)
+- [x] **TASK-053.15:** Apply Pacifico to Drawer header (MainScreen)
+- [x] **TASK-053.16:** Apply Pacifico to SplashScreen title
+- [x] **TASK-053.17:** Fix Settings AppBar title color to white
+
+**GitHub Pages:**
+- Terms of Service: `https://aleksanderginalski.github.io/Friendsheet-App/terms`
+- Privacy Policy: `https://aleksanderginalski.github.io/Friendsheet-App/privacy`
+
+**Definition of Done:**
+- [x] Illustration visible on LoginScreen
+- [x] Pacifico font consistent across LoginScreen, AppBar, Drawer, SplashScreen
+- [x] ToS and Privacy Policy links functional
+- [x] GitHub Pages live with both documents
+- [x] 365/365 tests passing
+- [x] `flutter analyze` — no issues
+- [x] Code reviewed and committed
+
+---
+
+### US-054: Empty States — Meetings & Friends
+
+**As a** user
+**I want to** see a friendly illustration when my meetings or friends list is empty
+**So that** the app feels welcoming even before I've added any data
+
+**Story Points:** 3
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `design`, `midjourney`, `flutter`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-050
+**Status:** ✅ COMPLETED (March 05, 2026)
+
+**Acceptance Criteria:**
+- [x] Empty state illustration for MeetingsListScreen (no meetings added yet)
+- [x] Empty state illustration for PersonsListScreen (no friends added yet)
+- [x] Each empty state: illustration + short friendly message + optional CTA button
+- [x] Illustrations consistent in style (same Midjourney style parameters)
+- [x] Messages are warm and encouraging, not generic ("No data found")
+
+**Empty State Copy:**
+- Meetings: *"No meetings yet — tap + to add your first one!"*
+- Friends: *"No friends added yet — tap + to get started!"*
+
+**Midjourney Prompts (starting points):**
+
+Meetings empty state:
+```
+small flat illustration, two cartoon friends sitting at a cafe table,
+smiling and talking, simple rounded characters, warm colors,
+green and amber palette, white background, minimal detail,
+mobile app empty state style, duolingo character energy,
+--ar 4:3 --style raw --v 6
+```
+
+Friends empty state:
+```
+flat 2D illustration, single cartoon character waving hello,
+friendly pose, simple rounded shapes, bold outline,
+warm green color scheme, white background, minimal,
+mobile app illustration, --ar 1:1 --style raw --v 6
+```
+
+**Tasks:**
+- [x] **TASK-054.1:** Generate both illustrations in Midjourney
+- [x] **TASK-054.2:** Create reusable `EmptyStateWidget(image, message, onAction)` component
+- [x] **TASK-054.3:** Integrate into `MeetingsListScreen`
+- [x] **TASK-054.4:** Integrate into `PersonsListScreen`
+- [x] **TASK-054.5:** Write widget test for `EmptyStateWidget`
+
+---
+
+### US-055: Empty State — Activities
+
+**As a** user
+**I want to** see a friendly illustration when my activities list is empty
+**So that** the app feels consistent and polished across all tabs
+
+**Story Points:** 2
+**Priority:** P2
+**Status:** 📋 Planned
+**Labels:** `design`, `flutter`
+**Mode:** 🎨 Design → ⚙️ Task
+**Depends on:** US-054 (reuse EmptyStateWidget from US-054)
+**Status:** ✅ COMPLETED (March 06, 2026)
+
+**Acceptance Criteria:**
+- [x] Empty state displayed in ActivitiesListScreen when no categories exist
+- [x] Empty state displayed when search returns no results
+- [x] Uses EmptyStateWidget component from US-054
+- [x] Illustration consistent with Meetings and Friends empty states
+- [x] Message: "No activities yet — tap + to create your first category!"
+- [x] 51 custom PNG icons replacing Material Icons
+- [x] ActivityIcon widget with Icons.category fallback
+- [x] Subcategory indentation with T/L tree lines (CustomPainter)
+- [x] SharedSearchBar reusable across Activities, Friends, Meetings
+- [x] Icon picker rebuilt as 2D scrollable GridView
+- [x] AlertDialog replaced with Dialog (RenderIntrinsicWidth fix)
+
+**Tasks:**
+- [x] **TASK-055.1:** Generate illustration in Midjourney (reuse style params from US-054)
+- [x] **TASK-055.2:** Integrate `EmptyStateWidget` into `ActivitiesListScreen`
+- [x] **TASK-055.3:** Shared search bar + Activities search fix
+- [x] **TASK-055.4:** Empty State + icon color + icon picker grid
+- [x] **TASK-055.5:**  Restore GridView scrolling in icon picker
+- [x] **TASK-055.6:** Update activity_icons_test.dart for PNG API
+
+
+## 📋 Design Dependency Map
+
+```
+US-049 Figma Setup
+    └── US-050 Flutter Theme ──────────────┐
+                                           ├── US-053 Login Illustration
+US-051 App Icon ────────────────────────   ├── US-054 Empty States (Meetings + Friends)
+    └── US-052 Splash Screen               └── US-055 Empty State (Activities)
+```
+
+**Blocking M4 (Google Play Release):**
+- US-051 App Icon ← required by store
+- US-052 Splash Screen ← required for polish
+- US-050 Flutter Theme ← required for visual consistency
+
+**Non-blocking (can ship to M4 without these):**
+- US-053 Login Illustration
+- US-054 Empty States
+- US-055 Empty State Activities
+
+
+
 # 📦 EPIC-004: Friendsheet M4 - Google Play Release
 
 **Goal:** Publish Friendsheet on Google Play Store as a publicly downloadable app
@@ -1602,28 +1958,254 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ---
 
-# 📦 EPIC-005: Friendsheet M5 - Social: Data Sharing
+# 📦 EPIC-005: Friendsheet M6 - Meeting Import Hub
 
-**Goal:** Allow users to share their meeting history with friends who join the app
+**Goal:** Allow users to import past meetings from external sources or use help of their friends who already have Friendsheet — reducing friction of retroactive data entry and solving the cold-start problem for new users.
 
-**Business Value:** Solves the "cold start problem" — new users get instant value by receiving shared meeting history instead of starting from empty app.
+**Business Value:** Demonstrates external OAuth API integration skills (portfolio). Gives new users a fast path to meaningful data without manual entry. Architected as an extensible import system — new sources can be added without changing the shared inbox layer.
 
-**Architecture Notes:**
-- Uses copy-based sharing (Option A) — data is duplicated into recipient's Firestore, not shared in real-time
-- No changes to core data model required — isolation per user maintained
-- Invitation codes stored as Firestore documents with TTL (time-to-live)
-- Shared package contains only meetings where both users were participants
-- Future upgrade path to real-time sharing (Option B) is possible without full rewrite
+**Architecture Decision:** `MeetingInbox` is **source-agnostic** — both FEATURE-013 and FEATURE-014 produce a list of `ImportCandidate` objects that feed into the same `MeetingInboxScreen`. Adding a new import source in the future requires only a new data-fetching layer, not a new inbox.
 
-**Decision Log:**
-- Date: February 20, 2026
-- Decision: Copy-based sharing (Option A) over real-time shared documents (Option B)
-- Rationale: Simpler architecture, no Firestore cost risk, no conflict resolution needed, maintains data isolation model
-- Trade-off: Data diverges after sharing — Person A can update a meeting and Person B won't see the change
+**Import flow (both features):**
+```
+External Source → ImportCandidate list → MeetingInboxScreen → Firestore
+```
+
+**Local-only state:** The inbox lives in `MeetingInboxProvider` (in-memory). It is NOT persisted to Firestore. If the user closes the app mid-import, the session resets. This is intentional — keeps implementation simple for M6.
 
 ---
 
-## 🤝 FEATURE-012: Invitation Code System
+## 📅 FEATURE-013: Google Calendar Import
+
+**Description:** User imports past calendar events from Google Calendar into Friendsheet. Events are pre-processed into ImportCandidates and reviewed one by one in the shared Meeting Inbox before being saved as meetings.
+
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+**Target:** Before Google Play release (M4)
+
+**Architecture Notes:**
+- OAuth scope: `https://www.googleapis.com/auth/calendar.readonly`
+- Token stored via `flutter_secure_storage`
+- Calendar selection and ALL-DAY filter managed in Settings (added to existing SettingsScreen)
+- Only events with ≥ 2 attendees qualify as import candidates
+- Email parsing heuristic: `firstname.lastname@domain` → suggested as new Person
+
+---
+
+### US-056: Home Screen Onboarding CTA
+
+**As a** new user with fewer than 50 meetings
+**I want to** see a prompt on the Home Screen encouraging me to import past meetings from Google Calendar
+**So that** I discover the import feature and can quickly build my meeting history
+
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `flutter`, `onboarding`, `ux`
+**Depends on:** None (standalone UI component)
+
+**Acceptance Criteria:**
+- [ ] CTA card visible on Home Screen when user has < 50 total meetings in Firestore
+- [ ] Card contains: icon, headline ("Import your past meetings"), subtext, primary button "Import from Calendar"
+- [ ] CTA dismissed permanently when user taps "Import from Calendar" OR taps explicit dismiss (X)
+- [ ] Dismissed state persisted in SharedPreferences (key: `onboarding_calendar_cta_dismissed`)
+- [ ] CTA not shown if user already has ≥ 50 meetings regardless of dismissed state
+- [ ] Tapping "Import from Calendar" navigates to US-057 (Calendar Permission screen)
+- [ ] CTA uses app theme colors — consistent with design system
+
+**Tasks:**
+- [ ] **TASK-056.1:** Create `CalendarOnboardingCta` widget — card with icon, headline, subtext, button, dismiss X
+- [ ] **TASK-056.2:** Add meeting count check to `HomeScreenProvider` (or `StatisticsProvider`) — exposes `bool showCalendarCta`
+- [ ] **TASK-056.3:** Persist dismissed state via SharedPreferences key `onboarding_calendar_cta_dismissed`
+- [ ] **TASK-056.4:** Integrate `CalendarOnboardingCta` into `HomeScreen` — above statistics section
+- [ ] **TASK-056.5:** Write widget tests — CTA shown < 50, hidden ≥ 50, hidden after dismiss
+
+---
+
+### US-057: Google Calendar Permission, Connection & Settings
+
+**As a** user
+**I want to** grant Friendsheet read-only access to my Google Calendar and configure which calendars to import from
+**So that** the app fetches only the events I want
+
+**Story Points:** 5
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `flutter`, `oauth`, `settings`
+**Depends on:** US-056
+
+**Acceptance Criteria:**
+- [ ] First-time: explanation screen/bottom sheet — what access is requested and why
+- [ ] OAuth consent shown using `google_sign_in` with scope `calendar.readonly`
+- [ ] On grant: fetch list of user's calendars, navigate to calendar selection in Settings
+- [ ] On deny: informative message shown, user can retry
+- [ ] Settings section added to existing `SettingsScreen`:
+  - [ ] Calendar selection: list of user's calendars with checkboxes (default: primary calendar selected)
+  - [ ] ALL-DAY events toggle: include/exclude (default: OFF — excluded)
+  - [ ] "Revoke Calendar Access" option
+- [ ] Token stored via `flutter_secure_storage`
+- [ ] If token expires: graceful re-auth prompt
+
+**Tasks:**
+- [ ] **TASK-057.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
+- [ ] **TASK-057.2:** Add `flutter_secure_storage` to `pubspec.yaml` (check .gitignore first)
+- [ ] **TASK-057.3:** Create `GoogleCalendarService` — auth flow, token storage, calendar list fetch
+- [ ] **TASK-057.4:** Build `CalendarPermissionScreen` — explanation + grant/deny flow
+- [ ] **TASK-057.5:** Add Calendar Settings section to `SettingsScreen` — calendar checkboxes + ALL-DAY toggle
+- [ ] **TASK-057.6:** Persist calendar selection and ALL-DAY preference in SharedPreferences
+- [ ] **TASK-057.7:** Write tests for `GoogleCalendarService` auth flow and settings persistence
+
+---
+
+### US-058: Browse & Select Calendar Events
+
+**As a** user
+**I want to** browse my Google Calendar events within a chosen date range and select the ones I want to import
+**So that** I can choose exactly which past meetings to add to Friendsheet
+
+**Story Points:** 8
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `flutter`, `google-calendar-api`
+**Depends on:** US-057
+
+**Acceptance Criteria:**
+- [ ] Date range picker — "from" and "to" date (default range: last 12 months)
+- [ ] "Fetch events" triggers Google Calendar API call with selected date range and calendar filters from Settings
+- [ ] Events filtered: past only, ≥ 2 attendees, respects ALL-DAY setting from US-057
+- [ ] Each event card shows: title, date, attendee count, calendar name
+- [ ] Multi-select with checkboxes
+- [ ] "Select All" / "Deselect All" action
+- [ ] Empty state if no qualifying events found in range
+- [ ] Primary CTA: "Add to Meeting Inbox (N selected)" — disabled when 0 selected
+- [ ] Tapping CTA creates `ImportCandidate` list and navigates to US-059 (Meeting Inbox)
+- [ ] Selected events stored in `MeetingInboxProvider` (local memory — NOT Firestore)
+- [ ] Loading state during API fetch with cancel option
+
+**Tasks:**
+- [ ] **TASK-058.1:** Implement `GoogleCalendarService.fetchEvents(dateRange, calendarIds, includeAllDay)` — paginated Google Calendar REST API call
+- [ ] **TASK-058.2:** Create `ImportCandidate` model — `title`, `date`, `attendeeEmails`, `sourceType` (calendar/photos)
+- [ ] **TASK-058.3:** Build `CalendarEventsScreen` — date range picker, event list, multi-select
+- [ ] **TASK-058.4:** Implement email-to-person heuristic: parse `firstname.lastname@domain` → suggested Person name
+- [ ] **TASK-058.5:** Create `MeetingInboxProvider` — holds `List<ImportCandidate>` in memory
+- [ ] **TASK-058.6:** Write tests — filtering logic, email parsing heuristic, empty state
+
+---
+
+### US-059: Meeting Inbox — Review & Confirm
+
+**As a** user
+**I want to** review selected import candidates one by one, enrich them with details, and confirm which ones to save
+**So that** each imported meeting has correct data before it enters Friendsheet
+
+**Story Points:** 8
+**Priority:** P0
+**Status:** 📋 Planned
+**Labels:** `flutter`, `ux`
+**Depends on:** US-058
+
+**Acceptance Criteria:**
+- [ ] `MeetingInboxScreen` shows list of all pending `ImportCandidate` cards
+- [ ] Progress indicator: "X of Y reviewed"
+- [ ] Tapping card opens `InboxItemEditScreen` with pre-filled fields:
+  - [ ] Meeting Name (pre-filled from event title, editable, max 50 chars)
+  - [ ] Date (pre-filled from event start date, editable via date picker)
+  - [ ] Weight (default: 3, Fibonacci stepper — same component as AddMeeting)
+  - [ ] Participants: attendee e-mails shown as person suggestions (using heuristic from US-058); user can accept, dismiss, or add manually
+  - [ ] Activities: standard activity autocomplete (no pre-fill)
+- [ ] "Confirm" saves meeting to Firestore, removes card from inbox
+- [ ] "Skip" removes card from inbox without saving
+- [ ] When inbox is empty: success screen showing count of added meetings + CTA "Go to Meetings"
+- [ ] Back navigation from `InboxItemEditScreen` returns to inbox list without data loss
+
+**Tasks:**
+- [ ] **TASK-059.1:** Build `MeetingInboxScreen` — list of `ImportCandidate` cards with progress indicator
+- [ ] **TASK-059.2:** Build `InboxItemEditScreen` — pre-filled form reusing existing field widgets (MeetingNameField, MeetingWeightStepper, MeetingDateField, participant autocomplete, activity autocomplete)
+- [ ] **TASK-059.3:** Implement confirm flow — validate required fields, save to Firestore via `MeetingRepository`, remove from `MeetingInboxProvider`
+- [ ] **TASK-059.4:** Implement skip flow — remove from `MeetingInboxProvider` without saving
+- [ ] **TASK-059.5:** Build `ImportSuccessScreen` — count of added meetings, "Go to Meetings" CTA
+- [ ] **TASK-059.6:** Write tests — confirm flow, skip flow, empty inbox state, pre-fill logic
+
+---
+
+## 📷 FEATURE-014: Google Photos Import
+
+**Description:** User imports past meetings based on photos from Google Photos. Each selected photo creates an ImportCandidate with the photo's creation date pre-filled. Candidates flow into the shared Meeting Inbox (US-059) — same UX as Calendar import.
+
+**Priority:** P1
+**Role:** Developer
+**Status:** 📋 Planned — Post Google Play release
+**Target:** After M4 (non-blocking for store release)
+
+**Architecture Notes:**
+- OAuth scope: `https://www.googleapis.com/auth/photoslibrary.readonly`
+- Shares `MeetingInboxProvider` and `MeetingInboxScreen` with FEATURE-013 — no duplication
+- Photo is NOT stored in Firestore — only the creation date is used
+- `sourceType: photos` on ImportCandidate distinguishes origin for analytics
+
+---
+
+### US-060: Google Photos Permission & Connection
+
+**As a** user
+**I want to** grant Friendsheet read-only access to my Google Photos
+**So that** I can browse my photos to create meeting import candidates
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `flutter`, `oauth`
+**Depends on:** US-057 (reuses OAuth pattern from Calendar)
+
+**Acceptance Criteria:**
+- [ ] "Import from Photos" option accessible from Home Screen or import menu
+- [ ] First-time: explanation screen — what photo access is requested and why
+- [ ] Google Photos OAuth consent shown using `google_sign_in` extended scope
+- [ ] On grant: navigate to Browse Photos screen (US-061)
+- [ ] On deny: informative message, option to retry
+- [ ] Permission revocable from Settings (alongside Calendar revoke option)
+- [ ] Token stored via `flutter_secure_storage` (same service as Calendar token)
+
+**Tasks:**
+- [ ] **TASK-060.1:** Add `photoslibrary.readonly` scope to `GoogleCalendarService` (or extract shared `OAuthService`)
+- [ ] **TASK-060.2:** Build `PhotosPermissionScreen` — reuse pattern from `CalendarPermissionScreen`
+- [ ] **TASK-060.3:** Add "Revoke Photos Access" to Settings alongside Calendar revoke
+- [ ] **TASK-060.4:** Write tests
+
+---
+
+### US-061: Browse & Select Photos
+
+**As a** user
+**I want to** browse my Google Photos and select photos that remind me of past meetings
+**So that** each photo creates an import candidate with the correct date pre-filled
+
+**Story Points:** 8
+**Priority:** P1
+**Status:** 📋 Planned
+**Labels:** `flutter`, `google-photos-api`
+**Depends on:** US-060
+
+**Acceptance Criteria:**
+- [ ] Photo grid — paginated (first page < 2s)
+- [ ] Each photo shows thumbnail and creation date
+- [ ] Multi-select with checkboxes (same pattern as US-058)
+- [ ] "Select All" / "Deselect All"
+- [ ] CTA: "Add to Meeting Inbox (N selected)"
+- [ ] Each selected photo creates `ImportCandidate` with `date` from photo creation date, `title` empty (user fills in inbox), `sourceType: photos`
+- [ ] Navigates to `MeetingInboxScreen` (US-059) — shared with Calendar import
+- [ ] Photo NOT stored — only date used
+
+**Tasks:**
+- [ ] **TASK-061.1:** Implement `GooglePhotosService.fetchPhotos(pageToken)` — paginated Google Photos REST API
+- [ ] **TASK-061.2:** Build `PhotoGridScreen` — thumbnail grid, multi-select
+- [ ] **TASK-061.3:** Map selected photos to `ImportCandidate` list (date from metadata, title empty, sourceType: photos)
+- [ ] **TASK-061.4:** Add candidates to `MeetingInboxProvider` and navigate to `MeetingInboxScreen`
+- [ ] **TASK-061.5:** Write tests — pagination, candidate mapping, empty state
+
+---
+## 🔗 FEATURE-012: Invitation Code System
 
 **Priority:** P0  
 **Role:** Developer  
@@ -1633,18 +2215,17 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ### US-034: Generate Invitation Code
 
-**As a** user who has been using Friendsheet for a while  
+**As a** user  
 **I want to** generate an invitation code for a friend  
-**So that** they can receive all meetings we shared together
+**So that** they can import our shared meetings when they join the app
 
-**Story Points:** 8  
+**Story Points:** 5  
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] "Share with friend" option accessible from Person Detail screen
-- [ ] User selects which person (from their list) to generate code for
-- [ ] System creates invitation document in Firestore with: code, senderId, targetPersonId, expiresAt (48h TTL), status: pending
+- [ ] "Share with friend" option on Person Detail screen
 - [ ] 6-character alphanumeric code generated (e.g. "FR4K9X")
+- [ ] Code stored in Firestore with 48-hour TTL
 - [ ] Code displayed with copy button and share sheet option
 - [ ] Code expires after 48 hours
 - [ ] User can see active/expired codes they generated
@@ -1690,82 +2271,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ---
 
-# 📦 EPIC-006: Friendsheet M6 - Google Photos Integration
-
-**Goal:** Allow users to create meetings based on photos from their device gallery
-
-**Business Value:** Reduces friction for retroactive data entry — user sees a photo, remembers a meeting, adds it in seconds. Also teaches OAuth integration with external API.
-
-**Architecture Notes:**
-- Requires Google Photos Library API (separate OAuth scope from Firebase Auth)
-- User must grant additional permission: `https://www.googleapis.com/auth/photoslibrary.readonly`
-- Date of photo used as pre-filled meeting date
-- Photo is NOT stored in Firestore — only the date is used as a hint
-- OAuth token managed separately from Firebase Auth token
-
----
-
-## 📷 FEATURE-013: Photo-based Meeting Creation
-
-**Priority:** P0  
-**Role:** Developer  
-**Status:** 📋 Planned
-
----
-
-### US-036: Google Photos Permission & Connection
-
-**As a** user  
-**I want to** connect my Google Photos to Friendsheet  
-**So that** I can browse my photos to create meetings
-
-**Story Points:** 5  
-**Priority:** P0
-
-**Acceptance Criteria:**
-- [ ] "Browse Photos" option available in Add Meeting flow
-- [ ] First-time: permission request explains why access is needed
-- [ ] Google Photos OAuth consent screen shown
-- [ ] Permission can be revoked from app Settings
-- [ ] Graceful handling if permission denied
-
-**Tasks:**
-- [ ] **TASK-181:** Add Google Photos API OAuth scope - 1h
-- [ ] **TASK-182:** Implement GooglePhotosService with auth flow - 3h
-- [ ] **TASK-183:** Build permission request UI - 1h
-- [ ] **TASK-184:** Write tests - 1h
-
----
-
-### US-037: Browse Photos & Create Meeting
-
-**As a** user  
-**I want to** browse my photos and select one to create a meeting  
-**So that** the meeting date is automatically filled from the photo
-
-**Story Points:** 8  
-**Priority:** P0
-
-**Acceptance Criteria:**
-- [ ] Photo grid showing device photos (paginated)
-- [ ] Tapping photo opens "Create meeting from this photo" flow
-- [ ] Meeting date pre-filled from photo's creation date
-- [ ] User proceeds to normal Add Meeting screen with pre-filled date
-- [ ] Photo is NOT saved — only date is transferred
-- [ ] Back navigation returns to photo grid
-
-**Tasks:**
-- [ ] **TASK-185:** Implement Google Photos API fetch (paginated) - 3h
-- [ ] **TASK-186:** Build PhotoGridScreen - 2h
-- [ ] **TASK-187:** Implement date extraction from photo metadata - 1h
-- [ ] **TASK-188:** Bridge to AddMeetingScreen with pre-filled date - 1h
-- [ ] **TASK-189:** Write tests - 1h
-
----
-
----
-
-# 📦 EPIC-007: Friendsheet M7 - Custom Dashboard
+# 📦 EPIC-006: Friendsheet M7 - Custom Dashboard
 
 **Goal:** Allow users to build a personalized view with the metrics that matter most to them
 
@@ -1838,7 +2344,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ---
 
-# 📦 EPIC-008: Friendsheet M8 - AI Assistant
+# 📦 EPIC-007: Friendsheet M8 - AI Assistant
 
 **Goal:** Allow users to ask natural language questions about their social data and get AI-powered insights
 
@@ -2170,349 +2676,5 @@ Attach if available
 - [ ] PR blocked if coverage drops below threshold
 - [ ] Coverage trend tracked over time
 
-
-# 📦 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
-
-**Goal:** Establish a consistent visual identity for Friendsheet — color system, typography, app icon, splash screen, and illustrations — so the app looks professional before Google Play release.
-
-**Business Value:** A polished UI is the difference between a portfolio project and a portfolio project that impresses. Recruiters and users judge apps in the first 5 seconds.
-
-**Prerequisites:** M2 completed. Runs in parallel with M3 development.
-
-**Design Tools:** Figma (free plan), Midjourney (subscribed), Flutter ThemeData.
-
-**Status:** 📋 Planned
-
----
-
-## 🎨 FEATURE-018: Design System & Theme
-
-**Description:** Defines the visual foundation of the app — color palette, typography, spacing and shape system — and implements it as Flutter ThemeData so all screens inherit the style automatically.
-
-**Priority:** P0
-**Role:** UX Designer + Developer
-**Status:** ✅ COMPLETED
-
----
-
-### US-049: Figma Setup — Color System & Typography
-
-**As a** designer
-**I want to** set up a Figma file with color styles and text styles
-**So that** I have a single source of truth for all design decisions before implementing them in code
-
-**Story Points:** 3
-**Priority:** P0
-**Status:** ✅ COMPLETED
-**Labels:** `design`, `figma`
-**Mode:** 🎨 Design (no Claude Code)
-
-**Acceptance Criteria:**
-- [x] Figma file created with frame size 390×844 (standard mobile)
-- [x] Color styles defined: Primary, Primary Light, Primary Dark, Secondary, Surface, On Surface, Subtle, Error
-- [x] Text styles defined: Display, H1, H2, Body, Caption
-- [x] Nunito font imported via Google Fonts plugin
-- [x] 8dp grid configured on frames
-- [x] Color palette exported as reference (screenshot or PDF)
-
-**Reference:** `friendsheet_design_brief.md` — Sections 2 & 3
-
-**Tasks:**
-- [x] **TASK-049.1:** Create Figma account and new project file
-- [x] **TASK-049.2:** Install Google Fonts plugin, import Nunito
-- [x] **TASK-049.3:** Define Color Styles from design brief palette
-- [x] **TASK-049.4:** Define Text Styles (Display / H1 / H2 / Body / Caption)
-- [x] **TASK-049.5:** Configure 8dp grid on base frame
-
----
-
-### US-050: Flutter Theme Implementation
-
-**As a** developer
-**I want to** implement the design system as Flutter ThemeData
-**So that** all screens automatically use the correct colors, typography and shape system
-
-**Story Points:** 3
-**Priority:** P0
-**Status:** ✅ COMPLETED
-**Labels:** `flutter`, `theme`, `dev`
-**Mode:** ⚙️ Task (Claude Code)
-**Depends on:** US-049
-
-**Acceptance Criteria:**
-- [x] `AppTheme` class created in `lib/core/theme/app_theme.dart`
-- [x] `ColorScheme.light()` configured with design brief palette
-- [x] `google_fonts` package added, Nunito set as `fontFamily`
-- [x] `CardTheme` with `borderRadius: 16dp`
-- [x] `ElevatedButton` theme with `borderRadius: 12dp`
-- [x] `ThemeData` applied in `FriendsheetApp` widget
-- [x] All existing screens visually verified — no layout breaks
-- [x] `flutter analyze` passes with no warnings
-
-**Tasks:**
-- [x] **TASK-050.1:** Add `google_fonts` to pubspec.yaml, run `flutter pub get`
-- [x] **TASK-050.2:** Create `lib/core/theme/app_theme.dart` with `AppTheme` class
-- [x] **TASK-050.3:** Implement `ColorScheme`, `TextTheme`, `CardTheme`, `ButtonTheme`
-- [x] **TASK-050.4:** Apply theme in `main.dart` → `FriendsheetApp`
-- [x] **TASK-050.5:** Visual smoke test on all 4 main screens
-- [x] **TASK-050.6:** Run `dart format .` and `flutter analyze`
-
----
-
-## 🖼️ FEATURE-019: App Assets
-
-**Description:** Creates the visual entry points of the app — the app icon visible in Google Play and on device, and the splash screen shown on launch. Both are required for M4 (Google Play Release).
-
-**Priority:** P0
-**Role:** UX Designer + Developer
-**Status:** 📋 Planned
-
----
-
-### US-056: App Icon Design & Integration
-
-**As a** developer
-**I want to** have a custom app icon that reflects Friendsheet's brand
-**So that** the app looks professional in Google Play and on the user's device
-
-**Story Points:** 5
-**Priority:** P0
-**Status:** ✅ COMPLETED (March 04, 2026)
-**Labels:** `design`, `midjourney`, `android`, `release`
-**Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-049 (color palette defined)
-
-
-**Acceptance Criteria:**
-- [x] Icon generated in Midjourney using design brief prompt (warm green + amber palette)
-- [x] Icon reviewed and approved (flat 2D style, rounded, character-driven)
-- [x] Icon exported as 1024×1024 PNG from Figma
-- [x] `flutter_launcher_icons` package configured and icons generated
-- [x] Adaptive icon configured for Android (foreground + background layers)
-- [x] Icon verified on emulator and physical device
-
-**Midjourney Prompt (starting point — iterate as needed):**
-```
-friendly mobile app icon, two cartoon characters hugging or waving,
-flat 2D illustration, rounded shapes, bold outlines,
-warm green #43A047 and amber #FFB300 color palette,
-white background, simple geometric style, duolingo-inspired,
-app store icon format, square composition, --ar 1:1 --style raw --v 6
-```
-
-**Tasks:**
-- [x] **TASK-056.1:** Generate 4–6 icon variants in Midjourney, select best
-- [x] **TASK-056.2:** Refine in Figma — adjust colors to match palette exactly
-- [x] **TASK-056.3:** Export 1024×1024 PNG
-- [x] **TASK-056.4:** Add `flutter_launcher_icons` to pubspec.yaml
-- [x] **TASK-056.5:** Configure adaptive icon (foreground + `#FAFAF7` background)
-- [x] **TASK-056.6:** Run `dart run flutter_launcher_icons` and verify output
-
----
-
-### US-052: Splash Screen
-
-**Status:** ✅ COMPLETED (March 04, 2026)
-**Labels:** `design`, `flutter`, `release`
-**Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-056 (icon/branding established)
-
-**Acceptance Criteria:**
-- [x] MP4 animation asset added to `assets/animations/splash.mp4`
-- [x] `video_player` package added for MP4 playback
-- [x] `SplashScreen` widget created — plays MP4 + shows "Friendsheet" in Nunito ExtraBold below
-- [x] Splash disappears automatically when MP4 finishes playing
-- [x] After splash completes → navigate to `AuthWrapper` (auth check happens in background)
-- [x] Background color: `#FAFAF7` (warm white)
-- [x] "Friendsheet" text color: `#43A047` (primary green)
-- [x] Tested on emulator — no jank, smooth playback
-
-**Tasks:**
-- [x] **TASK-052.1:** Add MP4 to `assets/animations/` and register in `pubspec.yaml`
-- [x] **TASK-052.2:** Add `video_player` to `pubspec.yaml`
-- [x] **TASK-052.3:** Create `SplashScreen` widget with `VideoPlayerController`
-- [x] **TASK-052.4:** Wire `SplashScreen` as first route in `main.dart` — navigates to `AuthWrapper` on completion
-- [x] **TASK-052.5:** Write widget test for `SplashScreen`
-
----
-
-## 🧩 FEATURE-020: Illustrations & Empty States
-
-**Description:** Adds human character illustrations to key screens — Login and empty states — giving the app personality and making it feel alive when there's no data yet.
-
-**Priority:** P1
-**Role:** UX Designer + Developer
-**Status:** 📋 Planned
-
----
-
-### US-053: Login Screen Illustration & App-wide Typography Polish
-
-**As a** user
-**I want to** see a welcoming illustration and consistent branding on the login screen and throughout the app
-**So that** the app feels warm, friendly and visually consistent from the first interaction
-
-**Story Points:** 5
-**Priority:** P1
-**Status:** ✅ COMPLETED (March 2026)
-**Labels:** `design`, `midjourney`, `flutter`, `typography`
-**Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-050 (theme in place)
-
-**Acceptance Criteria:**
-- [x] Illustration generated in Midjourney (two friendly characters, warm scene)
-- [x] Illustration exported as PNG (max 200KB)
-- [x] Displayed above Google Sign-In button on LoginScreen
-- [x] Responsive — scales correctly on different screen sizes
-- [x] Does not push Sign-In button below visible area on small screens (min 360dp height)
-- [x] People icon removed from LoginScreen
-- [x] App title "Friendsheet" uses Pacifico font on LoginScreen
-- [x] App title "Friendsheet" uses Pacifico font in AppBar (MainScreen)
-- [x] App title "Friendsheet" uses Pacifico font in Drawer header
-- [x] App title "Friendsheet" uses Pacifico font on SplashScreen
-- [x] "Settings" title uses white color in SettingsScreen AppBar
-- [x] Terms of Service link added to LoginScreen (opens in external browser)
-- [x] Privacy Policy link added to LoginScreen (opens in external browser)
-- [x] ToS and Privacy Policy hosted on GitHub Pages
-
-**Midjourney Prompt (used):**
-```
-flat 2D illustration, group of 3-4 diverse cartoon friends,
-laughing and spending time together, warm and joyful scene,
-rounded character style, green #43A047 and amber #FFB300 color palette,
-white background, simple geometric shapes, duolingo-inspired style,
-horizontal composition, mobile app onboarding illustration,
-no text, no letters, clean edges
---ar 3:2 --style raw --v 6.1
-```
-
-**Tasks:**
-- [x] **TASK-053.1:** Illustration already present in `assets/images/`
-- [x] **TASK-053.2:** Register `login_illustration.png` in `pubspec.yaml`
-- [x] **TASK-053.3:** Integrate illustration into `LoginScreen` layout
-- [x] **TASK-053.4:** Test on small screen (360dp width) — verify button visibility
-- [x] **TASK-053.5:** Add `'displays login illustration'` test
-- [x] **TASK-053.6:** Remove `Icon(Icons.people_alt)` from LoginScreen
-- [x] **TASK-053.7:** Replace title font with Pacifico on LoginScreen
-- [x] **TASK-053.8:** Add ToS as plain text with TODO comment (url_launcher pending)
-- [x] **TASK-053.9:** Verify `url_launcher` gitignore — no changes needed
-- [x] **TASK-053.10:** Add `url_launcher: ^6.3.0` to `pubspec.yaml`
-- [x] **TASK-053.11:** Add `https` scheme intent to `AndroidManifest.xml`
-- [x] **TASK-053.12:** Replace ToS text with tappable RichText (ToS + Privacy Policy)
-- [x] **TASK-053.13:** Update LoginScreen tests for RichText links
-- [x] **TASK-053.14:** Apply Pacifico to AppBar title (MainScreen)
-- [x] **TASK-053.15:** Apply Pacifico to Drawer header (MainScreen)
-- [x] **TASK-053.16:** Apply Pacifico to SplashScreen title
-- [x] **TASK-053.17:** Fix Settings AppBar title color to white
-
-**GitHub Pages:**
-- Terms of Service: `https://aleksanderginalski.github.io/Friendsheet-App/terms`
-- Privacy Policy: `https://aleksanderginalski.github.io/Friendsheet-App/privacy`
-
-**Definition of Done:**
-- [x] Illustration visible on LoginScreen
-- [x] Pacifico font consistent across LoginScreen, AppBar, Drawer, SplashScreen
-- [x] ToS and Privacy Policy links functional
-- [x] GitHub Pages live with both documents
-- [x] 365/365 tests passing
-- [x] `flutter analyze` — no issues
-- [x] Code reviewed and committed
-
----
-
-### US-054: Empty States — Meetings & Friends
-
-**As a** user
-**I want to** see a friendly illustration when my meetings or friends list is empty
-**So that** the app feels welcoming even before I've added any data
-
-**Story Points:** 3
-**Priority:** P1
-**Status:** 📋 Planned
-**Labels:** `design`, `midjourney`, `flutter`
-**Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-050
-
-**Acceptance Criteria:**
-- [ ] Empty state illustration for MeetingsListScreen (no meetings added yet)
-- [ ] Empty state illustration for PersonsListScreen (no friends added yet)
-- [ ] Each empty state: illustration + short friendly message + optional CTA button
-- [ ] Illustrations consistent in style (same Midjourney style parameters)
-- [ ] Messages are warm and encouraging, not generic ("No data found")
-
-**Empty State Copy:**
-- Meetings: *"No meetings yet — tap + to add your first one!"*
-- Friends: *"No friends added yet — tap + to get started!"*
-
-**Midjourney Prompts (starting points):**
-
-Meetings empty state:
-```
-small flat illustration, two cartoon friends sitting at a cafe table,
-smiling and talking, simple rounded characters, warm colors,
-green and amber palette, white background, minimal detail,
-mobile app empty state style, duolingo character energy,
---ar 4:3 --style raw --v 6
-```
-
-Friends empty state:
-```
-flat 2D illustration, single cartoon character waving hello,
-friendly pose, simple rounded shapes, bold outline,
-warm green color scheme, white background, minimal,
-mobile app illustration, --ar 1:1 --style raw --v 6
-```
-
-**Tasks:**
-- [ ] **TASK-054.1:** Generate both illustrations in Midjourney
-- [ ] **TASK-054.2:** Create reusable `EmptyStateWidget(image, message, onAction)` component
-- [ ] **TASK-054.3:** Integrate into `MeetingsListScreen`
-- [ ] **TASK-054.4:** Integrate into `PersonsListScreen`
-- [ ] **TASK-054.5:** Write widget test for `EmptyStateWidget`
-
----
-
-### US-055: Empty State — Activities
-
-**As a** user
-**I want to** see a friendly illustration when my activities list is empty
-**So that** the app feels consistent and polished across all tabs
-
-**Story Points:** 2
-**Priority:** P2
-**Status:** 📋 Planned
-**Labels:** `design`, `flutter`
-**Mode:** 🎨 Design → ⚙️ Task
-**Depends on:** US-054 (reuse EmptyStateWidget from US-054)
-
-**Acceptance Criteria:**
-- [ ] Empty state displayed in ActivitiesListScreen when no categories exist
-- [ ] Uses `EmptyStateWidget` component from US-054
-- [ ] Illustration consistent with Meetings and Friends empty states
-- [ ] Message: *"No activities yet — tap + to create your first category!"*
-
-**Tasks:**
-- [ ] **TASK-055.1:** Generate illustration in Midjourney (reuse style params from US-054)
-- [ ] **TASK-055.2:** Integrate `EmptyStateWidget` into `ActivitiesListScreen`
-
-## 📋 Design Dependency Map
-
-```
-US-049 Figma Setup
-    └── US-050 Flutter Theme ──────────────┐
-                                           ├── US-053 Login Illustration
-US-051 App Icon ────────────────────────   ├── US-054 Empty States (Meetings + Friends)
-    └── US-052 Splash Screen               └── US-055 Empty State (Activities)
-```
-
-**Blocking M4 (Google Play Release):**
-- US-051 App Icon ← required by store
-- US-052 Splash Screen ← required for polish
-- US-050 Flutter Theme ← required for visual consistency
-
-**Non-blocking (can ship to M4 without these):**
-- US-053 Login Illustration
-- US-054 Empty States
-- US-055 Empty State Activities
-
 **End of Backlog Document**
+

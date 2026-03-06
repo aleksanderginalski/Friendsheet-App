@@ -221,6 +221,19 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.14.0 - US-055 Activities Polish — Icons, Tree View, Search (March 06, 2026)
+- ✅ 51 custom Midjourney PNG icons replacing Material Icons in Activities
+- ✅ ActivityIcon widget — renders PNG asset or Icons.category fallback
+- ✅ Subcategory tree lines — T/L shape CustomPainter indentation (VS Code style)
+- ✅ SharedSearchBar — reusable search widget across Activities, Friends, Meetings
+- ✅ Activities search fix — EmptyStateWidget when no results (not empty parent list)
+- ✅ EmptyStateWidget integrated in ActivitiesListScreen (empty list state)
+- ✅ Icon picker rebuilt as 2D GridView (5 columns, scrollable)
+- ✅ AlertDialog → Dialog fix (RenderIntrinsicWidth crash eliminated)
+- ✅ ActivityIcon integrated in autocomplete chips and Meeting Detail screen
+- ✅ empty_state_activities.png illustration added (Midjourney)
+- ✅ Total test count: 371 → 396 tests (+25)
+
 ### v3.13.0 - US-054 Empty States — Meetings & Friends (March 05, 2026)
 - ✅ EmptyStateWidget — reusable component (imagePath + message, no CTA)
 - ✅ MeetingsListScreen: EmptyStateWidget for empty list + persistent search field above list
