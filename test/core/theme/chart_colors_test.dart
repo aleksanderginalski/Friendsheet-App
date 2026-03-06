@@ -33,11 +33,12 @@ void main() {
       expect(gradient.stops, equals([0.0, 0.3, 0.7, 1.0]));
     });
 
-    test('getStrokeColor has alpha 0.6 relative to base color', () {
+    test('getStrokeColor returns fixed charcoal color (0xFF1C1B1F) regardless of id', () {
       const id = 'test-id';
       final stroke = ChartColors.getStrokeColor(id);
-      // Alpha 0.6 maps to ~153 out of 255.
-      expect(stroke.a, closeTo(0.6, 0.01));
+      // High-contrast dark stroke — full opacity, independent of palette entry.
+      expect(stroke.a, closeTo(1.0, 0.01));
+      expect(ChartColors.getStrokeColor('other-id'), equals(stroke));
     });
 
     test('different ids can produce different colors', () {

@@ -384,7 +384,7 @@ class _AnimatedBarItemState extends State<_AnimatedBarItem> {
                 gradient: ChartColors.getGradient(widget.personId),
                 border: Border.all(
                   color: ChartColors.getStrokeColor(widget.personId),
-                  width: 1.5,
+                  width: 2.0,
                 ),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(4),
