@@ -6,6 +6,7 @@ import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/meeting_card.dart';
+import '../widgets/shared_search_bar.dart';
 
 /// Screen that displays all meetings for the current user, grouped by year.
 /// Provides and owns [MeetingsListProvider] scoped to this screen.
@@ -80,22 +81,9 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
 
             return Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search meetings...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 16,
-                      ),
-                    ),
-                    onChanged: provider.setSearchQuery,
-                  ),
+                SharedSearchBar(
+                  hintText: 'Search meetings...',
+                  onChanged: provider.setSearchQuery,
                 ),
                 Expanded(
                   child: filtered.isEmpty

@@ -5,7 +5,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "directions_run"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_gory",
@@ -13,7 +13,7 @@
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "landscape"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_rowery",
@@ -21,7 +21,7 @@
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "directions_bike"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_silownia",
@@ -29,7 +29,7 @@
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "fitness_center"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_narty",
@@ -37,7 +37,7 @@
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "downhill_skiing"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_szkola",
@@ -45,7 +45,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "school"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_podroze",
@@ -53,7 +53,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "flight"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_kultura",
@@ -61,7 +61,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "theater_comedy"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_koncert",
@@ -69,7 +69,7 @@
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "music_note"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_teatr",
@@ -77,7 +77,7 @@
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "theater_comedy"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_standup",
@@ -85,7 +85,7 @@
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "mic"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_kino",
@@ -93,7 +93,7 @@
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "movie"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_planszowki",
@@ -101,7 +101,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "casino"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_zwiedzanie",
@@ -109,7 +109,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "explore"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_impreza",
@@ -117,7 +117,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "celebration"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_parapetowka",
@@ -125,7 +125,7 @@
         "parentCategoryId": "cat_impreza",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "home"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_reunion",
@@ -133,7 +133,7 @@
         "parentCategoryId": "cat_impreza",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "group"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_spotkanie",
@@ -141,7 +141,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "people"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_plotki",
@@ -149,7 +149,7 @@
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "chat_bubble"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_clubing",
@@ -157,7 +157,7 @@
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "nightlife"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_restauracja",
@@ -165,7 +165,7 @@
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "restaurant"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_escape_room",
@@ -173,7 +173,7 @@
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "lock"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_swietowanie",
@@ -181,7 +181,7 @@
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "cake"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_wesele",
@@ -189,7 +189,7 @@
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "favorite"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_swieta",
@@ -197,7 +197,7 @@
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "ac_unit"
+        "iconIdentifier": ""
     },
     {
         "id": "cat_urodziny",
@@ -205,6 +205,6 @@
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": "cake"
+        "iconIdentifier": ""
     }
 ]

@@ -179,5 +179,61 @@ void main() {
       expect(provider.errorMessage, isNotNull);
       expect(provider.isLoading, isFalse);
     });
+
+    group('hasSearchResults', () {
+      test('returns true when query is empty', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.hasSearchResults, isTrue);
+      });
+
+      test('returns true when query matches at least one child category',
+          () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('Tennis');
+
+        expect(provider.hasSearchResults, isTrue);
+      });
+
+      test('returns true with partial match on child category name', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('ball'); // matches 'Basketball'
+
+        expect(provider.hasSearchResults, isTrue);
+      });
+
+      test('returns false when query matches no child categories', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('zzznomatch');
+
+        expect(provider.hasSearchResults, isFalse);
+      });
+
+      test('returns false even when query matches only a root category name',
+          () async {
+        // 'Sports' is a root name — hasSearchResults only checks children.
+        // childrenOf('root-a') filtered by 'Sports' → empty (Tennis/Basketball
+        // do not contain 'Sports'). childrenOf('root-b') → empty (no children).
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('Sports');
+
+        expect(provider.hasSearchResults, isFalse);
+      });
+    });
   });
 }

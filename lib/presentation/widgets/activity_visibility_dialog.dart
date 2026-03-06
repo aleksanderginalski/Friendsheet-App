@@ -128,7 +128,6 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
 
   Widget _buildRow(_TreeRow row) {
     final isVisible = !_hidden.contains(row.entry.categoryId);
-    final iconData = resolveActivityIcon(row.category?.iconIdentifier ?? '');
 
     return InkWell(
       onTap: () => _toggle(row.entry.categoryId),
@@ -138,7 +137,7 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
           children: [
             // Indentation: 16dp per depth level.
             SizedBox(width: 16.0 * row.depth),
-            Icon(iconData, size: 18),
+            ActivityIcon(identifier: row.category?.iconIdentifier, size: 18),
             const SizedBox(width: 8),
             Expanded(child: Text(row.entry.name)),
             Checkbox(
