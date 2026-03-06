@@ -20,12 +20,12 @@
     "lib/data/repositories/statistics_repository.dart"                      = "StatisticsRepository — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ActivityBreakdownEntry DTO), getPersonsForActivity (PersonActivityEntry DTO — uses getPersonsByUser + in-memory filter, no whereIn limit), getInteractionDistribution (InteractionDistributionEntry DTO), getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030, US-050)"
     "lib/data/services/auth_service.dart"                                   = "Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)"
     "lib/data/services/export_service.dart"                                 = "ExportService — fetches meetings, persons, activityCategories for userId, serializes to JSON, writes to external storage; injectable directoryProvider for test isolation (US-031)"
-    "lib/presentation/activities/activities_list_provider.dart"             = "State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD with cascade delete (US-026, US-043)"
-    "lib/presentation/activities/activities_list_screen.dart"               = "Activities list screen — expandable category tree, long-press edit/delete for private categories (US-026)"
-    "lib/presentation/activities/activity_icons.dart"                       = "Predefined icon set and resolveActivityIcon helper — maps string identifiers to Material IconData (US-026)"
-    "lib/presentation/activities/add_edit_activity_dialog.dart"             = "Add/Edit activity category dialog — name, parent selector, icon picker (US-026)"
+    "lib/presentation/activities/activities_list_provider.dart"             = "State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD with cascade delete, hasSearchResults getter (US-026, US-043, US-055)"
+    "lib/presentation/activities/activities_list_screen.dart"               = "Activities list screen — expandable category tree, subcategory indentation with T/L tree lines (CustomPainter), EmptyStateWidget for empty list and no search results, long-press edit/delete for private categories (US-026, US-055)"
+    "lib/presentation/activities/activity_icons.dart"                       = "PNG asset icon map (51 entries) + resolveActivityIcon(String?) returning asset path or null + ActivityIcon widget with Icons.category fallback (US-026, US-055)"
+    "lib/presentation/activities/add_edit_activity_dialog.dart"             = "Add/Edit activity category dialog — name, parent selector, 2D icon picker grid (Dialog replaces AlertDialog to avoid RenderIntrinsicWidth crash) (US-026, US-055)"
     "lib/presentation/meetings/meeting_detail_provider.dart"                = "State for Meeting Detail screen — resolves participantIds and categoryIds to full objects (US-020, US-026, US-042)"
-    "lib/presentation/meetings/meeting_detail_screen.dart"                  = "Meeting detail screen — displays all fields including resolved categories, edit and delete actions (US-022, US-023, US-026)"
+    "lib/presentation/meetings/meeting_detail_screen.dart"                  = "Meeting detail screen — displays all fields including resolved categories with ActivityIcon, edit and delete actions (US-022, US-023, US-026, US-055)"
     "lib/presentation/persons/person_detail_provider.dart"                  = "State for Person Detail screen — fetches meeting count, handles update and delete (US-025)"
     "lib/presentation/persons/person_detail_screen.dart"                    = "Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation (US-025)"
     "lib/presentation/persons/person_list_tile.dart"                        = "Person list tile widget — shows full name with initials avatar (US-024)"
@@ -38,11 +38,11 @@
     "lib/presentation/screens/home_screen.dart"                             = "Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)"
     "lib/presentation/screens/login_screen.dart"                            = "Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)"
     "lib/presentation/screens/main_screen.dart"                             = "Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027, US-031)"
-    "lib/presentation/screens/meetings_list_screen.dart"                    = "Meetings list — grouped by year, expand/collapse, persistent search field, EmptyStateWidget for empty list and no search results (US-021, US-054)"
-    "lib/presentation/screens/persons_list_screen.dart"                     = "Persons list — search/filter, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054)"
+    "lib/presentation/screens/meetings_list_screen.dart"                    = "Meetings list — grouped by year, expand/collapse, SharedSearchBar, EmptyStateWidget for empty list and no search results (US-021, US-054, US-055)"
+    "lib/presentation/screens/persons_list_screen.dart"                     = "Persons list — SharedSearchBar, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054, US-055)"
     "lib/presentation/screens/settings_screen.dart"                         = "Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)"
     "lib/presentation/screens/splash_screen.dart"                           = "SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)"
-    "lib/presentation/widgets/activity_autocomplete.dart"                   = "Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow (US-020, US-042)"
+    "lib/presentation/widgets/activity_autocomplete.dart"                   = "Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow, ActivityIcon for chips and suggestions (US-020, US-042, US-055)"
     "lib/presentation/widgets/activity_breakdown_widget.dart"               = "Animated vertical bar chart — Stack + absolute positioning, stable colors per categoryId, delta % indicator (▲/▼/NEW), ⚙️ visibility dialog trigger, auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049)"
     "lib/presentation/widgets/activity_selector_dialog.dart"                = "Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)"
     "lib/presentation/widgets/activity_visibility_dialog.dart"              = "Dialog with hierarchical checkbox list + Auto-select top 10 button for managing activity visibility (US-048)"
@@ -54,6 +54,7 @@
     "lib/presentation/widgets/meeting_weight_stepper.dart"                  = "Fibonacci weight stepper widget (US-012)"
     "lib/presentation/widgets/person_autocomplete.dart"                     = "Participant autocomplete widget + AddPersonDialog — returns strings, save handled by Provider (BUG-42)"
     "lib/presentation/widgets/person_visibility_dialog.dart"                = "Flat checkbox list dialog for managing person visibility in Interaction Distribution metric + Auto-select top 10 (US-030)"
+    "lib/presentation/widgets/shared_search_bar.dart"                       = "Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens (US-055)"
     "lib/presentation/widgets/statistics/statistics_section.dart"           = "StatisticsSection — PageView carousel with YearStepper above; _CarouselPage with AutomaticKeepAliveClientMixin keeps off-screen State alive; long-press hides card + SnackBar; empty state with Restore all; SharedPreferences key: stats_carousel_hidden_cards (US-027, US-028, US-029, US-030, US-048, US-051)"
     "lib/presentation/widgets/who_per_activity_widget.dart"                 = "Animated vertical bar chart showing persons ranked by weight sum for selected activity — stable colors per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); long-press hide/show; SharedPreferences hidden persons (US-029, US-050)"
     "lib/presentation/widgets/year_stepper.dart"                            = "YearStepper — pure StatelessWidget with ← YYYY → arrows and swipe gesture; disabled at year boundaries (US-027)"
@@ -69,8 +70,10 @@
     "test/data/services/auth_service_test.dart"                             = "AuthService tests — batch-copy guard, first login flow (US-020)"
     "test/data/services/auth_service_test.mocks.dart"                       = "Generated mocks for AuthService tests"
     "test/data/services/export_service_test.dart"                           = "ExportService tests — happy path, empty data, repository throws (US-031)"
-    "test/presentation/activities/activities_list_provider_test.dart"       = "ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD, deleteWithChildren verification (US-026, US-043)"
+    "test/presentation/activities/activities_list_provider_test.dart"       = "ActivitiesListProvider tests — initialize, tree filtering, expand/collapse, CRUD, deleteWithChildren verification, hasSearchResults getter (US-026, US-043, US-055)"
     "test/presentation/activities/activities_list_provider_test.mocks.dart" = "Generated mocks for ActivitiesListProvider tests"
+    "test/presentation/activities/activities_list_screen_test.dart"         = "ActivitiesListScreen tests — EmptyStateWidget for empty list, EmptyStateWidget for no search results, categories visible when present (US-055)"
+    "test/presentation/activities/activity_icons_test.dart"                 = "activity_icons tests — resolveActivityIcon returns PNG path, null for unknown/empty/null, map size 51, all values are valid PNG paths (US-055)"
     "test/presentation/meetings/meeting_detail_provider_test.dart"          = "MeetingDetailProvider tests — categoryIds resolution, activityIds removed (US-020, US-042)"
     "test/presentation/meetings/meeting_detail_provider_test.mocks.dart"    = "Generated mocks for MeetingDetailProvider tests"
     "test/presentation/persons/person_detail_provider_test.dart"            = "PersonDetailProvider tests (US-025)"
@@ -103,6 +106,7 @@
     "test/presentation/widgets/meeting_name_field_test.mocks.dart"          = "Generated mocks for MeetingNameField tests"
     "test/presentation/widgets/meeting_weight_stepper_test.dart"            = "MeetingWeightStepper tests (5 tests)"
     "test/presentation/widgets/person_visibility_dialog_test.dart"          = "PersonVisibilityDialog tests — checkbox state, toggle callback, auto-select top 10 (US-030)"
+    "test/presentation/widgets/shared_search_bar_test.dart"                 = "SharedSearchBar tests — hint text, onChanged callback, clear button visibility and behavior (US-055)"
     "test/presentation/widgets/statistics_section_test.dart"                = "StatisticsSection tests — PageView present when cards visible, empty state when all hidden, InteractionDistributionWidget always in tree regardless of isDistributionLoading (US-051)"
     "test/presentation/widgets/year_stepper_test.dart"                      = "YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case (US-027)"
 }
@@ -156,10 +160,12 @@ foreach ($item in $files) {
 $lines.Add("")
 $lines.Add("## assets/")
 $lines.Add("- assets/icons/icon.png - App icon source — 1024x1024 PNG, Midjourney-generated, used by flutter_launcher_icons to generate all Android mipmap sizes and adaptive icon (US-056)")
+$lines.Add("- assets/icons/activities/ - 51 custom PNG activity icons — Midjourney-generated, flat 2D style, used by ActivityIcon widget via kActivityIcons map (US-055)")
 $lines.Add("- assets/animations/splash.mp4 - Splash screen animation — 3s MP4, Midjourney-generated, played by SplashScreen widget on app launch (US-052)")
 $lines.Add("- assets/images/login_illustration.png - Login screen illustration — flat 2D cartoon friends, Midjourney-generated, displayed above Google Sign-In button (US-053)")
 $lines.Add("- assets/images/empty_state_meetings.png - Meetings empty state illustration — two cartoon friends at a cafe table, Midjourney-generated (US-054)")
 $lines.Add("- assets/images/empty_state_friends.png - Friends empty state illustration — single cartoon character waving, Midjourney-generated (US-054)")
+$lines.Add("- assets/images/empty_state_activities.png - Activities empty state illustration — cartoon character with clipboard, Midjourney-generated (US-055)")
 
 # scripts/migration — static section (not scanned, files are partial gitignored)
 $lines.Add("")
