@@ -38,7 +38,9 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
     final cat = widget.initialCategory;
     _nameController = TextEditingController(text: cat?.name ?? '');
     _selectedParentId = cat?.parentCategoryId ?? widget.preselectedParentId;
-    _selectedIcon = cat?.iconIdentifier ?? kActivityIconIdentifiers.first;
+    _selectedIcon = (cat?.iconIdentifier.isNotEmpty == true)
+        ? cat!.iconIdentifier
+        : kActivityIcons.keys.first;
   }
 
   @override
@@ -92,86 +94,114 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(_isEditMode ? 'Edit Activity' : 'Add Activity'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
-                maxLength: 50,
-                autofocus: true,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Name is required';
-                  }
-                  return null;
-                },
+              Text(
+                _isEditMode ? 'Edit Activity' : 'Add Activity',
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String?>(
-                initialValue: _selectedParentId,
-                decoration: const InputDecoration(
-                  labelText: 'Parent category',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text('None (top-level)'),
-                  ),
-                  ...widget.availableParents.map(
-                    (cat) => DropdownMenuItem<String?>(
-                      value: cat.id,
-                      child: Text(cat.name),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLength: 50,
+                          autofocus: true,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Name is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String?>(
+                          initialValue: _selectedParentId,
+                          decoration: const InputDecoration(
+                            labelText: 'Parent category',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: [
+                            const DropdownMenuItem<String?>(
+                              value: null,
+                              child: Text('None (top-level)'),
+                            ),
+                            ...widget.availableParents.map(
+                              (cat) => DropdownMenuItem<String?>(
+                                value: cat.id,
+                                child: Text(cat.name),
+                              ),
+                            ),
+                          ],
+                          onChanged: (value) =>
+                              setState(() => _selectedParentId = value),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Icon',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        _IconPicker(
+                          selected: _selectedIcon,
+                          onSelected: (id) =>
+                              setState(() => _selectedIcon = id),
+                        ),
+                      ],
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed:
+                        _isSaving ? null : () => Navigator.of(context).pop(),
+                    child: const Text('CANCEL'),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: _isSaving ? null : () => _save(context),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('SAVE'),
+                  ),
                 ],
-                onChanged: (value) => setState(() => _selectedParentId = value),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Icon',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              _IconPicker(
-                selected: _selectedIcon,
-                onSelected: (id) => setState(() => _selectedIcon = id),
               ),
             ],
           ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: const Text('CANCEL'),
-        ),
-        TextButton(
-          onPressed: _isSaving ? null : () => _save(context),
-          child: _isSaving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('SAVE'),
-        ),
-      ],
     );
   }
 }
 
-// Horizontal scrollable row of icon buttons from the predefined set.
+// 2D grid of selectable activity icons.
+// Selected icon is highlighted with primaryContainer background and a border.
 class _IconPicker extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onSelected;
@@ -181,24 +211,35 @@ class _IconPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: kActivityIconIdentifiers.map((id) {
+    final primaryContainer = Theme.of(context).colorScheme.primaryContainer;
+    final identifiers = kActivityIcons.keys.toList();
+
+    return SizedBox(
+      height: 240,
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+        ),
+        itemCount: identifiers.length,
+        itemBuilder: (context, index) {
+          final id = identifiers[index];
           final isSelected = id == selected;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: IconButton(
-              icon: Icon(resolveActivityIcon(id)),
-              color: isSelected ? Colors.white : null,
-              style: isSelected
-                  ? IconButton.styleFrom(backgroundColor: primary)
-                  : null,
-              onPressed: () => onSelected(id),
-              tooltip: id,
+          return InkWell(
+            onTap: () => onSelected(id),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isSelected ? primaryContainer : null,
+                borderRadius: BorderRadius.circular(8),
+                border:
+                    isSelected ? Border.all(color: primary, width: 2) : null,
+              ),
+              child: ActivityIcon(identifier: id),
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }

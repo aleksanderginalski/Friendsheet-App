@@ -7,6 +7,7 @@ import '../../data/models/meeting.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../activities/activity_icons.dart';
 import '../screens/add_meeting_screen.dart';
 import 'meeting_detail_provider.dart';
 
@@ -216,7 +217,7 @@ class _ActivityList extends StatelessWidget {
       children: [
         ...provider.categories.map((c) => ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.sports_tennis),
+              leading: ActivityIcon(identifier: c.iconIdentifier, size: 24),
               title: Text(c.name),
             )),
       ],

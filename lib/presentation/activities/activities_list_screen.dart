@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/activity_category.dart';
 import '../../data/services/auth_service.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/shared_search_bar.dart';
 import 'activities_list_provider.dart';
 import 'activity_icons.dart';
 import 'add_edit_activity_dialog.dart';
@@ -156,29 +158,10 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
           body: Column(
             children: [
               if (_isSearchActive)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Search activities...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: provider.searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                provider.setSearchQuery('');
-                              },
-                            )
-                          : null,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
-                    onChanged: provider.setSearchQuery,
-                  ),
+                SharedSearchBar(
+                  controller: _searchController,
+                  hintText: 'Search activities...',
+                  onChanged: provider.setSearchQuery,
                 ),
               Expanded(
                 child: _ActivitiesBody(
@@ -241,24 +224,17 @@ class _ActivitiesBody extends StatelessWidget {
     final roots = provider.rootCategories;
 
     if (roots.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.sports_tennis, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(
-              'No activities yet',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: onAddRoot,
-              icon: const Icon(Icons.add),
-              label: const Text('Add activity'),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_activities.png',
+        message: 'No activities yet — tap + to create your first category!',
+      );
+    }
+
+    // Search is active but no child categories match — show empty state.
+    if (provider.searchQuery.isNotEmpty && !provider.hasSearchResults) {
+      return const EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_activities.png',
+        message: 'No activities found',
       );
     }
 
@@ -334,7 +310,7 @@ class _RootCategoryTile extends StatelessWidget {
       child: ExpansionTile(
         key: ValueKey('${category.id}_$isExpanded'),
         initiallyExpanded: isExpanded,
-        leading: Icon(resolveActivityIcon(category.iconIdentifier)),
+        leading: ActivityIcon(identifier: category.iconIdentifier),
         title: Text(category.name),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -350,15 +326,15 @@ class _RootCategoryTile extends StatelessWidget {
           ],
         ),
         onExpansionChanged: (_) => provider.toggleExpanded(category.id),
-        children: children
-            .map(
-              (child) => _ActivityLeafTile(
-                category: child,
-                onEdit: onEdit,
-                onDelete: onDelete,
-              ),
-            )
-            .toList(),
+        children: children.asMap().entries.map((entry) {
+          final isLast = entry.key == children.length - 1;
+          return _ActivityLeafTile(
+            category: entry.value,
+            isLast: isLast,
+            onEdit: onEdit,
+            onDelete: onDelete,
+          );
+        }).toList(),
       ),
     );
   }
@@ -366,13 +342,16 @@ class _RootCategoryTile extends StatelessWidget {
 
 // Tile for a level-2 (leaf) activity category.
 // Long-press opens a bottom sheet with Edit and Delete options.
+// [isLast] controls whether the tree line is L-shaped (last child) or T-shaped.
 class _ActivityLeafTile extends StatelessWidget {
   final ActivityCategory category;
+  final bool isLast;
   final ValueChanged<ActivityCategory> onEdit;
   final ValueChanged<ActivityCategory> onDelete;
 
   const _ActivityLeafTile({
     required this.category,
+    required this.isLast,
     required this.onEdit,
     required this.onDelete,
   });
@@ -408,10 +387,62 @@ class _ActivityLeafTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(resolveActivityIcon(category.iconIdentifier)),
-      title: Text(category.name),
-      onLongPress: () => _showOptions(context),
+    final lineColor = Theme.of(context).colorScheme.outlineVariant;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 32,
+            child: CustomPaint(
+              painter: _TreeLinePainter(isLast: isLast, color: lineColor),
+            ),
+          ),
+          Expanded(
+            child: ListTile(
+              contentPadding: const EdgeInsets.only(left: 8, right: 16),
+              leading: ActivityIcon(identifier: category.iconIdentifier),
+              title: Text(category.name),
+              onLongPress: () => _showOptions(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+// Draws a vertical + horizontal tree connector line.
+// T-shape (non-last child): vertical line runs full height, horizontal at mid.
+// L-shape (last child): vertical line runs to mid-height only, horizontal at mid.
+class _TreeLinePainter extends CustomPainter {
+  final bool isLast;
+  final Color color;
+
+  const _TreeLinePainter({required this.isLast, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final midX = size.width / 2;
+    final midY = size.height / 2;
+
+    // Vertical line: full height for T-shape, half height for L-shape.
+    canvas.drawLine(
+      Offset(midX, 0),
+      Offset(midX, isLast ? midY : size.height),
+      paint,
+    );
+
+    // Horizontal line at mid-height connecting to tile content.
+    canvas.drawLine(Offset(midX, midY), Offset(size.width, midY), paint);
+  }
+
+  @override
+  bool shouldRepaint(_TreeLinePainter old) =>
+      old.isLast != isLast || old.color != color;
 }
