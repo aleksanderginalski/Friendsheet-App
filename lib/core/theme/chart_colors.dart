@@ -19,42 +19,42 @@ abstract class ChartColors {
     _ChartColor(
       name: 'Forest Green',
       edge: Color(0xFF2E7D32),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFF66BB6A),
     ),
     _ChartColor(
       name: 'Lime Green',
       edge: Color(0xFF558B2F),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFF9CCC65),
     ),
     _ChartColor(
       name: 'Mint Green',
       edge: Color(0xFF00796B),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFF4DB6AC),
     ),
     _ChartColor(
       name: 'Deep Orange',
       edge: Color(0xFFE65100),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFFFF8A50),
     ),
     _ChartColor(
       name: 'Warm Amber',
       edge: Color(0xFFF57F17),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFFFFD54F),
     ),
     _ChartColor(
       name: 'Burnt Orange',
       edge: Color(0xFFBF360C),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFFFF7043),
     ),
     _ChartColor(
       name: 'Coral',
       edge: Color(0xFFC62828),
-      center: Color(0xFFF5F0E8),
+      center: Color(0xFFEF9A9A),
     ),
     _ChartColor(
-      name: 'Sky',
-      edge: Color(0xFF1565C0),
-      center: Color(0xFFF5F0E8),
+      name: 'Marshmallow Peach',
+      edge: Color(0xFFFFAB91),
+      center: Color(0xFFFBE9E7),
     ),
   ];
 
@@ -64,9 +64,8 @@ abstract class ChartColors {
   /// Returns the edge (base) color for [id].
   static Color getBaseColor(String id) => _palette[_indexFor(id)].edge;
 
-  /// Returns the stroke color for [id] at 60% opacity.
-  static Color getStrokeColor(String id) =>
-      _palette[_indexFor(id)].edge.withValues(alpha: 0.6);
+  /// Returns a high-contrast dark stroke color for bar separation.
+  static Color getStrokeColor(String id) => const Color(0xFF1C1B1F);
 
   /// Returns a horizontal 4-stop gradient producing a cylinder/glass reflection effect.
   /// Stops: edge → center → center → edge.

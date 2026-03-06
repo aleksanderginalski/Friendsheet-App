@@ -2101,6 +2101,33 @@ US-051 App Icon ─────────────────────�
 - [ ] **TASK-063.5:** Replace flat color bars in `InteractionDistributionWidget` with `ChartGradientBar`
 - [ ] **TASK-063.6:** Verify all chart tests pass; update color assertions if needed
 
+### US-064: Easter Egg — Special Thanks
+
+**As a** developer
+**I want to** hide a special thanks message triggered by tapping the app title 8 times within 4 seconds
+**So that** I can acknowledge the person who named Friendsheet in a fun, discoverable way
+
+**Story Points:** 2
+**Priority:** P3
+**Status:** 📋 Planned
+**Labels:** `easter-egg`, `ux`
+**Mode:** ⚙️ Task
+**Dependencies:** None
+
+**Acceptance Criteria:**
+- [ ] Tapping "Friendsheet" label in Home tab header 8 times within 4 seconds triggers the easter egg
+- [ ] Timer resets if 4 seconds pass between taps without reaching 8
+- [ ] Pop-up displays: provided `easter_egg_icon` asset + text *"Special thanks to Agata Wippich who came up with the name for this app 💚"*
+- [ ] Tapping anywhere on the pop-up dismisses it
+- [ ] Easter egg can be triggered again after dismissal
+- [ ] No visual hint that the easter egg exists
+
+**Tasks:**
+- [ ] **TASK-064.1:** Add `easter_egg_icon` asset to `assets/images/`, register in `pubspec.yaml`
+- [ ] **TASK-064.2:** Add tap counter + timer logic to `HomeScreen` (8 taps / 4s window)
+- [ ] **TASK-064.3:** Build `EasterEggDialog` — `easter_egg_icon` + thank-you message, dismiss on tap
+- [ ] **TASK-064.4:** Write widget test for tap counter logic
+
 # 📦 EPIC-004: Friendsheet M4 - Google Play Release
 
 **Goal:** Publish Friendsheet on Google Play Store as a publicly downloadable app
