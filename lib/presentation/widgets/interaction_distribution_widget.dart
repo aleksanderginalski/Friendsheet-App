@@ -198,7 +198,11 @@ class _InteractionDistributionWidgetState
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.settings, size: 20),
+                  icon: Image.asset(
+                    'assets/images/filter_icon.png',
+                    width: 40,
+                    height: 40,
+                  ),
                   onPressed: widget.onOpenVisibilityDialog,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

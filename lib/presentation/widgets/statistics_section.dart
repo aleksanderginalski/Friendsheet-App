@@ -64,6 +64,9 @@ class _StatisticsSectionState extends State<StatisticsSection> {
         hiddenActivities: provider.hiddenActivities,
         onToggle: provider.toggleHiddenActivity,
         onAutoSelectTop10: provider.applyTop10Selection,
+        onToggleSelectAll: () => provider.hiddenActivities.isEmpty
+            ? provider.setAllActivitiesVisibility(false)
+            : provider.setAllActivitiesVisibility(true),
       ),
     );
   }
@@ -79,6 +82,9 @@ class _StatisticsSectionState extends State<StatisticsSection> {
         hiddenPersons: provider.hiddenPersonsDistribution,
         onToggle: provider.togglePersonDistributionVisibility,
         onAutoSelectTop10: provider.autoSelectTopPersonsDistribution,
+        onToggleSelectAll: () => provider.hiddenPersonsDistribution.isEmpty
+            ? provider.setAllPersonsVisibility(false)
+            : provider.setAllPersonsVisibility(true),
       ),
     );
   }
