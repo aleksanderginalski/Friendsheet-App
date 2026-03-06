@@ -1866,7 +1866,7 @@ US-051 App Icon ─────────────────────�
 **Role:** Developer + UX Designer
 **Status:** 📋 Planned
 
-### US-056: Statistics Home — Illustration & Enhanced Year Picker
+### US-071: Statistics Home — Illustration & Enhanced Year Picker
 
 **As a** user
 **I want to** see a decorative illustration on the Home statistics screen and a more intuitive year selector
@@ -1874,23 +1874,23 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 5
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 06, 2026)
 **Labels:** `design`, `statistics`, `ux`
 **Mode:** 🎨 Design → ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] Empty space above YearStepper filled with provided `statistics_illustration` asset
-- [ ] Illustration is responsive — does not obscure content on small screens
-- [ ] YearStepper horizontally centered; active year visually prominent (size/color)
-- [ ] Adjacent years (±1) visible but dimmed — suggest swipeability
-- [ ] Arrows spaced further from the year label to encourage swipe gesture usage
-- [ ] Year boundary logic preserved (no arrow when no data beyond boundary)
+- [x] Empty space above YearStepper filled with provided `statistics_illustration` asset
+- [x] Illustration is responsive — does not obscure content on small screens
+- [x] YearStepper horizontally centered; active year visually prominent (size/color)
+- [x] Adjacent years (±1) visible but dimmed — suggest swipeability
+- [x] Arrows spaced further from the year label to encourage swipe gesture usage
+- [x] Year boundary logic preserved (no arrow when no data beyond boundary)
 
 **Tasks:**
-- [ ] **TASK-056.1:** Add `statistics_illustration` asset to `assets/images/`, register in `pubspec.yaml`
-- [ ] **TASK-056.2:** Integrate illustration into `StatisticsSection` above `YearStepper`
-- [ ] **TASK-056.3:** Refactor `YearStepper` — centered layout, dimmed neighbour years, wider arrow spacing
-- [ ] **TASK-056.4:** Write widget tests for updated `YearStepper`
+- [x] **TASK-071.1:** Add `statistics_illustration` asset to `assets/images/`, register in `pubspec.yaml`
+- [x] **TASK-071.2:** Integrate illustration into `StatisticsSection` — bottom of screen, left-aligned
+- [x] **TASK-071.3:** Refactor `YearStepper` — arrows outside, dimmed neighbour years, centered active year
+- [x] **TASK-071.4:** Write widget tests for updated `YearStepper`
 
 ---
 
@@ -2164,10 +2164,10 @@ US-051 App Icon ─────────────────────�
 - [ ] Privacy Policy published at accessible URL
 
 **Tasks:**
-- [ ] **TASK-155:** Design app icon - 2h
-- [ ] **TASK-156:** Create store screenshots - 2h
-- [ ] **TASK-157:** Write store description - 1h
-- [ ] **TASK-158:** Create and publish Privacy Policy page - 2h
+- [ ] **TASK-046.1:** Design app icon - 2h
+- [ ] **TASK-046.2:** Create store screenshots - 2h
+- [ ] **TASK-046.3:** Write store description - 1h
+- [ ] **TASK-046.4:** Create and publish Privacy Policy page - 2h
 
 ---
 
@@ -2190,11 +2190,11 @@ US-051 App Icon ─────────────────────�
 - [x] ProGuard/R8 rules configured if needed
 
 **Tasks:**
-- [x] **TASK-159:** Generate keystore and document storage - 1h
-- [x] **TASK-160:** Configure signing in build.gradle - 1h
-- [x] **TASK-161:** Update .gitignore for keystore files - 30min
-- [x] **TASK-162:** Build and test release AAB - 1h
-- [x] **TASK-163:** Update CI/CD for release builds - 1h
+- [x] **TASK-032.1:** Generate keystore and document storage - 1h
+- [x] **TASK-032.2:** Configure signing in build.gradle - 1h
+- [x] **TASK-032.3:** Update .gitignore for keystore files - 30min
+- [x] **TASK-032.3:** Build and test release AAB - 1h
+- [x] **TASK-032.4:** Update CI/CD for release builds - 1h
 
 ---
 
@@ -2215,11 +2215,11 @@ US-051 App Icon ─────────────────────�
 - [ ] App tested via Internal Testing before public release
 
 **Tasks:**
-- [ ] **TASK-164:** Create Google Play Developer account - 30min
-- [ ] **TASK-165:** Create app in Play Console - 30min
-- [ ] **TASK-166:** Upload to Internal Testing track - 1h
-- [ ] **TASK-167:** Test Internal build on real device - 1h
-- [ ] **TASK-168:** Submit for production review - 1h
+- [ ] **TASK-033.1:** Create Google Play Developer account - 30min
+- [ ] **TASK-033.2:** Create app in Play Console - 30min
+- [ ] **TASK-033.3:** Upload to Internal Testing track - 1h
+- [ ] **TASK-033.4:** Test Internal build on real device - 1h
+- [ ] **TASK-033.5:** Submit for production review - 1h
 
 ---
 
@@ -2260,7 +2260,7 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 ---
 
-### US-056: Home Screen Onboarding CTA
+### US-065: Home Screen Onboarding CTA
 
 **As a** new user with fewer than 50 meetings
 **I want to** see a prompt on the Home Screen encouraging me to import past meetings from Google Calendar
@@ -2282,15 +2282,15 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] CTA uses app theme colors — consistent with design system
 
 **Tasks:**
-- [ ] **TASK-056.1:** Create `CalendarOnboardingCta` widget — card with icon, headline, subtext, button, dismiss X
-- [ ] **TASK-056.2:** Add meeting count check to `HomeScreenProvider` (or `StatisticsProvider`) — exposes `bool showCalendarCta`
-- [ ] **TASK-056.3:** Persist dismissed state via SharedPreferences key `onboarding_calendar_cta_dismissed`
-- [ ] **TASK-056.4:** Integrate `CalendarOnboardingCta` into `HomeScreen` — above statistics section
-- [ ] **TASK-056.5:** Write widget tests — CTA shown < 50, hidden ≥ 50, hidden after dismiss
+- [ ] **TASK-065.1:** Create `CalendarOnboardingCta` widget — card with icon, headline, subtext, button, dismiss X
+- [ ] **TASK-065.2:** Add meeting count check to `HomeScreenProvider` (or `StatisticsProvider`) — exposes `bool showCalendarCta`
+- [ ] **TASK-065.3:** Persist dismissed state via SharedPreferences key `onboarding_calendar_cta_dismissed`
+- [ ] **TASK-065.4:** Integrate `CalendarOnboardingCta` into `HomeScreen` — above statistics section
+- [ ] **TASK-065.5:** Write widget tests — CTA shown < 50, hidden ≥ 50, hidden after dismiss
 
 ---
 
-### US-057: Google Calendar Permission, Connection & Settings
+### US-066: Google Calendar Permission, Connection & Settings
 
 **As a** user
 **I want to** grant Friendsheet read-only access to my Google Calendar and configure which calendars to import from
@@ -2315,17 +2315,17 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] If token expires: graceful re-auth prompt
 
 **Tasks:**
-- [ ] **TASK-057.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
-- [ ] **TASK-057.2:** Add `flutter_secure_storage` to `pubspec.yaml` (check .gitignore first)
-- [ ] **TASK-057.3:** Create `GoogleCalendarService` — auth flow, token storage, calendar list fetch
-- [ ] **TASK-057.4:** Build `CalendarPermissionScreen` — explanation + grant/deny flow
-- [ ] **TASK-057.5:** Add Calendar Settings section to `SettingsScreen` — calendar checkboxes + ALL-DAY toggle
-- [ ] **TASK-057.6:** Persist calendar selection and ALL-DAY preference in SharedPreferences
-- [ ] **TASK-057.7:** Write tests for `GoogleCalendarService` auth flow and settings persistence
+- [ ] **TASK-066.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
+- [ ] **TASK-066.2:** Add `flutter_secure_storage` to `pubspec.yaml` (check .gitignore first)
+- [ ] **TASK-066.3:** Create `GoogleCalendarService` — auth flow, token storage, calendar list fetch
+- [ ] **TASK-066.4:** Build `CalendarPermissionScreen` — explanation + grant/deny flow
+- [ ] **TASK-066.5:** Add Calendar Settings section to `SettingsScreen` — calendar checkboxes + ALL-DAY toggle
+- [ ] **TASK-066.6:** Persist calendar selection and ALL-DAY preference in SharedPreferences
+- [ ] **TASK-066.7:** Write tests for `GoogleCalendarService` auth flow and settings persistence
 
 ---
 
-### US-058: Browse & Select Calendar Events
+### US-067: Browse & Select Calendar Events
 
 **As a** user
 **I want to** browse my Google Calendar events within a chosen date range and select the ones I want to import
@@ -2351,16 +2351,16 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] Loading state during API fetch with cancel option
 
 **Tasks:**
-- [ ] **TASK-058.1:** Implement `GoogleCalendarService.fetchEvents(dateRange, calendarIds, includeAllDay)` — paginated Google Calendar REST API call
-- [ ] **TASK-058.2:** Create `ImportCandidate` model — `title`, `date`, `attendeeEmails`, `sourceType` (calendar/photos)
-- [ ] **TASK-058.3:** Build `CalendarEventsScreen` — date range picker, event list, multi-select
-- [ ] **TASK-058.4:** Implement email-to-person heuristic: parse `firstname.lastname@domain` → suggested Person name
-- [ ] **TASK-058.5:** Create `MeetingInboxProvider` — holds `List<ImportCandidate>` in memory
-- [ ] **TASK-058.6:** Write tests — filtering logic, email parsing heuristic, empty state
+- [ ] **TASK-067.1:** Implement `GoogleCalendarService.fetchEvents(dateRange, calendarIds, includeAllDay)` — paginated Google Calendar REST API call
+- [ ] **TASK-067.2:** Create `ImportCandidate` model — `title`, `date`, `attendeeEmails`, `sourceType` (calendar/photos)
+- [ ] **TASK-067.3:** Build `CalendarEventsScreen` — date range picker, event list, multi-select
+- [ ] **TASK-067.4:** Implement email-to-person heuristic: parse `firstname.lastname@domain` → suggested Person name
+- [ ] **TASK-067.5:** Create `MeetingInboxProvider` — holds `List<ImportCandidate>` in memory
+- [ ] **TASK-067.6:** Write tests — filtering logic, email parsing heuristic, empty state
 
 ---
 
-### US-059: Meeting Inbox — Review & Confirm
+### US-068: Meeting Inbox — Review & Confirm
 
 **As a** user
 **I want to** review selected import candidates one by one, enrich them with details, and confirm which ones to save
@@ -2387,12 +2387,12 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] Back navigation from `InboxItemEditScreen` returns to inbox list without data loss
 
 **Tasks:**
-- [ ] **TASK-059.1:** Build `MeetingInboxScreen` — list of `ImportCandidate` cards with progress indicator
-- [ ] **TASK-059.2:** Build `InboxItemEditScreen` — pre-filled form reusing existing field widgets (MeetingNameField, MeetingWeightStepper, MeetingDateField, participant autocomplete, activity autocomplete)
-- [ ] **TASK-059.3:** Implement confirm flow — validate required fields, save to Firestore via `MeetingRepository`, remove from `MeetingInboxProvider`
-- [ ] **TASK-059.4:** Implement skip flow — remove from `MeetingInboxProvider` without saving
-- [ ] **TASK-059.5:** Build `ImportSuccessScreen` — count of added meetings, "Go to Meetings" CTA
-- [ ] **TASK-059.6:** Write tests — confirm flow, skip flow, empty inbox state, pre-fill logic
+- [ ] **TASK-068.1:** Build `MeetingInboxScreen` — list of `ImportCandidate` cards with progress indicator
+- [ ] **TASK-068.2:** Build `InboxItemEditScreen` — pre-filled form reusing existing field widgets (MeetingNameField, MeetingWeightStepper, MeetingDateField, participant autocomplete, activity autocomplete)
+- [ ] **TASK-068.3:** Implement confirm flow — validate required fields, save to Firestore via `MeetingRepository`, remove from `MeetingInboxProvider`
+- [ ] **TASK-068.4:** Implement skip flow — remove from `MeetingInboxProvider` without saving
+- [ ] **TASK-068.5:** Build `ImportSuccessScreen` — count of added meetings, "Go to Meetings" CTA
+- [ ] **TASK-068.6:** Write tests — confirm flow, skip flow, empty inbox state, pre-fill logic
 
 ---
 
@@ -2413,7 +2413,7 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 ---
 
-### US-060: Google Photos Permission & Connection
+### US-069: Google Photos Permission & Connection
 
 **As a** user
 **I want to** grant Friendsheet read-only access to my Google Photos
@@ -2435,14 +2435,14 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] Token stored via `flutter_secure_storage` (same service as Calendar token)
 
 **Tasks:**
-- [ ] **TASK-060.1:** Add `photoslibrary.readonly` scope to `GoogleCalendarService` (or extract shared `OAuthService`)
-- [ ] **TASK-060.2:** Build `PhotosPermissionScreen` — reuse pattern from `CalendarPermissionScreen`
-- [ ] **TASK-060.3:** Add "Revoke Photos Access" to Settings alongside Calendar revoke
-- [ ] **TASK-060.4:** Write tests
+- [ ] **TASK-069.1:** Add `photoslibrary.readonly` scope to `GoogleCalendarService` (or extract shared `OAuthService`)
+- [ ] **TASK-069.2:** Build `PhotosPermissionScreen` — reuse pattern from `CalendarPermissionScreen`
+- [ ] **TASK-069.3:** Add "Revoke Photos Access" to Settings alongside Calendar revoke
+- [ ] **TASK-069.4:** Write tests
 
 ---
 
-### US-061: Browse & Select Photos
+### US-070: Browse & Select Photos
 
 **As a** user
 **I want to** browse my Google Photos and select photos that remind me of past meetings
@@ -2465,11 +2465,11 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] Photo NOT stored — only date used
 
 **Tasks:**
-- [ ] **TASK-061.1:** Implement `GooglePhotosService.fetchPhotos(pageToken)` — paginated Google Photos REST API
-- [ ] **TASK-061.2:** Build `PhotoGridScreen` — thumbnail grid, multi-select
-- [ ] **TASK-061.3:** Map selected photos to `ImportCandidate` list (date from metadata, title empty, sourceType: photos)
-- [ ] **TASK-061.4:** Add candidates to `MeetingInboxProvider` and navigate to `MeetingInboxScreen`
-- [ ] **TASK-061.5:** Write tests — pagination, candidate mapping, empty state
+- [ ] **TASK-070.1:** Implement `GooglePhotosService.fetchPhotos(pageToken)` — paginated Google Photos REST API
+- [ ] **TASK-070.2:** Build `PhotoGridScreen` — thumbnail grid, multi-select
+- [ ] **TASK-070.3:** Map selected photos to `ImportCandidate` list (date from metadata, title empty, sourceType: photos)
+- [ ] **TASK-070.4:** Add candidates to `MeetingInboxProvider` and navigate to `MeetingInboxScreen`
+- [ ] **TASK-070.5:** Write tests — pagination, candidate mapping, empty state
 
 ---
 ## 🔗 FEATURE-012: Invitation Code System
