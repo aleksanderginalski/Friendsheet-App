@@ -1,19 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/chart_colors.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/repositories/statistics_repository.dart';
-
-/// Color palette for bar chart — one color per person (cycles if > 8 persons).
-const _kPalette = [
-  Color(0xFF4CAF50),
-  Color(0xFF2196F3),
-  Color(0xFFFF9800),
-  Color(0xFFE91E63),
-  Color(0xFF9C27B0),
-  Color(0xFF00BCD4),
-  Color(0xFFFF5722),
-  Color(0xFF607D8B),
-];
 
 /// Maximum rendered height for a single bar, in logical pixels.
 const _kMaxBarHeight = 110.0;
@@ -188,16 +177,11 @@ class _BarChartState extends State<_BarChart>
   // the entire animation duration.
   List<PersonActivityEntry> _animatingEntries = [];
 
-  // Stable color per personId — assigned once on first encounter,
-  // never reassigned so colors survive year changes and reorders.
-  final Map<String, Color> _personColors = {};
-
   @override
   void initState() {
     super.initState();
     _displayedEntries = widget.visibleEntries;
     _animatingEntries = widget.visibleEntries;
-    _ensureColors(widget.visibleEntries);
     _controller = AnimationController(
       vsync: this,
       duration: _kAnimationDuration,
@@ -215,7 +199,6 @@ class _BarChartState extends State<_BarChart>
     // previous set visible during any transient empty state.
     if (widget.visibleEntries.isNotEmpty &&
         widget.visibleEntries != oldWidget.visibleEntries) {
-      _ensureColors(widget.visibleEntries);
       _displayedEntries = widget.visibleEntries;
       // Lock order before restarting the controller so targetLeft values
       // are stable for the entire animation duration.
@@ -235,17 +218,6 @@ class _BarChartState extends State<_BarChart>
     _curvedAnimation.dispose();
     _controller.dispose();
     super.dispose();
-  }
-
-  /// Assigns a palette color to each personId not yet in the map.
-  /// Insertion order determines the palette index so colors are stable.
-  void _ensureColors(List<PersonActivityEntry> entries) {
-    for (final entry in entries) {
-      if (!_personColors.containsKey(entry.personId)) {
-        _personColors[entry.personId] =
-            _kPalette[_personColors.length % _kPalette.length];
-      }
-    }
   }
 
   void _showOptions(BuildContext context, String personId, String name) {
@@ -297,8 +269,7 @@ class _BarChartState extends State<_BarChart>
                 // ValueKey tracks bar identity across reorders.
                 key: ValueKey(entry.personId),
                 entry: entry,
-                color: _personColors[entry.personId] ??
-                    _kPalette[index % _kPalette.length],
+                personId: entry.personId,
                 controller: _curvedAnimation,
                 targetLeft: index * _kItemWidth,
                 targetBarHeight: _barHeight(entry.weightSum, maxW),
@@ -320,7 +291,7 @@ class _BarChartState extends State<_BarChart>
 /// the controller on a year change.
 class _AnimatedBarItem extends StatefulWidget {
   final PersonActivityEntry entry;
-  final Color color;
+  final String personId;
   final Animation<double> controller;
   final double targetLeft;
   final double targetBarHeight;
@@ -329,7 +300,7 @@ class _AnimatedBarItem extends StatefulWidget {
   const _AnimatedBarItem({
     super.key,
     required this.entry,
-    required this.color,
+    required this.personId,
     required this.controller,
     required this.targetLeft,
     required this.targetBarHeight,
@@ -410,9 +381,13 @@ class _AnimatedBarItemState extends State<_AnimatedBarItem> {
               width: 32,
               height: barHeight,
               decoration: BoxDecoration(
-                color: widget.color,
+                gradient: ChartColors.getGradient(widget.personId),
+                border: Border.all(
+                  color: ChartColors.getStrokeColor(widget.personId),
+                  width: 1.5,
+                ),
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(3),
+                  top: Radius.circular(4),
                 ),
               ),
             ),
