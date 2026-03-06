@@ -14,7 +14,8 @@ graph TB
     end
     
     subgraph "External APIs (M6+)"
-        E[Google Photos API]
+        E[Google Calendar API - M6]
+        E2[Google Photos API - M6]
         F[LLM API - M8]
     end
     
@@ -25,7 +26,8 @@ graph TB
     A -->|Login/Register| B
     A -->|CRUD Operations| C
     C -->|Store/Retrieve| D
-    A -->|OAuth M6| E
+    A -->|OAuth calendar.readonly M6| E
+    A -->|OAuth photoslibrary.readonly M6| E2
     A -->|AI Queries M8| F
     
     style A fill:#4CAF50
@@ -33,6 +35,7 @@ graph TB
     style C fill:#FFC107
     style D fill:#2196F3
     style E fill:#9C27B0
+    style E2 fill:#7B1FA2
     style F fill:#FF5722
 ```
 
@@ -140,7 +143,8 @@ graph TB
         B5[Statistics Service - M3]
         B6[Export Service - M3]
         B7[Invitation Service - M5]
-        B8[Google Photos Service - M6]
+        B8[Google Calendar Service - M6]
+        B8b[Google Photos Service - M6]
         B9[AI Context Builder - M8]
     end
     
@@ -156,7 +160,8 @@ graph TB
     subgraph "External Services"
         D1[Firebase Auth]
         D2[Firestore]
-        D3[Google Photos API - M6]
+        D3[Google Calendar API - M6]
+        D3b[Google Photos API - M6]
         D4[LLM API - M8]
     end
     
@@ -352,16 +357,59 @@ match /invitation_codes/{codeId} {
 
 ---
 
-### M6 — Google Photos Integration
+### M6 — Meeting Import Hub
 
-**OAuth Scope:** Separate from Firebase Auth. Requires additional user consent:
-`https://www.googleapis.com/auth/photoslibrary.readonly`
+**Overview:** M6 introduces an extensible import system. Both import sources (Google Calendar and Google Photos) produce a list of `ImportCandidate` objects that flow into a shared, source-agnostic `MeetingInboxScreen`. This design allows new import sources to be added in future milestones by implementing only a new data-fetching layer — the inbox requires no changes.
 
-**Token management:** Google Photos OAuth token managed separately from Firebase Auth token. Stored securely using `flutter_secure_storage`.
+**Import flow:**
+```
+External Source → ImportCandidate list (local memory) → MeetingInboxScreen → Firestore
+```
 
-**Data flow:** Photo metadata (date) → pre-fill AddMeetingScreen. Photo itself is NOT stored in Firestore or app storage.
+**ImportCandidate model (local only — NOT persisted to Firestore):**
+```dart
+class ImportCandidate {
+  final String id;          // local UUID, session-only
+  final String title;       // pre-filled from event title (empty for photos)
+  final DateTime date;      // from event start date or photo creation date
+  final List<String> attendeeEmails;  // Calendar only; empty for Photos
+  final ImportSourceType sourceType;  // calendar | photos
+}
+```
 
-**UX consideration:** Permission request must clearly explain why photo access is needed. Android 13+ requires granular media permissions.
+**MeetingInboxProvider:** holds `List<ImportCandidate>` in memory. NOT persisted. Resets on app close (intentional — keeps implementation simple for M6).
+
+---
+
+**FEATURE-013: Google Calendar Import**
+
+OAuth Scope: `https://www.googleapis.com/auth/calendar.readonly`
+
+Token management: stored via `flutter_secure_storage`. Separate from Firebase Auth token.
+
+Settings stored in SharedPreferences:
+- `calendar_selected_ids`: List of selected calendar IDs (default: primary)
+- `calendar_include_all_day`: bool (default: false)
+- `onboarding_calendar_cta_dismissed`: bool (default: false)
+
+Email-to-person heuristic: `firstname.lastname@domain` → parsed as `firstName: "Firstname", lastName: "Lastname"` — shown as suggestion, never auto-created.
+
+Event filtering rules:
+- Past events only (startTime < now)
+- Minimum 2 attendees (organizer + at least 1 other)
+- ALL-DAY events: excluded by default, included if `calendar_include_all_day: true`
+
+---
+
+**FEATURE-014: Google Photos Import**
+
+OAuth Scope: `https://www.googleapis.com/auth/photoslibrary.readonly`
+
+Token management: same `flutter_secure_storage` service as Calendar (or extracted to shared `OAuthService`).
+
+Data flow: photo creation date → `ImportCandidate.date`. Photo thumbnails displayed in grid for selection UX only — never stored.
+
+Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no duplication. `sourceType: photos` on ImportCandidate allows inbox UI to adapt (e.g. no email suggestions for photos).
 
 ---
 
@@ -536,7 +584,11 @@ graph TB
 | M3 | `path_provider`, `dart:io` ✅ | JSON export to device storage |
 | M4 | Release signing config | Production build |
 | M5 | No new packages | Firestore batch writes |
-| M6 | `google_sign_in` (extended scope), `flutter_secure_storage`, Google Photos REST API | Photo OAuth + token storage |
+| M6 (FEATURE-013) | `google_sign_in` (extended scope: `calendar.readonly`) | Calendar OAuth |
+| M6 (FEATURE-013) | `flutter_secure_storage` | OAuth token storage |
+| M6 (FEATURE-013) | Google Calendar REST API (via `http`) | Fetch calendar events |
+| M6 (FEATURE-014) | `google_sign_in` (extended scope: `photoslibrary.readonly`) | Photos OAuth |
+| M6 (FEATURE-014) | Google Photos REST API (via `http`) | Fetch photo metadata |
 | M7 | No new packages | Reuses existing stack |
 | M8 | HTTP client (already available), LLM SDK TBD | AI API calls |
 
@@ -559,5 +611,5 @@ graph TB
 
 **End of Document - Architecture Documentation**  
 
-**Last Updated:** March 02, 2026 (M3 Statistics — US-028, US-029, US-030, US-048, US-049)
+**Last Updated:** March 05, 2026 (M6 redesigned as Meeting Import Hub — FEATURE-013 Calendar Import + FEATURE-014 Photos Import; ImportCandidate architecture added)
 
