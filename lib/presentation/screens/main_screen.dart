@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +15,7 @@ import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/statistics_provider.dart';
+import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
@@ -31,6 +34,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  int _titleTapCount = 0;
+  Timer? _titleTapTimer;
   late final PersonsListProvider _personsListProvider;
   late final ActivitiesListProvider _activitiesListProvider;
   late final StatisticsProvider _statisticsProvider;
@@ -73,8 +78,31 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _handleTitleTap() {
+    _titleTapTimer?.cancel();
+    _titleTapCount++;
+
+    if (_titleTapCount >= 7) {
+      _titleTapCount = 0;
+      _showEasterEgg();
+      return;
+    }
+
+    _titleTapTimer = Timer(const Duration(seconds: 4), () {
+      _titleTapCount = 0;
+    });
+  }
+
+  void _showEasterEgg() {
+    showDialog(
+      context: context,
+      builder: (_) => const EasterEggDialog(),
+    );
+  }
+
   @override
   void dispose() {
+    _titleTapTimer?.cancel();
     _personsListProvider.dispose();
     _activitiesListProvider.dispose();
     _statisticsProvider.dispose();
@@ -135,11 +163,14 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Friendsheet',
-          style: GoogleFonts.pacifico(
-            fontSize: 22,
-            color: Colors.white,
+        title: GestureDetector(
+          onTap: _handleTitleTap,
+          child: Text(
+            'Friendsheet',
+            style: GoogleFonts.pacifico(
+              fontSize: 22,
+              color: Colors.white,
+            ),
           ),
         ),
         backgroundColor: const Color(0xFF4CAF50),
