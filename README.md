@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (414)
+✅ All tests passing (433)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,16 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+
+### v3.18.0 - US-072 Optimize Statistics Firestore Reads (March 08, 2026)
+- ✅ StatisticsProvider idempotency guard — initialize() skips fetch if data already loaded
+- ✅ StatisticsRepository in-memory cache — keyed by userId_year, global caches for categories/persons
+- ✅ CacheInvalidator interface — wired into Meeting/Person/ActivityCategory write operations
+- ✅ StatsDataBundle — single Future.wait fetches all data for a year in parallel
+- ✅ compute* pure synchronous methods — zero Firestore calls after initial load
+- ✅ Reads reduced from ~5,200 to ~260 per session (~95% reduction)
+- ✅ Total test count: 433 tests
 
 ### v3.17.0 - US-057 Filter Icon + Select All / Deselect All Toggle (March 06, 2026)
 - ✅ Gear icon (⚙️) replaced with filter_icon.png asset in ActivityBreakdownWidget and InteractionDistributionWidget
