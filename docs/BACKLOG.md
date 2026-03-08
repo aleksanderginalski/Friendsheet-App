@@ -1452,6 +1452,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 **Priority:** P0
 **Role:** Developer + DevOps
 **Status:** ✅ COMPLETED
+
 ---
 
 ### US-042: Install Friendsheet on Personal Device via APK
@@ -1500,6 +1501,325 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 - `build.gradle` signing config created here requires only minor changes for AAB
 - US-032 adds: version name/code, ProGuard rules, App Bundle target
 
+
+---
+### US-072: Optimize Statistics Firestore Reads
+
+| **Priority** | P0 (Critical — affects free tier limits) |
+| **Story Points** | 13 |
+| **Status** ✅ COMPLETED (March 08, 2026)
+| **Labels** | `performance`, `firestore`, `statistics`, `cost-optimization` |
+
+**As a** user  
+**I want to** browse statistics without excessive Firestore reads  
+**So that** the app stays within free tier limits and loads faster
+
+---
+
+#### Problem Statement
+
+Current implementation causes **~5,200 Firestore reads per `initialize()` call**:
+
+| Method | Reads | Called |
+|--------|-------|--------|
+| `getAvailableYears()` | ~860 | 1x |
+| `getMeetingsForYear(currentYear)` | ~860 | 3-4x (duplicate!) |
+| `getMeetingsForYear(previousYear)` | ~800 | 2x (duplicate!) |
+| `getAllCategories()` | ~20 | 2x (duplicate!) |
+| `getPersonsByUser()` | ~80 | 2x (duplicate!) |
+
+**Impact:** With 860 meetings, a single user browsing statistics 10x/day consumes **~13,000 reads** — 26% of daily free tier (50,000).
+
+**Risk:** 5 active users = **65,000 reads/day** → exceeds free tier limit.
+
+---
+
+#### Solution Overview
+
+Three-phase optimization reducing reads by **~95%**:
+
+| Phase | Strategy | Reduction | Complexity |
+|-------|----------|-----------|------------|
+| **Phase 1** | Provider-level cache | 70% | Low |
+| **Phase 2** | Repository-level cache | 85% | Medium |
+| **Phase 3** | Single-query refactor | 95% | Medium |
+
+---
+
+#### Acceptance Criteria
+
+##### Phase 1: Provider Cache
+- [x] `StatisticsProvider.initialize()` is idempotent — skips fetch if data already loaded for current year
+- [x] `selectYear()` only fetches if year changed
+- [x] `selectActivity()` reuses already-loaded meetings (no Firestore call)
+- [x] `loadDistribution()` reuses already-loaded meetings for current year
+- [x] Unit tests verify no duplicate fetches
+
+##### Phase 2: Repository Cache
+- [x] `StatisticsRepository` caches `getMeetingsForYear()` results in memory
+- [x] Cache key: `${userId}_${year}`
+- [x] Cache invalidated on `MeetingRepository.save()`, `update()`, `delete()`
+- [x] `getAllCategories()` cached per session
+- [ ] `getPersonsByUser()` cached per session
+- [x] Cache invalidated on person/category add/update/delete
+- [x] Unit tests verify cache hit/miss behavior
+
+##### Phase 3: Single-Query Refactor
+- [x] New method `loadAllStatsData(year, userId)` fetches meetings once
+- [x] Returns `StatsDataBundle` containing: meetings, categories, persons
+- [x] All aggregation methods accept `StatsDataBundle` instead of fetching internally
+- [x] `getAvailableYears()` optimized — uses cached meetings or dedicated index
+- [x] Backward compatibility maintained — old methods still work (delegate to new)
+- [x] Unit tests verify single Firestore call per year
+
+##### General
+- [x] `flutter analyze` passes with 0 issues
+- [x] All existing tests pass
+- [x] New tests added for cache behavior
+- [x] README updated with performance notes
+- [x] architecture.md updated with caching strategy
+---
+
+#### Tasks
+
+##### Phase 1: Provider Cache (Est. 2h)
+- [x] **TASK-072.1:** Add `_isInitialized` and `_lastLoadedYear` flags to `StatisticsProvider`
+- [x] **TASK-072.2:** Guard `initialize()` with early return if already loaded
+- [x] **TASK-072.3:** Optimize `selectYear()` — skip fetch if year unchanged
+- [x] **TASK-072.4:** Write tests verifying idempotent behavior
+
+##### Phase 2: Repository Cache (Est. 3h)
+- [x] **TASK-072.5:** Add `_meetingsCache` map to `StatisticsRepository`
+- [x] **TASK-072.6:** Implement cache lookup in `getMeetingsForYear()`
+- [x] **TASK-072.7:** Add `_categoriesCache` and `_personsCache`
+- [x] **TASK-072.8:** Add `invalidate*Cache()` methods
+- [x] **TASK-072.9:** Wire cache invalidation into `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`
+- [x] **TASK-072.10:** Write tests for cache hit/miss scenarios
+
+##### Phase 3: Single-Query Refactor (Est. 4h)
+- [x] **TASK-072.11:** Create `StatsDataBundle` class
+- [x] **TASK-072.12:** Implement `loadAllStatsData()` in `StatisticsRepository`
+- [x] **TASK-072.13:** Refactor `getActivityWeightBreakdown()` to `computeActivityBreakdown(StatsDataBundle)`
+- [x] **TASK-072.14:** Refactor `getPersonsForActivity()` to `computePersonsForActivity(StatsDataBundle, categoryId)`
+- [x] **TASK-072.15:** Refactor `getInteractionDistribution()` to `computeInteractionDistribution(StatsDataBundle)`
+- [x] **TASK-072.16:** Refactor `getCumulativeInteractions()` — special case (all years)
+- [x] **TASK-072.17:** Update `StatisticsProvider` to use new architecture
+- [x] **TASK-072.18:** Write integration tests verifying single Firestore call
+
+---
+
+### US-073: Persistent Local Cache — Offline-First Statistics
+
+| Field | Value |
+|---|---|
+| **Priority** | P2 |
+| **Story Points** | 8 |
+| **Status** | 📋 Planned |
+| **Labels** | `performance`, `offline`, `hive`, `statistics` |
+| **Depends on** | US-072 ✅ |
+
+---
+
+#### User Story
+
+**As a** user  
+**I want to** browse statistics instantly after reopening the app  
+**So that** I don't wait for Firestore reads on every app launch
+
+---
+
+#### Problem Statement
+
+US-072 eliminated duplicate reads **within a session**. However, every app restart clears
+the in-memory cache and triggers ~1,800 Firestore reads on first statistics open.
+
+With Hive persistent cache, data survives restarts — reads drop to near-zero for returning users.
+
+| Scenario | Before US-072 | After US-072 | After US-073 |
+|---|---|---|---|
+| First load (cold start) | ~5,200 | ~1,800 | ~1,800 (first ever) |
+| App restart, no writes | ~5,200 | ~1,800 | ~0 |
+| Tab switch (same year) | ~5,200 | 0 | 0 |
+| Year change | ~5,200 | ~900 | ~0 (if cached) |
+
+---
+
+#### Technology: Hive
+
+Hive is a lightweight key-value store for Flutter that persists Dart objects directly to disk —
+no SQL, no native dependencies.
+
+**Why Hive over Drift/SQLite:**
+- Stores Dart objects natively — no query layer needed
+- No native code dependencies (SQLite requires platform-specific binaries)
+- Fast on-device reads — data loaded into memory on first access
+- Sufficient for ~860 meetings (not a relational data problem)
+- Familiar workflow — uses `build_runner` adapters, same as Freezed
+
+**Hive Box structure:**
+
+| Box name | Key | Value |
+|---|---|---|
+| `stats_meetings` | `{userId}_{year}` | `List<Meeting>` |
+| `stats_categories` | `{userId}` | `List<ActivityCategory>` |
+| `stats_persons` | `{userId}` | `List<Person>` |
+| `stats_available_years` | `{userId}` | `List<int>` |
+
+---
+
+#### Acceptance Criteria
+
+##### Cache — Write
+- [ ] After first Firestore load, `StatsDataBundle` contents persisted to Hive per year
+- [ ] `getAvailableYears()` result persisted to Hive per userId
+- [ ] Persons and categories persisted to Hive per userId
+
+##### Cache — Read
+- [ ] On app restart, statistics load from Hive instead of Firestore (if cache exists)
+- [ ] `StatisticsRepository` checks Hive before hitting Firestore
+- [ ] Cache miss (no Hive data) falls back to Firestore transparently
+
+##### Cache — Invalidation
+- [ ] Any write in `MeetingRepository` clears `stats_meetings` box entries for that userId
+- [ ] Any write in `PersonRepository` clears `stats_persons` entry for that userId
+- [ ] Any write in `ActivityCategoryRepository` clears `stats_categories` entry for that userId
+- [ ] `invalidateAllCaches()` in `StatisticsRepository` clears all Hive boxes for current user
+- [ ] Cache cleared on logout (all Hive boxes purged for that userId)
+
+##### Quality
+- [ ] `flutter analyze` passes with 0 issues
+- [ ] All existing tests pass
+- [ ] New unit tests for Hive cache hit / miss / invalidation behavior
+- [ ] Hive boxes opened once at app startup (not per-repository-call)
+
+---
+
+#### Technical Design
+
+##### Hive Adapter Strategy
+
+Meetings, Persons and ActivityCategory are Freezed models.
+Hive requires `TypeAdapter` for each stored type.
+
+Two options:
+
+**Option A — Hive TypeAdapters (generated)**
+Generate adapters via `build_runner`. Clean but adds annotations to Freezed models.
+
+**Option B — JSON bridge**
+Store objects as JSON strings using existing `toJson()`/`fromJson()`.
+No new annotations. Slightly slower on large datasets (acceptable at ~860 meetings).
+
+**Recommendation: Option B (JSON bridge)**  
+Freezed models already have `toJson`/`fromJson`. Avoids annotation conflicts between
+Freezed and Hive generators. Simpler to maintain.
+
+```dart
+// Write
+final box = Hive.box('stats_meetings');
+final key = '${userId}_$year';
+box.put(key, meetings.map((m) => m.toJson()).toList());
+
+// Read
+final raw = box.get(key) as List?;
+if (raw != null) {
+  return raw.map((e) => Meeting.fromJson(Map.from(e))).toList();
+}
+```
+
+##### HiveService (new)
+
+Centralizes box initialization and lifecycle:
+
+```dart
+class HiveService {
+  static Future initialize() async {
+    await Hive.initFlutter();
+    await Hive.openBox('stats_meetings');
+    await Hive.openBox('stats_categories');
+    await Hive.openBox('stats_persons');
+    await Hive.openBox('stats_available_years');
+  }
+
+  static Future clearUserData(String userId) async {
+    // Remove all keys for this userId across all stats boxes
+  }
+}
+```
+
+Called once in `main.dart` before `runApp()`.
+
+##### Integration with CacheInvalidator (US-072)
+
+`StatisticsRepository.invalidateMeetingsCache()` extended to also clear Hive box:
+
+```dart
+void invalidateMeetingsCache() {
+  _meetingsCache.clear();                          // in-memory (US-072)
+  Hive.box('stats_meetings').clear();              // persistent (US-073)
+}
+```
+
+No changes needed to `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository` —
+they already call `invalidate*Cache()` via `CacheInvalidator`.
+
+---
+
+#### Tasks
+
+##### Setup (Est. 1h)
+- [ ] **TASK-073.1:** Add `hive` and `hive_flutter` to `pubspec.yaml`; verify `.gitignore` covers Hive files
+- [ ] **TASK-073.2:** Create `HiveService` — box initialization + `clearUserData(userId)`
+- [ ] **TASK-073.3:** Call `HiveService.initialize()` in `main.dart` before `runApp()`
+
+##### Repository Layer (Est. 2h)
+- [ ] **TASK-073.4:** Extend `StatisticsRepository.getMeetingsForYear()` — check Hive before Firestore; write to Hive after fetch
+- [ ] **TASK-073.5:** Extend `StatisticsRepository` categories/persons cache — check Hive before Firestore
+- [ ] **TASK-073.6:** Extend `StatisticsRepository.getAvailableYears()` — persist/read from Hive
+- [ ] **TASK-073.7:** Extend all `invalidate*Cache()` methods to also clear corresponding Hive boxes
+
+##### Logout Integration (Est. 30min)
+- [ ] **TASK-073.8:** Call `HiveService.clearUserData(userId)` on logout in `AuthService`
+
+##### Tests (Est. 1.5h)
+- [ ] **TASK-073.9:** Unit tests — Hive cache hit (Firestore not called on second load after restart simulation)
+- [ ] **TASK-073.10:** Unit tests — Hive cache miss (first load hits Firestore, then writes to Hive)
+- [ ] **TASK-073.11:** Unit tests — invalidation clears both in-memory and Hive
+
+##### Documentation (Est. 30min)
+- [ ] **TASK-073.12:** Update `architecture.md` — extend Statistics Caching Strategy section with Hive layer
+- [ ] **TASK-073.13:** Update README version history
+
+---
+
+#### Out of Scope
+
+- TTL-based cache expiration — deferred (personal app, single user, writes are infrequent)
+- Hive encryption (`hive_flutter` AES) — deferred (no sensitive data beyond what Firebase holds)
+- Sync conflict resolution — deferred (no multi-device sync in current architecture)
+- Caching for non-statistics repositories (MeetingsList, PersonsList) — separate US if needed
+
+---
+
+#### Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Hive file grows unbounded over years | Low | Cache only accessed years; `clearUserData` on logout |
+| JSON bridge slower than TypeAdapters | Low | ~860 meetings deserialization is <50ms — acceptable |
+| Hive box not initialized before first read | Medium | `HiveService.initialize()` called before `runApp()`, tests use `Hive.init(tempDir)` |
+| Stale data after write on another device | Low | Out of scope — single device assumption for now |
+
+---
+
+#### Definition of Done
+
+- [ ] All acceptance criteria met
+- [ ] `flutter analyze` 0 issues
+- [ ] All tests pass (existing + new)
+- [ ] Statistics open instantly on app restart (verified manually)
+- [ ] Firestore reads after restart = 0 (verified via Firebase Console)
+- [ ] Documentation updated
 ---
 
 # 📦 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity

@@ -3,17 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
+import 'dart:async' as _i6;
 
 import 'package:friendsheet/data/models/activity_category.dart' as _i3;
-import 'package:friendsheet/data/models/meeting.dart' as _i6;
+import 'package:friendsheet/data/models/meeting.dart' as _i7;
 import 'package:friendsheet/data/models/person.dart' as _i2;
 import 'package:friendsheet/data/repositories/activity_category_repository.dart'
-    as _i9;
+    as _i10;
+import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i5;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i4;
-import 'package:friendsheet/data/repositories/person_repository.dart' as _i8;
+import 'package:friendsheet/data/repositories/person_repository.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i7;
+import 'package:mockito/src/dummies.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -59,42 +60,52 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
   }
 
   @override
-  _i5.Future<String> saveMeeting(_i6.Meeting? meeting) => (super.noSuchMethod(
+  set cacheInvalidator(_i5.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Future<String> saveMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
         Invocation.method(
           #saveMeeting,
           [meeting],
         ),
-        returnValue: _i5.Future<String>.value(_i7.dummyValue<String>(
+        returnValue: _i6.Future<String>.value(_i8.dummyValue<String>(
           this,
           Invocation.method(
             #saveMeeting,
             [meeting],
           ),
         )),
-      ) as _i5.Future<String>);
+      ) as _i6.Future<String>);
 
   @override
-  _i5.Stream<List<_i6.Meeting>> getMeetingsByUser(String? userId) =>
+  _i6.Stream<List<_i7.Meeting>> getMeetingsByUser(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getMeetingsByUser,
           [userId],
         ),
-        returnValue: _i5.Stream<List<_i6.Meeting>>.empty(),
-      ) as _i5.Stream<List<_i6.Meeting>>);
+        returnValue: _i6.Stream<List<_i7.Meeting>>.empty(),
+      ) as _i6.Stream<List<_i7.Meeting>>);
 
   @override
-  _i5.Future<void> updateMeeting(_i6.Meeting? meeting) => (super.noSuchMethod(
+  _i6.Future<void> updateMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
         Invocation.method(
           #updateMeeting,
           [meeting],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<void> deleteMeeting(
+  _i6.Future<void> deleteMeeting(
     String? userId,
     String? meetingId,
   ) =>
@@ -106,12 +117,12 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
             meetingId,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<int> getMeetingsCountForPerson(
+  _i6.Future<int> getMeetingsCountForPerson(
     String? userId,
     String? personId,
   ) =>
@@ -123,11 +134,11 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
             personId,
           ],
         ),
-        returnValue: _i5.Future<int>.value(0),
-      ) as _i5.Future<int>);
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
 
   @override
-  _i5.Future<void> removePersonFromMeetings(
+  _i6.Future<void> removePersonFromMeetings(
     String? userId,
     String? personId,
   ) =>
@@ -139,46 +150,56 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
             personId,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 }
 
 /// A class which mocks [PersonRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPersonRepository extends _i1.Mock implements _i8.PersonRepository {
+class MockPersonRepository extends _i1.Mock implements _i9.PersonRepository {
   MockPersonRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<List<_i2.Person>> getPersonsByUser(String? userId) =>
+  set cacheInvalidator(_i5.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Future<List<_i2.Person>> getPersonsByUser(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getPersonsByUser,
           [userId],
         ),
-        returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
-      ) as _i5.Future<List<_i2.Person>>);
+        returnValue: _i6.Future<List<_i2.Person>>.value(<_i2.Person>[]),
+      ) as _i6.Future<List<_i2.Person>>);
 
   @override
-  _i5.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
+  _i6.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
         Invocation.method(
           #addPerson,
           [person],
         ),
-        returnValue: _i5.Future<_i2.Person>.value(_FakePerson_0(
+        returnValue: _i6.Future<_i2.Person>.value(_FakePerson_0(
           this,
           Invocation.method(
             #addPerson,
             [person],
           ),
         )),
-      ) as _i5.Future<_i2.Person>);
+      ) as _i6.Future<_i2.Person>);
 
   @override
-  _i5.Future<List<_i2.Person>> getPersonsByIds(
+  _i6.Future<List<_i2.Person>> getPersonsByIds(
     List<String>? ids,
     String? userId,
   ) =>
@@ -190,21 +211,21 @@ class MockPersonRepository extends _i1.Mock implements _i8.PersonRepository {
             userId,
           ],
         ),
-        returnValue: _i5.Future<List<_i2.Person>>.value(<_i2.Person>[]),
-      ) as _i5.Future<List<_i2.Person>>);
+        returnValue: _i6.Future<List<_i2.Person>>.value(<_i2.Person>[]),
+      ) as _i6.Future<List<_i2.Person>>);
 
   @override
-  _i5.Future<void> updatePerson(_i2.Person? person) => (super.noSuchMethod(
+  _i6.Future<void> updatePerson(_i2.Person? person) => (super.noSuchMethod(
         Invocation.method(
           #updatePerson,
           [person],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<void> deletePerson(
+  _i6.Future<void> deletePerson(
     String? userId,
     String? personId,
   ) =>
@@ -216,54 +237,64 @@ class MockPersonRepository extends _i1.Mock implements _i8.PersonRepository {
             personId,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 }
 
 /// A class which mocks [ActivityCategoryRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockActivityCategoryRepository extends _i1.Mock
-    implements _i9.ActivityCategoryRepository {
+    implements _i10.ActivityCategoryRepository {
   MockActivityCategoryRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Stream<List<_i3.ActivityCategory>> getCategories(String? userId) =>
+  set cacheInvalidator(_i5.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Stream<List<_i3.ActivityCategory>> getCategories(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCategories,
           [userId],
         ),
-        returnValue: _i5.Stream<List<_i3.ActivityCategory>>.empty(),
-      ) as _i5.Stream<List<_i3.ActivityCategory>>);
+        returnValue: _i6.Stream<List<_i3.ActivityCategory>>.empty(),
+      ) as _i6.Stream<List<_i3.ActivityCategory>>);
 
   @override
-  _i5.Future<void> addCategory(_i3.ActivityCategory? category) =>
+  _i6.Future<void> addCategory(_i3.ActivityCategory? category) =>
       (super.noSuchMethod(
         Invocation.method(
           #addCategory,
           [category],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<void> updateCategory(_i3.ActivityCategory? category) =>
+  _i6.Future<void> updateCategory(_i3.ActivityCategory? category) =>
       (super.noSuchMethod(
         Invocation.method(
           #updateCategory,
           [category],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<void> deleteCategory(
+  _i6.Future<void> deleteCategory(
     String? userId,
     String? categoryId,
   ) =>
@@ -275,12 +306,12 @@ class MockActivityCategoryRepository extends _i1.Mock
             categoryId,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<void> deleteWithChildren(
+  _i6.Future<void> deleteWithChildren(
     String? userId,
     String? categoryId,
   ) =>
@@ -292,12 +323,12 @@ class MockActivityCategoryRepository extends _i1.Mock
             categoryId,
           ],
         ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i5.Future<_i3.ActivityCategory> createSelectableCategory({
+  _i6.Future<_i3.ActivityCategory> createSelectableCategory({
     required String? name,
     required String? userId,
   }) =>
@@ -311,7 +342,7 @@ class MockActivityCategoryRepository extends _i1.Mock
           },
         ),
         returnValue:
-            _i5.Future<_i3.ActivityCategory>.value(_FakeActivityCategory_1(
+            _i6.Future<_i3.ActivityCategory>.value(_FakeActivityCategory_1(
           this,
           Invocation.method(
             #createSelectableCategory,
@@ -322,22 +353,22 @@ class MockActivityCategoryRepository extends _i1.Mock
             },
           ),
         )),
-      ) as _i5.Future<_i3.ActivityCategory>);
+      ) as _i6.Future<_i3.ActivityCategory>);
 
   @override
-  _i5.Future<List<_i3.ActivityCategory>> getSelectableCategories(
+  _i6.Future<List<_i3.ActivityCategory>> getSelectableCategories(
           String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getSelectableCategories,
           [userId],
         ),
-        returnValue: _i5.Future<List<_i3.ActivityCategory>>.value(
+        returnValue: _i6.Future<List<_i3.ActivityCategory>>.value(
             <_i3.ActivityCategory>[]),
-      ) as _i5.Future<List<_i3.ActivityCategory>>);
+      ) as _i6.Future<List<_i3.ActivityCategory>>);
 
   @override
-  _i5.Future<List<String>> getAncestorIds(
+  _i6.Future<List<String>> getAncestorIds(
     String? categoryId,
     String? userId,
   ) =>
@@ -349,22 +380,22 @@ class MockActivityCategoryRepository extends _i1.Mock
             userId,
           ],
         ),
-        returnValue: _i5.Future<List<String>>.value(<String>[]),
-      ) as _i5.Future<List<String>>);
+        returnValue: _i6.Future<List<String>>.value(<String>[]),
+      ) as _i6.Future<List<String>>);
 
   @override
-  _i5.Future<List<_i3.ActivityCategory>> getAllCategories(String? userId) =>
+  _i6.Future<List<_i3.ActivityCategory>> getAllCategories(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getAllCategories,
           [userId],
         ),
-        returnValue: _i5.Future<List<_i3.ActivityCategory>>.value(
+        returnValue: _i6.Future<List<_i3.ActivityCategory>>.value(
             <_i3.ActivityCategory>[]),
-      ) as _i5.Future<List<_i3.ActivityCategory>>);
+      ) as _i6.Future<List<_i3.ActivityCategory>>);
 
   @override
-  _i5.Future<List<_i3.ActivityCategory>> getCategoriesByIds(
+  _i6.Future<List<_i3.ActivityCategory>> getCategoriesByIds(
     List<String>? ids,
     String? userId,
   ) =>
@@ -376,7 +407,7 @@ class MockActivityCategoryRepository extends _i1.Mock
             userId,
           ],
         ),
-        returnValue: _i5.Future<List<_i3.ActivityCategory>>.value(
+        returnValue: _i6.Future<List<_i3.ActivityCategory>>.value(
             <_i3.ActivityCategory>[]),
-      ) as _i5.Future<List<_i3.ActivityCategory>>);
+      ) as _i6.Future<List<_i3.ActivityCategory>>);
 }
