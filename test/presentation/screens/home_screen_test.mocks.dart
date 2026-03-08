@@ -13,11 +13,13 @@ import 'package:friendsheet/data/models/stats_data_bundle.dart' as _i2;
 import 'package:friendsheet/data/repositories/activity_category_repository.dart'
     as _i10;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i11;
+import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i13;
 import 'package:friendsheet/data/repositories/person_repository.dart' as _i12;
 import 'package:friendsheet/data/repositories/statistics_repository.dart'
     as _i5;
 import 'package:friendsheet/data/services/auth_service.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i14;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -573,6 +575,110 @@ class MockPersonRepository extends _i1.Mock implements _i12.PersonRepository {
       (super.noSuchMethod(
         Invocation.method(
           #deletePerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+}
+
+/// A class which mocks [MeetingRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockMeetingRepository extends _i1.Mock implements _i13.MeetingRepository {
+  MockMeetingRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  set cacheInvalidator(_i11.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Future<String> saveMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #saveMeeting,
+          [meeting],
+        ),
+        returnValue: _i6.Future<String>.value(_i14.dummyValue<String>(
+          this,
+          Invocation.method(
+            #saveMeeting,
+            [meeting],
+          ),
+        )),
+      ) as _i6.Future<String>);
+
+  @override
+  _i6.Stream<List<_i7.Meeting>> getMeetingsByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsByUser,
+          [userId],
+        ),
+        returnValue: _i6.Stream<List<_i7.Meeting>>.empty(),
+      ) as _i6.Stream<List<_i7.Meeting>>);
+
+  @override
+  _i6.Future<void> updateMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #updateMeeting,
+          [meeting],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteMeeting(
+    String? userId,
+    String? meetingId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteMeeting,
+          [
+            userId,
+            meetingId,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<int> getMeetingsCountForPerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsCountForPerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<void> removePersonFromMeetings(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromMeetings,
           [
             userId,
             personId,
