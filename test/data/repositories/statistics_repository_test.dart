@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/activity_category.dart';
+import 'package:friendsheet/data/models/meeting.dart';
+import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/models/stats_data_bundle.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
@@ -707,5 +711,347 @@ void main() {
         expect(result.last.name, equals('Zara'));
       });
     });
+
+    // ─── Phase 2: in-memory cache ───────────────────────────────────────────
+
+    group('getMeetingsForYear() — cache', () {
+      test('cache hit: second call returns cached data without Firestore read',
+          () async {
+        await addMeeting('user-1', DateTime(2026, 3, 1), weight: 5);
+
+        // First call populates the cache.
+        final first = await repository.getMeetingsForYear('user-1', 2026);
+        expect(first, hasLength(1));
+
+        // Remove the document from Firestore — cache should still serve it.
+        final snapshot = await fakeFirestore
+            .collection('users')
+            .doc('user-1')
+            .collection('meetings')
+            .get();
+        await snapshot.docs.first.reference.delete();
+
+        final second = await repository.getMeetingsForYear('user-1', 2026);
+        expect(second, hasLength(1)); // returned from cache, not Firestore
+      });
+
+      test('cache miss: first call hits Firestore', () async {
+        await addMeeting('user-1', DateTime(2026, 6, 1), weight: 3);
+
+        final result = await repository.getMeetingsForYear('user-1', 2026);
+
+        expect(result, hasLength(1));
+        expect(result.first.weight, equals(3));
+      });
+
+      test('invalidateMeetingsCache: next call re-fetches from Firestore',
+          () async {
+        await addMeeting('user-1', DateTime(2026, 3, 1), weight: 5);
+
+        // Populate cache.
+        final before = await repository.getMeetingsForYear('user-1', 2026);
+        expect(before, hasLength(1));
+
+        // Delete from Firestore then invalidate cache.
+        final snapshot = await fakeFirestore
+            .collection('users')
+            .doc('user-1')
+            .collection('meetings')
+            .get();
+        await snapshot.docs.first.reference.delete();
+        repository.invalidateMeetingsCache();
+
+        // Now re-fetch — must read empty Firestore.
+        final after = await repository.getMeetingsForYear('user-1', 2026);
+        expect(after, isEmpty);
+      });
+
+      test('invalidateAllCaches clears all three caches', () async {
+        await addMeeting('user-1', DateTime(2026, 3, 1));
+        await addCategory('user-1', 'cat-a', 'Running');
+        await addPerson('user-1', 'person-a', 'Alice');
+
+        // Populate all caches via loadAllStatsData.
+        await repository.loadAllStatsData(2026, 'user-1');
+
+        repository.invalidateAllCaches();
+
+        // After invalidation, deleting from Firestore and re-fetching should
+        // return empty results (proves cache was cleared).
+        final catSnapshot = await fakeFirestore
+            .collection('users')
+            .doc('user-1')
+            .collection('activity_categories')
+            .get();
+        for (final doc in catSnapshot.docs) {
+          await doc.reference.delete();
+        }
+
+        final bundle = await repository.loadAllStatsData(2026, 'user-1');
+        expect(bundle.categories, isEmpty); // re-fetched after cache clear
+      });
+    });
+
+    // ─── Phase 3: StatsDataBundle + compute* ────────────────────────────────
+
+    group('loadAllStatsData()', () {
+      test('returns bundle with correct data for given year', () async {
+        await addCategory('user-1', 'cat-a', 'Running');
+        await addPerson('user-1', 'person-a', 'Alice');
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['cat-a'],
+          participantIds: ['person-a'],
+        );
+        await addMeeting(
+          'user-1',
+          DateTime(2025, 6, 1), // previous year
+          weight: 3,
+          categoryIds: ['cat-a'],
+          participantIds: ['person-a'],
+        );
+
+        final bundle = await repository.loadAllStatsData(2026, 'user-1');
+
+        expect(bundle.currentYearMeetings, hasLength(1));
+        expect(bundle.currentYearMeetings.first.weight, equals(5));
+        expect(bundle.previousYearMeetings, hasLength(1));
+        expect(bundle.previousYearMeetings.first.weight, equals(3));
+        expect(bundle.categories, hasLength(1));
+        expect(bundle.categories.first.name, equals('Running'));
+        expect(bundle.persons, hasLength(1));
+        expect(bundle.persons.first.fullName, equals('Alice'));
+      });
+
+      test('initialize() → getMeetingsForYear called once per year via cache',
+          () async {
+        await addCategory('user-1', 'cat-a', 'Running');
+        await addPerson('user-1', 'person-a', 'Alice');
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 3, 1),
+          weight: 5,
+          categoryIds: ['cat-a'],
+          participantIds: ['person-a'],
+        );
+
+        // First loadAllStatsData populates cache for 2026 and 2025.
+        await repository.loadAllStatsData(2026, 'user-1');
+
+        // Add a new meeting to Firestore AFTER the first fetch.
+        await addMeeting(
+          'user-1',
+          DateTime(2026, 9, 1),
+          weight: 8,
+          categoryIds: ['cat-a'],
+          participantIds: ['person-a'],
+        );
+
+        // Second call should return cached data (1 meeting, not 2).
+        final bundle = await repository.loadAllStatsData(2026, 'user-1');
+        expect(bundle.currentYearMeetings, hasLength(1));
+      });
+    });
+
+    group('computeActivityBreakdown()', () {
+      test('happy path: computes weights from bundle correctly', () async {
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(weight: 5, categoryIds: ['cat-a', 'cat-b']),
+            _makeMeeting(weight: 3, categoryIds: ['cat-a']),
+          ],
+          previousYearMeetings: [],
+          categories: [
+            _makeCategory('cat-a', 'Running'),
+            _makeCategory('cat-b', 'Cycling'),
+          ],
+          persons: [],
+        );
+
+        final result = repository.computeActivityBreakdown(bundle);
+
+        expect(result, hasLength(2));
+        final catA = result.firstWhere((e) => e.categoryId == 'cat-a');
+        final catB = result.firstWhere((e) => e.categoryId == 'cat-b');
+        expect(catA.currentYearWeight, equals(8)); // 5+3
+        expect(catB.currentYearWeight, equals(5));
+        expect(result.first.categoryId, equals('cat-a')); // sorted desc
+      });
+
+      test('unknown categoryId: entry skipped', () async {
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(weight: 5, categoryIds: ['cat-a', 'cat-missing']),
+          ],
+          previousYearMeetings: [],
+          categories: [_makeCategory('cat-a', 'Running')],
+          persons: [],
+        );
+
+        final result = repository.computeActivityBreakdown(bundle);
+
+        expect(result, hasLength(1));
+        expect(result.first.categoryId, equals('cat-a'));
+      });
+    });
+
+    group('computePersonsForActivity()', () {
+      test('happy path: aggregates weight per person for matching meetings',
+          () async {
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(
+              weight: 5,
+              categoryIds: ['sport'],
+              participantIds: ['p-a', 'p-b'],
+            ),
+            _makeMeeting(
+              weight: 3,
+              categoryIds: ['sport'],
+              participantIds: ['p-a'],
+            ),
+            _makeMeeting(
+              weight: 8,
+              categoryIds: ['tennis'],
+              participantIds: ['p-b'],
+            ),
+          ],
+          previousYearMeetings: [],
+          categories: [],
+          persons: [
+            _makePerson('p-a', 'Alice'),
+            _makePerson('p-b', 'Bob'),
+          ],
+        );
+
+        final result = repository.computePersonsForActivity(bundle, 'sport');
+
+        expect(result, hasLength(2));
+        final alice = result.firstWhere((e) => e.personId == 'p-a');
+        final bob = result.firstWhere((e) => e.personId == 'p-b');
+        expect(alice.weightSum, equals(8)); // 5+3
+        expect(bob.weightSum, equals(5));
+        expect(result.first.personId, equals('p-a')); // sorted desc
+      });
+
+      test('no Firestore call — purely uses bundle data', () async {
+        // No data in Firestore — bundle provided directly.
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(
+              weight: 5,
+              categoryIds: ['sport'],
+              participantIds: ['p-a'],
+            ),
+          ],
+          previousYearMeetings: [],
+          categories: [],
+          persons: [_makePerson('p-a', 'Alice')],
+        );
+
+        // Repository has empty Firestore — result must come purely from bundle.
+        final result = repository.computePersonsForActivity(bundle, 'sport');
+        expect(result, hasLength(1));
+        expect(result.first.weightSum, equals(5));
+      });
+    });
+
+    group('computeInteractionDistribution()', () {
+      test('happy path: computes distribution from bundle', () async {
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(
+              weight: 8,
+              participantIds: ['p-a'],
+            ),
+            _makeMeeting(
+              weight: 5,
+              participantIds: ['p-a', 'p-b'],
+            ),
+          ],
+          previousYearMeetings: [
+            _makeMeeting(weight: 3, participantIds: ['p-a']),
+          ],
+          categories: [],
+          persons: [
+            _makePerson('p-a', 'Alice'),
+            _makePerson('p-b', 'Bob'),
+          ],
+        );
+
+        final result = repository.computeInteractionDistribution(bundle);
+
+        expect(result, hasLength(2));
+        final alice = result.firstWhere((e) => e.personId == 'p-a');
+        final bob = result.firstWhere((e) => e.personId == 'p-b');
+        expect(alice.currentYearWeight, equals(13)); // 8+5
+        expect(alice.previousYearWeight, equals(3));
+        expect(bob.currentYearWeight, equals(5));
+        expect(result.first.personId, equals('p-a')); // sorted desc
+      });
+
+      test('no Firestore call — purely uses bundle data', () async {
+        final bundle = StatsDataBundle(
+          currentYearMeetings: [
+            _makeMeeting(weight: 5, participantIds: ['p-a']),
+          ],
+          previousYearMeetings: [],
+          categories: [],
+          persons: [_makePerson('p-a', 'Alice')],
+        );
+
+        final result = repository.computeInteractionDistribution(bundle);
+        expect(result, hasLength(1));
+        expect(result.first.currentYearWeight, equals(5));
+      });
+    });
   });
+}
+
+// ─── Bundle construction helpers ──────────────────────────────────────────────
+
+/// Creates a minimal Meeting with the given weight and IDs.
+/// Uses fixed timestamps and required non-null fields.
+Meeting _makeMeeting({
+  int weight = 3,
+  List<String> categoryIds = const [],
+  List<String> participantIds = const [],
+}) {
+  final now = DateTime(2026, 1, 1);
+  return Meeting(
+    id: 'test-meeting',
+    userId: 'user-1',
+    name: 'Test',
+    date: now,
+    weight: weight,
+    participantIds: participantIds,
+    categoryIds: categoryIds,
+    createdAt: now,
+    updatedAt: now,
+  );
+}
+
+/// Creates a minimal ActivityCategory with the given id and name.
+ActivityCategory _makeCategory(String id, String name) {
+  return ActivityCategory(
+    id: id,
+    userId: 'user-1',
+    name: name,
+    iconIdentifier: 'category',
+    isGlobal: false,
+    isSelectableAsActivity: true,
+    createdAt: DateTime(2026),
+  );
+}
+
+/// Creates a minimal Person with the given id and first name.
+Person _makePerson(String id, String firstName) {
+  return Person(
+    id: id,
+    userId: 'user-1',
+    firstName: firstName,
+    createdAt: DateTime(2026),
+  );
 }

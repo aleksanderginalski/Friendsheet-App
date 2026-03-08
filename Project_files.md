@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 06, 2026
+**Last Updated:** marca 08, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -19,10 +19,12 @@
 - lib/data/models/person.dart - Person model (Freezed)
 - lib/data/models/person.freezed.dart - Generated
 - lib/data/models/person.g.dart - Generated
-- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, deleteWithChildren (WriteBatch cascade), getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation (US-019, US-020, US-026, US-042, US-043)
-- lib/data/repositories/meeting_repository.dart - MeetingRepository (Firestore CRUD — save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings)
-- lib/data/repositories/person_repository.dart - PersonRepository (Firestore CRUD — getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds)
-- lib/data/repositories/statistics_repository.dart - StatisticsRepository — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown (ActivityBreakdownEntry DTO), getPersonsForActivity (PersonActivityEntry DTO — uses getPersonsByUser + in-memory filter, no whereIn limit), getInteractionDistribution (InteractionDistributionEntry DTO), getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030, US-050)
+- lib/data/models/stats_data_bundle.dart - StatsDataBundle — plain Dart class holding currentYearMeetings, previousYearMeetings, categories, persons; fetched once per year via loadAllStatsData(); passed to compute* methods for zero-Firestore aggregation (US-072)
+- lib/data/repositories/activity_category_repository.dart - ActivityCategoryRepository — CRUD, deleteWithChildren (WriteBatch cascade), getSelectableCategories, getAncestorIds, getAllCategories, createSelectableCategory, depth validation; calls cacheInvalidator.invalidateCategoriesCache() on write (US-019, US-020, US-026, US-042, US-043, US-072)
+- lib/data/repositories/cache_invalidator.dart
+- lib/data/repositories/meeting_repository.dart - MeetingRepository — Firestore CRUD (save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings); calls cacheInvalidator.invalidateMeetingsCache() on write (US-072)
+- lib/data/repositories/person_repository.dart - PersonRepository — Firestore CRUD (getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds); calls cacheInvalidator.invalidatePersonsCache() on write (US-072)
+- lib/data/repositories/statistics_repository.dart - StatisticsRepository — implements CacheInvalidator; in-memory cache (_meetingsCache, _categoriesCache, _personsCache) with invalidate*Cache() methods; loadAllStatsData() parallel Future.wait; compute* pure synchronous methods (computeActivityBreakdown, computePersonsForActivity, computeInteractionDistribution); old async methods kept as backward-compat wrappers; getAvailableYears, getMeetingsForYear, getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030, US-050, US-072)
 - lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020)
 - lib/data/services/export_service.dart - ExportService — fetches meetings, persons, activityCategories for userId, serializes to JSON, writes to external storage; injectable directoryProvider for test isolation (US-031)
 
@@ -45,11 +47,11 @@
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)
 - lib/presentation/providers/export_provider.dart - ExportProvider — isLoading, errorMessage, lastExportPath; no-op guard when already loading; clearError() (US-031)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen — stream, year grouping, expand/collapse, client-side search (filteredMeetingsByYear computed getter) (US-021, US-054)
-- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, setAllActivitiesVisibility(bool) + setAllPersonsVisibility(bool), StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); initialize() and selectYear() isolate loadDistribution() outside try/catch to prevent silent failures; selectYear() preserves whoPerActivity during fetch to avoid empty-state flash (US-050); owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057)
+- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, setAllActivitiesVisibility(bool) + setAllPersonsVisibility(bool), StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); _isInitialized/_lastLoadedYear guard — initialize() and selectYear() skip fetch if data already loaded for same year; resetCache() for logout/user-switch; stores _currentBundle (StatsDataBundle) and calls compute* methods — zero additional Firestore reads on selectActivity/loadDistribution; owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-072)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle (US-026, US-027, US-031)
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle; sets statisticsRepository as cacheInvalidator on MeetingRepository, PersonRepository, ActivityCategoryRepository after construction (US-026, US-027, US-031, US-072)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list — grouped by year, expand/collapse, SharedSearchBar, EmptyStateWidget for empty list and no search results (US-021, US-054, US-055)
 - lib/presentation/screens/persons_list_screen.dart - Persons list — SharedSearchBar, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054, US-055)
 - lib/presentation/screens/settings_screen.dart - Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)
@@ -81,7 +83,7 @@
 - test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, deleteWithChildren, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042, US-043)
 - test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
 - test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
-- test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown, getPersonsForActivity (incl. >30 participants regression test), getInteractionDistribution, getCumulativeInteractions (US-027, US-028, US-029, US-030, US-050)
+- test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown, getPersonsForActivity (incl. >30 participants regression test), getInteractionDistribution, getCumulativeInteractions, cache hit/miss behavior, invalidation (US-027, US-028, US-029, US-030, US-050, US-072)
 - test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
 - test/data/services/export_service_test.dart - ExportService tests — happy path, empty data, repository throws (US-031)
 - test/data/services/export_service_test.mocks.dart
@@ -103,7 +105,7 @@
 - test/presentation/providers/export_provider_test.mocks.dart - Generated mocks for ExportProvider tests
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests — stream grouping, expand/collapse, search filtering, no-results state (US-021, US-054)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
-- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, setAllActivitiesVisibility, setAllPersonsVisibility, carousel state (toggleCardVisibility, restoreAllCards, allCardsHidden), SharedPreferences persistence (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057)
+- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, setAllActivitiesVisibility, setAllPersonsVisibility, carousel state (toggleCardVisibility, restoreAllCards, allCardsHidden), SharedPreferences persistence, idempotent initialize guard, selectYear no-op for same year, compute* reuse via _currentBundle (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-072)
 - test/presentation/providers/statistics_provider_test.mocks.dart - Generated mocks for StatisticsProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
