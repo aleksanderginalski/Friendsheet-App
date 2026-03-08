@@ -1,12 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/activity_category.dart';
+import 'cache_invalidator.dart';
 
 class ActivityCategoryRepository {
   final FirebaseFirestore _firestore;
 
-  ActivityCategoryRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Optional invalidator — when set, cleared after any write so that
+  /// statistics caches reflect the latest category data.
+  CacheInvalidator? cacheInvalidator;
+
+  ActivityCategoryRepository({
+    FirebaseFirestore? firestore,
+    this.cacheInvalidator,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   // Subcollection for user-created categories.
   CollectionReference _categoriesRef(String userId) => _firestore
@@ -27,6 +34,7 @@ class ActivityCategoryRepository {
   Future<void> addCategory(ActivityCategory category) async {
     await _validateDepth(category.userId, category);
     await _categoriesRef(category.userId).add(category.toFirestore());
+    cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Updates an existing category. Throws if the new parent would exceed depth 2.
@@ -35,11 +43,13 @@ class ActivityCategoryRepository {
     await _categoriesRef(category.userId)
         .doc(category.id)
         .update(category.toFirestore());
+    cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Deletes the category document for the given user and categoryId.
   Future<void> deleteCategory(String userId, String categoryId) async {
     await _categoriesRef(userId).doc(categoryId).delete();
+    cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Deletes the category and all its direct children atomically.
@@ -59,6 +69,7 @@ class ActivityCategoryRepository {
     }
 
     await batch.commit();
+    cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Creates a new root selectable category in the user's subcollection and
@@ -75,6 +86,7 @@ class ActivityCategoryRepository {
       'isSelectableAsActivity': true,
       'createdAt': Timestamp.now(),
     });
+    cacheInvalidator?.invalidateCategoriesCache();
     final doc = await docRef.get();
     return ActivityCategory.fromFirestore(doc);
   }
