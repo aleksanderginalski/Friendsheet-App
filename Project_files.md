@@ -51,7 +51,7 @@
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/home_screen.dart - Home screen — Consumer<StatisticsProvider> with StatisticsSection (US-027)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle; sets statisticsRepository as cacheInvalidator on MeetingRepository, PersonRepository, ActivityCategoryRepository after construction (US-026, US-027, US-031, US-072)
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Settings, Logout); owns PersonsListProvider, ActivitiesListProvider and StatisticsProvider lifecycle; sets statisticsRepository as cacheInvalidator on MeetingRepository, PersonRepository, ActivityCategoryRepository after construction; tap counter + Timer logic for easter egg (8 taps / 4s on AppBar title) (US-026, US-027, US-031, US-064, US-072)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list — grouped by year, expand/collapse, SharedSearchBar, EmptyStateWidget for empty list and no search results (US-021, US-054, US-055)
 - lib/presentation/screens/persons_list_screen.dart - Persons list — SharedSearchBar, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054, US-055)
 - lib/presentation/screens/settings_screen.dart - Settings screen — Export Data tile triggers ExportProvider.exportData(); SnackBar with file path on success, error message on failure (US-031)
@@ -60,6 +60,7 @@
 - lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, ChartColors gradient per categoryId, delta % indicator (▲/▼/NEW), filter_icon.png visibility dialog trigger (replaces gear icon), auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049, US-057, US-063)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
 - lib/presentation/widgets/activity_visibility_dialog.dart - Dialog with hierarchical checkbox list + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) for managing activity visibility; activity icons 31px (US-048, US-057)
+- lib/presentation/widgets/easter_egg_dialog.dart - EasterEggDialog — dismisses on tap anywhere; displays easter_egg_icon asset + special thanks message; injectable imageWidget parameter for test isolation (US-064)
 - lib/presentation/widgets/empty_state_widget.dart - Reusable empty state component — illustration + message; used by MeetingsListScreen and PersonsListScreen (US-054), ActivitiesListScreen (US-055)
 - lib/presentation/widgets/interaction_distribution_widget.dart - Animated bar chart showing meeting weight per person — yearly/cumulative toggle, isLoading inline spinner (widget always stays in tree), info icon (>100% explanation), filter_icon.png visibility dialog trigger (replaces gear icon), _lastTargetLeft animation architecture, ChartColors gradient per personId (US-030, US-051, US-057, US-063)
 - lib/presentation/widgets/meeting_card.dart - Meeting card widget — displays name, date, participant count, weight (US-021)
@@ -109,7 +110,7 @@
 - test/presentation/providers/statistics_provider_test.mocks.dart - Generated mocks for StatisticsProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
-- test/presentation/screens/home_screen_test.dart - HomeScreen tests — StatisticsProvider integration, YearStepper rendering (US-027)
+- test/presentation/screens/home_screen_test.dart - HomeScreen tests — StatisticsProvider integration, YearStepper rendering, easter egg tap counter reset / dialog trigger / dialog dismiss (US-027, US-064)
 - test/presentation/screens/home_screen_test.mocks.dart - Generated mocks for HomeScreen tests
 - test/presentation/screens/login_screen_test.dart - LoginScreen tests (8 tests)
 - test/presentation/screens/login_screen_test.mocks.dart - Generated mocks for LoginScreen tests
@@ -145,6 +146,7 @@
 - assets/images/empty_state_activities.png - Activities empty state illustration — cartoon character with clipboard, Midjourney-generated (US-055)
 - assets/images/statistics_illustration.png - Statistics Home illustration — Midjourney-generated, displayed at bottom of HomeScreen left-aligned (US-071)
 - assets/images/filter_icon.png - Filter icon asset — replaces gear icon in ActivityBreakdownWidget and InteractionDistributionWidget header (US-057)
+- assets/images/easter_egg_icon.png - Easter egg asset — displayed in EasterEggDialog triggered by 8 taps on AppBar title (US-064)
 
 ## scripts/migration/
 - scripts/migration/migrate.py - One-time Python migration script — Excel to Firestore (US-041). Imports meetings, persons, categoryIds with ancestor propagation. Idempotent.
