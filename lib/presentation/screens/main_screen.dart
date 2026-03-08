@@ -14,9 +14,11 @@ import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
 import '../providers/export_provider.dart';
+import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
+import 'calendar_permission_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
 import 'persons_list_screen.dart';
@@ -36,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   int _titleTapCount = 0;
   Timer? _titleTapTimer;
+  late final HomeProvider _homeProvider;
   late final PersonsListProvider _personsListProvider;
   late final ActivitiesListProvider _activitiesListProvider;
   late final StatisticsProvider _statisticsProvider;
@@ -43,6 +46,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _homeProvider = HomeProvider(meetingRepository: MeetingRepository());
     _personsListProvider = PersonsListProvider(
       personRepository: PersonRepository(),
       authService: AuthService(),
@@ -72,6 +76,7 @@ class _MainScreenState extends State<MainScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = AuthService().currentUserId;
       if (userId != null) {
+        _homeProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);
       }
       _statisticsProvider.initialize();
@@ -103,6 +108,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void dispose() {
     _titleTapTimer?.cancel();
+    _homeProvider.dispose();
     _personsListProvider.dispose();
     _activitiesListProvider.dispose();
     _statisticsProvider.dispose();
@@ -152,6 +158,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: _homeProvider),
         ChangeNotifierProvider.value(value: _personsListProvider),
         ChangeNotifierProvider.value(value: _activitiesListProvider),
         ChangeNotifierProvider.value(value: _statisticsProvider),
@@ -196,6 +203,19 @@ class _MainScreenState extends State<MainScreen> {
                   color: Colors.white,
                 ),
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Import from Calendar'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CalendarPermissionScreen(),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.settings),

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
 import 'package:friendsheet/presentation/screens/home_screen.dart';
 import 'package:friendsheet/presentation/widgets/easter_egg_dialog.dart';
@@ -73,13 +75,16 @@ const Widget _stubImage = SizedBox(key: Key('stub_image'), height: 120);
   AuthService,
   ActivityCategoryRepository,
   PersonRepository,
+  MeetingRepository,
 ])
 void main() {
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockMeetingRepository mockMeetingRepository;
   late StatisticsProvider statisticsProvider;
+  late HomeProvider homeProvider;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -87,6 +92,12 @@ void main() {
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
+    mockMeetingRepository = MockMeetingRepository();
+    // Default stub: never-completing stream — count stays 0.
+    // ignore: argument_type_not_assignable
+    when(mockMeetingRepository.getMeetingsByUser(any))
+        .thenAnswer((_) => const Stream.empty());
+    homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
@@ -107,18 +118,29 @@ void main() {
 
   tearDown(() {
     statisticsProvider.dispose();
+    homeProvider.dispose();
   });
 
   Widget buildHomeScreen() {
     return MaterialApp(
-      home: ChangeNotifierProvider.value(
-        value: statisticsProvider,
+      home: MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: homeProvider),
+          ChangeNotifierProvider.value(value: statisticsProvider),
+        ],
         child: const HomeScreen(),
       ),
     );
   }
 
   group('HomeScreen', () {
+    // Dismiss the CTA so statistics are shown in these tests.
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({
+        'onboarding_calendar_cta_dismissed': true,
+      });
+      await homeProvider.initialize('');
+    });
     testWidgets('shows loading indicator while statistics are loading',
         (tester) async {
       when(mockAuthService.currentUserId).thenReturn('user-1');
