@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../models/activity_category.dart';
 import '../models/meeting.dart';
+import '../models/person.dart';
+import '../models/stats_data_bundle.dart';
 import 'activity_category_repository.dart';
+import 'cache_invalidator.dart';
 import 'person_repository.dart';
 
 /// Display DTO representing one category's weight totals across two years.
@@ -58,13 +62,23 @@ class InteractionDistributionEntry {
   int get delta => currentYearWeight - previousYearWeight;
 }
 
-/// Handles statistics-related Firestore queries.
-/// Kept separate from MeetingRepository to avoid mixing stream-based
-/// and one-shot query responsibilities.
-class StatisticsRepository {
+/// Handles statistics-related Firestore queries with in-memory caching.
+/// Implements [CacheInvalidator] so write repositories can clear stale cache
+/// entries without creating circular constructor dependencies.
+///
+/// Cache keys for meetings: '${userId}_${year}'.
+/// Categories and persons are cached globally (user switch resets via invalidateAllCaches).
+class StatisticsRepository implements CacheInvalidator {
   final FirebaseFirestore _firestore;
   final ActivityCategoryRepository _categoryRepository;
   final PersonRepository _personRepository;
+
+  // Per-year meeting cache: key = '${userId}_${year}'.
+  final Map<String, List<Meeting>> _meetingsCache = {};
+
+  // Single-user caches — invalidated on write or user switch.
+  List<ActivityCategory>? _categoriesCache;
+  List<Person>? _personsCache;
 
   StatisticsRepository({
     FirebaseFirestore? firestore,
@@ -76,6 +90,59 @@ class StatisticsRepository {
 
   CollectionReference _meetingsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('meetings');
+
+  // ─── Cache invalidation ────────────────────────────────────────────────────
+
+  @override
+  void invalidateMeetingsCache() => _meetingsCache.clear();
+
+  @override
+  void invalidateCategoriesCache() => _categoriesCache = null;
+
+  @override
+  void invalidatePersonsCache() => _personsCache = null;
+
+  /// Clears all caches. Call on user logout or account switch.
+  void invalidateAllCaches() {
+    invalidateMeetingsCache();
+    invalidateCategoriesCache();
+    invalidatePersonsCache();
+  }
+
+  // ─── Internal cached fetches ───────────────────────────────────────────────
+
+  /// Fetches all meetings for [year] from Firestore (bypasses cache).
+  Future<List<Meeting>> _fetchMeetingsForYear(String userId, int year) async {
+    try {
+      final startDate = Timestamp.fromDate(DateTime(year));
+      final endDate = Timestamp.fromDate(DateTime(year + 1));
+
+      final snapshot = await _meetingsRef(userId)
+          .where('date', isGreaterThanOrEqualTo: startDate)
+          .where('date', isLessThan: endDate)
+          .get();
+
+      return snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to load meetings for year $year: $e');
+    }
+  }
+
+  /// Returns all categories for [userId], using cache when available.
+  Future<List<ActivityCategory>> _getCachedCategories(String userId) async {
+    if (_categoriesCache != null) return _categoriesCache!;
+    _categoriesCache = await _categoryRepository.getAllCategories(userId);
+    return _categoriesCache!;
+  }
+
+  /// Returns all persons for [userId], using cache when available.
+  Future<List<Person>> _getCachedPersons(String userId) async {
+    if (_personsCache != null) return _personsCache!;
+    _personsCache = await _personRepository.getPersonsByUser(userId);
+    return _personsCache!;
+  }
+
+  // ─── Public query methods ──────────────────────────────────────────────────
 
   /// Returns unique years extracted from meeting dates, sorted descending.
   /// Queries every meeting document for the user; no Firestore index required.
@@ -96,45 +163,58 @@ class StatisticsRepository {
     }
   }
 
-  /// Returns all meetings for a given user that fall within [year].
-  /// Uses an inclusive start (Jan 1) and exclusive end (Jan 1 of next year).
+  /// Returns all meetings for [year] for [userId], using in-memory cache.
+  /// Cache key: '${userId}_${year}'.
   Future<List<Meeting>> getMeetingsForYear(String userId, int year) async {
-    try {
-      final startDate = Timestamp.fromDate(DateTime(year));
-      final endDate = Timestamp.fromDate(DateTime(year + 1));
-
-      final snapshot = await _meetingsRef(userId)
-          .where('date', isGreaterThanOrEqualTo: startDate)
-          .where('date', isLessThan: endDate)
-          .get();
-
-      return snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
-    } catch (e) {
-      throw Exception('Failed to load meetings for year $year: $e');
-    }
+    final key = '${userId}_$year';
+    if (_meetingsCache.containsKey(key)) return _meetingsCache[key]!;
+    final meetings = await _fetchMeetingsForYear(userId, year);
+    _meetingsCache[key] = meetings;
+    return meetings;
   }
 
+  // ─── Bundle loading ────────────────────────────────────────────────────────
+
+  /// Fetches all data required for one year's statistics in a single
+  /// parallel round-trip, using caches where available.
+  ///
+  /// [currentYearMeetings] and [previousYearMeetings] are cached per year.
+  /// [categories] and [persons] are cached globally until invalidated.
+  Future<StatsDataBundle> loadAllStatsData(int year, String userId) async {
+    final results = await Future.wait([
+      getMeetingsForYear(userId, year),
+      getMeetingsForYear(userId, year - 1),
+      _getCachedCategories(userId),
+      _getCachedPersons(userId),
+    ]);
+
+    return StatsDataBundle(
+      currentYearMeetings: results[0] as List<Meeting>,
+      previousYearMeetings: results[1] as List<Meeting>,
+      categories: results[2] as List<ActivityCategory>,
+      persons: results[3] as List<Person>,
+    );
+  }
+
+  // ─── Pure compute methods (no Firestore) ──────────────────────────────────
+
   /// Returns a ranked list of activity categories by total meeting weight
-  /// for [year], compared to [year - 1].
+  /// for the current year in [bundle], compared to the previous year.
   ///
   /// Aggregation rule: for each meeting, each unique categoryId in
   /// meeting.categoryIds contributes meeting.weight once.
-  /// Categories not found in the user's category list are skipped.
+  /// Categories not found in bundle.categories are skipped.
   /// Sorted descending by currentYearWeight; zero-weight entries appear at
   /// bottom sorted by previousYearWeight descending.
-  Future<List<ActivityBreakdownEntry>> getActivityWeightBreakdown(
-    int year,
-    String userId,
-  ) async {
-    final currentMeetings = await getMeetingsForYear(userId, year);
-    final previousMeetings = await getMeetingsForYear(userId, year - 1);
-    final categories = await _categoryRepository.getAllCategories(userId);
-
-    // Build a lookup map for fast name resolution.
-    final categoryNameById = {for (final c in categories) c.id: c.name};
+  List<ActivityBreakdownEntry> computeActivityBreakdown(
+    StatsDataBundle bundle,
+  ) {
+    final categoryNameById = {
+      for (final c in bundle.categories) c.id: c.name,
+    };
 
     final Map<String, int> currentWeights = {};
-    for (final meeting in currentMeetings) {
+    for (final meeting in bundle.currentYearMeetings) {
       // Use a set to avoid double-counting duplicate categoryIds per meeting.
       for (final categoryId in meeting.categoryIds.toSet()) {
         currentWeights[categoryId] =
@@ -143,7 +223,7 @@ class StatisticsRepository {
     }
 
     final Map<String, int> previousWeights = {};
-    for (final meeting in previousMeetings) {
+    for (final meeting in bundle.previousYearMeetings) {
       for (final categoryId in meeting.categoryIds.toSet()) {
         previousWeights[categoryId] =
             (previousWeights[categoryId] ?? 0) + meeting.weight;
@@ -182,23 +262,21 @@ class StatisticsRepository {
     return entries;
   }
 
-  /// Returns persons ranked by total meeting weight for [categoryId] in [year].
+  /// Returns persons ranked by total meeting weight for [categoryId] in the
+  /// current year, computed from [bundle].
   ///
   /// Filtering: a meeting matches if its categoryIds contains [categoryId].
-  /// Aggregation: each participant's weight is counted once per meeting,
-  /// regardless of how many activities that meeting has.
-  /// Persons not found in the persons collection are skipped.
+  /// Aggregation: each participant's weight is counted once per meeting.
+  /// Persons not found in bundle.persons are skipped.
   /// Sorted descending by weightSum.
-  Future<List<PersonActivityEntry>> getPersonsForActivity(
+  List<PersonActivityEntry> computePersonsForActivity(
+    StatsDataBundle bundle,
     String categoryId,
-    int year,
-    String userId,
-  ) async {
-    final meetings = await getMeetingsForYear(userId, year);
-
+  ) {
     // Keep only meetings that include the selected category.
-    final filtered =
-        meetings.where((m) => m.categoryIds.contains(categoryId)).toList();
+    final filtered = bundle.currentYearMeetings
+        .where((m) => m.categoryIds.contains(categoryId))
+        .toList();
 
     // Aggregate weight per participant across all filtered meetings.
     final Map<String, int> weightByPerson = {};
@@ -211,9 +289,9 @@ class StatisticsRepository {
 
     if (weightByPerson.isEmpty) return [];
 
-    // Fetch all persons and filter in-memory — avoids Firestore whereIn 30-item limit.
-    final persons = await _personRepository.getPersonsByUser(userId);
-    final personNameById = {for (final p in persons) p.id: p.fullName};
+    final personNameById = {
+      for (final p in bundle.persons) p.id: p.fullName,
+    };
 
     final entries = <PersonActivityEntry>[];
     for (final kv in weightByPerson.entries) {
@@ -231,24 +309,21 @@ class StatisticsRepository {
     return entries;
   }
 
-  /// Returns persons ranked by total meeting weight for [year], compared to
-  /// [year - 1], across all meetings regardless of activity.
+  /// Returns persons ranked by total meeting weight across all meetings,
+  /// compared to the previous year, computed from [bundle].
   ///
-  /// For each meeting in [year]: each participantId accumulates meeting.weight.
-  /// Persons not found in the user's persons list are skipped.
+  /// For each meeting in current year: each participantId accumulates weight.
+  /// Persons not found in bundle.persons are skipped.
   /// Sorted descending by currentYearWeight; alphabetically by name for ties.
-  /// Persons with weight only in previous year appear at the bottom.
-  Future<List<InteractionDistributionEntry>> getInteractionDistribution(
-    int year,
-    String userId,
-  ) async {
-    final currentMeetings = await getMeetingsForYear(userId, year);
-    final previousMeetings = await getMeetingsForYear(userId, year - 1);
-    final persons = await _personRepository.getPersonsByUser(userId);
-    final personNameById = {for (final p in persons) p.id: p.fullName};
+  List<InteractionDistributionEntry> computeInteractionDistribution(
+    StatsDataBundle bundle,
+  ) {
+    final personNameById = {
+      for (final p in bundle.persons) p.id: p.fullName,
+    };
 
     final Map<String, int> currentWeights = {};
-    for (final meeting in currentMeetings) {
+    for (final meeting in bundle.currentYearMeetings) {
       for (final personId in meeting.participantIds) {
         currentWeights[personId] =
             (currentWeights[personId] ?? 0) + meeting.weight;
@@ -256,7 +331,7 @@ class StatisticsRepository {
     }
 
     final Map<String, int> previousWeights = {};
-    for (final meeting in previousMeetings) {
+    for (final meeting in bundle.previousYearMeetings) {
       for (final personId in meeting.participantIds) {
         previousWeights[personId] =
             (previousWeights[personId] ?? 0) + meeting.weight;
@@ -295,11 +370,45 @@ class StatisticsRepository {
     return entries;
   }
 
+  // ─── Backward-compatible async wrappers ───────────────────────────────────
+
+  /// Returns a ranked list of activity categories by weight for [year].
+  /// Delegates to [loadAllStatsData] + [computeActivityBreakdown].
+  Future<List<ActivityBreakdownEntry>> getActivityWeightBreakdown(
+    int year,
+    String userId,
+  ) async {
+    final bundle = await loadAllStatsData(year, userId);
+    return computeActivityBreakdown(bundle);
+  }
+
+  /// Returns persons ranked by weight for [categoryId] in [year].
+  /// Delegates to [loadAllStatsData] + [computePersonsForActivity].
+  Future<List<PersonActivityEntry>> getPersonsForActivity(
+    String categoryId,
+    int year,
+    String userId,
+  ) async {
+    final bundle = await loadAllStatsData(year, userId);
+    return computePersonsForActivity(bundle, categoryId);
+  }
+
+  /// Returns persons ranked by total meeting weight for [year] vs previous.
+  /// Delegates to [loadAllStatsData] + [computeInteractionDistribution].
+  Future<List<InteractionDistributionEntry>> getInteractionDistribution(
+    int year,
+    String userId,
+  ) async {
+    final bundle = await loadAllStatsData(year, userId);
+    return computeInteractionDistribution(bundle);
+  }
+
   /// Returns persons ranked by cumulative meeting weight from all years up to
   /// and including [year].
   ///
   /// previousYearWeight is always 0 — delta is not applicable in cumulative mode.
   /// Sorted descending by currentYearWeight; alphabetically by name for ties.
+  /// Uses [_personsCache] but requires a separate all-years Firestore query.
   Future<List<InteractionDistributionEntry>> getCumulativeInteractions(
     int year,
     String userId,
@@ -310,7 +419,7 @@ class StatisticsRepository {
     final meetings =
         snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
 
-    final persons = await _personRepository.getPersonsByUser(userId);
+    final persons = await _getCachedPersons(userId);
     final personNameById = {for (final p in persons) p.id: p.fullName};
 
     final Map<String, int> weights = {};

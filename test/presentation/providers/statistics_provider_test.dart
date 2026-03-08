@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
+import 'package:friendsheet/data/models/stats_data_bundle.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
@@ -29,6 +30,14 @@ void main() {
   late MockPersonRepository mockPersonRepository;
   late StatisticsProvider provider;
 
+  // Empty bundle used as default for loadAllStatsData stubs.
+  const emptyBundle = StatsDataBundle(
+    currentYearMeetings: [],
+    previousYearMeetings: [],
+    categories: [],
+    persons: [],
+  );
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     mockRepository = MockStatisticsRepository();
@@ -41,7 +50,22 @@ void main() {
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
     );
-    // Default stubs — return empty lists unless overridden per test.
+    // Default stubs — return empty data unless overridden per test.
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getAvailableYears(any)).thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.loadAllStatsData(any, any))
+        .thenAnswer((_) async => emptyBundle);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.computeActivityBreakdown(any)).thenReturn([]);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.computePersonsForActivity(any, any)).thenReturn([]);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.computeInteractionDistribution(any)).thenReturn([]);
+    // ignore: argument_type_not_assignable
+    when(mockRepository.getCumulativeInteractions(any, any))
+        .thenAnswer((_) async => []);
+    // Backward-compat stubs (called by old-style tests and compat wrappers).
     // ignore: argument_type_not_assignable
     when(mockRepository.getActivityWeightBreakdown(any, any))
         .thenAnswer((_) async => []);
@@ -50,9 +74,6 @@ void main() {
         .thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
     when(mockRepository.getInteractionDistribution(any, any))
-        .thenAnswer((_) async => []);
-    // ignore: argument_type_not_assignable
-    when(mockRepository.getCumulativeInteractions(any, any))
         .thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
     when(mockCategoryRepository.getAllCategories(any))
@@ -179,8 +200,9 @@ void main() {
           currentYearWeight: 7,
           previousYearWeight: 0,
         );
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => [entry1, entry2]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any))
+            .thenReturn([entry1, entry2]);
 
         await provider.initialize();
 
@@ -198,6 +220,32 @@ void main() {
         await provider.initialize();
 
         expect(provider.activityBreakdown, isEmpty);
+      });
+
+      test('initialize() called twice skips second fetch (idempotency guard)',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        await provider.initialize();
+        await provider.initialize(); // second call — should be no-op
+
+        // getAvailableYears called only once across both initialize() calls.
+        verify(mockRepository.getAvailableYears('user-1')).called(1);
+      });
+
+      test('initialize() re-fetches after resetCache()', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        await provider.initialize();
+        provider.resetCache();
+        await provider.initialize();
+
+        // After resetCache() the guard is cleared — fetches twice total.
+        verify(mockRepository.getAvailableYears('user-1')).called(2);
       });
     });
 
@@ -218,6 +266,35 @@ void main() {
         expect(notified, isTrue);
       });
 
+      test('selectYear() with same year is a no-op after initialize', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        await provider.initialize();
+
+        // reset call count after initialize
+        clearInteractions(mockRepository);
+
+        await provider.selectYear(2026); // same as _selectedYear
+
+        // ignore: argument_type_not_assignable
+        verifyNever(mockRepository.loadAllStatsData(any, any));
+      });
+
+      test('selectYear() with different year triggers fetch', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026, 2025]);
+
+        await provider.initialize();
+        clearInteractions(mockRepository);
+
+        await provider.selectYear(2025);
+
+        verify(mockRepository.loadAllStatsData(2025, 'user-1')).called(1);
+      });
+
       test('distributionEntries cleared immediately when selectYear is called',
           () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
@@ -229,8 +306,9 @@ void main() {
           currentYearWeight: 10,
           previousYearWeight: 0,
         );
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => [entry]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any))
+            .thenReturn([entry]);
 
         await provider.initialize();
         expect(provider.distributionEntries, hasLength(1));
@@ -247,23 +325,24 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026, 2023]);
+        const entry = ActivityBreakdownEntry(
+          categoryId: 'cat-a',
+          name: 'Running',
+          currentYearWeight: 5,
+          previousYearWeight: 0,
+        );
         // 2026 has breakdown data.
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => [
-                  const ActivityBreakdownEntry(
-                    categoryId: 'cat-a',
-                    name: 'Running',
-                    currentYearWeight: 5,
-                    previousYearWeight: 0,
-                  ),
-                ]);
-        // 2023 has no meetings — breakdown is empty.
-        when(mockRepository.getActivityWeightBreakdown(2023, 'user-1'))
-            .thenAnswer((_) async => []);
+        when(mockRepository.loadAllStatsData(2026, 'user-1'))
+            .thenAnswer((_) async => emptyBundle);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([entry]);
 
         await provider.initialize();
         expect(provider.activityBreakdown, hasLength(1));
 
+        // Override stub for selectYear(2023) call — breakdown returns empty.
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([]);
         await provider.selectYear(2023);
 
         expect(provider.activityBreakdown, isEmpty);
@@ -277,7 +356,6 @@ void main() {
             .thenAnswer((_) async => [2026]);
         await provider.initialize();
 
-        // Simulate a selected year.
         const entry1 = PersonActivityEntry(
           personId: 'p-1',
           name: 'Alice',
@@ -288,14 +366,31 @@ void main() {
           name: 'Bob',
           weightSum: 7,
         );
-        when(mockRepository.getPersonsForActivity('sport', 2026, 'user-1'))
-            .thenAnswer((_) async => [entry1, entry2]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computePersonsForActivity(any, 'sport'))
+            .thenReturn([entry1, entry2]);
 
         await provider.selectActivity('sport');
 
         expect(provider.whoPerActivity, hasLength(2));
         expect(provider.whoPerActivity.first.personId, equals('p-1'));
         expect(provider.selectedActivityId, equals('sport'));
+      });
+
+      test('selectActivity() uses stored bundle — no Firestore call', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        await provider.initialize();
+        clearInteractions(mockRepository);
+
+        await provider.selectActivity('sport');
+
+        // No async repository calls made — bundle reused.
+        // ignore: argument_type_not_assignable
+        verifyNever(mockRepository.loadAllStatsData(any, any));
+        // ignore: argument_type_not_assignable
+        verifyNever(mockRepository.getPersonsForActivity(any, any, any));
       });
     });
 
@@ -375,10 +470,18 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => makeEntries());
-        when(mockCategoryRepository.getAllCategories('user-1'))
-            .thenAnswer((_) async => makeCategories());
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any))
+            .thenReturn(makeEntries());
+        // Bundle carries categories so provider sets _allCategories.
+        when(mockRepository.loadAllStatsData(2026, 'user-1')).thenAnswer(
+          (_) async => StatsDataBundle(
+            currentYearMeetings: const [],
+            previousYearMeetings: const [],
+            categories: makeCategories(),
+            persons: const [],
+          ),
+        );
 
         await provider.initialize();
 
@@ -424,9 +527,6 @@ void main() {
             previousYearWeight: 0,
           ),
         );
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => entries);
-
         final categories = List.generate(
           12,
           (i) => ActivityCategory(
@@ -439,8 +539,16 @@ void main() {
             createdAt: DateTime(2024),
           ),
         );
-        when(mockCategoryRepository.getAllCategories('user-1'))
-            .thenAnswer((_) async => categories);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn(entries);
+        when(mockRepository.loadAllStatsData(2026, 'user-1')).thenAnswer(
+          (_) async => StatsDataBundle(
+            currentYearMeetings: const [],
+            previousYearMeetings: const [],
+            categories: categories,
+            persons: const [],
+          ),
+        );
 
         await provider.initialize();
 
@@ -524,8 +632,9 @@ void main() {
           currentYearWeight: 10,
           previousYearWeight: 5,
         );
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => [entry]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any))
+            .thenReturn([entry]);
 
         await provider.initialize();
 
@@ -568,6 +677,23 @@ void main() {
 
         verify(mockRepository.getCumulativeInteractions(2026, 'user-1'))
             .called(1);
+      });
+
+      test('loadDistribution() uses bundle — no Firestore call in yearly mode',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        await provider.initialize();
+        clearInteractions(mockRepository);
+
+        await provider.loadDistribution();
+
+        // Yearly mode uses stored bundle — no async repo calls.
+        // ignore: argument_type_not_assignable
+        verifyNever(mockRepository.getInteractionDistribution(any, any));
+        // ignore: argument_type_not_assignable
+        verifyNever(mockRepository.loadAllStatsData(any, any));
       });
     });
 
@@ -630,8 +756,9 @@ void main() {
             previousYearWeight: 0,
           ),
         );
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => entries);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any))
+            .thenReturn(entries);
 
         await provider.initialize();
 
@@ -672,8 +799,9 @@ void main() {
             previousYearWeight: 0,
           ),
         );
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => entries);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any))
+            .thenReturn(entries);
 
         await provider.initialize();
 
@@ -705,21 +833,21 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => [
-                  const ActivityBreakdownEntry(
-                    categoryId: 'cat-a',
-                    name: 'Running',
-                    currentYearWeight: 10,
-                    previousYearWeight: 0,
-                  ),
-                  const ActivityBreakdownEntry(
-                    categoryId: 'cat-b',
-                    name: 'Cycling',
-                    currentYearWeight: 5,
-                    previousYearWeight: 0,
-                  ),
-                ]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([
+          const ActivityBreakdownEntry(
+            categoryId: 'cat-a',
+            name: 'Running',
+            currentYearWeight: 10,
+            previousYearWeight: 0,
+          ),
+          const ActivityBreakdownEntry(
+            categoryId: 'cat-b',
+            name: 'Cycling',
+            currentYearWeight: 5,
+            previousYearWeight: 0,
+          ),
+        ]);
 
         await provider.initialize();
 
@@ -748,15 +876,15 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
-        when(mockRepository.getActivityWeightBreakdown(2026, 'user-1'))
-            .thenAnswer((_) async => [
-                  const ActivityBreakdownEntry(
-                    categoryId: 'cat-a',
-                    name: 'Running',
-                    currentYearWeight: 10,
-                    previousYearWeight: 0,
-                  ),
-                ]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([
+          const ActivityBreakdownEntry(
+            categoryId: 'cat-a',
+            name: 'Running',
+            currentYearWeight: 10,
+            previousYearWeight: 0,
+          ),
+        ]);
 
         await provider.initialize();
         await provider.setAllActivitiesVisibility(false);
@@ -784,21 +912,21 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => [
-                  const InteractionDistributionEntry(
-                    personId: 'p-1',
-                    name: 'Alice',
-                    currentYearWeight: 10,
-                    previousYearWeight: 0,
-                  ),
-                  const InteractionDistributionEntry(
-                    personId: 'p-2',
-                    name: 'Bob',
-                    currentYearWeight: 5,
-                    previousYearWeight: 0,
-                  ),
-                ]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any)).thenReturn([
+          const InteractionDistributionEntry(
+            personId: 'p-1',
+            name: 'Alice',
+            currentYearWeight: 10,
+            previousYearWeight: 0,
+          ),
+          const InteractionDistributionEntry(
+            personId: 'p-2',
+            name: 'Bob',
+            currentYearWeight: 5,
+            previousYearWeight: 0,
+          ),
+        ]);
 
         await provider.initialize();
 
@@ -827,15 +955,15 @@ void main() {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
-        when(mockRepository.getInteractionDistribution(2026, 'user-1'))
-            .thenAnswer((_) async => [
-                  const InteractionDistributionEntry(
-                    personId: 'p-1',
-                    name: 'Alice',
-                    currentYearWeight: 10,
-                    previousYearWeight: 0,
-                  ),
-                ]);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeInteractionDistribution(any)).thenReturn([
+          const InteractionDistributionEntry(
+            personId: 'p-1',
+            name: 'Alice',
+            currentYearWeight: 10,
+            previousYearWeight: 0,
+          ),
+        ]);
 
         await provider.initialize();
         await provider.setAllPersonsVisibility(false);
@@ -937,6 +1065,21 @@ void main() {
             contains(StatCardType.interactionDistribution),
           );
         });
+      });
+    });
+
+    group('resetCache()', () {
+      test('clears initialized state so next initialize() re-fetches',
+          () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+
+        await provider.initialize();
+        provider.resetCache();
+        await provider.initialize();
+
+        verify(mockRepository.getAvailableYears('user-1')).called(2);
       });
     });
   });
