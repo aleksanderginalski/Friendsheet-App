@@ -46,12 +46,20 @@ class _MainScreenState extends State<MainScreen> {
       repository: ActivityCategoryRepository(),
     );
     final activityCategoryRepository = ActivityCategoryRepository();
-    final personRepository = PersonRepository();
+    final meetingRepository = MeetingRepository();
+    final personRepository = PersonRepository(
+      meetingRepository: meetingRepository,
+    );
+    final statisticsRepository = StatisticsRepository(
+      categoryRepository: activityCategoryRepository,
+      personRepository: personRepository,
+    );
+    // Wire invalidator so write operations clear statistics caches.
+    meetingRepository.cacheInvalidator = statisticsRepository;
+    personRepository.cacheInvalidator = statisticsRepository;
+    activityCategoryRepository.cacheInvalidator = statisticsRepository;
     _statisticsProvider = StatisticsProvider(
-      repository: StatisticsRepository(
-        categoryRepository: activityCategoryRepository,
-        personRepository: personRepository,
-      ),
+      repository: statisticsRepository,
       authService: AuthService(),
       categoryRepository: activityCategoryRepository,
       personRepository: personRepository,

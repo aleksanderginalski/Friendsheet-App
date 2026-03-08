@@ -609,7 +609,75 @@ graph TB
 
 ---
 
-**End of Document - Architecture Documentation**  
+## Statistics Caching Strategy (US-072)
 
-**Last Updated:** March 05, 2026 (M6 redesigned as Meeting Import Hub — FEATURE-013 Calendar Import + FEATURE-014 Photos Import; ImportCandidate architecture added)
+### Problem
+
+Each `StatisticsProvider.initialize()` call previously triggered multiple redundant Firestore reads:
+the same year's meetings, categories, and persons were fetched independently by each of
+`getActivityWeightBreakdown`, `getPersonsForActivity`, and `getInteractionDistribution`.
+
+### Three-Phase Solution
+
+**Phase 1 — Provider-level idempotency guard**
+
+`StatisticsProvider` tracks `_isInitialized` and `_lastLoadedYear`. A second `initialize()` call
+with the same year is a no-op. `selectYear()` with the same year is also a no-op. `resetCache()`
+clears the guard for logout/user-switch scenarios.
+
+**Phase 2 — Repository-level in-memory cache**
+
+`StatisticsRepository` caches:
+- `_meetingsCache: Map<String, List<Meeting>>` keyed by `'${userId}_${year}'`
+- `_categoriesCache: List<ActivityCategory>?` (single user)
+- `_personsCache: List<Person>?` (single user)
+
+Cache invalidation is wired via the `CacheInvalidator` interface (implemented by
+`StatisticsRepository`, consumed optionally by `MeetingRepository`, `PersonRepository`,
+and `ActivityCategoryRepository`). Write operations call `cacheInvalidator?.invalidate*Cache()`
+so stale data is never served after a mutation.
+
+**Phase 3 — Single-query refactor via StatsDataBundle**
+
+`StatsDataBundle` (plain Dart class, no Freezed) bundles all data for one year's statistics:
+
+```dart
+class StatsDataBundle {
+  final List<Meeting> currentYearMeetings;
+  final List<Meeting> previousYearMeetings;
+  final List<ActivityCategory> categories;
+  final List<Person> persons;
+}
+```
+
+`StatisticsRepository.loadAllStatsData(year, userId)` fetches all four in parallel via
+`Future.wait`, using caches where available. The result is stored on `StatisticsProvider`
+as `_currentBundle` and reused by:
+
+- `computeActivityBreakdown(bundle)` — synchronous, no Firestore
+- `computePersonsForActivity(bundle, categoryId)` — synchronous, no Firestore
+- `computeInteractionDistribution(bundle)` — synchronous, no Firestore
+
+`selectActivity()` and yearly-mode `loadDistribution()` use the stored bundle —
+zero additional Firestore reads. Only cumulative mode (`getCumulativeInteractions`)
+and `getAvailableYears` still require their own queries.
+
+Old async methods are kept as thin backward-compatible wrappers that call
+`loadAllStatsData` + the corresponding `compute*` method.
+
+### Result
+
+| Operation | Before (reads) | After (reads) |
+|---|---|---|
+| First initialize() | ~10+ Firestore queries | 1 (years) + 4 (bundle) |
+| selectYear() (new year) | ~8 Firestore queries | 2 (current+prev year, cached) |
+| selectActivity() | 2 Firestore queries | 0 |
+| loadDistribution() (yearly) | 3 Firestore queries | 0 |
+| Second initialize() (same tab) | ~10+ | 0 (provider guard) |
+
+---
+
+**End of Document - Architecture Documentation**
+
+**Last Updated:** March 08, 2026 (US-072: Statistics Firestore caching — three-phase optimization; StatsDataBundle pattern added)
 
