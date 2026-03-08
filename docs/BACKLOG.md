@@ -2429,24 +2429,24 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 2
 **Priority:** P3
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 2026)
 **Labels:** `easter-egg`, `ux`
 **Mode:** ⚙️ Task
 **Dependencies:** None
 
 **Acceptance Criteria:**
-- [ ] Tapping "Friendsheet" label in Home tab header 8 times within 4 seconds triggers the easter egg
-- [ ] Timer resets if 4 seconds pass between taps without reaching 8
-- [ ] Pop-up displays: provided `easter_egg_icon` asset + text *"Special thanks to Agata Wippich who came up with the name for this app 💚"*
-- [ ] Tapping anywhere on the pop-up dismisses it
-- [ ] Easter egg can be triggered again after dismissal
-- [ ] No visual hint that the easter egg exists
+- [x] Tapping "Friendsheet" label in Home tab header 8 times within 4 seconds triggers the easter egg
+- [x] Timer resets if 4 seconds pass between taps without reaching 8
+- [x] Pop-up displays: provided `easter_egg_icon` asset + text *"Special thanks to Agatka who came up with the name for this app 💚"*
+- [x] Tapping anywhere on the pop-up dismisses it
+- [x] Easter egg can be triggered again after dismissal
+- [x] No visual hint that the easter egg exists
 
 **Tasks:**
-- [ ] **TASK-064.1:** Add `easter_egg_icon` asset to `assets/images/`, register in `pubspec.yaml`
-- [ ] **TASK-064.2:** Add tap counter + timer logic to `HomeScreen` (8 taps / 4s window)
-- [ ] **TASK-064.3:** Build `EasterEggDialog` — `easter_egg_icon` + thank-you message, dismiss on tap
-- [ ] **TASK-064.4:** Write widget test for tap counter logic
+- [x] **TASK-064.1:** Add `easter_egg_icon` asset to `assets/images/`, register in `pubspec.yaml`
+- [x] **TASK-064.2:** Add tap counter + timer logic to `HomeScreen` (8 taps / 4s window)
+- [x] **TASK-064.3:** Build `EasterEggDialog` — `easter_egg_icon` + thank-you message, dismiss on tap
+- [x] **TASK-064.4:** Write widget test for tap counter logic
 
 # 📦 EPIC-004: Friendsheet M4 - Google Play Release
 
