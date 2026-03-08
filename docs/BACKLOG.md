@@ -2593,20 +2593,24 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 **Depends on:** None (standalone UI component)
 
 **Acceptance Criteria:**
-- [ ] CTA card visible on Home Screen when user has < 50 total meetings in Firestore
-- [ ] Card contains: icon, headline ("Import your past meetings"), subtext, primary button "Import from Calendar"
-- [ ] CTA dismissed permanently when user taps "Import from Calendar" OR taps explicit dismiss (X)
-- [ ] Dismissed state persisted in SharedPreferences (key: `onboarding_calendar_cta_dismissed`)
-- [ ] CTA not shown if user already has ≥ 50 meetings regardless of dismissed state
-- [ ] Tapping "Import from Calendar" navigates to US-057 (Calendar Permission screen)
-- [ ] CTA uses app theme colors — consistent with design system
+- [x] CTA card visible on Home Screen when user has < 50 total meetings in Firestore
+- [x] Card contains: icon, headline ("Import your past meetings"), subtext, primary button "Import from Calendar"
+- [x] CTA dismissed permanently when user taps "Import from Calendar" OR taps explicit dismiss (X)
+- [x] Dismissed state persisted in SharedPreferences (key: `onboarding_calendar_cta_dismissed`)
+- [x] CTA not shown if user already has ≥ 50 meetings regardless of dismissed state
+- [x] Tapping "Import from Calendar" navigates to US-057 (Calendar Permission screen)
+- [x] CTA uses app theme colors — consistent with design system
 
 **Tasks:**
-- [ ] **TASK-065.1:** Create `CalendarOnboardingCta` widget — card with icon, headline, subtext, button, dismiss X
-- [ ] **TASK-065.2:** Add meeting count check to `HomeScreenProvider` (or `StatisticsProvider`) — exposes `bool showCalendarCta`
-- [ ] **TASK-065.3:** Persist dismissed state via SharedPreferences key `onboarding_calendar_cta_dismissed`
-- [ ] **TASK-065.4:** Integrate `CalendarOnboardingCta` into `HomeScreen` — above statistics section
-- [ ] **TASK-065.5:** Write widget tests — CTA shown < 50, hidden ≥ 50, hidden after dismiss
+- [x] **TASK-065.1:** Create `CalendarOnboardingCta` widget — card with icon, headline, subtext, button, dismiss X
+- [x] **TASK-065.2:** Add meeting count check to `HomeScreenProvider` (or `StatisticsProvider`) — exposes `bool showCalendarCta`
+- [x] **TASK-065.3:** Persist dismissed state via SharedPreferences key `onboarding_calendar_cta_dismissed`
+- [x] **TASK-065.4:** Integrate `CalendarOnboardingCta` into `HomeScreen` — above statistics section
+- [x] **TASK-065.5:** Write widget tests — CTA shown < 50, hidden ≥ 50, hidden after dismiss
+- [x] **TASK-065.6:** Side Bar: "Import from Calendar" ListTile
+- [x] **TASK-065.7:** Refactor HomeScreen
+- [x] **TASK-065.8:** Register assset in pubspec.yaml
+
 
 ---
 
@@ -2628,11 +2632,6 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] On grant: fetch list of user's calendars, navigate to calendar selection in Settings
 - [ ] On deny: informative message shown, user can retry
 - [ ] Settings section added to existing `SettingsScreen`:
-  - [ ] Calendar selection: list of user's calendars with checkboxes (default: primary calendar selected)
-  - [ ] ALL-DAY events toggle: include/exclude (default: OFF — excluded)
-  - [ ] "Revoke Calendar Access" option
-- [ ] Token stored via `flutter_secure_storage`
-- [ ] If token expires: graceful re-auth prompt
 
 **Tasks:**
 - [ ] **TASK-066.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
