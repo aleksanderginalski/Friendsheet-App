@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models/activity_category.dart';
+import '../../data/models/stats_data_bundle.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
@@ -20,6 +21,8 @@ const _kHiddenCardsKey = 'stats_carousel_hidden_cards';
 class StatisticsProvider extends ChangeNotifier {
   final StatisticsRepository _repository;
   final AuthService _authService;
+  // Injected for DI consistency; categories are loaded via _repository bundle.
+  // ignore: unused_field
   final ActivityCategoryRepository _categoryRepository;
   // Injected for DI consistency; person lookups are done via _repository.
   // ignore: unused_field
@@ -29,6 +32,17 @@ class StatisticsProvider extends ChangeNotifier {
   int? _selectedYear;
   bool _isLoading = false;
   String? _errorMessage;
+
+  /// True after the first successful initialize() completes.
+  bool _isInitialized = false;
+
+  /// Year that was selected when _isInitialized was last set to true.
+  int? _lastLoadedYear;
+
+  /// Cached bundle for the current year — reused by selectActivity() and
+  /// loadDistribution() to avoid additional Firestore reads.
+  StatsDataBundle? _currentBundle;
+
   List<ActivityBreakdownEntry> _activityBreakdown = [];
   List<ActivityCategory> _allCategories = [];
   List<PersonActivityEntry> _whoPerActivity = [];
@@ -82,11 +96,13 @@ class StatisticsProvider extends ChangeNotifier {
       .where((e) => _hiddenPersonsActivity.contains(e.personId))
       .length;
 
-  /// Fetches available years, categories, activity breakdown, and
+  /// Fetches available years, bundle data, activity breakdown, and
   /// who-per-activity for the auto-selected (or previously chosen) activity.
-  /// No-op if a fetch is already in progress.
+  /// No-op if a fetch is already in progress, or if data for the same year
+  /// is already loaded (_isInitialized guard).
   Future<void> initialize() async {
     if (_isLoading) return;
+    if (_isInitialized && _lastLoadedYear == _selectedYear) return;
 
     _isLoading = true;
     _errorMessage = null;
@@ -104,7 +120,6 @@ class StatisticsProvider extends ChangeNotifier {
       }
 
       _availableYears = await _repository.getAvailableYears(userId);
-      _allCategories = await _categoryRepository.getAllCategories(userId);
 
       final currentYear = DateTime.now().year;
       if (_availableYears.contains(currentYear)) {
@@ -117,19 +132,20 @@ class StatisticsProvider extends ChangeNotifier {
       }
 
       if (_selectedYear != null) {
-        _activityBreakdown = await _repository.getActivityWeightBreakdown(
-          _selectedYear!,
-          userId,
-        );
+        // Single parallel fetch — bundle contains meetings, categories, persons.
+        final bundle =
+            await _repository.loadAllStatsData(_selectedYear!, userId);
+        _currentBundle = bundle;
+        _allCategories = bundle.categories;
+        _activityBreakdown = _repository.computeActivityBreakdown(bundle);
       }
 
       // Auto-select top activity only on first load (when nothing is selected).
-      if (_activityBreakdown.isNotEmpty) {
+      if (_activityBreakdown.isNotEmpty && _currentBundle != null) {
         _selectedActivityId ??= _activityBreakdown.first.categoryId;
-        _whoPerActivity = await _repository.getPersonsForActivity(
+        _whoPerActivity = _repository.computePersonsForActivity(
+          _currentBundle!,
           _selectedActivityId!,
-          _selectedYear!,
-          userId,
         );
       }
 
@@ -140,6 +156,8 @@ class StatisticsProvider extends ChangeNotifier {
       _errorMessage = 'Failed to load statistics';
     } finally {
       _isLoading = false;
+      _isInitialized = true;
+      _lastLoadedYear = _selectedYear;
       notifyListeners();
     }
 
@@ -152,39 +170,43 @@ class StatisticsProvider extends ChangeNotifier {
 
   /// Updates the selected year, resets breakdowns immediately, then
   /// reloads all stats for the new year (keeping current activity selection).
+  /// No-op when [year] is already selected and data is initialized.
   Future<void> selectYear(int year) async {
+    if (year == _selectedYear && _isInitialized) return;
+
     _selectedYear = year;
     _activityBreakdown = [];
     _distributionEntries = [];
+    _currentBundle = null;
     notifyListeners();
 
     final userId = _authService.currentUserId;
     if (userId == null) return;
 
-    // Load breakdown and who-per-activity — failures do not block distribution.
+    // Load bundle and compute breakdowns — failures do not block distribution.
     try {
-      _activityBreakdown = await _repository.getActivityWeightBreakdown(
-        year,
-        userId,
-      );
+      final bundle = await _repository.loadAllStatsData(year, userId);
+      _currentBundle = bundle;
+      _allCategories = bundle.categories;
+      _activityBreakdown = _repository.computeActivityBreakdown(bundle);
 
       if (_selectedActivityId != null) {
-        _whoPerActivity = await _repository.getPersonsForActivity(
+        _whoPerActivity = _repository.computePersonsForActivity(
+          bundle,
           _selectedActivityId!,
-          year,
-          userId,
         );
       } else if (_activityBreakdown.isNotEmpty) {
         _selectedActivityId = _activityBreakdown.first.categoryId;
-        _whoPerActivity = await _repository.getPersonsForActivity(
+        _whoPerActivity = _repository.computePersonsForActivity(
+          bundle,
           _selectedActivityId!,
-          year,
-          userId,
         );
       }
     } catch (e) {
       _errorMessage = 'Failed to load statistics';
     } finally {
+      _isInitialized = true;
+      _lastLoadedYear = year;
       notifyListeners();
     }
 
@@ -192,26 +214,28 @@ class StatisticsProvider extends ChangeNotifier {
     await loadDistribution();
   }
 
-  /// Sets the selected activity and loads who-per-activity for it.
+  /// Sets the selected activity and computes who-per-activity from the stored
+  /// bundle. No Firestore call required — uses _currentBundle.
   Future<void> selectActivity(String categoryId) async {
     _selectedActivityId = categoryId;
     _whoPerActivity = [];
     notifyListeners();
 
-    final userId = _authService.currentUserId;
-    if (userId == null || _selectedYear == null) return;
+    if (_currentBundle == null) return;
 
-    try {
-      _whoPerActivity = await _repository.getPersonsForActivity(
-        categoryId,
-        _selectedYear!,
-        userId,
-      );
-    } catch (e) {
-      _errorMessage = 'Failed to load statistics';
-    } finally {
-      notifyListeners();
-    }
+    _whoPerActivity = _repository.computePersonsForActivity(
+      _currentBundle!,
+      categoryId,
+    );
+    notifyListeners();
+  }
+
+  /// Clears the provider-level initialization state so the next initialize()
+  /// re-fetches all data. Call this on logout or user switch.
+  void resetCache() {
+    _isInitialized = false;
+    _lastLoadedYear = null;
+    _currentBundle = null;
   }
 
   /// Toggles [personId] in the hidden-persons set and persists to
@@ -342,6 +366,9 @@ class StatisticsProvider extends ChangeNotifier {
   /// Loads distribution data for the selected year.
   /// Uses yearly or cumulative mode based on [_isCumulativeMode].
   /// No-op when no user is signed in or no year is selected.
+  ///
+  /// Yearly mode uses the stored bundle — no additional Firestore read.
+  /// Cumulative mode queries all historical meetings via getCumulativeInteractions().
   Future<void> loadDistribution() async {
     final userId = _authService.currentUserId;
     if (userId == null || _selectedYear == null) return;
@@ -351,15 +378,15 @@ class StatisticsProvider extends ChangeNotifier {
 
     try {
       if (_isCumulativeMode) {
+        // Cumulative spans all years — requires its own Firestore query.
         _distributionEntries = await _repository.getCumulativeInteractions(
           _selectedYear!,
           userId,
         );
-      } else {
-        _distributionEntries = await _repository.getInteractionDistribution(
-          _selectedYear!,
-          userId,
-        );
+      } else if (_currentBundle != null) {
+        // Use the already-loaded bundle — no additional Firestore read.
+        _distributionEntries =
+            _repository.computeInteractionDistribution(_currentBundle!);
       }
     } catch (e) {
       _errorMessage = 'Failed to load distribution';

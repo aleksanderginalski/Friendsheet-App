@@ -1,12 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/meeting.dart';
+import 'cache_invalidator.dart';
 
 /// Handles all Firestore operations for the meetings subcollection.
 class MeetingRepository {
   final FirebaseFirestore _firestore;
 
-  MeetingRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Optional invalidator — when set, cleared after any write so that
+  /// statistics caches reflect the latest meeting data.
+  CacheInvalidator? cacheInvalidator;
+
+  MeetingRepository({
+    FirebaseFirestore? firestore,
+    this.cacheInvalidator,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference _meetingsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('meetings');
@@ -16,6 +23,7 @@ class MeetingRepository {
   Future<String> saveMeeting(Meeting meeting) async {
     final docRef =
         await _meetingsRef(meeting.userId).add(meeting.toFirestore());
+    cacheInvalidator?.invalidateMeetingsCache();
     return docRef.id;
   }
 
@@ -36,11 +44,13 @@ class MeetingRepository {
     data['updatedAt'] = FieldValue.serverTimestamp();
 
     await _meetingsRef(meeting.userId).doc(meeting.id).update(data);
+    cacheInvalidator?.invalidateMeetingsCache();
   }
 
   /// Deletes a meeting document from Firestore by its ID.
   Future<void> deleteMeeting(String userId, String meetingId) async {
     await _meetingsRef(userId).doc(meetingId).delete();
+    cacheInvalidator?.invalidateMeetingsCache();
   }
 
   /// Returns the number of meetings for a given user that include the given person.
@@ -65,5 +75,6 @@ class MeetingRepository {
       });
     }
     await batch.commit();
+    cacheInvalidator?.invalidateMeetingsCache();
   }
 }

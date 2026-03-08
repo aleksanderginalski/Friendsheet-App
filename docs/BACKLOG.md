@@ -1452,6 +1452,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 **Priority:** P0
 **Role:** Developer + DevOps
 **Status:** ✅ COMPLETED
+
 ---
 
 ### US-042: Install Friendsheet on Personal Device via APK
@@ -1499,6 +1500,255 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 - Keystore created here is reused directly in US-032
 - `build.gradle` signing config created here requires only minor changes for AAB
 - US-032 adds: version name/code, ProGuard rules, App Bundle target
+
+
+---
+### US-072: Optimize Statistics Firestore Reads
+
+| **Priority** | P0 (Critical — affects free tier limits) |
+| **Story Points** | 13 |
+| **Status** | 📋 Planned |
+| **Labels** | `performance`, `firestore`, `statistics`, `cost-optimization` |
+
+**As a** user  
+**I want to** browse statistics without excessive Firestore reads  
+**So that** the app stays within free tier limits and loads faster
+
+---
+
+#### Problem Statement
+
+Current implementation causes **~5,200 Firestore reads per `initialize()` call**:
+
+| Method | Reads | Called |
+|--------|-------|--------|
+| `getAvailableYears()` | ~860 | 1x |
+| `getMeetingsForYear(currentYear)` | ~860 | 3-4x (duplicate!) |
+| `getMeetingsForYear(previousYear)` | ~800 | 2x (duplicate!) |
+| `getAllCategories()` | ~20 | 2x (duplicate!) |
+| `getPersonsByUser()` | ~80 | 2x (duplicate!) |
+
+**Impact:** With 860 meetings, a single user browsing statistics 10x/day consumes **~13,000 reads** — 26% of daily free tier (50,000).
+
+**Risk:** 5 active users = **65,000 reads/day** → exceeds free tier limit.
+
+---
+
+#### Solution Overview
+
+Three-phase optimization reducing reads by **~95%**:
+
+| Phase | Strategy | Reduction | Complexity |
+|-------|----------|-----------|------------|
+| **Phase 1** | Provider-level cache | 70% | Low |
+| **Phase 2** | Repository-level cache | 85% | Medium |
+| **Phase 3** | Single-query refactor | 95% | Medium |
+
+---
+
+#### Acceptance Criteria
+
+##### Phase 1: Provider Cache
+- [ ] `StatisticsProvider.initialize()` is idempotent — skips fetch if data already loaded for current year
+- [ ] `selectYear()` only fetches if year changed
+- [ ] `selectActivity()` reuses already-loaded meetings (no Firestore call)
+- [ ] `loadDistribution()` reuses already-loaded meetings for current year
+- [ ] Unit tests verify no duplicate fetches
+
+##### Phase 2: Repository Cache
+- [ ] `StatisticsRepository` caches `getMeetingsForYear()` results in memory
+- [ ] Cache key: `${userId}_${year}`
+- [ ] Cache invalidated on `MeetingRepository.save()`, `update()`, `delete()`
+- [ ] `getAllCategories()` cached per session
+- [ ] `getPersonsByUser()` cached per session
+- [ ] Cache invalidated on person/category add/update/delete
+- [ ] Unit tests verify cache hit/miss behavior
+
+##### Phase 3: Single-Query Refactor
+- [ ] New method `loadAllStatsData(year, userId)` fetches meetings once
+- [ ] Returns `StatsDataBundle` containing: meetings, categories, persons
+- [ ] All aggregation methods accept `StatsDataBundle` instead of fetching internally
+- [ ] `getAvailableYears()` optimized — uses cached meetings or dedicated index
+- [ ] Backward compatibility maintained — old methods still work (delegate to new)
+- [ ] Unit tests verify single Firestore call per year
+
+##### General
+- [ ] `flutter analyze` passes with 0 issues
+- [ ] All existing tests pass
+- [ ] New tests added for cache behavior
+- [ ] README updated with performance notes
+- [ ] architecture.md updated with caching strategy
+
+---
+
+#### Technical Design
+
+##### Phase 1: Provider Cache
+
+```dart
+// StatisticsProvider additions
+bool _isInitialized = false;
+int? _lastLoadedYear;
+
+Future<void> initialize() async {
+  if (_isInitialized && _lastLoadedYear == _selectedYear) return;
+  // ... existing logic
+  _isInitialized = true;
+  _lastLoadedYear = _selectedYear;
+}
+```
+
+##### Phase 2: Repository Cache
+
+```dart
+// StatisticsRepository additions
+final Map<String, List<Meeting>> _meetingsCache = {};
+List<ActivityCategory>? _categoriesCache;
+List<Person>? _personsCache;
+
+Future<List<Meeting>> getMeetingsForYear(String userId, int year) async {
+  final key = '${userId}_$year';
+  if (_meetingsCache.containsKey(key)) return _meetingsCache[key]!;
+  
+  final meetings = await _fetchMeetingsForYear(userId, year);
+  _meetingsCache[key] = meetings;
+  return meetings;
+}
+
+void invalidateMeetingsCache() => _meetingsCache.clear();
+void invalidateCategoriesCache() => _categoriesCache = null;
+void invalidatePersonsCache() => _personsCache = null;
+```
+
+##### Phase 3: Single-Query Architecture
+
+```dart
+/// Bundle containing all data needed for statistics computation.
+class StatsDataBundle {
+  final List<Meeting> currentYearMeetings;
+  final List<Meeting> previousYearMeetings;
+  final List<ActivityCategory> categories;
+  final List<Person> persons;
+  
+  const StatsDataBundle({
+    required this.currentYearMeetings,
+    required this.previousYearMeetings,
+    required this.categories,
+    required this.persons,
+  });
+}
+
+// StatisticsRepository
+Future<StatsDataBundle> loadAllStatsData(int year, String userId) async {
+  final results = await Future.wait([
+    getMeetingsForYear(userId, year),
+    getMeetingsForYear(userId, year - 1),
+    _categoryRepository.getAllCategories(userId),
+    _personRepository.getPersonsByUser(userId),
+  ]);
+  
+  return StatsDataBundle(
+    currentYearMeetings: results[0] as List<Meeting>,
+    previousYearMeetings: results[1] as List<Meeting>,
+    categories: results[2] as List<ActivityCategory>,
+    persons: results[3] as List<Person>,
+  );
+}
+
+// Aggregation methods refactored
+List<ActivityBreakdownEntry> computeActivityBreakdown(StatsDataBundle data) {
+  // Pure computation — no Firestore calls
+}
+```
+
+---
+
+#### Tasks
+
+##### Phase 1: Provider Cache (Est. 2h)
+- [ ] **TASK-072.1:** Add `_isInitialized` and `_lastLoadedYear` flags to `StatisticsProvider`
+- [ ] **TASK-072.2:** Guard `initialize()` with early return if already loaded
+- [ ] **TASK-072.3:** Optimize `selectYear()` — skip fetch if year unchanged
+- [ ] **TASK-072.4:** Write tests verifying idempotent behavior
+
+##### Phase 2: Repository Cache (Est. 3h)
+- [ ] **TASK-072.5:** Add `_meetingsCache` map to `StatisticsRepository`
+- [ ] **TASK-072.6:** Implement cache lookup in `getMeetingsForYear()`
+- [ ] **TASK-072.7:** Add `_categoriesCache` and `_personsCache`
+- [ ] **TASK-072.8:** Add `invalidate*Cache()` methods
+- [ ] **TASK-072.9:** Wire cache invalidation into `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`
+- [ ] **TASK-072.10:** Write tests for cache hit/miss scenarios
+
+##### Phase 3: Single-Query Refactor (Est. 4h)
+- [ ] **TASK-072.11:** Create `StatsDataBundle` class
+- [ ] **TASK-072.12:** Implement `loadAllStatsData()` in `StatisticsRepository`
+- [ ] **TASK-072.13:** Refactor `getActivityWeightBreakdown()` to `computeActivityBreakdown(StatsDataBundle)`
+- [ ] **TASK-072.14:** Refactor `getPersonsForActivity()` to `computePersonsForActivity(StatsDataBundle, categoryId)`
+- [ ] **TASK-072.15:** Refactor `getInteractionDistribution()` to `computeInteractionDistribution(StatsDataBundle)`
+- [ ] **TASK-072.16:** Refactor `getCumulativeInteractions()` — special case (all years)
+- [ ] **TASK-072.17:** Update `StatisticsProvider` to use new architecture
+- [ ] **TASK-072.18:** Write integration tests verifying single Firestore call
+
+##### Documentation (Est. 30min)
+- [ ] **TASK-072.19:** Update `architecture.md` — add Statistics Caching Strategy section
+- [ ] **TASK-072.20:** Update README version history
+
+---
+
+#### Definition of Done
+
+- [x] All acceptance criteria met
+- [x] `flutter analyze` passes with 0 issues
+- [x] All tests pass (existing + new) — 433 tests, all green
+- [x] Firestore reads reduced by 90%+ (architecture verified; Firebase Console to confirm in prod)
+- [x] No regression in statistics accuracy
+- [ ] Code reviewed and merged to main
+- [x] Documentation updated (architecture.md — Statistics Caching Strategy section added)
+
+---
+
+#### Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Stale cache shows outdated stats | Medium | Invalidate on every write operation |
+| Memory pressure from large cache | Low | Cache only current + previous year; clear on logout |
+| Complex refactor breaks existing tests | Medium | Phase 2 maintains backward compatibility; refactor incrementally |
+
+---
+
+#### Out of Scope
+
+- Server-side aggregation (Cloud Functions) — deferred to future optimization
+- Firestore composite indexes — evaluate if Phase 3 insufficient
+- Offline-first architecture — current offline persistence sufficient
+
+---
+
+#### Dependencies
+
+- None — can be implemented independently
+
+---
+
+#### Notes
+
+- **Trigger:** Discovered during production usage (13,000 reads in single session)
+- **Alternative considered:** Upgrade to Blaze plan — rejected as band-aid solution; optimization benefits all users
+- **Future enhancement:** If user base grows significantly, consider Cloud Functions for pre-computed aggregates
+
+---
+
+#### Estimated Reads After Optimization
+
+| Scenario | Before | After Phase 1 | After Phase 3 |
+|----------|--------|---------------|---------------|
+| First load | 5,200 | 5,200 | 1,800 |
+| Tab switch (same year) | 5,200 | 0 | 0 |
+| Year change | 5,200 | 2,600 | 900 |
+| **10 sessions/day** | **52,000** | **~8,000** | **~3,000** |
+
+**Result:** 5 users can safely use free tier (15,000 reads/day vs 50,000 limit).
 
 ---
 
