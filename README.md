@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (433)
+✅ All tests passing (447)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -221,6 +221,23 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+
+### v3.20.0 - US-066: Google Calendar Permission, Connection & Settings (March 08, 2026)
+- ✅ GoogleCalendarService — incremental OAuth (calendar.readonly scope) via google_sign_in
+- ✅ flutter_secure_storage for OAuth token persistence
+- ✅ CalendarSettingsProvider — calendar selection, ALL-DAY toggle, revoke access
+- ✅ CalendarPermissionScreen — full grant/deny flow with retry on denial
+- ✅ SettingsScreen extended — Calendar section (always visible; connect/disconnect/checkboxes/toggle)
+- ✅ Google Cloud Console configured — calendar.readonly scope registered
+- ✅ Total test count: 440 → 447 tests (+7)
+
+### v3.19.0 - US-065: Home Screen Onboarding CTA (March 08, 2026)
+- ✅ HomeProvider — reactive meeting stream + SharedPreferences dismiss state
+- ✅ OnboardingCalendarCtaCard — centered card with cta_stats.png illustration
+- ✅ HomeScreen refactored — shows CTA (<50 meetings) or StatisticsSection (≥50 or dismissed)
+- ✅ CalendarPermissionScreen stub added
+- ✅ MainScreen Drawer — "Import from Calendar" entry point
+- ✅ Total test count: 433 → 440 tests (+7)
 
 ### v3.18.0 - US-072 Optimize Statistics Firestore Reads (March 08, 2026)
 - ✅ StatisticsProvider idempotency guard — initialize() skips fetch if data already loaded
