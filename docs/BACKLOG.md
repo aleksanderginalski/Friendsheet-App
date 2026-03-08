@@ -2588,7 +2588,7 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 **Story Points:** 3
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 2026)
 **Labels:** `flutter`, `onboarding`, `ux`
 **Depends on:** None (standalone UI component)
 
@@ -2622,25 +2622,25 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 **Story Points:** 5
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 2026)
 **Labels:** `flutter`, `oauth`, `settings`
 **Depends on:** US-056
 
 **Acceptance Criteria:**
-- [ ] First-time: explanation screen/bottom sheet — what access is requested and why
-- [ ] OAuth consent shown using `google_sign_in` with scope `calendar.readonly`
-- [ ] On grant: fetch list of user's calendars, navigate to calendar selection in Settings
-- [ ] On deny: informative message shown, user can retry
-- [ ] Settings section added to existing `SettingsScreen`:
+- [x] First-time: explanation screen/bottom sheet — what access is requested and why
+- [x] OAuth consent shown using `google_sign_in` with scope `calendar.readonly`
+- [x] On grant: fetch list of user's calendars, navigate to calendar selection in Settings
+- [x] On deny: informative message shown, user can retry
+- [x] Settings section added to existing `SettingsScreen`:
 
 **Tasks:**
-- [ ] **TASK-066.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
-- [ ] **TASK-066.2:** Add `flutter_secure_storage` to `pubspec.yaml` (check .gitignore first)
-- [ ] **TASK-066.3:** Create `GoogleCalendarService` — auth flow, token storage, calendar list fetch
-- [ ] **TASK-066.4:** Build `CalendarPermissionScreen` — explanation + grant/deny flow
-- [ ] **TASK-066.5:** Add Calendar Settings section to `SettingsScreen` — calendar checkboxes + ALL-DAY toggle
-- [ ] **TASK-066.6:** Persist calendar selection and ALL-DAY preference in SharedPreferences
-- [ ] **TASK-066.7:** Write tests for `GoogleCalendarService` auth flow and settings persistence
+- [x] **TASK-066.1:** Add `calendar.readonly` scope to `google_sign_in` configuration
+- [x] **TASK-066.2:** Add `flutter_secure_storage` to `pubspec.yaml` (check .gitignore first)
+- [x] **TASK-066.3:** Create `GoogleCalendarService` — auth flow, token storage, calendar list fetch
+- [x] **TASK-066.4:** Build `CalendarPermissionScreen` — explanation + grant/deny flow
+- [x] **TASK-066.5:** Add Calendar Settings section to `SettingsScreen` — calendar checkboxes + ALL-DAY toggle
+- [x] **TASK-066.6:** Persist calendar selection and ALL-DAY preference in SharedPreferences
+- [x] **TASK-066.7:** Write tests for `GoogleCalendarService` auth flow and settings persistence
 
 ---
 
