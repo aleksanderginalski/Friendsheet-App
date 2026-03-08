@@ -675,9 +675,29 @@ Old async methods are kept as thin backward-compatible wrappers that call
 | loadDistribution() (yearly) | 3 Firestore queries | 0 |
 | Second initialize() (same tab) | ~10+ | 0 (provider guard) |
 
+### M5 — Calendar Import Architecture (US-065, US-066)
+
+**HomeProvider** subscribes to `MeetingRepository` stream — same pattern as `MeetingsListProvider`.
+`shouldShowCta` getter: `meetingCount < 50 && !isDismissed`.
+Dismissed state persisted in SharedPreferences key: `onboarding_calendar_cta_dismissed`.
+
+**GoogleCalendarService** (Singleton) uses incremental OAuth via `google_sign_in.requestScopes()`.
+Access token stored in `flutter_secure_storage` (key: `google_calendar_access_token`).
+Does NOT create a new GoogleSignIn instance — reuses existing session.
+
+**CalendarSettingsProvider** owned by `MainScreen` — same lifecycle pattern as other providers.
+Calendar selection and ALL-DAY preference persisted in SharedPreferences:
+- `calendar_selected_ids` — JSON-encoded list
+- `calendar_include_all_day` — bool (default: false)
+
+**CalendarPermissionScreen** navigation:
+- Entry: MainScreen Drawer → "Import from Calendar"
+- On grant: `Navigator.pushReplacement` → SettingsScreen (calendar section visible)
+- On deny: error message shown inline, retry available
+
 ---
 
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 08, 2026 (US-072: Statistics Firestore caching — three-phase optimization; StatsDataBundle pattern added)
+**Last Updated:** March 08, 2026 (M5 Calendar Import architecture added — US-065, US-066)
 

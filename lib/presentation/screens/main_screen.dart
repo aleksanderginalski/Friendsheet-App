@@ -10,9 +10,11 @@ import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/export_service.dart';
+import '../../data/services/google_calendar_service.dart';
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
+import '../providers/calendar_settings_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
@@ -42,6 +44,7 @@ class _MainScreenState extends State<MainScreen> {
   late final PersonsListProvider _personsListProvider;
   late final ActivitiesListProvider _activitiesListProvider;
   late final StatisticsProvider _statisticsProvider;
+  late final CalendarSettingsProvider _calendarSettingsProvider;
 
   @override
   void initState() {
@@ -73,6 +76,9 @@ class _MainScreenState extends State<MainScreen> {
       categoryRepository: activityCategoryRepository,
       personRepository: personRepository,
     );
+    _calendarSettingsProvider = CalendarSettingsProvider(
+      calendarService: GoogleCalendarService(),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userId = AuthService().currentUserId;
       if (userId != null) {
@@ -80,6 +86,7 @@ class _MainScreenState extends State<MainScreen> {
         _activitiesListProvider.initialize(userId);
       }
       _statisticsProvider.initialize();
+      _calendarSettingsProvider.initialize();
     });
   }
 
@@ -112,6 +119,7 @@ class _MainScreenState extends State<MainScreen> {
     _personsListProvider.dispose();
     _activitiesListProvider.dispose();
     _statisticsProvider.dispose();
+    _calendarSettingsProvider.dispose();
     super.dispose();
   }
 
@@ -162,6 +170,7 @@ class _MainScreenState extends State<MainScreen> {
         ChangeNotifierProvider.value(value: _personsListProvider),
         ChangeNotifierProvider.value(value: _activitiesListProvider),
         ChangeNotifierProvider.value(value: _statisticsProvider),
+        ChangeNotifierProvider.value(value: _calendarSettingsProvider),
       ],
       child: _buildScaffold(context),
     );
@@ -212,7 +221,10 @@ class _MainScreenState extends State<MainScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const CalendarPermissionScreen(),
+                    builder: (_) => ChangeNotifierProvider.value(
+                      value: _calendarSettingsProvider,
+                      child: const CalendarPermissionScreen(),
+                    ),
                   ),
                 );
               },
@@ -225,15 +237,22 @@ class _MainScreenState extends State<MainScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ChangeNotifierProvider(
-                      create: (_) => ExportProvider(
-                        exportService: ExportService(
-                          meetingRepository: MeetingRepository(),
-                          personRepository: PersonRepository(),
-                          activityCategoryRepository:
-                              ActivityCategoryRepository(),
+                    builder: (_) => MultiProvider(
+                      providers: [
+                        ChangeNotifierProvider(
+                          create: (_) => ExportProvider(
+                            exportService: ExportService(
+                              meetingRepository: MeetingRepository(),
+                              personRepository: PersonRepository(),
+                              activityCategoryRepository:
+                                  ActivityCategoryRepository(),
+                            ),
+                          ),
                         ),
-                      ),
+                        ChangeNotifierProvider.value(
+                          value: _calendarSettingsProvider,
+                        ),
+                      ],
                       child: const SettingsScreen(),
                     ),
                   ),
