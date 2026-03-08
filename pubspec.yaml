@@ -49,6 +49,9 @@ dependencies:
   # Open URLs in external browser for ToS and Privacy Policy links (US-053)
   url_launcher: ^6.3.0
 
+  # Encrypted key-value storage for OAuth tokens (US-066)
+  flutter_secure_storage: ^9.2.2
+
   # UI Icons
   cupertino_icons: ^1.0.6
 
