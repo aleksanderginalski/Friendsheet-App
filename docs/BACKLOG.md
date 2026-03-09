@@ -2652,30 +2652,47 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 **Story Points:** 8
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 2026)
 **Labels:** `flutter`, `google-calendar-api`
-**Depends on:** US-057
+**Depends on:** US-066
 
 **Acceptance Criteria:**
-- [ ] Date range picker — "from" and "to" date (default range: last 12 months)
-- [ ] "Fetch events" triggers Google Calendar API call with selected date range and calendar filters from Settings
-- [ ] Events filtered: past only, ≥ 2 attendees, respects ALL-DAY setting from US-057
-- [ ] Each event card shows: title, date, attendee count, calendar name
-- [ ] Multi-select with checkboxes
-- [ ] "Select All" / "Deselect All" action
-- [ ] Empty state if no qualifying events found in range
-- [ ] Primary CTA: "Add to Meeting Inbox (N selected)" — disabled when 0 selected
-- [ ] Tapping CTA creates `ImportCandidate` list and navigates to US-059 (Meeting Inbox)
-- [ ] Selected events stored in `MeetingInboxProvider` (local memory — NOT Firestore)
-- [ ] Loading state during API fetch with cancel option
+- [x] Date range picker — "from" and "to" date (default range: last 12 months)
+- [x] "Apply Filters" triggers Google Calendar API call with selected date range and calendar filters
+- [x] All past events qualify — no attendee count filter
+- [x] Each event card shows: title, date, all-day indicator, attendee emails (if any)
+- [x] Multi-select with checkboxes
+- [x] "Select All" / "Deselect All" action
+- [x] Empty state if no qualifying events found in range
+- [x] Primary CTA: "Import (N)" — disabled when 0 selected
+- [x] Tapping CTA creates `ImportCandidate` list (stub navigation — MeetingInboxScreen in future US)
+- [x] Filter panel (date range + calendar checkboxes + all-day toggle) collapsible on same screen
+- [x] CTA card on HomeScreen: no dismiss button, visible until user reaches 50 meetings
+- [x] Drawer tile: dynamic label — "Import from Calendar" / "Browse & Import Events" based on connection state
+- [x] Settings: only "Disconnect Calendar" remains (calendar selection checkboxes removed)
+- [x] `ValueNotifier<bool>` in `GoogleCalendarService` for reactive connection state
 
 **Tasks:**
-- [ ] **TASK-067.1:** Implement `GoogleCalendarService.fetchEvents(dateRange, calendarIds, includeAllDay)` — paginated Google Calendar REST API call
-- [ ] **TASK-067.2:** Create `ImportCandidate` model — `title`, `date`, `attendeeEmails`, `sourceType` (calendar/photos)
-- [ ] **TASK-067.3:** Build `CalendarEventsScreen` — date range picker, event list, multi-select
-- [ ] **TASK-067.4:** Implement email-to-person heuristic: parse `firstname.lastname@domain` → suggested Person name
-- [ ] **TASK-067.5:** Create `MeetingInboxProvider` — holds `List<ImportCandidate>` in memory
-- [ ] **TASK-067.6:** Write tests — filtering logic, email parsing heuristic, empty state
+- [x] **TASK-067.1:** Gitignore check + add `uuid` package
+- [x] **TASK-067.2:** Create `CalendarEvent` Freezed model
+- [x] **TASK-067.3:** Create `ImportCandidate` Freezed model + `ImportSourceType` enum
+- [x] **TASK-067.4:** Run build_runner
+- [x] **TASK-067.5:** Add `fetchEvents()` + `_fetchEventsForCalendar()` to `GoogleCalendarService`
+- [x] **TASK-067.6:** Create `CalendarEventsProvider`
+- [x] **TASK-067.7:** Create `CalendarEventsScreen` + `CalendarEventCard` widget
+- [x] **TASK-067.8:** Wire navigation from HomeScreen CTA and SettingsScreen
+- [x] **TASK-067b.1–4:** Remove CTA dismiss button, dynamic drawer tile, Settings cleanup, remove SharedPreferences dismiss key
+- [x] **TASK-067c.1–3:** Add `ValueNotifier` to `GoogleCalendarService`, replace `FutureBuilder` with `ValueListenableBuilder` in drawer and Settings
+- [x] **TASK-067d–h:** Fix drawer OAuth flow via `CalendarPermissionScreen` + `onConnected` callback, fix stale context via `_openCalendarPermissionScreen()` on State, fix `finally/notifyListeners` race condition in `connectCalendar()`
+
+**Known issues deferred:**
+- CTA card flickers for ~1s on HomeScreen load (meetingCount initializes as 0) — deferred to US-073
+
+**Definition of Done:**
+- [x] `flutter analyze` — no issues
+- [x] `flutter test` — 445/445 passed
+- [x] Manual verification: all navigation flows work on first tap
+- [x] No debug code in production
 
 ---
 

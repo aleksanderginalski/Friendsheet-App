@@ -52,6 +52,9 @@ dependencies:
   # Encrypted key-value storage for OAuth tokens (US-066)
   flutter_secure_storage: ^9.2.2
 
+  # UUID generation for ImportCandidate IDs (US-067)
+  uuid: ^4.0.0
+
   # UI Icons
   cupertino_icons: ^1.0.6
 
