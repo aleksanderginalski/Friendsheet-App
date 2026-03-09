@@ -5,8 +5,13 @@ import '../../data/models/google_calendar.dart';
 import '../providers/calendar_settings_provider.dart';
 
 /// Screen that explains calendar access and triggers the OAuth grant flow.
+///
+/// [onConnected] is called with the fetched calendars after a successful
+/// OAuth grant. When null, the screen simply pops on success.
 class CalendarPermissionScreen extends StatefulWidget {
-  const CalendarPermissionScreen({super.key});
+  final void Function(List<GoogleCalendar> calendars)? onConnected;
+
+  const CalendarPermissionScreen({super.key, this.onConnected});
 
   @override
   State<CalendarPermissionScreen> createState() =>
@@ -23,25 +28,30 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
       _errorMessage = null;
     });
 
+    // Capture provider reference before await — context must not be used
+    // after the widget is potentially deactivated by onConnected navigation.
+    final provider = context.read<CalendarSettingsProvider>();
+
     try {
-      await context.read<CalendarSettingsProvider>().connectCalendar();
-      if (mounted) {
+      final calendars = await provider.connectCalendar();
+      if (!mounted) return;
+      if (widget.onConnected != null) {
+        widget.onConnected!(calendars);
+      } else {
         Navigator.of(context).pop();
       }
     } on CalendarAuthException catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = e.message;
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = e.message;
+        _isLoading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'An unexpected error occurred';
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'An unexpected error occurred';
+        _isLoading = false;
+      });
     }
   }
 

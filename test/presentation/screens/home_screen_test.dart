@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
@@ -134,12 +135,30 @@ void main() {
   }
 
   group('HomeScreen', () {
-    // Dismiss the CTA so statistics are shown in these tests.
+    // Emit 50 meetings so shouldShowCta is false and statistics are visible.
     setUp(() async {
-      SharedPreferences.setMockInitialValues({
-        'onboarding_calendar_cta_dismissed': true,
-      });
+      SharedPreferences.setMockInitialValues({});
+      final controller = StreamController<List<Meeting>>();
+      when(mockMeetingRepository.getMeetingsByUser(any))
+          .thenAnswer((_) => controller.stream);
       await homeProvider.initialize('');
+      controller.add(
+        List.generate(
+          50,
+          (i) => Meeting(
+            id: 'm$i',
+            userId: '',
+            name: 'Test',
+            date: DateTime(2026),
+            weight: 3,
+            participantIds: const [],
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+          ),
+        ),
+      );
+      await Future.microtask(() {});
+      await controller.close();
     });
     testWidgets('shows loading indicator while statistics are loading',
         (tester) async {
