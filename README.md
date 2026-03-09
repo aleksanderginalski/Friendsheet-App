@@ -221,6 +221,23 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.21.0 - US-067 Browse & Select Calendar Events (March 2026)
+- ✅ CalendarEvent Freezed model (local memory only — never persisted to Firestore)
+- ✅ ImportCandidate Freezed model + ImportSourceType enum (calendar / photos)
+- ✅ GoogleCalendarService.fetchEvents() — Google Calendar REST API with date range and all-day filter
+- ✅ ValueNotifier<bool> isConnectedNotifier in GoogleCalendarService for reactive connection state
+- ✅ CalendarEventsProvider — fetch, filter, multi-select, buildImportCandidates()
+- ✅ CalendarEventsScreen with collapsible filter panel (date range + calendar checkboxes + all-day toggle)
+- ✅ CalendarEventCard widget with checkbox, title, date, attendee emails
+- ✅ CalendarPermissionScreen extended with optional onConnected callback
+- ✅ Drawer tile: dynamic label — "Import from Calendar" / "Browse & Import Events" via ValueListenableBuilder
+- ✅ HomeScreen CTA: dismiss button removed — card visible until 50 meetings reached
+- ✅ Settings: calendar selection checkboxes removed — only "Disconnect Calendar" remains
+- ✅ Fix: FutureBuilder replaced with ValueListenableBuilder for reactive connection state
+- ✅ Fix: finally/notifyListeners race condition in connectCalendar()
+- ✅ Fix: stale drawer context resolved via _openCalendarPermissionScreen() on _MainScreenState
+- ✅ uuid package added for ImportCandidate ID generation
+- ✅ Total test count: 445 (all passing)
 
 ### v3.20.0 - US-066: Google Calendar Permission, Connection & Settings (March 08, 2026)
 - ✅ GoogleCalendarService — incremental OAuth (calendar.readonly scope) via google_sign_in

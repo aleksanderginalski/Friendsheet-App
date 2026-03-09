@@ -243,5 +243,58 @@ during loading — pass isLoading as parameter instead.
 - Candidate = category with NO children present in current year's breakdown
 - Check: scan allCats for parentCategoryId values that appear in breakdown → those parents are excluded
 - `isSelectableAsActivity` is NOT used for this check — pure hierarchy check only
+
+## Drawer / Bottom Sheet Navigation — Stale Context Rule
+
+Never use `context` from a drawer or bottom sheet closure after `Navigator.pop()`.
+After the drawer closes, its `BuildContext` is deactivated — any navigation or
+`context.read()` call using it will throw "Looking up a deactivated widget's ancestor".
+
+Always extract navigation that may be triggered from a callback into a method on
+the parent `State` class, which holds a context that lives for the entire screen lifetime.
+
+```dart
+// WRONG — context from drawer closure is stale after Navigator.pop()
+onTap: () {
+  Navigator.pop(context); // closes drawer — context now deactivated
+  Navigator.push(context, ...); // CRASH: stale context
+}
+
+// CORRECT — use context from State method
+onTap: () {
+  Navigator.pop(context);
+  _openPermissionScreen(); // method on _MyScreenState uses State's context
+}
+
+void _openPermissionScreen() {
+  Navigator.push(context, ...); // context from State — always alive
+}
+```
+
+## ValueNotifier in Singletons for Reactive Connection State
+
+When a singleton service manages a binary connection state (connected / disconnected),
+expose it as `ValueNotifier<bool>` so widgets can react without polling.
+
+```dart
+// In singleton service:
+final ValueNotifier<bool> isConnectedNotifier = ValueNotifier<bool>(false);
+
+// Update in save/revoke methods:
+Future<void> _saveToken(String token) async {
+  await _secureStorage.write(key: _tokenKey, value: token);
+  isConnectedNotifier.value = true; // reactive update
+}
+
+// In widget — reacts instantly to any state change:
+ValueListenableBuilder<bool>(
+  valueListenable: MyService().isConnectedNotifier,
+  builder: (context, isConnected, _) { ... },
+)
+```
+
+Never use `FutureBuilder` for state that changes during the session
+(e.g. OAuth connect/disconnect) — it computes once and never updates.
+
 ---
 
