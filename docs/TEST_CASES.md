@@ -431,6 +431,91 @@
 | 2 | Sign out and sign in again | App works normally |✅ | |
 | 3 | Check category count in Firestore | Still N (no duplicates created) |✅ | |
 
+
+---
+
+## TC-CAL: Calendar Import
+
+### TC-CAL-001 — Browse events (happy path)
+**Priority:** P0
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Connect Google Calendar (Settings or drawer) | CalendarEventsScreen opens with events loaded | ✅ | |
+| 2 | Verify default filter | Date range: last 12 months, primary calendar selected, all-day excluded | ✅ | |
+| 3 | Verify event card | Title, date, all-day indicator, attendee emails visible | ✅ | |
+| 4 | Tap "Import (N)" with 0 selected | Button is disabled — no action | ✅ | |
+| 5 | Tap an event | Checkbox toggles, counter "N selected" increments | ✅ | |
+| 6 | Tap "Select All" | All checkboxes selected | ✅ | |
+| 7 | Tap "Deselect All" | All checkboxes cleared | ✅ | |
+| 8 | Select 3 events, tap "Import (3)" | Snackbar: "3 events ready for import" | ✅ | |
+
+---
+
+### TC-CAL-002 — Filter panel
+**Priority:** P1
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Tap "Filters" | Panel expands — date range, calendar checkboxes, all-day toggle visible | ✅ | |
+| 2 | Change "From" date to 1 month ago | Date picker opens, date updates after selection | ✅ | |
+| 3 | Tap "Apply Filters" | Event list refreshes — fewer events shown | ✅ | |
+| 4 | Toggle "Exclude all-day events" off, Apply | All-day events appear in list | ✅ | |
+| 5 | Deselect all calendars, Apply | Empty state shown | ✅ | |
+
+---
+
+### TC-CAL-003 — Empty state
+**Priority:** P2
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Set date range with no events, Apply | Empty state: icon + "No events found" + hint text | ✅ | |
+| 2 | "Import" button | Disabled — 0 selected | ✅ | |
+
+---
+
+### TC-CAL-004 — Drawer dynamic tile
+**Priority:** P1
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open drawer with no calendar connected | Tile shows "Import from Calendar" | ✅ | |
+| 2 | Tap "Import from Calendar" | CalendarPermissionScreen shown | ✅ | |
+| 3 | Tap "Connect Google Calendar" | No error — navigates to CalendarEventsScreen | ✅ | |
+| 4 | Tap "Not now" | Returns to MainScreen | ✅ | |
+| 5 | Open drawer with calendar connected | Tile shows "Browse & Import Events" | ✅ | |
+| 6 | Tap "Browse & Import Events" | CalendarEventsScreen opens directly | ✅ | |
+
+---
+
+### TC-CAL-005 — Disconnect calendar
+**Priority:** P1
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Settings with calendar connected | "Disconnect Calendar" tile visible | ✅ | |
+| 2 | Tap "Disconnect Calendar" | Calendar disconnected | ✅ | |
+| 3 | Open drawer | Tile shows "Import from Calendar" (not "Browse & Import Events") | ✅ | |
+
+---
+
+### TC-CAL-006 — CTA card behaviour
+**Priority:** P1
+**Related US:** US-067
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open HomeScreen with < 50 meetings | CTA card visible, no X button | ✅ | |
+| 2 | Try to find dismiss button | No dismiss/close button exists | ✅ | |
+| 3 | Add meetings until total ≥ 50, reopen HomeScreen | CTA card no longer visible | ✅ | |
+
+
 ---
 
 ## Regression Checklist
