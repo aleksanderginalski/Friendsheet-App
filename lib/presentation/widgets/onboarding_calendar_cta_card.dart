@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 /// Card shown on the Home tab when the user has fewer than 50 meetings.
 /// Prompts the user to import past meetings from Google Calendar.
+/// Disappears automatically once the user reaches 50 meetings.
 class OnboardingCalendarCtaCard extends StatelessWidget {
   const OnboardingCalendarCtaCard({
     super.key,
-    required this.onDismiss,
     required this.onImport,
   });
 
-  final VoidCallback onDismiss;
   final VoidCallback onImport;
 
   @override
@@ -25,21 +24,12 @@ class OnboardingCalendarCtaCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Import your past meetings',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: onDismiss,
-                    ),
-                  ],
+                const Text(
+                  'Import your past meetings',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
