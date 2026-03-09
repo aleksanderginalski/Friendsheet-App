@@ -20,6 +20,7 @@ import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
+import 'calendar_events_screen.dart';
 import 'calendar_permission_screen.dart';
 import 'home_screen.dart';
 import 'meetings_list_screen.dart';
@@ -123,6 +124,30 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
+  /// Navigates to CalendarPermissionScreen using the State's own context.
+  /// This avoids the stale-context bug that occurs when using the drawer's
+  /// BuildContext after Navigator.pop() has deactivated it.
+  void _openCalendarPermissionScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: _calendarSettingsProvider,
+          child: CalendarPermissionScreen(
+            onConnected: (calendars) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CalendarEventsScreen(calendars: calendars),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleLogout(BuildContext context) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -213,19 +238,44 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Import from Calendar'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ChangeNotifierProvider.value(
-                      value: _calendarSettingsProvider,
-                      child: const CalendarPermissionScreen(),
-                    ),
+            ValueListenableBuilder<bool>(
+              valueListenable: GoogleCalendarService().isConnectedNotifier,
+              builder: (context, isConnected, _) {
+                return ListTile(
+                  leading: const Icon(Icons.calendar_month),
+                  title: Text(
+                    isConnected
+                        ? 'Browse & Import Events'
+                        : 'Import from Calendar',
                   ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final calendarService = GoogleCalendarService();
+
+                    if (isConnected) {
+                      try {
+                        final calendars =
+                            await calendarService.fetchCalendars();
+                        if (!context.mounted) return;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                CalendarEventsScreen(calendars: calendars),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to load calendars'),
+                          ),
+                        );
+                      }
+                    } else {
+                      _openCalendarPermissionScreen();
+                    }
+                  },
                 );
               },
             ),

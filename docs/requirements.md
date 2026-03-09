@@ -300,14 +300,15 @@ User grants read-only Google Calendar access, selects a date range and calendars
 - OAuth consent via `google_sign_in` with scope `calendar.readonly`
 - Token stored via `flutter_secure_storage`
 - Settings section in SettingsScreen:
-  - Calendar selection (checkboxes per calendar; default: primary)
-  - ALL-DAY events toggle (default: OFF — excluded)
-  - "Revoke Calendar Access" option
+  - "Disconnect Calendar" option
 - Date range picker (default: last 12 months)
-- Events filtered: past only, ≥ 2 attendees, respects ALL-DAY setting
+- Events filtered: past only, respects ALL-DAY setting
 - Multi-select with "Select All / Deselect All"
 - Selected events converted to `ImportCandidate` list and passed to Meeting Inbox
 - Permission revocable; graceful handling if denied
+- Filter panel (date range + calendar checkboxes + all-day toggle) collapsible on CalendarEventsScreen
+- Drawer tile: dynamic label based on connection state ("Import from Calendar" / "Browse & Import Events")
+- Home Screen CTA: visible until user reaches 50 meetings, no dismiss button
 
 ---
 
