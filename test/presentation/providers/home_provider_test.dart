@@ -6,7 +6,6 @@ import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_provider_test.mocks.dart';
 
@@ -32,7 +31,6 @@ void main() {
       );
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
     mockRepository = MockMeetingRepository();
   });
 
@@ -41,7 +39,7 @@ void main() {
   });
 
   group('HomeProvider', () {
-    test('shouldShowCta is true when count < 50 and not dismissed', () async {
+    test('shouldShowCta is true when count < 50', () async {
       final controller = StreamController<List<Meeting>>();
       when(mockRepository.getMeetingsByUser('user-1'))
           .thenAnswer((_) => controller.stream);
@@ -68,37 +66,6 @@ void main() {
       await Future.microtask(() {});
 
       expect(provider.shouldShowCta, isFalse);
-      controller.close();
-    });
-
-    test('shouldShowCta is false when dismissed even if count < 50', () async {
-      final controller = StreamController<List<Meeting>>();
-      when(mockRepository.getMeetingsByUser('user-1'))
-          .thenAnswer((_) => controller.stream);
-
-      provider = HomeProvider(meetingRepository: mockRepository);
-      await provider.initialize('user-1');
-
-      controller.add(List.generate(5, (i) => makeMeeting('m$i')));
-      await Future.microtask(() {});
-
-      await provider.dismissCta();
-
-      expect(provider.shouldShowCta, isFalse);
-      controller.close();
-    });
-
-    test('dismissCta() persists the flag to SharedPreferences', () async {
-      final controller = StreamController<List<Meeting>>();
-      when(mockRepository.getMeetingsByUser('user-1'))
-          .thenAnswer((_) => controller.stream);
-
-      provider = HomeProvider(meetingRepository: mockRepository);
-      await provider.initialize('user-1');
-      await provider.dismissCta();
-
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getBool('onboarding_calendar_cta_dismissed'), isTrue);
       controller.close();
     });
   });

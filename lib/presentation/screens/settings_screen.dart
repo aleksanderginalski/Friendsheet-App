@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/services/auth_service.dart';
+import '../../data/services/google_calendar_service.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/export_provider.dart';
 import 'calendar_permission_screen.dart';
@@ -99,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          ..._buildCalendarSection(context, calendarProvider),
+          _buildCalendarSection(context, calendarProvider),
           ListTile(
             leading: exportProvider.isLoading
                 ? const SizedBox(
@@ -119,66 +120,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  List<Widget> _buildCalendarSection(
+  Widget _buildCalendarSection(
     BuildContext context,
     CalendarSettingsProvider provider,
   ) {
-    if (!provider.isConnected) {
-      return [
-        ListTile(
-          leading: Icon(Icons.calendar_today, color: Colors.grey[600]),
-          title: const Text('Google Calendar'),
-          subtitle: const Text('Not connected'),
-          trailing: TextButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChangeNotifierProvider.value(
-                  value: provider,
-                  child: const CalendarPermissionScreen(),
+    return ValueListenableBuilder<bool>(
+      valueListenable: GoogleCalendarService().isConnectedNotifier,
+      builder: (context, isConnected, _) {
+        if (!isConnected) {
+          return ListTile(
+            leading: Icon(Icons.calendar_today, color: Colors.grey[600]),
+            title: const Text('Google Calendar'),
+            subtitle: const Text('Not connected'),
+            trailing: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider.value(
+                    value: provider,
+                    child: const CalendarPermissionScreen(),
+                  ),
+                ),
+              ),
+              child: const Text('Connect'),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text(
+                'GOOGLE CALENDAR',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            child: const Text('Connect'),
-          ),
-        ),
-      ];
-    }
-
-    return [
-      const Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-        child: Text(
-          'GOOGLE CALENDAR',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-      ...provider.availableCalendars.map(
-        (cal) => CheckboxListTile(
-          title: Text(cal.summary),
-          subtitle: cal.isPrimary ? const Text('Primary') : null,
-          value: provider.selectedCalendarIds.contains(cal.id),
-          onChanged: (_) => provider.toggleCalendar(cal.id),
-        ),
-      ),
-      SwitchListTile(
-        title: const Text('Include all-day events'),
-        subtitle: const Text('OFF by default'),
-        value: provider.includeAllDay,
-        onChanged: (_) => provider.toggleAllDay(),
-      ),
-      ListTile(
-        leading: const Icon(Icons.link_off, color: Colors.red),
-        title: const Text(
-          'Disconnect Calendar',
-          style: TextStyle(color: Colors.red),
-        ),
-        onTap: () => _handleRevoke(context),
-      ),
-    ];
+            ListTile(
+              leading: const Icon(Icons.link_off, color: Colors.red),
+              title: const Text(
+                'Disconnect Calendar',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () => _handleRevoke(context),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

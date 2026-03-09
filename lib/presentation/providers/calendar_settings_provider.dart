@@ -81,10 +81,16 @@ class CalendarSettingsProvider extends ChangeNotifier {
         }
       }
 
+      _isLoading = false;
+      // Notify before returning — caller may navigate away immediately after.
+      // Do NOT use finally here: notifyListeners after navigation triggers
+      // a rebuild on a disposed widget and causes a spurious error.
+      notifyListeners();
       return calendars;
-    } finally {
+    } catch (e) {
       _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
