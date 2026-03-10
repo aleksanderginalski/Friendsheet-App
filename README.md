@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (447)
+✅ All tests passing (487)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -221,19 +221,30 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.24.0 — Meetings Monthly Grouping, Compact Cards & Expandable Search (US-059) — March 2026
+- ✅ MeetingsListProvider extended — two-level grouping year→month (`Map<int, Map<int, List<Meeting>>>`)
+- ✅ Default expand: current month + last month with meeting data (not calendar-based)
+- ✅ Month sections independently collapsible — `Set<String>` keys in `"YYYY-MM"` format
+- ✅ `_MonthHeader` widget — month name + meeting count, indented 16dp under year header
+- ✅ MeetingCard compact variant — vertical padding 8dp, reduced font sizes (new default)
+- ✅ Expandable search bar in MeetingsListScreen AppBar — mirrors ActivitiesListScreen pattern
+- ✅ PersonsListScreen — static SharedSearchBar replaced with expandable AppBar search
+- ✅ AppBar actions order unified across tabs: add icon → search icon (🔍)
+- ✅ Total test count: 447 → 487 tests (+40)
+
 ### v3.23.0 — Persistent Local Cache & Loading Screen (US-073) — March 2026
-- Hive persistent cache for statistics — near-zero Firestore reads on app restart
-- Two-level cache: in-memory (US-072) + Hive disk layer (US-073)
-- JSON bridge pattern — no TypeAdapter conflicts with Freezed models
-- Cache invalidation on write and on logout (HiveService.clearUserData)
-- HomeProvider _initialized flag — eliminates CTA card flash on startup
-- HomeLoadingScreen with custom loading_icon.png
+- ✅ Hive persistent cache for statistics — near-zero Firestore reads on app restart
+- ✅ Two-level cache: in-memory (US-072) + Hive disk layer (US-073)
+- ✅ JSON bridge pattern — no TypeAdapter conflicts with Freezed models
+- ✅ Cache invalidation on write and on logout (HiveService.clearUserData)
+- ✅ HomeProvider _initialized flag — eliminates CTA card flash on startup
+- ✅ HomeLoadingScreen with custom loading_icon.png
 
 ### v3.22.0 — Meeting Inbox (US-068) — March 2026
-- Meeting Inbox (Pending Meetings) — review and confirm imported candidates
-- SharedPreferences persistence — inbox survives app restarts
-- Pending Meetings drawer tile with live candidate count badge
-- Refactored PersonAutocomplete and ActivityAutocomplete to callback-based widgets
+- ✅ Meeting Inbox (Pending Meetings) — review and confirm imported candidates
+- ✅ SharedPreferences persistence — inbox survives app restarts
+- ✅ Pending Meetings drawer tile with live candidate count badge
+- ✅ Refactored PersonAutocomplete and ActivityAutocomplete to callback-based widgets
 
 ### v3.21.0 - US-067 Browse & Select Calendar Events (March 2026)
 - ✅ CalendarEvent Freezed model (local memory only — never persisted to Firestore)
