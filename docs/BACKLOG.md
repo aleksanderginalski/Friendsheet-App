@@ -2714,31 +2714,39 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 
 **Story Points:** 8
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 10, 2026)
 **Labels:** `flutter`, `ux`
 **Depends on:** US-058
 
 **Acceptance Criteria:**
-- [ ] `MeetingInboxScreen` shows list of all pending `ImportCandidate` cards
-- [ ] Progress indicator: "X of Y reviewed"
-- [ ] Tapping card opens `InboxItemEditScreen` with pre-filled fields:
-  - [ ] Meeting Name (pre-filled from event title, editable, max 50 chars)
-  - [ ] Date (pre-filled from event start date, editable via date picker)
-  - [ ] Weight (default: 3, Fibonacci stepper — same component as AddMeeting)
-  - [ ] Participants: attendee e-mails shown as person suggestions (using heuristic from US-058); user can accept, dismiss, or add manually
-  - [ ] Activities: standard activity autocomplete (no pre-fill)
-- [ ] "Confirm" saves meeting to Firestore, removes card from inbox
-- [ ] "Skip" removes card from inbox without saving
-- [ ] When inbox is empty: success screen showing count of added meetings + CTA "Go to Meetings"
-- [ ] Back navigation from `InboxItemEditScreen` returns to inbox list without data loss
+- [x] `MeetingInboxScreen` shows list of all pending `ImportCandidate` cards
+- [x] Progress indicator: "X of Y reviewed"
+- [x] Tapping card opens `InboxItemEditScreen` with pre-filled fields:
+  - [x] Meeting Name (pre-filled from event title, editable, max 50 chars)
+  - [x] Date (pre-filled from event start date, editable via date picker)
+  - [x] Weight (default: 3, Fibonacci stepper — same component as AddMeeting)
+  - [x] Participants: attendee e-mails shown as person suggestions (using heuristic from US-058); user can accept, dismiss, or add manually
+  - [x] Activities: standard activity autocomplete (no pre-fill)
+- [x] "Confirm" saves meeting to Firestore, removes card from inbox
+- [x] "Skip" removes card from inbox without saving
+- [x] When inbox is empty: success screen showing count of added meetings + CTA "Go to Meetings"
+- [x] Back navigation from `InboxItemEditScreen` returns to inbox list without data loss
 
 **Tasks:**
-- [ ] **TASK-068.1:** Build `MeetingInboxScreen` — list of `ImportCandidate` cards with progress indicator
-- [ ] **TASK-068.2:** Build `InboxItemEditScreen` — pre-filled form reusing existing field widgets (MeetingNameField, MeetingWeightStepper, MeetingDateField, participant autocomplete, activity autocomplete)
-- [ ] **TASK-068.3:** Implement confirm flow — validate required fields, save to Firestore via `MeetingRepository`, remove from `MeetingInboxProvider`
-- [ ] **TASK-068.4:** Implement skip flow — remove from `MeetingInboxProvider` without saving
-- [ ] **TASK-068.5:** Build `ImportSuccessScreen` — count of added meetings, "Go to Meetings" CTA
-- [ ] **TASK-068.6:** Write tests — confirm flow, skip flow, empty inbox state, pre-fill logic
+- [x] **TASK-068.1:** Extend ImportCandidate with JSON support + run build_runner
+- [x] **TASK-068.2:** Create MeetingInboxProvider
+- [x] **TASK-068.3:** Create InboxItemEditProvider
+- [x] **TASK-068.4:** Build MeetingInboxScreen
+- [x] **TASK-068.5:** Build InboxItemEditScreen
+- [x] **TASK-068.6:** Build ImportSuccessScreen
+- [x] **TASK-068.7:** Write tests for MeetingInboxProvider and InboxItemEditProvider
+
+**Architecture note (updated):** `MeetingInboxProvider` is persisted to
+SharedPreferences (key: `meeting_inbox_candidates`) — candidates survive
+app restarts. Provider is owned by `MainScreen` for full-session lifetime.
+Drawer shows `Pending Meetings (N)` badge when inbox is non-empty.
+Source-agnostic: Calendar (US-067) and Photos (US-070) both call
+`addCandidates()` on the same provider.
 
 ---
 

@@ -40,7 +40,7 @@ class CalendarEventsProvider extends ChangeNotifier {
   DateTime _dateFrom = DateTime.now().subtract(const Duration(days: 365));
   DateTime _dateTo = DateTime.now();
   late Set<String> _selectedCalendarIds;
-  bool _excludeAllDay = true;
+  bool _excludeAllDay = false;
 
   // Getters
   CalendarEventsStatus get status => _status;

@@ -11,7 +11,7 @@ import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/splash_screen.dart';
 
-/// Global navigator key — used for navigation independent of widget lifecycle.
+/// Global navigator key — used for navigation that outlives individual widget contexts.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Main entry point of the application
