@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -31,9 +32,21 @@ class GoogleCalendarService {
   /// Initialized to false; updated after token save and revoke.
   final ValueNotifier<bool> isConnectedNotifier = ValueNotifier<bool>(false);
 
+  bool _initialized = false;
+  final Completer<void> _initCompleter = Completer<void>();
+
   Future<void> _initConnectionState() async {
     final token = await _secureStorage.read(key: _tokenKey);
     isConnectedNotifier.value = token != null;
+    _initialized = true;
+    if (!_initCompleter.isCompleted) _initCompleter.complete();
+  }
+
+  /// Waits until the persisted token state has been read from secure storage.
+  /// Safe to call multiple times — resolves immediately if already initialized.
+  Future<void> ensureInitialized() async {
+    if (_initialized) return;
+    await _initCompleter.future;
   }
 
   /// Returns true if a calendar access token exists in secure storage.
