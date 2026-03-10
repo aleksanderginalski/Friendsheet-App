@@ -23,7 +23,7 @@ class MeetingRepository {
   Future<String> saveMeeting(Meeting meeting) async {
     final docRef =
         await _meetingsRef(meeting.userId).add(meeting.toFirestore());
-    cacheInvalidator?.invalidateMeetingsCache();
+    await cacheInvalidator?.invalidateMeetingsCache();
     return docRef.id;
   }
 
@@ -44,13 +44,13 @@ class MeetingRepository {
     data['updatedAt'] = FieldValue.serverTimestamp();
 
     await _meetingsRef(meeting.userId).doc(meeting.id).update(data);
-    cacheInvalidator?.invalidateMeetingsCache();
+    await cacheInvalidator?.invalidateMeetingsCache();
   }
 
   /// Deletes a meeting document from Firestore by its ID.
   Future<void> deleteMeeting(String userId, String meetingId) async {
     await _meetingsRef(userId).doc(meetingId).delete();
-    cacheInvalidator?.invalidateMeetingsCache();
+    await cacheInvalidator?.invalidateMeetingsCache();
   }
 
   /// Returns the number of meetings for a given user that include the given person.
@@ -75,6 +75,6 @@ class MeetingRepository {
       });
     }
     await batch.commit();
-    cacheInvalidator?.invalidateMeetingsCache();
+    await cacheInvalidator?.invalidateMeetingsCache();
   }
 }
