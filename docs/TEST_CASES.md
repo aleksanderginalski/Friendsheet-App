@@ -187,19 +187,23 @@
 
 ## TC-MEET-LIST: Meetings List
 
-### TC-MEET-LIST-001 — Meetings grouped by year
-**Priority:** P1  
-**Related US:** US-021
+### TC-MEET-LIST-001 — Meetings grouped by year and month
+**Priority:** P1
+**Related US:** US-021, US-059
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|--------|-------|
-| 1 | Open Meetings tab with multiple meetings across years | Meetings grouped under year headers |✅ | |
-| 2 | Check current year section | Expanded by default |✅ | |
-| 3 | Check older year section | Collapsed by default |✅ | |
-| 4 | Tap collapsed year header | Section expands |✅ | |
-| 5 | Tap expanded year header | Section collapses |✅ | |
-
----
+| 1 | Open Meetings tab with meetings across multiple years | Meetings grouped under year headers | ✅ | |
+| 2 | Check current year section | Expanded by default | ✅ | |
+| 3 | Check older year section | Collapsed by default | ✅ | |
+| 4 | Tap collapsed year header | Section expands, month headers visible | ✅ | |
+| 5 | Tap expanded year header | Section collapses, month headers hidden | ✅ | |
+| 6 | Verify month headers | Format "March 2026 · N meetings", indented under year | ✅ | |
+| 7 | Check current month | Expanded by default | ✅ | |
+| 8 | Check last month with data (not current) | Expanded by default | ✅ | |
+| 9 | Check older months | Collapsed by default | ✅ | |
+| 10 | Tap collapsed month header | Only that month expands | ✅ | |
+| 11 | Tap expanded month header | Only that month collapses | ✅ | |
 
 ### TC-MEET-LIST-002 — Empty state
 **Priority:** P2  
@@ -208,6 +212,33 @@
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|--------|-------|
 | 1 | Open Meetings tab with no meetings | Empty state message shown (no crash) |✅ | |
+
+### TC-MEET-LIST-003 — Expandable search in Meetings tab
+**Priority:** P1
+**Related US:** US-059
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Meetings tab | AppBar shows title + search icon; no visible search field | ✅ | |
+| 2 | Tap search icon (🔍) | Text input appears in AppBar | ✅ | |
+| 3 | Type partial meeting name | List filters — only matching meetings shown under correct month/year | ✅ | |
+| 4 | Clear text, tap ✕ | Search field disappears, full list restored | ✅ | |
+| 5 | Press device back while search open | Search collapses, app does not navigate away | ✅ | |
+| 6 | Search for name that doesn't exist | EmptyStateWidget shown ("no results") | ✅ | |
+
+---
+
+### TC-MEET-LIST-004 — AppBar actions order (Meetings)
+**Priority:** P2
+**Related US:** US-059
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Meetings tab, inspect AppBar | Search icon (🔍) is the only action icon | ✅ | |
+
+---
+
+
 
 ---
 
@@ -266,15 +297,18 @@
 
 ---
 
-### TC-FRIENDS-002 — Search/filter persons
-**Priority:** P1  
-**Related US:** US-024
+### TC-FRIENDS-002 — Expandable search in Friends tab
+**Priority:** P1
+**Related US:** US-024, US-059
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|--------|-------|
-| 1 | Type partial name in search field | List filtered to matching persons |✅ | |
-| 2 | Clear search field | Full list restored |✅ | |
-| 3 | Search for name that doesn't exist | Empty state or "no results" shown |✅ | |
+| 1 | Open Friends tab | AppBar shows title; no visible search field in body | ✅ | |
+| 2 | Verify AppBar actions order | Add person icon (➕) first, search icon (🔍) second | ✅ | |
+| 3 | Tap search icon (🔍) | Text input appears | ✅ | ✅|
+| 4 | Type partial name | List filtered to matching persons | ✅| |
+| 5 | Tap ✕ | Search collapses, full list restored | ✅ | |
+| 6 | Search for name that doesn't exist | Empty state or "no results" shown | ✅ | |
 
 ---
 
@@ -511,9 +545,9 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|--------|-------|
-| 1 | Open HomeScreen with < 50 meetings | CTA card visible, no X button | ✅ | |
-| 2 | Try to find dismiss button | No dismiss/close button exists | ✅ | |
-| 3 | Add meetings until total ≥ 50, reopen HomeScreen | CTA card no longer visible | ✅ | |
+| 1 | Open HomeScreen with < 50 meetings | CTA card visible, no X button | ✅ | ✅|
+| 2 | Try to find dismiss button | No dismiss/close button exists | ✅ |✅ |
+| 3 | Add meetings until total ≥ 50, reopen HomeScreen | CTA card no longer visible | ✅ | ✅|
 
 
 ---

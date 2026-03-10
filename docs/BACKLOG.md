@@ -2218,26 +2218,26 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 8
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 10, 2026)
 **Labels:** `meetings`, `ux`, `search`
 **Mode:** ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] Meetings grouped: Year → Month (e.g. "March 2026 · 4 meetings")
-- [ ] `MeetingCard` uses compact layout — reduced padding and font sizes
-- [ ] Month sections are collapsible (same pattern as current year sections)
-- [ ] Current month expanded by default; previous month expanded; older months collapsed
-- [ ] Search icon in `MeetingsListScreen` AppBar — tap opens text input field (same UX as `ActivitiesListScreen`)
-- [ ] Same expandable search pattern applied to `PersonsListScreen` (Friends tab)
-- [ ] Search results work correctly with new month-grouped structure
+- [x] Meetings grouped: Year → Month (e.g. "March 2026 · 4 meetings")
+- [x] `MeetingCard` uses compact layout — reduced padding and font sizes
+- [x] Month sections are collapsible (same pattern as current year sections)
+- [x] Current month expanded by default; previous month expanded; older months collapsed
+- [x] Search icon in `MeetingsListScreen` AppBar — tap opens text input field (same UX as `ActivitiesListScreen`)
+- [x] Same expandable search pattern applied to `PersonsListScreen` (Friends tab)
+- [x] Search results work correctly with new month-grouped structure
 
 **Tasks:**
-- [ ] **TASK-059.1:** Extend `MeetingsListProvider` — add month-level grouping logic (`Map<int, Map<int, List<Meeting>>>`)
-- [ ] **TASK-059.2:** Refactor `MeetingsListScreen` — render year → month sections with collapse/expand
-- [ ] **TASK-059.3:** Update `MeetingCard` — compact variant (reduced padding, smaller font)
-- [ ] **TASK-059.4:** Implement expandable `SearchBar` in `MeetingsListScreen` AppBar (mirror `ActivitiesListScreen` pattern)
-- [ ] **TASK-059.5:** Implement expandable `SearchBar` in `PersonsListScreen` AppBar
-- [ ] **TASK-059.6:** Write widget tests for month grouping and search behavior
+- [x] **TASK-059.1:** Extend `MeetingsListProvider` — add month-level grouping logic (`Map<int, Map<int, List<Meeting>>>`)
+- [x] **TASK-059.2:** Refactor `MeetingsListScreen` — render year → month sections with collapse/expand
+- [x] **TASK-059.3:** Update `MeetingCard` — compact variant (reduced padding, smaller font)
+- [x] **TASK-059.4:** Implement expandable `SearchBar` in `MeetingsListScreen` AppBar (mirror `ActivitiesListScreen` pattern)
+- [x] **TASK-059.5:** Implement expandable `SearchBar` in `PersonsListScreen` AppBar
+- [x] **TASK-059.6:** Write widget tests for month grouping and search behavior
 
 ---
 
