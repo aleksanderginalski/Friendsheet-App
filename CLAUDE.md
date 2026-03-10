@@ -271,6 +271,31 @@ void _openPermissionScreen() {
 }
 ```
 
+## Navigator.push — Provider Scope Rule
+
+Every screen pushed via `Navigator.push(builder: (_) => MyScreen())` receives
+a new `BuildContext` that does NOT inherit providers from the parent route.
+
+When a pushed screen needs a provider owned by `MainScreen`, always wrap it
+explicitly at the call-site:
+```dart
+// WRONG — MeetingInboxScreen cannot find MeetingInboxProvider:
+Navigator.push(context, MaterialPageRoute(
+  builder: (_) => const MeetingInboxScreen(),
+));
+
+// CORRECT — provider explicitly passed into new route scope:
+Navigator.push(context, MaterialPageRoute(
+  builder: (_) => ChangeNotifierProvider.value(
+    value: _meetingInboxProvider,
+    child: const MeetingInboxScreen(),
+  ),
+));
+```
+
+Applies to: `MeetingInboxScreen`, `CalendarEventsScreen`, and any future
+screen that reads `MeetingInboxProvider` or other `MainScreen`-owned providers.
+
 ## ValueNotifier in Singletons for Reactive Connection State
 
 When a singleton service manages a binary connection state (connected / disconnected),

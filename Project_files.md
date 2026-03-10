@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 08, 2026
+**Last Updated:** marca 10, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -13,7 +13,12 @@
 - lib/data/models/activity_category.dart - ActivityCategory model (Freezed) — nullable createdAt fallback, isSelectableAsActivity, copiedFromId, parentCategoryId, iconIdentifier (US-019, US-020, US-026)
 - lib/data/models/activity_category.freezed.dart - Generated
 - lib/data/models/activity_category.g.dart - Generated
+- lib/data/models/calendar_event.dart
+- lib/data/models/calendar_event.freezed.dart
 - lib/data/models/google_calendar.dart - GoogleCalendar model — id, summary, isPrimary; CalendarAuthException for OAuth denial/failure (US-066)
+- lib/data/models/import_candidate.dart - ImportCandidate model (Freezed + JSON) — transient import candidate with id, title, date, attendeeEmails, sourceType; toJson/fromJson for SharedPreferences persistence (US-068)
+- lib/data/models/import_candidate.freezed.dart - Generated
+- lib/data/models/import_candidate.g.dart - Generated
 - lib/data/models/meeting.dart - Meeting model (Freezed) — categoryIds only (US-042)
 - lib/data/models/meeting.freezed.dart - Generated
 - lib/data/models/meeting.g.dart - Generated
@@ -40,6 +45,9 @@
 - lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, subcategory indentation with T/L tree lines (CustomPainter), EmptyStateWidget for empty list and no search results, long-press edit/delete for private categories (US-026, US-055)
 - lib/presentation/activities/activity_icons.dart - PNG asset icon map (51 entries) + resolveActivityIcon(String?) returning asset path or null + ActivityIcon widget with Icons.category fallback (US-026, US-055)
 - lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, 2D icon picker grid (Dialog replaces AlertDialog to avoid RenderIntrinsicWidth crash) (US-026, US-055)
+- lib/presentation/import/import_success_screen.dart - ImportSuccessScreen — confirmed meeting count, 'GO TO MEETINGS' CTA, clears MeetingInboxProvider (US-068)
+- lib/presentation/import/inbox_item_edit_screen.dart - InboxItemEditScreen — pre-filled form per ImportCandidate; reuses PersonAutocomplete, ActivityAutocomplete, MeetingWeightStepper; Confirm saves to Firestore, Skip discards (US-068)
+- lib/presentation/import/meeting_inbox_screen.dart - MeetingInboxScreen (Pending Meetings) — list of ImportCandidate cards with progress indicator; empty state with Import from Calendar CTA; auto-navigates to ImportSuccessScreen when inbox empty after processing (US-068)
 - lib/presentation/meetings/meeting_detail_provider.dart - State for Meeting Detail screen — resolves participantIds and categoryIds to full objects (US-020, US-026, US-042)
 - lib/presentation/meetings/meeting_detail_screen.dart - Meeting detail screen — displays all fields including resolved categories with ActivityIcon, edit and delete actions (US-022, US-023, US-026, US-055)
 - lib/presentation/persons/person_detail_provider.dart - State for Person Detail screen — fetches meeting count, handles update and delete (US-025)
@@ -47,24 +55,29 @@
 - lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side alphabetical filter (US-024)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection (US-020, US-026, US-042)
+- lib/presentation/providers/calendar_events_provider.dart
 - lib/presentation/providers/calendar_settings_provider.dart - CalendarSettingsProvider — isConnected, availableCalendars, selectedCalendarIds, includeAllDay; connectCalendar() triggers OAuth flow, toggleCalendar/toggleAllDay persist to SharedPreferences, revokeAccess() clears token and prefs; auto-selects primary calendar on first connect (US-066)
 - lib/presentation/providers/export_provider.dart - ExportProvider — isLoading, errorMessage, lastExportPath; no-op guard when already loading; clearError() (US-031)
 - lib/presentation/providers/home_provider.dart - HomeProvider — subscribes to meeting stream, tracks meetingCount and isDismissed (SharedPreferences key: onboarding_calendar_cta_dismissed); shouldShowCta getter (count < 50 && !dismissed); dismissCta() persists dismiss state (US-065)
+- lib/presentation/providers/inbox_item_edit_provider.dart - InboxItemEditProvider — form state for InboxItemEditScreen; initialized from ImportCandidate; validates name/participants/categories; calls MeetingRepository.saveMeeting() on confirm (US-068)
+- lib/presentation/providers/meeting_inbox_provider.dart - MeetingInboxProvider — owns List<ImportCandidate> with SharedPreferences persistence (key: meeting_inbox_candidates); addCandidates() merges by id; markConfirmed/skip remove candidate; clear() resets after success; owned by MainScreen (US-068)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen — stream, year grouping, expand/collapse, client-side search (filteredMeetingsByYear computed getter) (US-021, US-054)
 - lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, setAllActivitiesVisibility(bool) + setAllPersonsVisibility(bool), StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, restoreAllCards); _isInitialized/_lastLoadedYear guard — initialize() and selectYear() skip fetch if data already loaded for same year; resetCache() for logout/user-switch; stores _currentBundle (StatsDataBundle) and calls compute* methods — zero additional Firestore reads on selectActivity/loadDistribution; owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-072)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
+- lib/presentation/screens/calendar_events_screen.dart - CalendarEventsScreen — browse and multi-select Google Calendar events; date range + calendar filters; _handleImport reads MeetingInboxProvider from context, calls addCandidates(), navigates to MeetingInboxScreen (US-067, US-068)
 - lib/presentation/screens/calendar_permission_screen.dart - CalendarPermissionScreen — explanation UI with grant/deny flow; calls CalendarSettingsProvider.connectCalendar(), navigates to SettingsScreen on success, shows CalendarAuthException error with retry option (US-065 stub, US-066 full implementation)
 - lib/presentation/screens/home_screen.dart - Home screen — Consumer2<HomeProvider, StatisticsProvider>; shows OnboardingCalendarCtaCard when shouldShowCta, StatisticsSection otherwise (US-065)
 - lib/presentation/screens/login_screen.dart - Google Sign-In screen — Pacifico title, login illustration, ToS and Privacy Policy links via url_launcher (US-053)
-- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Import from Calendar, Settings, Logout); owns HomeProvider, PersonsListProvider, ActivitiesListProvider, StatisticsProvider, CalendarSettingsProvider lifecycle; tap counter + Timer logic for easter egg (US-026, US-027, US-031, US-064, US-065, US-066, US-072)
+- lib/presentation/screens/main_screen.dart - Root screen after login — BottomNavigationBar with 4 tabs + FAB + Drawer (Import from Calendar, Pending Meetings badge, Settings, Logout); owns HomeProvider, PersonsListProvider, ActivitiesListProvider, StatisticsProvider, CalendarSettingsProvider, MeetingInboxProvider lifecycle; tap counter + Timer logic for easter egg (US-026, US-027, US-031, US-064, US-065, US-066, US-068, US-072)
 - lib/presentation/screens/meetings_list_screen.dart - Meetings list — grouped by year, expand/collapse, SharedSearchBar, EmptyStateWidget for empty list and no search results (US-021, US-054, US-055)
 - lib/presentation/screens/persons_list_screen.dart - Persons list — SharedSearchBar, EmptyStateWidget for empty list and no search results, navigation to PersonDetailScreen (US-024, US-054, US-055)
 - lib/presentation/screens/settings_screen.dart - Settings screen — Calendar section (connect/disconnect, calendar checkboxes, ALL-DAY toggle, revoke); Export Data tile triggers ExportProvider.exportData() (US-031, US-066)
 - lib/presentation/screens/splash_screen.dart - SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)
-- lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — selectable categories from user subcollection, ancestor propagation, add-new-activity flow, ActivityIcon for chips and suggestions (US-020, US-042, US-055)
+- lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — callback-based (selectedCategories, onCategoryAdded, onCategoryRemoved); ancestor propagation, add-new-activity flow, ActivityIcon for chips; reusable in AddMeetingScreen and InboxItemEditScreen (US-020, US-042, US-055, US-068)
 - lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, ChartColors gradient per categoryId, delta % indicator (▲/▼/NEW), filter_icon.png visibility dialog trigger (replaces gear icon), auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049, US-057, US-063)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
 - lib/presentation/widgets/activity_visibility_dialog.dart - Dialog with hierarchical checkbox list + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) for managing activity visibility; activity icons 31px (US-048, US-057)
+- lib/presentation/widgets/calendar_event_card.dart
 - lib/presentation/widgets/easter_egg_dialog.dart - EasterEggDialog — dismisses on tap anywhere; displays easter_egg_icon asset + special thanks message; injectable imageWidget parameter for test isolation (US-064)
 - lib/presentation/widgets/empty_state_widget.dart - Reusable empty state component — illustration + message; used by MeetingsListScreen and PersonsListScreen (US-054), ActivitiesListScreen (US-055)
 - lib/presentation/widgets/interaction_distribution_widget.dart - Animated bar chart showing meeting weight per person — yearly/cumulative toggle, isLoading inline spinner (widget always stays in tree), info icon (>100% explanation), filter_icon.png visibility dialog trigger (replaces gear icon), _lastTargetLeft animation architecture, ChartColors gradient per personId (US-030, US-051, US-057, US-063)
@@ -73,7 +86,7 @@
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget — pre-fills from provider in edit mode (US-023)
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 - lib/presentation/widgets/onboarding_calendar_cta_card.dart - OnboardingCalendarCtaCard — centered Card with headline, subtext, 'Import from Calendar' ElevatedButton, cta_stats.png illustration; onDismiss (X button) and onImport callbacks (US-065)
-- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget + AddPersonDialog — returns strings, save handled by Provider (BUG-42)
+- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget — callback-based (selectedPersons, onPersonAdded, onPersonRemoved); AddPersonDialog; reusable in AddMeetingScreen and InboxItemEditScreen (US-068)
 - lib/presentation/widgets/person_visibility_dialog.dart - Flat checkbox list dialog for managing person visibility in Interaction Distribution metric + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) (US-030, US-057)
 - lib/presentation/widgets/shared_search_bar.dart - Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens (US-055)
 - lib/presentation/widgets/statistics_section.dart
@@ -114,6 +127,9 @@
 - test/presentation/providers/export_provider_test.mocks.dart - Generated mocks for ExportProvider tests
 - test/presentation/providers/home_provider_test.dart - HomeProvider tests — shouldShowCta true (count<50, not dismissed), false (count>=50), false (dismissed), dismissCta() persists to SharedPreferences (US-065)
 - test/presentation/providers/home_provider_test.mocks.dart - Generated mocks for HomeProvider tests
+- test/presentation/providers/inbox_item_edit_provider_test.dart - InboxItemEditProvider tests — initialize pre-fill, validateName, save guards (no persons, no categories), saveMeeting called once on valid data (US-068)
+- test/presentation/providers/inbox_item_edit_provider_test.mocks.dart - Generated mocks for InboxItemEditProvider tests
+- test/presentation/providers/meeting_inbox_provider_test.dart - MeetingInboxProvider tests — initialize with empty/existing prefs, skip, markConfirmed, isEmpty, persistence after confirm (US-068)
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests — stream grouping, expand/collapse, search filtering, no-results state (US-021, US-054)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
 - test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, setAllActivitiesVisibility, setAllPersonsVisibility, carousel state (toggleCardVisibility, restoreAllCards, allCardsHidden), SharedPreferences persistence, idempotent initialize guard, selectYear no-op for same year, compute* reuse via _currentBundle (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-072)
