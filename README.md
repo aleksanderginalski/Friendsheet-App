@@ -221,6 +221,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.23.0 — Persistent Local Cache & Loading Screen (US-073) — March 2026
+- Hive persistent cache for statistics — near-zero Firestore reads on app restart
+- Two-level cache: in-memory (US-072) + Hive disk layer (US-073)
+- JSON bridge pattern — no TypeAdapter conflicts with Freezed models
+- Cache invalidation on write and on logout (HiveService.clearUserData)
+- HomeProvider _initialized flag — eliminates CTA card flash on startup
+- HomeLoadingScreen with custom loading_icon.png
+
 ### v3.22.0 — Meeting Inbox (US-068) — March 2026
 - Meeting Inbox (Pending Meetings) — review and confirm imported candidates
 - SharedPreferences persistence — inbox survives app restarts

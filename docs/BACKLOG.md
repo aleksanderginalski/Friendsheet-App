@@ -1515,7 +1515,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 | **Priority** | P0 (Critical — affects free tier limits) |
 | **Story Points** | 13 |
-| **Status** ✅ COMPLETED (March 08, 2026)
+| **Status** |  ✅ COMPLETED (March 08, 2026)
 | **Labels** | `performance`, `firestore`, `statistics`, `cost-optimization` |
 
 **As a** user  
@@ -1622,7 +1622,7 @@ Three-phase optimization reducing reads by **~95%**:
 |---|---|
 | **Priority** | P2 |
 | **Story Points** | 8 |
-| **Status** | 📋 Planned |
+| **Status** | ✅ COMPLETED (March 10, 2026) |
 | **Labels** | `performance`, `offline`, `hive`, `statistics` |
 | **Depends on** | US-072 ✅ |
 
@@ -1678,125 +1678,55 @@ no SQL, no native dependencies.
 #### Acceptance Criteria
 
 ##### Cache — Write
-- [ ] After first Firestore load, `StatsDataBundle` contents persisted to Hive per year
-- [ ] `getAvailableYears()` result persisted to Hive per userId
-- [ ] Persons and categories persisted to Hive per userId
+- [x] After first Firestore load, `StatsDataBundle` contents persisted to Hive per year
+- [x] `getAvailableYears()` result persisted to Hive per userId
+- [x] Persons and categories persisted to Hive per userId
 
 ##### Cache — Read
-- [ ] On app restart, statistics load from Hive instead of Firestore (if cache exists)
-- [ ] `StatisticsRepository` checks Hive before hitting Firestore
-- [ ] Cache miss (no Hive data) falls back to Firestore transparently
+- [x] On app restart, statistics load from Hive instead of Firestore (if cache exists)
+- [x] `StatisticsRepository` checks Hive before hitting Firestore
+- [x] Cache miss (no Hive data) falls back to Firestore transparently
 
 ##### Cache — Invalidation
-- [ ] Any write in `MeetingRepository` clears `stats_meetings` box entries for that userId
-- [ ] Any write in `PersonRepository` clears `stats_persons` entry for that userId
-- [ ] Any write in `ActivityCategoryRepository` clears `stats_categories` entry for that userId
-- [ ] `invalidateAllCaches()` in `StatisticsRepository` clears all Hive boxes for current user
-- [ ] Cache cleared on logout (all Hive boxes purged for that userId)
+- [x] Any write in `MeetingRepository` clears `stats_meetings` box entries for that userId
+- [x] Any write in `PersonRepository` clears `stats_persons` entry for that userId
+- [x] Any write in `ActivityCategoryRepository` clears `stats_categories` entry for that userId
+- [x] `invalidateAllCaches()` in `StatisticsRepository` clears all Hive boxes for current user
+- [x] Cache cleared on logout (all Hive boxes purged for that userId)
 
 ##### Quality
-- [ ] `flutter analyze` passes with 0 issues
-- [ ] All existing tests pass
-- [ ] New unit tests for Hive cache hit / miss / invalidation behavior
-- [ ] Hive boxes opened once at app startup (not per-repository-call)
+- [x] `flutter analyze` passes with 0 issues
+- [x] All existing tests pass
+- [x] New unit tests for Hive cache hit / miss / invalidation behavior
+- [x] Hive boxes opened once at app startup (not per-repository-call)
 
 ---
 
-#### Technical Design
-
-##### Hive Adapter Strategy
-
-Meetings, Persons and ActivityCategory are Freezed models.
-Hive requires `TypeAdapter` for each stored type.
-
-Two options:
-
-**Option A — Hive TypeAdapters (generated)**
-Generate adapters via `build_runner`. Clean but adds annotations to Freezed models.
-
-**Option B — JSON bridge**
-Store objects as JSON strings using existing `toJson()`/`fromJson()`.
-No new annotations. Slightly slower on large datasets (acceptable at ~860 meetings).
-
-**Recommendation: Option B (JSON bridge)**  
-Freezed models already have `toJson`/`fromJson`. Avoids annotation conflicts between
-Freezed and Hive generators. Simpler to maintain.
-
-```dart
-// Write
-final box = Hive.box('stats_meetings');
-final key = '${userId}_$year';
-box.put(key, meetings.map((m) => m.toJson()).toList());
-
-// Read
-final raw = box.get(key) as List?;
-if (raw != null) {
-  return raw.map((e) => Meeting.fromJson(Map.from(e))).toList();
-}
-```
-
-##### HiveService (new)
-
-Centralizes box initialization and lifecycle:
-
-```dart
-class HiveService {
-  static Future initialize() async {
-    await Hive.initFlutter();
-    await Hive.openBox('stats_meetings');
-    await Hive.openBox('stats_categories');
-    await Hive.openBox('stats_persons');
-    await Hive.openBox('stats_available_years');
-  }
-
-  static Future clearUserData(String userId) async {
-    // Remove all keys for this userId across all stats boxes
-  }
-}
-```
-
-Called once in `main.dart` before `runApp()`.
-
-##### Integration with CacheInvalidator (US-072)
-
-`StatisticsRepository.invalidateMeetingsCache()` extended to also clear Hive box:
-
-```dart
-void invalidateMeetingsCache() {
-  _meetingsCache.clear();                          // in-memory (US-072)
-  Hive.box('stats_meetings').clear();              // persistent (US-073)
-}
-```
-
-No changes needed to `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository` —
-they already call `invalidate*Cache()` via `CacheInvalidator`.
-
----
 
 #### Tasks
 
 ##### Setup (Est. 1h)
-- [ ] **TASK-073.1:** Add `hive` and `hive_flutter` to `pubspec.yaml`; verify `.gitignore` covers Hive files
-- [ ] **TASK-073.2:** Create `HiveService` — box initialization + `clearUserData(userId)`
-- [ ] **TASK-073.3:** Call `HiveService.initialize()` in `main.dart` before `runApp()`
+- [x] **TASK-073.1:** Add `hive` and `hive_flutter` to `pubspec.yaml`; verify `.gitignore` covers Hive files
+- [x] **TASK-073.2:** Create `HiveService` — box initialization + `clearUserData(userId)`
+- [x] **TASK-073.3:** Call `HiveService.initialize()` in `main.dart` before `runApp()`
 
 ##### Repository Layer (Est. 2h)
-- [ ] **TASK-073.4:** Extend `StatisticsRepository.getMeetingsForYear()` — check Hive before Firestore; write to Hive after fetch
-- [ ] **TASK-073.5:** Extend `StatisticsRepository` categories/persons cache — check Hive before Firestore
-- [ ] **TASK-073.6:** Extend `StatisticsRepository.getAvailableYears()` — persist/read from Hive
-- [ ] **TASK-073.7:** Extend all `invalidate*Cache()` methods to also clear corresponding Hive boxes
+- [x] **TASK-073.4:** Extend `StatisticsRepository.getMeetingsForYear()` — check Hive before Firestore; write to Hive after fetch
+- [x] **TASK-073.5:** Extend `StatisticsRepository` categories/persons cache — check Hive before Firestore
+- [x] **TASK-073.6:** Extend `StatisticsRepository.getAvailableYears()` — persist/read from Hive
+- [x] **TASK-073.7:** Extend all `invalidate*Cache()` methods to also clear corresponding Hive boxes
 
 ##### Logout Integration (Est. 30min)
-- [ ] **TASK-073.8:** Call `HiveService.clearUserData(userId)` on logout in `AuthService`
+- [x] **TASK-073.8:** Call `HiveService.clearUserData(userId)` on logout in `AuthService`
 
 ##### Tests (Est. 1.5h)
-- [ ] **TASK-073.9:** Unit tests — Hive cache hit (Firestore not called on second load after restart simulation)
-- [ ] **TASK-073.10:** Unit tests — Hive cache miss (first load hits Firestore, then writes to Hive)
-- [ ] **TASK-073.11:** Unit tests — invalidation clears both in-memory and Hive
+- [x] **TASK-073.9:** Unit tests — Hive cache hit (Firestore not called on second load after restart simulation)
+- [x] **TASK-073.10:** Unit tests — Hive cache miss (first load hits Firestore, then writes to Hive)
+- [x] **TASK-073.11:** Unit tests — invalidation clears both in-memory and Hive
 
 ##### Documentation (Est. 30min)
-- [ ] **TASK-073.12:** Update `architecture.md` — extend Statistics Caching Strategy section with Hive layer
-- [ ] **TASK-073.13:** Update README version history
+- [x] **TASK-073.12:** Update `architecture.md` — extend Statistics Caching Strategy section with Hive layer
+- [x] **TASK-073.13:** Update README version history
 
 ---
 

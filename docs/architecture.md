@@ -21,11 +21,13 @@ graph TB
     
     subgraph "Data Storage"
         D[(Firestore Database)]
+        H[(Hive Local Cache)]
     end
     
     A -->|Login/Register| B
     A -->|CRUD Operations| C
     C -->|Store/Retrieve| D
+    A -->|Read/Write cache| H
     A -->|OAuth calendar.readonly M6| E
     A -->|OAuth photoslibrary.readonly M6| E2
     A -->|AI Queries M8| F
@@ -34,6 +36,7 @@ graph TB
     style B fill:#FFC107
     style C fill:#FFC107
     style D fill:#2196F3
+    style H fill:#FF9800
     style E fill:#9C27B0
     style E2 fill:#7B1FA2
     style F fill:#FF5722
@@ -96,7 +99,6 @@ erDiagram
         datetime createdAt
     }
 
-
     INVITATION_CODE {
         string id PK
         string code "6-char alphanumeric"
@@ -153,8 +155,14 @@ graph TB
         C2[Meeting Repository]
         C3[Person Repository]
         C4[Activity Category Repository - M2]
-        C5[Invitation Code Repository - M5]
-        C6[Dashboard Config Repository - M7]
+        C5[Statistics Repository - M3]
+        C6[Invitation Code Repository - M5]
+        C7[Dashboard Config Repository - M7]
+    end
+    
+    subgraph "Cache Layer"
+        CA1[In-Memory Cache - US-072]
+        CA2[Hive Persistent Cache - US-073]
     end
     
     subgraph "External Services"
@@ -192,10 +200,10 @@ graph TB
 **Tab structure:**
 | Index | Label | Screen | Status |
 |-------|-------|--------|--------|
-| 0 | Home | HomeScreen | Reserved for M7 dashboard |
+| 0 | Home | HomeScreen | ✅ US-065 |
 | 1 | Meetings | MeetingsListScreen | ✅ US-021 |
 | 2 | Friends | PersonsListScreen | ✅ US-024 |
-| 3 | Activities | ActivitiesListScreen | US-026 |
+| 3 | Activities | ActivitiesListScreen | ✅ US-026 |
 
 **IndexedStack:** All tab widgets are kept alive — `MeetingsListScreen` stream subscription stays active when switching tabs.
 
@@ -214,12 +222,6 @@ firebase deploy --only firestore:indexes
 
 ---
 
-Zaktualizuj też ostatnią linię `architecture.md`:
-```markdown
-**Last Updated:** February 21, 2026 (M2 navigation architecture added — US-021)
-
-```
-
 ### M2 — Activity Category Hierarchy
 
 Activity categories support up to **2 levels** of nesting via `parentCategoryId`.
@@ -236,11 +238,13 @@ Food & Drinks (level 1, isGlobal: false, userId: uid)
 **Firestore path:** `users/{userId}/activity_categories` (subcollection)
 Depth validation enforced in `ActivityCategoryRepository._validateDepth()`.
 
-**Icon System:** Icons stored as string identifiers (e.g. `"sports_tennis"`, `"restaurant"`) referencing Material Icons. Predefined set of ~50 icons. No image uploads — identifier resolved to widget at render time.
+**Icon System:** PNG asset icons stored as string identifiers (e.g. `"sports_tennis"`) referencing a predefined set of 51 custom icons in `assets/icons/activities/`. Identifier resolved to asset path via `resolveActivityIcon()` helper in `activity_icons.dart`. Falls back to `Icons.category` if identifier unknown.
 
 **Statistics implication:** Filtering by parent category includes all descendants. Query logic: load full category tree client-side, resolve descendant IDs, filter meetings.
 
 **Onboarding copy logic:** On first login, all global categories are batch-copied to user's subcollection (US-020). Global categories are invisible to the user after onboarding.
+
+---
 
 ### M2 — Activities List Screen (US-026)
 
@@ -252,8 +256,6 @@ Initialized via `addPostFrameCallback` on first load and re-initialized on every
 **Edit/Delete guard:** Only categories with `isGlobal: false` expose long-press options.
 Global categories are read-only in the UI.
 
-**Icon system:** String identifiers (e.g. `"sports_tennis"`) resolved to `IconData` at render time
-via `resolveActivityIcon()` helper in `activity_icons.dart`. Predefined set of 20 icons.
 ---
 
 ### M3 — Statistics Architecture
@@ -294,7 +296,7 @@ Persists `selectedYear` and `availableYears` during session.
 
 **Animated bar chart pattern (US-048, US-049):**
 Use `_lastTargetLeft` / `_lastTargetBarHeight` fields (not `evaluate(controller)`) as tween begin values in `didUpdateWidget`. This guarantees stationary bars have `begin == end` regardless of controller timing or number of `didUpdateWidget` calls.
-```
+
 ---
 
 ### M4 — Production Build
@@ -309,6 +311,7 @@ Use `_lastTargetLeft` / `_lastTargetBarHeight` fields (not `evaluate(controller)
 - CI/CD: keystore provided via GitHub Secrets for automated release builds (planned)
 
 **New gitignore entries added:**
+```
 *.jks
 *.keystore
 key.properties
@@ -377,7 +380,9 @@ class ImportCandidate {
 }
 ```
 
-**MeetingInboxProvider:** holds `List<ImportCandidate>` in memory. NOT persisted. Resets on app close (intentional — keeps implementation simple for M6).
+**MeetingInboxProvider:** holds `List<ImportCandidate>` with `SharedPreferences` persistence
+(key: `meeting_inbox_candidates`). Candidates survive app restarts. Cleared on
+`ImportSuccessScreen` CTA tap via `provider.clear()`.
 
 ---
 
@@ -390,14 +395,13 @@ Token management: stored via `flutter_secure_storage`. Separate from Firebase Au
 Settings stored in SharedPreferences:
 - `calendar_selected_ids`: List of selected calendar IDs (default: primary)
 - `calendar_include_all_day`: bool (default: false)
-- `onboarding_calendar_cta_dismissed`: bool (default: false)
-
-Email-to-person heuristic: `firstname.lastname@domain` → parsed as `firstName: "Firstname", lastName: "Lastname"` — shown as suggestion, never auto-created.
 
 Event filtering rules:
 - Past events only (startTime < now)
 - Minimum 2 attendees (organizer + at least 1 other)
 - ALL-DAY events: excluded by default, included if `calendar_include_all_day: true`
+
+Email-to-person heuristic: `firstname.lastname@domain` → parsed as `firstName: "Firstname", lastName: "Lastname"` — shown as suggestion, never auto-created.
 
 ---
 
@@ -405,7 +409,7 @@ Event filtering rules:
 
 OAuth Scope: `https://www.googleapis.com/auth/photoslibrary.readonly`
 
-Token management: same `flutter_secure_storage` service as Calendar (or extracted to shared `OAuthService`).
+Token management: same `flutter_secure_storage` service as Calendar.
 
 Data flow: photo creation date → `ImportCandidate.date`. Photo thumbnails displayed in grid for selection UX only — never stored.
 
@@ -462,7 +466,6 @@ graph LR
 
 **Rule:** Never query root `/meetings` or `/persons` — these collections do not exist post US-045.
 All user data lives under `users/{uid}/` subcollections.
-```
 
 ---
 
@@ -519,8 +522,8 @@ service cloud.firestore {
   }
 }
 ```
----
 
+---
 
 ## 7. Deployment Architecture
 
@@ -582,11 +585,12 @@ graph TB
 |-----------|----------|---------|
 | M2 | No new packages | Reuses existing stack |
 | M3 | `path_provider`, `dart:io` ✅ | JSON export to device storage |
+| M3.5 / US-072–073 | `hive`, `hive_flutter` ✅ | Persistent local cache for offline-first statistics |
 | M4 | Release signing config | Production build |
 | M5 | No new packages | Firestore batch writes |
-| M6 (FEATURE-013) | `google_sign_in` (extended scope: `calendar.readonly`) | Calendar OAuth |
-| M6 (FEATURE-013) | `flutter_secure_storage` | OAuth token storage |
-| M6 (FEATURE-013) | Google Calendar REST API (via `http`) | Fetch calendar events |
+| M6 (FEATURE-013) | `google_sign_in` (extended scope: `calendar.readonly`) ✅ | Calendar OAuth |
+| M6 (FEATURE-013) | `flutter_secure_storage` ✅ | OAuth token storage |
+| M6 (FEATURE-013) | Google Calendar REST API (via `http`) ✅ | Fetch calendar events |
 | M6 (FEATURE-014) | `google_sign_in` (extended scope: `photoslibrary.readonly`) | Photos OAuth |
 | M6 (FEATURE-014) | Google Photos REST API (via `http`) | Fetch photo metadata |
 | M7 | No new packages | Reuses existing stack |
@@ -604,20 +608,22 @@ graph TB
 ### Post-MVP Upgrade Path
 - **Statistics:** Cloud Functions for server-side aggregation
 - **Social features:** Real-time shared documents (Option B) if copy-based insufficient
-- **Caching:** Local statistics cache updated on meeting save
+- **Caching:** TTL-based Hive cache expiration (deferred — single user, infrequent writes)
 - **Indexes:** Composite indexes for category + isGlobal queries
 
 ---
 
-## Statistics Caching Strategy (US-072)
+## Statistics Caching Strategy (US-072, US-073)
 
 ### Problem
 
 Each `StatisticsProvider.initialize()` call previously triggered multiple redundant Firestore reads:
 the same year's meetings, categories, and persons were fetched independently by each of
 `getActivityWeightBreakdown`, `getPersonsForActivity`, and `getInteractionDistribution`.
+Additionally, every app restart cleared all cached data and triggered ~1,800 Firestore reads
+on first statistics open.
 
-### Three-Phase Solution
+### Three-Phase Solution (US-072) + Persistent Layer (US-073)
 
 **Phase 1 — Provider-level idempotency guard**
 
@@ -633,9 +639,9 @@ clears the guard for logout/user-switch scenarios.
 - `_personsCache: List<Person>?` (single user)
 
 Cache invalidation is wired via the `CacheInvalidator` interface (implemented by
-`StatisticsRepository`, consumed optionally by `MeetingRepository`, `PersonRepository`,
-and `ActivityCategoryRepository`). Write operations call `cacheInvalidator?.invalidate*Cache()`
-so stale data is never served after a mutation.
+`StatisticsRepository`, consumed by `MeetingRepository`, `PersonRepository`,
+and `ActivityCategoryRepository`). All `invalidate*Cache()` methods are `Future<void>` —
+write operations `await` them so stale data is never served after a mutation.
 
 **Phase 3 — Single-query refactor via StatsDataBundle**
 
@@ -662,24 +668,66 @@ as `_currentBundle` and reused by:
 zero additional Firestore reads. Only cumulative mode (`getCumulativeInteractions`)
 and `getAvailableYears` still require their own queries.
 
-Old async methods are kept as thin backward-compatible wrappers that call
-`loadAllStatsData` + the corresponding `compute*` method.
+### Persistent Cache Layer (US-073)
 
-### Result
+**Problem:** In-memory cache (US-072) is cleared on every app restart, triggering
+~1,800 Firestore reads on first statistics open after relaunch.
 
-| Operation | Before (reads) | After (reads) |
+**Solution:** Hive persistent cache as a second cache layer below in-memory.
+
+**Lookup chain:**
+1. In-memory cache (US-072) — fastest, session-only
+2. Hive disk cache (US-073) — fast, survives restarts
+3. Firestore — only on true cache miss (first ever load)
+
+**Hive box structure:**
+
+| Box name | Key | Value |
 |---|---|---|
-| First initialize() | ~10+ Firestore queries | 1 (years) + 4 (bundle) |
-| selectYear() (new year) | ~8 Firestore queries | 2 (current+prev year, cached) |
-| selectActivity() | 2 Firestore queries | 0 |
-| loadDistribution() (yearly) | 3 Firestore queries | 0 |
-| Second initialize() (same tab) | ~10+ | 0 (provider guard) |
+| `stats_meetings` | `{userId}_{year}` | `List<Meeting>` as JSON |
+| `stats_categories` | `{userId}` | `List<ActivityCategory>` as JSON |
+| `stats_persons` | `{userId}` | `List<Person>` as JSON |
+| `stats_available_years` | `{userId}` | `List<int>` |
+
+**Adapter strategy: JSON bridge (Option B)**
+Existing `toJson()`/`fromJson()` methods used for serialization.
+No `@HiveType`/`@HiveField` annotations on Freezed models — avoids build_runner conflicts.
+
+**HiveService** (`lib/services/hive_service.dart`): opens all boxes once at app startup
+in `main.dart` before `runApp()`. `clearUserData(userId)` removes all cache entries
+for a given user — called on logout from `AuthService`.
+
+**Cache invalidation:** All `invalidate*Cache()` methods in `StatisticsRepository`
+are `Future<void>` and clear both in-memory and Hive layers atomically.
+`CacheInvalidator` interface methods are `Future<void>` accordingly.
+
+### Combined Result
+
+| Operation | Before US-072 | After US-072 | After US-073 |
+|---|---|---|---|
+| First initialize() | ~10+ queries | 1 (years) + 4 (bundle) | 1 (years) + 4 (bundle) |
+| selectYear() (new year) | ~8 queries | 2 (cached) | ~0 (if Hive hit) |
+| selectActivity() | 2 queries | 0 | 0 |
+| loadDistribution() (yearly) | 3 queries | 0 | 0 |
+| Second initialize() (same tab) | ~10+ | 0 (provider guard) | 0 |
+| App restart, no writes | ~10+ | ~5 (cache cleared) | ~0 (Hive hit) |
+
+---
 
 ### M5 — Calendar Import Architecture (US-065, US-066)
 
-**HomeProvider** subscribes to `MeetingRepository` stream — same pattern as `MeetingsListProvider`.
-`shouldShowCta` getter: `meetingCount < 50 && !isDismissed`.
-Dismissed state persisted in SharedPreferences key: `onboarding_calendar_cta_dismissed`.
+**HomeProvider** subscribes to `MeetingRepository.getMeetingsByUser()` stream —
+same real-time listener pattern as `MeetingsListProvider`.
+
+`shouldShowCta` getter: `_initialized && _meetingCount < 50`
+
+The `_initialized` flag prevents CTA card flash on startup — `shouldShowCta` returns
+`false` until the first stream emission sets `_initialized = true`. Before that,
+`HomeScreen` renders `HomeLoadingScreen` with `assets/images/loading_icon.png`.
+
+CTA card has **no dismiss button** — it disappears only when meeting count reaches 50.
+(FR-020 final spec removed dismiss — `isDismissed` / `onboarding_calendar_cta_dismissed`
+key no longer used.)
 
 **GoogleCalendarService** (Singleton) uses incremental OAuth via `google_sign_in.requestScopes()`.
 Access token stored in `flutter_secure_storage` (key: `google_calendar_access_token`).
@@ -716,7 +764,8 @@ do not inherit providers from `MainScreen` automatically.
 call `addCandidates()` on the same `MeetingInboxProvider`. Adding a new
 import source requires only a new data-fetching layer.
 
+---
+
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 08, 2026 (M5 Calendar Import architecture added — US-065, US-066)
-
+**Last Updated:** March 2026 (US-073 persistent Hive cache + HomeLoadingScreen added)

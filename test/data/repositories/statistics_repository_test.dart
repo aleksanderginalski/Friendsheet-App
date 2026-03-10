@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,14 +11,22 @@ import 'package:friendsheet/data/repositories/activity_category_repository.dart'
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
+import 'package:friendsheet/services/hive_service.dart';
+import 'package:hive/hive.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
   late ActivityCategoryRepository categoryRepository;
   late PersonRepository personRepository;
   late StatisticsRepository repository;
+  late Directory hiveDir;
 
-  setUp(() {
+  setUp(() async {
+    // Each test gets its own Hive instance in a fresh temp directory so that
+    // Hive state never leaks between tests.
+    hiveDir = await Directory.systemTemp.createTemp('hive_stats_test_');
+    await HiveService.initialize(testPath: hiveDir.path);
+
     fakeFirestore = FakeFirebaseFirestore();
     categoryRepository = ActivityCategoryRepository(firestore: fakeFirestore);
     personRepository = PersonRepository(
@@ -28,6 +38,11 @@ void main() {
       categoryRepository: categoryRepository,
       personRepository: personRepository,
     );
+  });
+
+  tearDown(() async {
+    await Hive.close();
+    await hiveDir.delete(recursive: true);
   });
 
   // Helper: inserts a meeting document into the user's subcollection.
@@ -759,7 +774,7 @@ void main() {
             .collection('meetings')
             .get();
         await snapshot.docs.first.reference.delete();
-        repository.invalidateMeetingsCache();
+        await repository.invalidateMeetingsCache();
 
         // Now re-fetch — must read empty Firestore.
         final after = await repository.getMeetingsForYear('user-1', 2026);
@@ -774,7 +789,7 @@ void main() {
         // Populate all caches via loadAllStatsData.
         await repository.loadAllStatsData(2026, 'user-1');
 
-        repository.invalidateAllCaches();
+        await repository.invalidateAllCaches();
 
         // After invalidation, deleting from Firestore and re-fetching should
         // return empty results (proves cache was cleared).
@@ -1005,6 +1020,72 @@ void main() {
         final result = repository.computeInteractionDistribution(bundle);
         expect(result, hasLength(1));
         expect(result.first.currentYearWeight, equals(5));
+      });
+    });
+
+    // ─── Phase 4: Hive persistent cache (US-073) ────────────────────────────
+
+    group('getMeetingsForYear() — Hive cache hit', () {
+      test(
+          'returns data from Hive after in-memory cache is cleared (simulates '
+          'app restart)', () async {
+        await addMeeting('user-1', DateTime(2026, 3, 1), weight: 5);
+
+        // First call — Firestore hit, result written to Hive.
+        final first = await repository.getMeetingsForYear('user-1', 2026);
+        expect(first, hasLength(1));
+
+        // Delete the document from Firestore to prove next read won't use it.
+        final snapshot = await fakeFirestore
+            .collection('users')
+            .doc('user-1')
+            .collection('meetings')
+            .get();
+        await snapshot.docs.first.reference.delete();
+
+        // Simulate app restart: create a fresh repository instance — empty
+        // in-memory cache — but Hive boxes are still open with cached data.
+        final restarted = StatisticsRepository(
+          firestore: fakeFirestore,
+          categoryRepository: categoryRepository,
+          personRepository: personRepository,
+        );
+
+        // Second call: in-memory miss → Hive hit → returns cached data.
+        final second = await restarted.getMeetingsForYear('user-1', 2026);
+        expect(second, hasLength(1));
+        expect(second.first.weight, equals(5));
+      });
+    });
+
+    group('getMeetingsForYear() — Hive cache miss', () {
+      test('fetches from Firestore on empty Hive and writes result to Hive box',
+          () async {
+        await addMeeting('user-1', DateTime(2026, 6, 1), weight: 3);
+
+        // Hive is empty (fresh setUp) — first call must hit Firestore.
+        await repository.getMeetingsForYear('user-1', 2026);
+
+        // Verify Hive box was populated after the Firestore fetch.
+        final raw = HiveService.box(HiveService.meetingsBox).get('user-1_2026');
+        expect(raw, isNotNull);
+        expect((raw as List).length, equals(1));
+      });
+    });
+
+    group('invalidateMeetingsCache() — clears both in-memory and Hive', () {
+      test('Hive box is empty after invalidation', () async {
+        // Populate Hive via a normal read.
+        await addMeeting('user-1', DateTime(2026, 3, 1), weight: 5);
+        await repository.getMeetingsForYear('user-1', 2026);
+        expect(
+          HiveService.box(HiveService.meetingsBox).isEmpty,
+          isFalse,
+        );
+
+        await repository.invalidateMeetingsCache();
+
+        expect(HiveService.box(HiveService.meetingsBox).isEmpty, isTrue);
       });
     });
   });
