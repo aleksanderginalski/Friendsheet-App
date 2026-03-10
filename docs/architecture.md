@@ -697,6 +697,25 @@ Calendar selection and ALL-DAY preference persisted in SharedPreferences:
 
 ---
 
+### M5 — Meeting Inbox Architecture (US-068)
+
+**MeetingInboxProvider** owned by `MainScreen` — same lifecycle as
+`CalendarSettingsProvider`. Initialized via `loadFromPrefs()` in
+`addPostFrameCallback`.
+
+**Persistence:** `SharedPreferences` key `meeting_inbox_candidates` —
+`List<ImportCandidate>` serialized as JSON. Candidates survive app restarts.
+Cleared on `ImportSuccessScreen` CTA tap via `provider.clear()`.
+
+**Navigation scope rule:** Every `Navigator.push` to `MeetingInboxScreen`
+or `CalendarEventsScreen` must wrap the child in
+`ChangeNotifierProvider.value(value: _meetingInboxProvider)` — new routes
+do not inherit providers from `MainScreen` automatically.
+
+**Source-agnostic design:** Both Calendar (US-067) and Photos (US-070)
+call `addCandidates()` on the same `MeetingInboxProvider`. Adding a new
+import source requires only a new data-fetching layer.
+
 **End of Document - Architecture Documentation**
 
 **Last Updated:** March 08, 2026 (M5 Calendar Import architecture added — US-065, US-066)
