@@ -119,13 +119,34 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
             // --- Participants ---
             const _SectionHeader(title: 'Participants * (min. 1)'),
             const SizedBox(height: 8),
-            const PersonAutocomplete(),
+            PersonAutocomplete(
+              selectedPersons: provider.selectedPersons,
+              onSearch: provider.searchPersons,
+              onPersonAdded: provider.selectPerson,
+              onNewPerson: provider.addNewPerson,
+              onPersonRemoved: provider.removePerson,
+              participantsError: provider.participantsError,
+            ),
             const SizedBox(height: 24),
 
             // --- Activities ---
             const _SectionHeader(title: 'Activities * (min. 1)'),
             const SizedBox(height: 8),
-            const ActivityAutocomplete(),
+            ActivityAutocomplete(
+              selectedCategories: provider.selectedCategories,
+              onSearch: provider.searchCategories,
+              onCategoryAdded: (category) {
+                final userId = AuthService().currentUserId ?? '';
+                return provider.addCategory(category, userId);
+              },
+              onNewActivity: (name) {
+                final userId = AuthService().currentUserId ?? '';
+                return provider.addNewActivity(name, userId);
+              },
+              onCategoryRemoved: provider.removeCategory,
+              onGetParentName: provider.getParentName,
+              activitiesError: provider.activitiesError,
+            ),
             const SizedBox(height: 32),
 
             // --- Save Button ---
