@@ -221,6 +221,12 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.22.0 — Meeting Inbox (US-068) — March 2026
+- Meeting Inbox (Pending Meetings) — review and confirm imported candidates
+- SharedPreferences persistence — inbox survives app restarts
+- Pending Meetings drawer tile with live candidate count badge
+- Refactored PersonAutocomplete and ActivityAutocomplete to callback-based widgets
+
 ### v3.21.0 - US-067 Browse & Select Calendar Events (March 2026)
 - ✅ CalendarEvent Freezed model (local memory only — never persisted to Firestore)
 - ✅ ImportCandidate Freezed model + ImportSourceType enum (calendar / photos)

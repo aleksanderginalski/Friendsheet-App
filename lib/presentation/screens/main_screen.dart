@@ -14,10 +14,12 @@ import '../../data/services/google_calendar_service.dart';
 import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
+import '../import/meeting_inbox_screen.dart';
 import '../persons/persons_list_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/home_provider.dart';
+import '../providers/meeting_inbox_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
@@ -47,6 +49,7 @@ class _MainScreenState extends State<MainScreen> {
   late final ActivitiesListProvider _activitiesListProvider;
   late final StatisticsProvider _statisticsProvider;
   late final CalendarSettingsProvider _calendarSettingsProvider;
+  late final MeetingInboxProvider _meetingInboxProvider;
 
   @override
   void initState() {
@@ -81,8 +84,9 @@ class _MainScreenState extends State<MainScreen> {
     _calendarSettingsProvider = CalendarSettingsProvider(
       calendarService: GoogleCalendarService(),
     );
+    _meetingInboxProvider = MeetingInboxProvider();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Ensure calendar token is loaded before drawer renders
+      // Ensure calendar token is loaded before drawer renders.
       await GoogleCalendarService().ensureInitialized();
 
       final userId = AuthService().currentUserId;
@@ -92,6 +96,7 @@ class _MainScreenState extends State<MainScreen> {
       }
       _statisticsProvider.initialize();
       _calendarSettingsProvider.initialize();
+      _meetingInboxProvider.loadFromPrefs();
     });
   }
 
@@ -125,18 +130,13 @@ class _MainScreenState extends State<MainScreen> {
     _activitiesListProvider.dispose();
     _statisticsProvider.dispose();
     _calendarSettingsProvider.dispose();
+    _meetingInboxProvider.dispose();
     super.dispose();
   }
 
-  /// Navigates to CalendarPermissionScreen using the State's own context.
-  /// This avoids the stale-context bug that occurs when using the drawer's
-  /// BuildContext after Navigator.pop() has deactivated it.
-  void _showCalendarErrorSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Failed to load calendars')),
-    );
-  }
-
+  /// Navigates to CalendarPermissionScreen via the global navigator key.
+  /// Using the navigator key avoids stale-context bugs — the key is independent
+  /// of any widget's lifecycle, so navigation always reaches its destination.
   void _openCalendarPermissionScreen() {
     appNavigatorKey.currentState?.push(
       MaterialPageRoute(
@@ -146,11 +146,29 @@ class _MainScreenState extends State<MainScreen> {
             onConnected: (calendars) {
               appNavigatorKey.currentState?.pushReplacement(
                 MaterialPageRoute(
-                  builder: (_) => CalendarEventsScreen(calendars: calendars),
+                  builder: (_) => ChangeNotifierProvider.value(
+                    value: _meetingInboxProvider,
+                    child: CalendarEventsScreen(calendars: calendars),
+                  ),
                 ),
               );
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Navigates to MeetingInboxScreen using the State's own context.
+  /// This avoids the stale-context bug when using the drawer's BuildContext
+  /// after Navigator.pop() has deactivated it.
+  void _openPendingMeetings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: _meetingInboxProvider,
+          child: const MeetingInboxScreen(),
         ),
       ),
     );
@@ -204,6 +222,7 @@ class _MainScreenState extends State<MainScreen> {
         ChangeNotifierProvider.value(value: _activitiesListProvider),
         ChangeNotifierProvider.value(value: _statisticsProvider),
         ChangeNotifierProvider.value(value: _calendarSettingsProvider),
+        ChangeNotifierProvider.value(value: _meetingInboxProvider),
       ],
       child: _buildScaffold(context),
     );
@@ -261,21 +280,49 @@ class _MainScreenState extends State<MainScreen> {
                     final calendarService = GoogleCalendarService();
 
                     if (isConnected) {
+                      // Capture messenger before the await so no BuildContext
+                      // is used across an async gap.
+                      final messenger = appNavigatorKey.currentContext != null
+                          ? ScaffoldMessenger.maybeOf(
+                              appNavigatorKey.currentContext!,
+                            )
+                          : null;
                       try {
                         final calendars =
                             await calendarService.fetchCalendars();
                         appNavigatorKey.currentState?.push(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                CalendarEventsScreen(calendars: calendars),
+                            builder: (_) => ChangeNotifierProvider.value(
+                              value: _meetingInboxProvider,
+                              child: CalendarEventsScreen(calendars: calendars),
+                            ),
                           ),
                         );
                       } catch (e) {
-                        _showCalendarErrorSnackBar();
+                        messenger?.showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to load calendars'),
+                          ),
+                        );
                       }
                     } else {
                       _openCalendarPermissionScreen();
                     }
+                  },
+                );
+              },
+            ),
+            // Pending Meetings tile — only shown when inbox has candidates.
+            Consumer<MeetingInboxProvider>(
+              builder: (context, inboxProvider, _) {
+                final count = inboxProvider.candidates.length;
+                if (count == 0) return const SizedBox.shrink();
+                return ListTile(
+                  leading: const Icon(Icons.inbox),
+                  title: Text('Pending Meetings ($count)'),
+                  onTap: () {
+                    Navigator.pop(context); // close drawer
+                    _openPendingMeetings();
                   },
                 );
               },

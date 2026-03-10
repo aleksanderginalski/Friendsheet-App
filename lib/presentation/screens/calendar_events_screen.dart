@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
+import '../import/meeting_inbox_screen.dart';
 import '../providers/calendar_events_provider.dart';
+import '../providers/meeting_inbox_provider.dart';
 import '../widgets/calendar_event_card.dart';
 
 /// Screen for browsing and selecting calendar events for import.
@@ -60,12 +62,22 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
     }
   }
 
-  void _handleImport(BuildContext context, CalendarEventsProvider provider) {
+  void _handleImport(
+    BuildContext context,
+    CalendarEventsProvider provider,
+  ) {
     final candidates = provider.buildImportCandidates();
-    // TODO: Navigate to MeetingInboxScreen (US-068)
-    // Temporary: confirm selection count via snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${candidates.length} events ready for import')),
+    final inboxProvider = context.read<MeetingInboxProvider>();
+    inboxProvider.addCandidates(candidates);
+
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: inboxProvider,
+          child: const MeetingInboxScreen(),
+        ),
+      ),
     );
   }
 
