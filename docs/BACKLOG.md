@@ -2723,12 +2723,13 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [ ] Back navigation from `InboxItemEditScreen` returns to inbox list without data loss
 
 **Tasks:**
-- [ ] **TASK-068.1:** Build `MeetingInboxScreen` — list of `ImportCandidate` cards with progress indicator
-- [ ] **TASK-068.2:** Build `InboxItemEditScreen` — pre-filled form reusing existing field widgets (MeetingNameField, MeetingWeightStepper, MeetingDateField, participant autocomplete, activity autocomplete)
-- [ ] **TASK-068.3:** Implement confirm flow — validate required fields, save to Firestore via `MeetingRepository`, remove from `MeetingInboxProvider`
-- [ ] **TASK-068.4:** Implement skip flow — remove from `MeetingInboxProvider` without saving
-- [ ] **TASK-068.5:** Build `ImportSuccessScreen` — count of added meetings, "Go to Meetings" CTA
-- [ ] **TASK-068.6:** Write tests — confirm flow, skip flow, empty inbox state, pre-fill logic
+- [ ] **TASK-068.1:** Extend ImportCandidate with JSON support + run build_runner
+- [ ] **TASK-068.2:** Create MeetingInboxProvider
+- [ ] **TASK-068.3:** Create InboxItemEditProvider
+- [ ] **TASK-068.4:** Build MeetingInboxScreen
+- [ ] **TASK-068.5:** Build InboxItemEditScreen
+- [ ] **TASK-068.6:** Build ImportSuccessScreen
+- [ ] **TASK-068.7:** Write tests for MeetingInboxProvider and InboxItemEditProvider
 
 ---
 

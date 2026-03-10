@@ -3,10 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
-import 'package:friendsheet/data/models/google_calendar.dart' as _i4;
-import 'package:friendsheet/data/services/google_calendar_service.dart' as _i2;
+import 'package:flutter/foundation.dart' as _i2;
+import 'package:friendsheet/data/models/calendar_event.dart' as _i6;
+import 'package:friendsheet/data/models/google_calendar.dart' as _i5;
+import 'package:friendsheet/data/services/google_calendar_service.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -23,51 +25,93 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeValueNotifier_0<T> extends _i1.SmartFake
+    implements _i2.ValueNotifier<T> {
+  _FakeValueNotifier_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [GoogleCalendarService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockGoogleCalendarService extends _i1.Mock
-    implements _i2.GoogleCalendarService {
+    implements _i3.GoogleCalendarService {
   MockGoogleCalendarService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<bool> isConnected() => (super.noSuchMethod(
+  _i2.ValueNotifier<bool> get isConnectedNotifier => (super.noSuchMethod(
+        Invocation.getter(#isConnectedNotifier),
+        returnValue: _FakeValueNotifier_0<bool>(
+          this,
+          Invocation.getter(#isConnectedNotifier),
+        ),
+      ) as _i2.ValueNotifier<bool>);
+
+  @override
+  _i4.Future<bool> isConnected() => (super.noSuchMethod(
         Invocation.method(
           #isConnected,
           [],
         ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 
   @override
-  _i3.Future<List<_i4.GoogleCalendar>> requestAccess() => (super.noSuchMethod(
+  _i4.Future<List<_i5.GoogleCalendar>> requestAccess() => (super.noSuchMethod(
         Invocation.method(
           #requestAccess,
           [],
         ),
         returnValue:
-            _i3.Future<List<_i4.GoogleCalendar>>.value(<_i4.GoogleCalendar>[]),
-      ) as _i3.Future<List<_i4.GoogleCalendar>>);
+            _i4.Future<List<_i5.GoogleCalendar>>.value(<_i5.GoogleCalendar>[]),
+      ) as _i4.Future<List<_i5.GoogleCalendar>>);
 
   @override
-  _i3.Future<List<_i4.GoogleCalendar>> fetchCalendars() => (super.noSuchMethod(
+  _i4.Future<List<_i5.GoogleCalendar>> fetchCalendars() => (super.noSuchMethod(
         Invocation.method(
           #fetchCalendars,
           [],
         ),
         returnValue:
-            _i3.Future<List<_i4.GoogleCalendar>>.value(<_i4.GoogleCalendar>[]),
-      ) as _i3.Future<List<_i4.GoogleCalendar>>);
+            _i4.Future<List<_i5.GoogleCalendar>>.value(<_i5.GoogleCalendar>[]),
+      ) as _i4.Future<List<_i5.GoogleCalendar>>);
 
   @override
-  _i3.Future<void> revokeAccess() => (super.noSuchMethod(
+  _i4.Future<List<_i6.CalendarEvent>> fetchEvents({
+    required List<String>? calendarIds,
+    required DateTime? dateFrom,
+    required DateTime? dateTo,
+    required bool? excludeAllDay,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #fetchEvents,
+          [],
+          {
+            #calendarIds: calendarIds,
+            #dateFrom: dateFrom,
+            #dateTo: dateTo,
+            #excludeAllDay: excludeAllDay,
+          },
+        ),
+        returnValue:
+            _i4.Future<List<_i6.CalendarEvent>>.value(<_i6.CalendarEvent>[]),
+      ) as _i4.Future<List<_i6.CalendarEvent>>);
+
+  @override
+  _i4.Future<void> revokeAccess() => (super.noSuchMethod(
         Invocation.method(
           #revokeAccess,
           [],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

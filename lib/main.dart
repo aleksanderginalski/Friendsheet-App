@@ -11,6 +11,9 @@ import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/splash_screen.dart';
 
+/// Global navigator key — used for navigation that outlives individual widget contexts.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 /// Main entry point of the application
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +31,7 @@ class FriendsheetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'Friendsheet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
