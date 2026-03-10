@@ -15,10 +15,15 @@ class HomeProvider extends ChangeNotifier {
       : _meetingRepository = meetingRepository ?? MeetingRepository();
 
   int _meetingCount = 0;
+  bool _initialized = false;
   StreamSubscription<Object>? _subscription;
 
+  /// True after the first stream emission has been received.
+  bool get isInitialized => _initialized;
+
   /// True when the onboarding CTA should be shown (meeting count < 50).
-  bool get shouldShowCta => _meetingCount < 50;
+  /// Returns false until the first stream emission to avoid a flash of the CTA.
+  bool get shouldShowCta => _initialized && _meetingCount < 50;
 
   /// Subscribes to the meetings stream so [shouldShowCta] updates reactively.
   Future<void> initialize(String userId) async {
@@ -26,6 +31,7 @@ class HomeProvider extends ChangeNotifier {
     _subscription = _meetingRepository.getMeetingsByUser(userId).listen(
       (meetings) {
         _meetingCount = meetings.length;
+        _initialized = true;
         notifyListeners();
       },
     );

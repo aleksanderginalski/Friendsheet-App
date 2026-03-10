@@ -32,7 +32,7 @@ class PersonRepository {
   // Saves a new person to Firestore and returns the created instance
   Future<Person> addPerson(Person person) async {
     final docRef = await _personsRef(person.userId).add(person.toFirestore());
-    cacheInvalidator?.invalidatePersonsCache();
+    await cacheInvalidator?.invalidatePersonsCache();
     return person.copyWith(id: docRef.id);
   }
 
@@ -51,7 +51,7 @@ class PersonRepository {
     await _personsRef(person.userId)
         .doc(person.id)
         .update(person.toFirestore());
-    cacheInvalidator?.invalidatePersonsCache();
+    await cacheInvalidator?.invalidatePersonsCache();
   }
 
   /// Deletes a person and removes them from all associated meetings atomically.
@@ -59,6 +59,6 @@ class PersonRepository {
     // Remove personId from participantIds in all meetings before deleting the person
     await _meetingRepository.removePersonFromMeetings(userId, personId);
     await _personsRef(userId).doc(personId).delete();
-    cacheInvalidator?.invalidatePersonsCache();
+    await cacheInvalidator?.invalidatePersonsCache();
   }
 }

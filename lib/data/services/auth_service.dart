@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../services/hive_service.dart';
+
 /// Authentication service handling Google Sign-In with Firebase
 class AuthService {
   // Singleton pattern - only one instance of AuthService exists
@@ -90,6 +92,13 @@ class AuthService {
   /// Sign out from both Google and Firebase
   Future<void> signOut() async {
     try {
+      // Clear Hive statistics cache before sign-out so that the next user
+      // session does not see stale data from the previous user.
+      final userId = _auth.currentUser?.uid;
+      if (userId != null) {
+        await HiveService.clearUserData(userId);
+      }
+
       // Sign out from Google Sign-In
       await _googleSignIn.signOut();
 
