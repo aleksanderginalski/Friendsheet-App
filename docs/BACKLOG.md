@@ -2693,6 +2693,7 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [x] **TASK-067b.1–4:** Remove CTA dismiss button, dynamic drawer tile, Settings cleanup, remove SharedPreferences dismiss key
 - [x] **TASK-067c.1–3:** Add `ValueNotifier` to `GoogleCalendarService`, replace `FutureBuilder` with `ValueListenableBuilder` in drawer and Settings
 - [x] **TASK-067d–h:** Fix drawer OAuth flow via `CalendarPermissionScreen` + `onConnected` callback, fix stale context via `_openCalendarPermissionScreen()` on State, fix `finally/notifyListeners` race condition in `connectCalendar()`
+- [x] **TASK-067i:** Fix token init race condition (ensureInitialized + Completer) and silent navigation failure (appNavigatorKey in MaterialApp)
 
 **Known issues deferred:**
 - CTA card flickers for ~1s on HomeScreen load (meetingCount initializes as 0) — deferred to US-073
