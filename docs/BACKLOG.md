@@ -196,7 +196,9 @@ EPIC-007: Friendsheet M7 - AI Assistant
 **As a** new or returning user  
 **I want to** sign in with my Google account  
 **So that** I can quickly and securely access the application without creating a new password
+**Story Points:** 5
 **Status:** ✅ COMPLETED 
+
 
 **Acceptance Criteria:**
 - [x] Login screen UI created with "Sign in with Google" button
@@ -253,6 +255,7 @@ EPIC-007: Friendsheet M7 - AI Assistant
 ### US-005: Email/Password Login [OBSOLETE - REMOVED FROM MVP]
 
 **Status:** ❌ OBSOLETE  
+**Story Points:** 8
 **Reason:** Replaced by US-004 (Google Sign-In) for MVP  
 
 
@@ -274,6 +277,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** logged-in user  
 **I want to** log out of the application  
 **So that** my data is secure when I'm not using the app
+**Story Points:** 3 
 **Status:** ✅ COMPLETED 
 
 **Acceptance Criteria:**
@@ -321,6 +325,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** Developer  
 **I want to** have a Meeting data model  
 **So that** I can represent meeting data in the application
+**Story Points:** 5
 **Status:** ✅ COMPLETED (February 18, 2026)
 
 **Acceptance Criteria:**
@@ -367,6 +372,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** Developer  
 **I want to** have a Person data model  
 **So that** I can represent participant data
+**Story Points:** 3 
 **Status:** ✅ COMPLETED 
 
 **Acceptance Criteria:**
@@ -394,6 +400,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** Developer  
 **I want to** have an Activity data model  
 **So that** I can represent activity data
+**Story Points:** 3 
 **Status:** ✅ COMPLETED 
 
 **Acceptance Criteria:**
@@ -461,13 +468,14 @@ If you already created a GitHub issue for US-005, you can:
 **I want to** enter meeting name and select date  
 **So that** I can specify when and what the meeting was
 **Status:** ✅ COMPLETED (February 19, 2026)
+**Story Points:** 3 
 **Acceptance Criteria:**
 - [x] Name TextField with 50 character limit
 - [x] Character counter displayed (X/50)
 - [x] Date picker integrated
 - [x] Default date is today
-- [ ] Validation: name required, date required
-- [ ] Error messages for invalid input
+- [x] Validation: name required, date required
+- [x] Error messages for invalid input
 
 **Tasks:**
 - [x] **TASK-062:** Implement name TextField - 1h
@@ -489,6 +497,8 @@ If you already created a GitHub issue for US-005, you can:
 **I want to** select meeting importance using a weight scale  
 **So that** I can indicate how significant the meeting was
 **Status:** ✅ COMPLETED (February 19, 2026)
+**Story Points:** 5
+
 **Acceptance Criteria:**
 - [x] Custom stepper widget created
 - [x] Only allows Fibonacci values (1,2,3,5,8,13,21)
@@ -655,6 +665,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** QA Engineer  
 **I want to** widget tests for UI components  
 **So that** user interface is reliable
+**Story Points:** 5
 **Status:** ✅ COMPLETED (February 20, 2026)
 
 
@@ -683,6 +694,7 @@ If you already created a GitHub issue for US-005, you can:
 **As a** QA Engineer  
 **I want to** perform manual testing  
 **So that** the app is polished before release
+**Story Points:** 3 
 **Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
@@ -725,7 +737,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Priority:** P0  
 **Role:** Developer + UX Designer  
-**Status:** 📋 Planned
 **Status:** ✅ COMPLETED 
 ---
 
@@ -822,6 +833,7 @@ If you already created a GitHub issue for US-005, you can:
 
 ### US-024: Persons List Screen
 **Status:** ✅ COMPLETED (February 23, 2026)
+**Story Points:** 8 
 
 **Acceptance Criteria:**
 - [x] Alphabetical list of all persons
@@ -844,6 +856,7 @@ If you already created a GitHub issue for US-005, you can:
 ---
 
 ### US-025: Person Detail & Edit
+**Story Points:** 5
 **Status:** ✅ COMPLETED (February 23, 2026)
 
 **Acceptance Criteria:**
@@ -865,7 +878,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Priority:** P0  
 **Role:** Developer + UX Designer  
-**Status:** 📋 Planned
 **Status:** ✅ COMPLETED 
 **Architecture Note:** This feature delivers US-019 and US-020 which were designed in M1 but not implemented. The ActivityCategory model with parentCategoryId (max 3 levels) and icon support is the foundation for M3 statistics filtering.
 
@@ -976,7 +988,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 5
 **Priority:** P0
-**Status:** 📋 Planned
 **Milestone:** M2
 **Status:** ✅ COMPLETED
 
@@ -1013,7 +1024,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 8
 **Priority:** P0
-**Status:** 📋 Planned
 **Milestone:** M2
 **Status:** ✅ COMPLETED
 **Acceptance Criteria:**
@@ -1043,7 +1053,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 3
 **Priority:** P0
-**Status:** 📋 Planned
 **Milestone:** M2
 **Status:** ✅ COMPLETED
 **Acceptance Criteria:**
@@ -1068,7 +1077,6 @@ If you already created a GitHub issue for US-005, you can:
 
 **Story Points:** 8
 **Priority:** P0
-**Status:** 📋 Planned
 **Milestone:** M2
 **Status:** ✅ COMPLETED
 
@@ -1308,7 +1316,7 @@ If you already created a GitHub issue for US-005, you can:
 - [x] **TASK-US-030.6:** Write tests
 
 
-### US-049: Activity Breakdown — Smooth Bar Reordering Animation
+### US-049.1: Activity Breakdown — Smooth Bar Reordering Animation
 
 **As a** user
 **I want to** see bars stay in place when their ranking doesn't change between years
@@ -1325,10 +1333,10 @@ If you already created a GitHub issue for US-005, you can:
 - [x] No visual glitches (bars jumping to wrong position and back)
 
 **Tasks:**
-- [x] **TASK-US-049.1:** Add debug logging to trace targetLeft values across rebuilds — identify root cause of spurious position changes
-- [x] **TASK-US-049.2:** Fix tween initialization so stationary bars receive begin == end == targetLeft
-- [x] **TASK-US-049.3:** Verify fix across multiple year changes (including mid-animation changes)
-- [x] **TASK-US-049.4:** Remove debug logging, run dart format + flutter analyze + flutter test
+- [x] **TASK-US-049.1.1:** Add debug logging to trace targetLeft values across rebuilds — identify root cause of spurious position changes
+- [x] **TASK-US-049.1.2:** Fix tween initialization so stationary bars receive begin == end == targetLeft
+- [x] **TASK-US-049.1.3:** Verify fix across multiple year changes (including mid-animation changes)
+- [x] **TASK-US-049.1.4:** Remove debug logging, run dart format + flutter analyze + flutter test
 
 ### US-051: Statistics Carousel — Swipeable metric cards on Home screen
 
@@ -1339,9 +1347,9 @@ If you already created a GitHub issue for US-005, you can:
 **Story Points:** 5
 **Priority:** P1
 **Labels:** `statistics`, `ux`, `home-screen`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 02, 2026)
 **Milestone:** M3
-✅ COMPLETED (March 02, 2026)
+
 
 **Acceptance Criteria:**
 - [x] Home screen replaces stacked statistics widgets with a horizontal `PageView` (carousel)
@@ -1381,9 +1389,9 @@ If you already created a GitHub issue for US-005, you can:
 **Story Points:** 3
 **Priority:** P0
 **Labels:** `bug`, `statistics`, `who-per-activity`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 03, 2026)
 **Milestone:** M3
-✅ COMPLETED (March 03, 2026)
+
 
 **Problem Description:**
 Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but Who Per Activity shows an empty list for the same activity and year. The two metrics use different data access paths — the bug likely lies in `getPersonsForActivity` filtering logic.
@@ -1455,7 +1463,7 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 
 ---
 
-### US-042: Install Friendsheet on Personal Device via APK
+### US-042.1: Install Friendsheet on Personal Device via APK
 **Status:** ✅ COMPLETED
 **As a** developer
 **I want to** build a signed release APK and install it on my personal Android phone
@@ -1488,13 +1496,13 @@ for the release signing key. Serves as the Epic 3 capstone: real data, real devi
 - APK vs AAB: `.apk` for sideload (this US), `.aab` for Google Play (US-032)
 
 **Tasks:**
-- [x] **TASK-042.1:** Update `.gitignore` — add keystore and `key.properties` entries
-- [x] **TASK-042.2:** Generate keystore with `keytool` and store securely outside repo
-- [x] **TASK-042.3:** Create `android/key.properties` with signing config
-- [x] **TASK-042.4:** Configure release signing in `android/app/build.gradle`
-- [x] **TASK-042.5:** Run `flutter build apk --release` and verify output
-- [x] **TASK-042.6:** Extract SHA-1 from release keystore and add to Firebase Console
-- [x] **TASK-042.7:** Install APK on device and verify Google Sign-In + data load
+- [x] **TASK-042.1.1:** Update `.gitignore` — add keystore and `key.properties` entries
+- [x] **TASK-042.1.2:** Generate keystore with `keytool` and store securely outside repo
+- [x] **TASK-042.1.3:** Create `android/key.properties` with signing config
+- [x] **TASK-042.1.4:** Configure release signing in `android/app/build.gradle`
+- [x] **TASK-042.1.5:** Run `flutter build apk --release` and verify output
+- [x] **TASK-042.1.6:** Extract SHA-1 from release keystore and add to Firebase Console
+- [x] **TASK-042.1.7:** Install APK on device and verify Google Sign-In + data load
 
 **Relation to US-032 (Google Play Release):**
 - Keystore created here is reused directly in US-032
@@ -1964,6 +1972,7 @@ app store icon format, square composition, --ar 1:1 --style raw --v 6
 ### US-052: Splash Screen
 
 **Status:** ✅ COMPLETED (March 04, 2026)
+**Story Points:** 3
 **Labels:** `design`, `flutter`, `release`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-056 (icon/branding established)
@@ -2131,11 +2140,11 @@ mobile app illustration, --ar 1:1 --style raw --v 6
 
 **Story Points:** 2
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 06, 2026)
 **Labels:** `design`, `flutter`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-054 (reuse EmptyStateWidget from US-054)
-**Status:** ✅ COMPLETED (March 06, 2026)
+
 
 **Acceptance Criteria:**
 - [x] Empty state displayed in ActivitiesListScreen when no categories exist
@@ -2684,6 +2693,7 @@ External Source → ImportCandidate list → MeetingInboxScreen → Firestore
 - [x] **TASK-067b.1–4:** Remove CTA dismiss button, dynamic drawer tile, Settings cleanup, remove SharedPreferences dismiss key
 - [x] **TASK-067c.1–3:** Add `ValueNotifier` to `GoogleCalendarService`, replace `FutureBuilder` with `ValueListenableBuilder` in drawer and Settings
 - [x] **TASK-067d–h:** Fix drawer OAuth flow via `CalendarPermissionScreen` + `onConnected` callback, fix stale context via `_openCalendarPermissionScreen()` on State, fix `finally/notifyListeners` race condition in `connectCalendar()`
+- [x] **TASK-067i:** Fix token init race condition (ensureInitialized + Completer) and silent navigation failure (appNavigatorKey in MaterialApp)
 
 **Known issues deferred:**
 - CTA card flickers for ~1s on HomeScreen load (meetingCount initializes as 0) — deferred to US-073

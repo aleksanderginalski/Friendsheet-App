@@ -321,5 +321,37 @@ ValueListenableBuilder<bool>(
 Never use `FutureBuilder` for state that changes during the session
 (e.g. OAuth connect/disconnect) — it computes once and never updates.
 
+
+## GlobalKey<NavigatorState> for Context-Independent Navigation
+
+When navigation must succeed regardless of the calling widget's lifecycle
+(e.g. callbacks from drawers, async operations that outlive a widget),
+use a top-level `appNavigatorKey` instead of `context`.
+```dart
+// main.dart — top level:
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
+// MaterialApp:
+MaterialApp(navigatorKey: appNavigatorKey, ...)
+
+// Anywhere in the app — always works:
+appNavigatorKey.currentState?.push(...)
+appNavigatorKey.currentContext  // for ScaffoldMessenger etc.
+```
+
+Never use `context` from a closure after an `await` if the widget may be
+deactivated by that time. Use `appNavigatorKey` instead.
+
+## GoogleCalendarService — ensureInitialized() before drawer renders
+
+`_initConnectionState()` is async — `isConnectedNotifier` may still be `false`
+when the first frame renders. Always call `ensureInitialized()` in
+`MainScreen.initState()` via `addPostFrameCallback` before other providers:
+```dart
+WidgetsBinding.instance.addPostFrameCallback((_) async {
+  await GoogleCalendarService().ensureInitialized(); // must be first
+  // ... rest of initialization
+});
+```
 ---
 
