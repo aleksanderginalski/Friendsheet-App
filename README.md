@@ -318,7 +318,7 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 - ✅ pubspec.yaml: single-file asset replaced with full assets/images/ directory registration
 - ✅ withValues(alpha: 0.6) used instead of deprecated withOpacity
 - ✅ Total test count: 365 → 371 tests (+6)
-```
+
 
 ### v3.12.0 - US-053 Login Screen Illustration & Typography Polish (March 2026)
 - ✅ Login screen illustration added (Midjourney, flat 2D style)
@@ -389,7 +389,7 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 - ✅ InteractionDistributionWidget always stays in widget tree (isLoading inline spinner)
 - ✅ loadDistribution() isolated outside try/catch in initialize() and selectYear() — prevents silent failures
 - ✅ Total test count: 351 tests
-```
+
 
 ### v3.7.0 - US-030 Interaction Distribution Metric (March 02, 2026)
 - ✅ InteractionDistributionEntry DTO with delta getter
