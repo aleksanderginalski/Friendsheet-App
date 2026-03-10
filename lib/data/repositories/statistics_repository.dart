@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../services/hive_service.dart';
 import '../models/activity_category.dart';
 import '../models/meeting.dart';
 import '../models/person.dart';
@@ -94,19 +95,28 @@ class StatisticsRepository implements CacheInvalidator {
   // ─── Cache invalidation ────────────────────────────────────────────────────
 
   @override
-  void invalidateMeetingsCache() => _meetingsCache.clear();
+  Future<void> invalidateMeetingsCache() async {
+    _meetingsCache.clear();
+    await HiveService.box(HiveService.meetingsBox).clear();
+  }
 
   @override
-  void invalidateCategoriesCache() => _categoriesCache = null;
+  Future<void> invalidateCategoriesCache() async {
+    _categoriesCache = null;
+    await HiveService.box(HiveService.categoriesBox).clear();
+  }
 
   @override
-  void invalidatePersonsCache() => _personsCache = null;
+  Future<void> invalidatePersonsCache() async {
+    _personsCache = null;
+    await HiveService.box(HiveService.personsBox).clear();
+  }
 
   /// Clears all caches. Call on user logout or account switch.
-  void invalidateAllCaches() {
-    invalidateMeetingsCache();
-    invalidateCategoriesCache();
-    invalidatePersonsCache();
+  Future<void> invalidateAllCaches() async {
+    await invalidateMeetingsCache();
+    await invalidateCategoriesCache();
+    await invalidatePersonsCache();
   }
 
   // ─── Internal cached fetches ───────────────────────────────────────────────
@@ -129,24 +139,59 @@ class StatisticsRepository implements CacheInvalidator {
   }
 
   /// Returns all categories for [userId], using cache when available.
+  /// Lookup order: in-memory → Hive → Firestore.
   Future<List<ActivityCategory>> _getCachedCategories(String userId) async {
     if (_categoriesCache != null) return _categoriesCache!;
+
+    final raw = HiveService.box(HiveService.categoriesBox).get(userId) as List?;
+    if (raw != null) {
+      _categoriesCache = raw
+          .map((e) =>
+              ActivityCategory.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      return _categoriesCache!;
+    }
+
     _categoriesCache = await _categoryRepository.getAllCategories(userId);
+    await HiveService.box(HiveService.categoriesBox).put(
+      userId,
+      _categoriesCache!.map((c) => c.toJson()).toList(),
+    );
     return _categoriesCache!;
   }
 
   /// Returns all persons for [userId], using cache when available.
+  /// Lookup order: in-memory → Hive → Firestore.
   Future<List<Person>> _getCachedPersons(String userId) async {
     if (_personsCache != null) return _personsCache!;
+
+    final raw = HiveService.box(HiveService.personsBox).get(userId) as List?;
+    if (raw != null) {
+      _personsCache = raw
+          .map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      return _personsCache!;
+    }
+
     _personsCache = await _personRepository.getPersonsByUser(userId);
+    await HiveService.box(HiveService.personsBox).put(
+      userId,
+      _personsCache!.map((p) => p.toJson()).toList(),
+    );
     return _personsCache!;
   }
 
   // ─── Public query methods ──────────────────────────────────────────────────
 
   /// Returns unique years extracted from meeting dates, sorted descending.
-  /// Queries every meeting document for the user; no Firestore index required.
+  /// Lookup order: Hive → Firestore (no in-memory cache for this method).
   Future<List<int>> getAvailableYears(String userId) async {
+    final cached =
+        HiveService.box(HiveService.availableYearsBox).get(userId) as List?;
+    if (cached != null) {
+      return cached.cast<int>();
+    }
+
     try {
       final snapshot = await _meetingsRef(userId).get();
       final years = <int>{};
@@ -157,19 +202,40 @@ class StatisticsRepository implements CacheInvalidator {
           years.add(timestamp.toDate().year);
         }
       }
-      return years.toList()..sort((a, b) => b.compareTo(a));
+      final result = years.toList()..sort((a, b) => b.compareTo(a));
+      await HiveService.box(HiveService.availableYearsBox).put(userId, result);
+      return result;
     } catch (e) {
       throw Exception('Failed to load available years: $e');
     }
   }
 
-  /// Returns all meetings for [year] for [userId], using in-memory cache.
+  /// Returns all meetings for [year] for [userId].
+  /// Lookup order: in-memory → Hive → Firestore.
   /// Cache key: '${userId}_${year}'.
   Future<List<Meeting>> getMeetingsForYear(String userId, int year) async {
     final key = '${userId}_$year';
+
+    // 1. In-memory cache (US-072).
     if (_meetingsCache.containsKey(key)) return _meetingsCache[key]!;
+
+    // 2. Hive persistent cache.
+    final raw = HiveService.box(HiveService.meetingsBox).get(key) as List?;
+    if (raw != null) {
+      final meetings = raw
+          .map((e) => Meeting.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      _meetingsCache[key] = meetings;
+      return meetings;
+    }
+
+    // 3. Firestore — write result to both caches.
     final meetings = await _fetchMeetingsForYear(userId, year);
     _meetingsCache[key] = meetings;
+    await HiveService.box(HiveService.meetingsBox).put(
+      key,
+      meetings.map((m) => m.toJson()).toList(),
+    );
     return meetings;
   }
 

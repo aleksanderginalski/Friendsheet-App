@@ -77,40 +77,44 @@ class MockStatisticsRepository extends _i1.Mock
   }
 
   @override
-  void invalidateMeetingsCache() => super.noSuchMethod(
+  _i6.Future<void> invalidateMeetingsCache() => (super.noSuchMethod(
         Invocation.method(
           #invalidateMeetingsCache,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  void invalidateCategoriesCache() => super.noSuchMethod(
+  _i6.Future<void> invalidateCategoriesCache() => (super.noSuchMethod(
         Invocation.method(
           #invalidateCategoriesCache,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  void invalidatePersonsCache() => super.noSuchMethod(
+  _i6.Future<void> invalidatePersonsCache() => (super.noSuchMethod(
         Invocation.method(
           #invalidatePersonsCache,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  void invalidateAllCaches() => super.noSuchMethod(
+  _i6.Future<void> invalidateAllCaches() => (super.noSuchMethod(
         Invocation.method(
           #invalidateAllCaches,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
   _i6.Future<List<int>> getAvailableYears(String? userId) =>
