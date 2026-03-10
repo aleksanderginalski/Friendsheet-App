@@ -34,7 +34,7 @@ class ActivityCategoryRepository {
   Future<void> addCategory(ActivityCategory category) async {
     await _validateDepth(category.userId, category);
     await _categoriesRef(category.userId).add(category.toFirestore());
-    cacheInvalidator?.invalidateCategoriesCache();
+    await cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Updates an existing category. Throws if the new parent would exceed depth 2.
@@ -43,13 +43,13 @@ class ActivityCategoryRepository {
     await _categoriesRef(category.userId)
         .doc(category.id)
         .update(category.toFirestore());
-    cacheInvalidator?.invalidateCategoriesCache();
+    await cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Deletes the category document for the given user and categoryId.
   Future<void> deleteCategory(String userId, String categoryId) async {
     await _categoriesRef(userId).doc(categoryId).delete();
-    cacheInvalidator?.invalidateCategoriesCache();
+    await cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Deletes the category and all its direct children atomically.
@@ -69,7 +69,7 @@ class ActivityCategoryRepository {
     }
 
     await batch.commit();
-    cacheInvalidator?.invalidateCategoriesCache();
+    await cacheInvalidator?.invalidateCategoriesCache();
   }
 
   // Creates a new root selectable category in the user's subcollection and
@@ -86,7 +86,7 @@ class ActivityCategoryRepository {
       'isSelectableAsActivity': true,
       'createdAt': Timestamp.now(),
     });
-    cacheInvalidator?.invalidateCategoriesCache();
+    await cacheInvalidator?.invalidateCategoriesCache();
     final doc = await docRef.get();
     return ActivityCategory.fromFirestore(doc);
   }

@@ -10,6 +10,7 @@ import 'firebase_options.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/splash_screen.dart';
+import 'services/hive_service.dart';
 
 /// Global navigator key — used for navigation that outlives individual widget contexts.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -21,6 +22,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await HiveService.initialize();
 
   runApp(const FriendsheetApp());
 }
