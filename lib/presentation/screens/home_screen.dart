@@ -5,6 +5,7 @@ import '../../data/models/google_calendar.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
+import '../widgets/home_loading_screen.dart';
 import '../widgets/onboarding_calendar_cta_card.dart';
 import '../widgets/statistics_section.dart';
 import 'calendar_events_screen.dart';
@@ -23,6 +24,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<HomeProvider, StatisticsProvider>(
       builder: (context, homeProvider, statsProvider, _) {
+        if (!homeProvider.isInitialized) {
+          return const Scaffold(
+            body: SafeArea(child: HomeLoadingScreen()),
+          );
+        }
+
         if (homeProvider.shouldShowCta) {
           return Scaffold(
             body: SafeArea(

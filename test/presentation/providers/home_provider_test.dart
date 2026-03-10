@@ -39,7 +39,15 @@ void main() {
   });
 
   group('HomeProvider', () {
-    test('shouldShowCta is true when count < 50', () async {
+    test('shouldShowCta is false before first stream emission', () {
+      provider = HomeProvider(meetingRepository: mockRepository);
+
+      expect(provider.isInitialized, isFalse);
+      expect(provider.shouldShowCta, isFalse);
+    });
+
+    test('shouldShowCta is true after initialization with count < 50',
+        () async {
       final controller = StreamController<List<Meeting>>();
       when(mockRepository.getMeetingsByUser('user-1'))
           .thenAnswer((_) => controller.stream);
@@ -50,11 +58,13 @@ void main() {
       controller.add(List.generate(10, (i) => makeMeeting('m$i')));
       await Future.microtask(() {});
 
+      expect(provider.isInitialized, isTrue);
       expect(provider.shouldShowCta, isTrue);
       controller.close();
     });
 
-    test('shouldShowCta is false when count >= 50', () async {
+    test('shouldShowCta is false after initialization with count >= 50',
+        () async {
       final controller = StreamController<List<Meeting>>();
       when(mockRepository.getMeetingsByUser('user-1'))
           .thenAnswer((_) => controller.stream);
@@ -65,6 +75,7 @@ void main() {
       controller.add(List.generate(50, (i) => makeMeeting('m$i')));
       await Future.microtask(() {});
 
+      expect(provider.isInitialized, isTrue);
       expect(provider.shouldShowCta, isFalse);
       controller.close();
     });
