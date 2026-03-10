@@ -11,6 +11,7 @@ import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/export_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../persons/persons_list_provider.dart';
@@ -80,7 +81,10 @@ class _MainScreenState extends State<MainScreen> {
     _calendarSettingsProvider = CalendarSettingsProvider(
       calendarService: GoogleCalendarService(),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Ensure calendar token is loaded before drawer renders
+      await GoogleCalendarService().ensureInitialized();
+
       final userId = AuthService().currentUserId;
       if (userId != null) {
         _homeProvider.initialize(userId);
@@ -127,16 +131,20 @@ class _MainScreenState extends State<MainScreen> {
   /// Navigates to CalendarPermissionScreen using the State's own context.
   /// This avoids the stale-context bug that occurs when using the drawer's
   /// BuildContext after Navigator.pop() has deactivated it.
+  void _showCalendarErrorSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to load calendars')),
+    );
+  }
+
   void _openCalendarPermissionScreen() {
-    Navigator.push(
-      context,
+    appNavigatorKey.currentState?.push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider.value(
           value: _calendarSettingsProvider,
           child: CalendarPermissionScreen(
             onConnected: (calendars) {
-              Navigator.pushReplacement(
-                context,
+              appNavigatorKey.currentState?.pushReplacement(
                 MaterialPageRoute(
                   builder: (_) => CalendarEventsScreen(calendars: calendars),
                 ),
@@ -256,21 +264,14 @@ class _MainScreenState extends State<MainScreen> {
                       try {
                         final calendars =
                             await calendarService.fetchCalendars();
-                        if (!context.mounted) return;
-                        Navigator.push(
-                          context,
+                        appNavigatorKey.currentState?.push(
                           MaterialPageRoute(
                             builder: (_) =>
                                 CalendarEventsScreen(calendars: calendars),
                           ),
                         );
                       } catch (e) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Failed to load calendars'),
-                          ),
-                        );
+                        _showCalendarErrorSnackBar();
                       }
                     } else {
                       _openCalendarPermissionScreen();
