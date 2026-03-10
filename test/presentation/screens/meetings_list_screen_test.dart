@@ -87,8 +87,8 @@ void main() {
       expect(find.byType(MeetingCard), findsNothing);
     });
 
-    testWidgets('shows MeetingCard when year is expanded', (tester) async {
-      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+    testWidgets('shows month header when year is expanded', (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 3, 15));
       final stub = _StubMeetingsListProvider(
         meetingsByYear: {
           2026: [meeting]
@@ -97,10 +97,42 @@ void main() {
       );
       await tester.pumpWidget(buildScreen(stub));
 
+      // Month header label includes month name, year, and meeting count.
+      expect(find.textContaining('March 2026'), findsOneWidget);
+      expect(find.textContaining('1 meeting'), findsOneWidget);
+    });
+
+    testWidgets('shows MeetingCard when year and month are both expanded',
+        (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {2026},
+        expandedMonths: {'2026-02'},
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
       expect(find.byType(MeetingCard), findsOneWidget);
     });
 
-    testWidgets('shows search field when meetings exist', (tester) async {
+    testWidgets('hides MeetingCard when month is collapsed', (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {2026},
+        expandedMonths: {}, // month collapsed
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
+      expect(find.byType(MeetingCard), findsNothing);
+    });
+
+    testWidgets('search icon appears in AppBar when meetings exist',
+        (tester) async {
       final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
       final stub = _StubMeetingsListProvider(
         meetingsByYear: {
@@ -109,6 +141,25 @@ void main() {
         expandedYears: {},
       );
       await tester.pumpWidget(buildScreen(stub));
+
+      expect(find.byIcon(Icons.search), findsOneWidget);
+      // Search field is hidden by default.
+      expect(find.byType(TextField), findsNothing);
+    });
+
+    testWidgets('search field appears after tapping search icon',
+        (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {},
+      );
+      await tester.pumpWidget(buildScreen(stub));
+
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pump();
 
       expect(find.byType(TextField), findsOneWidget);
       expect(
@@ -129,12 +180,16 @@ void main() {
           2026: [coffee, dinner]
         },
         expandedYears: {2026},
+        expandedMonths: {'2026-02', '2026-03'},
       );
       await tester.pumpWidget(buildScreen(stub));
 
       // Both cards visible before search.
       expect(find.byType(MeetingCard), findsNWidgets(2));
 
+      // Open search and type.
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pump();
       await tester.enterText(find.byType(TextField), 'Coffee');
       await tester.pump();
 
@@ -150,9 +205,12 @@ void main() {
           2026: [meeting]
         },
         expandedYears: {2026},
+        expandedMonths: {'2026-02'},
       );
       await tester.pumpWidget(buildScreen(stub));
 
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pump();
       await tester.enterText(find.byType(TextField), 'xyz');
       await tester.pump();
 
@@ -172,16 +230,20 @@ class _StubMeetingsListProvider extends MeetingsListProvider {
   final String? _stubError;
   final Map<int, List<Meeting>> _stubMeetingsByYear;
   final Set<int> _stubExpandedYears;
+  final Set<String> _stubExpandedMonths;
+  String _stubSearchQuery = '';
 
   _StubMeetingsListProvider({
     bool isLoading = false,
     String? error,
     Map<int, List<Meeting>> meetingsByYear = const {},
     Set<int> expandedYears = const {},
+    Set<String> expandedMonths = const {},
   })  : _stubIsLoading = isLoading,
         _stubError = error,
         _stubMeetingsByYear = meetingsByYear,
         _stubExpandedYears = Set<int>.from(expandedYears),
+        _stubExpandedMonths = Set<String>.from(expandedMonths),
         // Pass a FakeFirebaseFirestore so no real Firestore connection is opened.
         super(
           meetingRepository: MeetingRepository(
@@ -196,10 +258,41 @@ class _StubMeetingsListProvider extends MeetingsListProvider {
   String? get error => _stubError;
 
   @override
+  String get searchQuery => _stubSearchQuery;
+
+  @override
+  void setSearchQuery(String query) {
+    _stubSearchQuery = query;
+    notifyListeners();
+  }
+
+  @override
   Map<int, List<Meeting>> get meetingsByYear => _stubMeetingsByYear;
+
+  // Builds the two-level map from the stub's flat data, applying search filter.
+  @override
+  Map<int, Map<int, List<Meeting>>> get meetingsByYearAndMonth {
+    final lower = _stubSearchQuery.trim().toLowerCase();
+    final result = <int, Map<int, List<Meeting>>>{};
+    for (final yearEntry in _stubMeetingsByYear.entries) {
+      for (final meeting in yearEntry.value) {
+        if (lower.isEmpty || meeting.name.toLowerCase().contains(lower)) {
+          result
+              .putIfAbsent(yearEntry.key, () => {})
+              .putIfAbsent(meeting.date.month, () => [])
+              .add(meeting);
+        }
+      }
+    }
+    return result;
+  }
 
   @override
   bool isYearExpanded(int year) => _stubExpandedYears.contains(year);
+
+  @override
+  bool isMonthExpanded(String monthKey) =>
+      _stubExpandedMonths.contains(monthKey);
 
   // No-op: state is fully controlled via constructor fields.
   @override
