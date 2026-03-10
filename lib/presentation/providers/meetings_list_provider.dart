@@ -22,6 +22,7 @@ class MeetingsListProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   final Set<int> _expandedYears = {};
+  final Set<String> _expandedMonths = {};
   String _searchQuery = '';
 
   bool get isLoading => _isLoading;
@@ -33,7 +34,7 @@ class MeetingsListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Groups meetings by year and returns a map sorted by year descending.
+  // Groups all meetings by year (unfiltered). Sorted by year descending.
   Map<int, List<Meeting>> get meetingsByYear {
     final map = <int, List<Meeting>>{};
     for (final meeting in _meetings) {
@@ -44,26 +45,79 @@ class MeetingsListProvider extends ChangeNotifier {
     return {for (final key in sortedKeys) key: map[key]!};
   }
 
-  // Filters meetingsByYear by _searchQuery (case-insensitive name match).
-  // Returns full meetingsByYear when search is empty.
-  Map<int, List<Meeting>> get filteredMeetingsByYear {
-    if (_searchQuery.trim().isEmpty) return meetingsByYear;
-    final lower = _searchQuery.toLowerCase();
-    final result = <int, List<Meeting>>{};
-    for (final entry in meetingsByYear.entries) {
-      final filtered = entry.value
-          .where((m) => m.name.toLowerCase().contains(lower))
-          .toList();
-      if (filtered.isNotEmpty) result[entry.key] = filtered;
+  // Returns meetings grouped by year → month, with search filter applied.
+  // Years sorted descending, months sorted descending within each year.
+  Map<int, Map<int, List<Meeting>>> get meetingsByYearAndMonth {
+    final lower = _searchQuery.trim().toLowerCase();
+    final filtered = lower.isEmpty
+        ? _meetings
+        : _meetings.where((m) => m.name.toLowerCase().contains(lower)).toList();
+
+    final map = <int, Map<int, List<Meeting>>>{};
+    for (final meeting in filtered) {
+      map
+          .putIfAbsent(meeting.date.year, () => {})
+          .putIfAbsent(meeting.date.month, () => [])
+          .add(meeting);
     }
-    return result;
+
+    final sortedYears = map.keys.toList()..sort((a, b) => b.compareTo(a));
+    return {
+      for (final year in sortedYears)
+        year: {
+          for (final month
+              in (map[year]!.keys.toList()..sort((a, b) => b.compareTo(a))))
+            month: map[year]![month]!,
+        },
+    };
   }
 
   bool isYearExpanded(int year) => _expandedYears.contains(year);
 
+  // Returns the canonical "YYYY-MM" key for a year-month pair.
+  String _monthKey(int year, int month) =>
+      '$year-${month.toString().padLeft(2, '0')}';
+
+  bool isMonthExpanded(String monthKey) => _expandedMonths.contains(monthKey);
+
+  // Expands or collapses the given month section.
+  void toggleMonth(int year, int month) {
+    final key = _monthKey(year, month);
+    if (_expandedMonths.contains(key)) {
+      _expandedMonths.remove(key);
+    } else {
+      _expandedMonths.add(key);
+    }
+    notifyListeners();
+  }
+
+  // Expands the current month and the most recent past month that has meetings.
+  // Called once after meetings are first loaded.
+  void _initDefaultExpandedMonths() {
+    _expandedMonths.clear();
+    final now = DateTime.now();
+    _expandedMonths.add(_monthKey(now.year, now.month));
+
+    // Find the most recent meeting month strictly before the current month.
+    final currentMonthStart = DateTime(now.year, now.month);
+    DateTime? lastWithData;
+    for (final m in _meetings) {
+      final mMonthStart = DateTime(m.date.year, m.date.month);
+      if (mMonthStart.isBefore(currentMonthStart)) {
+        if (lastWithData == null || mMonthStart.isAfter(lastWithData)) {
+          lastWithData = mMonthStart;
+        }
+      }
+    }
+    if (lastWithData != null) {
+      _expandedMonths.add(_monthKey(lastWithData.year, lastWithData.month));
+    }
+  }
+
   // Starts listening to the meetings stream for the given user.
   // Sets isLoading to true until the first data event arrives.
-  // Automatically expands the current year and the previous year.
+  // Automatically expands the current year, previous year, current month,
+  // and the last month that has any meeting data.
   void initialize(String userId) {
     _isLoading = true;
     _error = null;
@@ -79,6 +133,7 @@ class MeetingsListProvider extends ChangeNotifier {
         _meetings = meetings;
         _isLoading = false;
         _error = null;
+        _initDefaultExpandedMonths();
         notifyListeners();
       },
       onError: (Object e) {

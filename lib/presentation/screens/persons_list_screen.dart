@@ -33,11 +33,22 @@ class _PersonsListView extends StatefulWidget {
 
 class _PersonsListViewState extends State<_PersonsListView> {
   final _searchController = TextEditingController();
+  bool _isSearchActive = false;
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearchActive = !_isSearchActive;
+      if (!_isSearchActive) {
+        _searchController.clear();
+        context.read<PersonsListProvider>().setSearchQuery('');
+      }
+    });
   }
 
   @override
@@ -53,16 +64,22 @@ class _PersonsListViewState extends State<_PersonsListView> {
             tooltip: 'Add person',
             onPressed: () => _showAddPersonDialog(context),
           ),
+          IconButton(
+            icon: Icon(_isSearchActive ? Icons.search_off : Icons.search),
+            tooltip: _isSearchActive ? 'Close search' : 'Search',
+            onPressed: _toggleSearch,
+          ),
         ],
       ),
       body: Column(
         children: [
-          SharedSearchBar(
-            controller: _searchController,
-            hintText: 'Search friends...',
-            onChanged: (value) =>
-                context.read<PersonsListProvider>().setSearchQuery(value),
-          ),
+          if (_isSearchActive)
+            SharedSearchBar(
+              controller: _searchController,
+              hintText: 'Search friends...',
+              onChanged: (value) =>
+                  context.read<PersonsListProvider>().setSearchQuery(value),
+            ),
           Expanded(
             child: _PersonsListBody(provider: provider),
           ),
