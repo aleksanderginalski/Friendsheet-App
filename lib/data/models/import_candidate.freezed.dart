@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+ImportCandidate _$ImportCandidateFromJson(Map<String, dynamic> json) {
+  return _ImportCandidate.fromJson(json);
+}
+
 /// @nodoc
 mixin _$ImportCandidate {
   String get id => throw _privateConstructorUsedError;
@@ -21,6 +25,9 @@ mixin _$ImportCandidate {
   DateTime get date => throw _privateConstructorUsedError;
   List<String> get attendeeEmails => throw _privateConstructorUsedError;
   ImportSourceType get sourceType => throw _privateConstructorUsedError;
+
+  /// Serializes this ImportCandidate to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of ImportCandidate
   /// with the given fields replaced by the non-null parameter values.
@@ -150,7 +157,7 @@ class __$$ImportCandidateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$ImportCandidateImpl implements _ImportCandidate {
   const _$ImportCandidateImpl(
       {required this.id,
@@ -159,6 +166,9 @@ class _$ImportCandidateImpl implements _ImportCandidate {
       required final List<String> attendeeEmails,
       required this.sourceType})
       : _attendeeEmails = attendeeEmails;
+
+  factory _$ImportCandidateImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ImportCandidateImplFromJson(json);
 
   @override
   final String id;
@@ -196,6 +206,7 @@ class _$ImportCandidateImpl implements _ImportCandidate {
                 other.sourceType == sourceType));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, title, date,
       const DeepCollectionEquality().hash(_attendeeEmails), sourceType);
@@ -208,6 +219,13 @@ class _$ImportCandidateImpl implements _ImportCandidate {
   _$$ImportCandidateImplCopyWith<_$ImportCandidateImpl> get copyWith =>
       __$$ImportCandidateImplCopyWithImpl<_$ImportCandidateImpl>(
           this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ImportCandidateImplToJson(
+      this,
+    );
+  }
 }
 
 abstract class _ImportCandidate implements ImportCandidate {
@@ -217,6 +235,9 @@ abstract class _ImportCandidate implements ImportCandidate {
       required final DateTime date,
       required final List<String> attendeeEmails,
       required final ImportSourceType sourceType}) = _$ImportCandidateImpl;
+
+  factory _ImportCandidate.fromJson(Map<String, dynamic> json) =
+      _$ImportCandidateImpl.fromJson;
 
   @override
   String get id;

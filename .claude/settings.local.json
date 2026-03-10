@@ -18,7 +18,8 @@
       "Bash(flutter build apk --release)",
       "Bash(flutter devices)",
       "Bash(dart run flutter_launcher_icons)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(wc -l c:/Programowanie/Friendsheet-App/lib/presentation/import/*.dart c:/Programowanie/Friendsheet-App/lib/presentation/providers/meeting_inbox_provider.dart c:/Programowanie/Friendsheet-App/lib/presentation/providers/inbox_item_edit_provider.dart)"
     ]
   }
 }

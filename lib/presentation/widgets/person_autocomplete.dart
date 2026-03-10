@@ -1,12 +1,30 @@
 // lib/presentation/widgets/person_autocomplete.dart
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../data/models/person.dart';
-import '../providers/add_meeting_provider.dart';
 
+/// Callback-based person search widget.
+/// Does not depend on any specific Provider — all state is passed via callbacks.
 class PersonAutocomplete extends StatefulWidget {
-  const PersonAutocomplete({super.key});
+  final List<Person> selectedPersons;
+  final List<Person> Function(String query) onSearch;
+  final void Function(Person person) onPersonAdded;
+  final Future<void> Function({
+    required String firstName,
+    String? lastName,
+  }) onNewPerson;
+  final void Function(Person person) onPersonRemoved;
+  final String? participantsError;
+
+  const PersonAutocomplete({
+    super.key,
+    required this.selectedPersons,
+    required this.onSearch,
+    required this.onPersonAdded,
+    required this.onNewPerson,
+    required this.onPersonRemoved,
+    this.participantsError,
+  });
 
   @override
   State<PersonAutocomplete> createState() => _PersonAutocompleteState();
@@ -22,14 +40,14 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     super.dispose();
   }
 
-  void _onChanged(String query, AddMeetingProvider provider) {
+  void _onChanged(String query) {
     setState(() {
-      _suggestions = provider.searchPersons(query);
+      _suggestions = widget.onSearch(query);
     });
   }
 
-  void _onSelectPerson(Person person, AddMeetingProvider provider) {
-    provider.selectPerson(person);
+  void _onSelectPerson(Person person) {
+    widget.onPersonAdded(person);
     _controller.clear();
     setState(() => _suggestions = []);
   }
@@ -41,8 +59,6 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<AddMeetingProvider>();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -58,7 +74,7 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
                   )
                 : const Icon(Icons.search),
           ),
-          onChanged: (value) => _onChanged(value, provider),
+          onChanged: _onChanged,
         ),
         if (_suggestions.isNotEmpty || _controller.text.trim().isNotEmpty)
           Container(
@@ -72,45 +88,45 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
                   (person) => ListTile(
                     leading: const Icon(Icons.person),
                     title: Text(person.fullName),
-                    onTap: () => _onSelectPerson(person, provider),
+                    onTap: () => _onSelectPerson(person),
                   ),
                 ),
                 if (_controller.text.trim().isNotEmpty)
                   ListTile(
                     leading: const Icon(Icons.person_add),
-                    title:
-                        Text('Add "${_controller.text.trim()}" as new person'),
+                    title: Text(
+                      'Add "${_controller.text.trim()}" as new person',
+                    ),
                     onTap: () => _showAddPersonDialog(
                       context,
                       _controller.text.trim(),
-                      provider,
                     ),
                   ),
               ],
             ),
           ),
-        if (provider.participantsError != null)
+        if (widget.participantsError != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              provider.participantsError!,
+              widget.participantsError!,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.error,
                 fontSize: 12,
               ),
             ),
           ),
-        if (provider.selectedPersons.isNotEmpty)
+        if (widget.selectedPersons.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: provider.selectedPersons
+              children: widget.selectedPersons
                   .map(
                     (person) => Chip(
                       label: Text(person.fullName),
-                      onDeleted: () => provider.removePerson(person),
+                      onDeleted: () => widget.onPersonRemoved(person),
                     ),
                   )
                   .toList(),
@@ -123,13 +139,12 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
   Future<void> _showAddPersonDialog(
     BuildContext context,
     String initialName,
-    AddMeetingProvider provider,
   ) async {
     final parts = initialName.split(' ');
     final firstName = parts.first;
     final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-    // Dialog returns raw strings, Provider handles Firestore save
+    // Dialog returns raw strings; caller handles Firestore save via onNewPerson
     final result = await showDialog<({String firstName, String lastName})>(
       context: context,
       builder: (_) => AddPersonDialog(
@@ -139,7 +154,7 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     );
 
     if (result != null && context.mounted) {
-      await provider.addNewPerson(
+      await widget.onNewPerson(
         firstName: result.firstName,
         lastName: result.lastName.isEmpty ? null : result.lastName,
       );
