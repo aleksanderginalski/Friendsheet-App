@@ -2261,6 +2261,12 @@ US-051 App Icon ─────────────────────�
 - [ ] Minimum 1 card must remain visible — last checkbox cannot be unchecked
 - [ ] Persistence in `SharedPreferences` key `stats_carousel_hidden_cards` unchanged
 - [ ] US-051 empty state ("Long-press to restore") removed; replaced by dialog-driven restore
+- [ ] Left/right arrow buttons displayed in statistics section header, flanking the "Statistics" title: `[< Statistics  🎛]`
+- [ ] Tapping left arrow navigates to previous carousel card (wraps from first to last)
+- [ ] Tapping right arrow navigates to next carousel card (wraps from last to first)
+- [ ] Arrow navigation works in parallel with existing swipe gesture
+- [ ] Arrows respect hidden cards — skips hidden cards during navigation
+- [ ] Arrows are disabled (or hidden) when only 1 card is visible
 
 **Tasks:**
 - [ ] **TASK-060.1:** Add `stats_options_icon` asset, register in `pubspec.yaml`
@@ -2269,6 +2275,7 @@ US-051 App Icon ─────────────────────�
 - [ ] **TASK-060.4:** Wire dialog into `StatisticsSection` header
 - [ ] **TASK-060.5:** Update `StatisticsProvider` — remove long-press toggle path, keep dialog toggle
 - [ ] **TASK-060.6:** Update existing US-051 tests to reflect removed long-press behavior
+- [ ] **TASK-060.7:** Statistics Carousel Arrow Navigation
 
 ---
 

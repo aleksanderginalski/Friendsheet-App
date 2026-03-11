@@ -81,6 +81,9 @@ class StatisticsProvider extends ChangeNotifier {
   Set<String> get hiddenPersonsDistribution => _hiddenPersonsDistribution;
   bool get isDistributionLoading => _isDistributionLoading;
 
+  /// Cards currently hidden in the carousel.
+  Set<StatCardType> get hiddenCards => Set.from(_hiddenCards);
+
   /// Cards currently visible in the carousel — hidden cards excluded.
   List<StatCardType> get visibleCards =>
       StatCardType.values.where((c) => !_hiddenCards.contains(c)).toList();
