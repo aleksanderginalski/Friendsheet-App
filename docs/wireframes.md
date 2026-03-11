@@ -1,52 +1,67 @@
-# Friendsheet - Wireframes & UI Documentation (UPDATED for Google SSO)
+# Friendsheet — Wireframes & UI Documentation
 
 **Responsible Role:** UX/UI Designer  
-**Version:** 1.1 (Updated for Google Sign-In)  
-**Last Updated:** February 14, 2026
-
-**🎯 Major Change:** Simplified authentication flow using Google Sign-In instead of email/password
+**Version:** 2.0 (Full rewrite — reflects implemented state as of US-060)  
+**Last Updated:** March 2026
 
 ---
 
-## 🔄 Authentication Flow Comparison
+## Navigation Structure
 
-### Before (Email/Password):
+### Bottom Navigation Bar
 ```
-Login Screen ──→ Register Screen ──→ Forgot Password ──→ Email Verification ──→ Home
-   ↓                                                                              ↑
-   └──────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│  Screen Title                   ⋮  │  ← drawer trigger (logout only)
+├─────────────────────────────────────┤
+│                                     │
+│         [Screen Content]            │
+│                                     │
+│                      [+]            │  ← FAB (Add Meeting), all tabs
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+│ Home   │Meetings│Friends │Activities│
+└────────┴────────┴────────┴──────────┘
 ```
 
-### After (Google Sign-In) - MUCH SIMPLER! ✨:
+| Index | Icon | Label | Screen |
+|-------|------|-------|--------|
+| 0 | home | Home | HomeScreen |
+| 1 | calendar_today | Meetings | MeetingsListScreen |
+| 2 | people | Friends | PersonsListScreen |
+| 3 | sports_tennis | Activities | ActivitiesListScreen |
+
+### Drawer (accessible from ⋮ in AppBar)
 ```
-Login Screen ──→ [Google Sign-In] ──→ Home
-      ↑                                   │
-      └───────────────────────────────────┘
-              (one tap logout)
+┌─────────────────────────────────────┐
+│  👤 John Doe                        │
+│     john.doe@gmail.com              │
+│  ─────────────────────────────────  │
+│  📅 Import from Calendar            │  ← dynamic: "Browse & Import Events"
+│     when calendar connected         │    when calendar connected
+│  ─────────────────────────────────  │
+│  🚪 Log Out                         │
+└─────────────────────────────────────┘
 ```
 
-**Reduction:** 3 screens → 1 screen (67% simpler!)
+**Drawer tile behavior:**
+- Calendar NOT connected → `"Import from Calendar"` → navigates to `CalendarPermissionScreen`
+- Calendar connected → `"Browse & Import Events"` → navigates to `CalendarEventsScreen`
 
 ---
 
-## Ekran 1: Login Screen with Google Sign-In (⚡ UPDATED)
+## Screen 1: Login Screen
 
 ```
 ┌─────────────────────────────────────┐
-│          FRIENDSHEET                │
-│     Track Your Social Life          │
 │                                     │
-│         [App Logo/Icon]             │
+│         [Friendsheet Logo]          │
+│       Track Your Social Life        │
 │                                     │
-│      ┌─────────────────────────┐   │
-│      │                         │   │
-│      │   [  G  ] Sign in      │   │
-│      │         with Google     │   │
-│      │                         │   │
-│      └─────────────────────────┘   │
+│         [Hero Illustration]         │
 │                                     │
-│      One tap to get started! 🚀    │
-│                                     │
+│  ┌─────────────────────────────┐   │
+│  │  [G]  Sign in with Google   │   │
+│  └─────────────────────────────┘   │
 │                                     │
 │    By signing in, you agree to     │
 │         our Terms of Service       │
@@ -54,198 +69,199 @@ Login Screen ──→ [Google Sign-In] ──→ Home
 └─────────────────────────────────────┘
 ```
 
-**🎨 The Metaphor - The Universal Access Badge:**
-Think of this screen as the reception desk at a modern office building. Instead of filling out a long registration form and getting a new badge, you just tap your existing company badge (Google account) and you're in! The building trusts your company's security system.
-
-**Components:**
-- **App Branding Area:**
-  - Friendsheet logo/icon
-  - Tagline: "Track Your Social Life"
-  - Welcoming, friendly design
-  
-- **Primary Action Button:**
-  - "Sign in with Google" button
-  - Google's official button design (white background, Google logo, blue text)
-  - Follows Google Sign-In brand guidelines
-  - Large, easy to tap (minimum 48dp height)
-  
-- **Supporting Text:**
-  - Encouraging message: "One tap to get started!"
-  - Terms of Service link (legal requirement)
-
-**Visual Hierarchy:**
-1. Logo/Brand (draws attention)
-2. Google Sign-In button (primary action - can't miss it!)
-3. Supporting text (builds confidence)
-
 **States:**
 
-**State 1: Initial (Idle)**
-```
-┌─────────────────────────────────────┐
-│      [  G  ] Sign in with Google   │  ← Button enabled, ready to tap
-└─────────────────────────────────────┘
-```
+| State | Appearance |
+|-------|-----------|
+| Idle | Button enabled, full opacity |
+| Loading | Spinner replaces button label — `"Signing in..."` |
+| Error | Snackbar or inline error below button |
 
-**State 2: Loading**
-```
-┌─────────────────────────────────────┐
-│      [ ⟳ ] Signing in...           │  ← Spinner animation
-└─────────────────────────────────────┘
-```
-
-**State 3: Google Account Picker (OS-level)**
-```
-┌─────────────────────────────────────┐
-│  Choose an account to continue to   │
-│          Friendsheet                │
-│                                     │
-│  ┌───────────────────────────────┐ │
-│  │ 👤 john.doe@gmail.com         │ │
-│  │    John Doe                   │ │
-│  └───────────────────────────────┘ │
-│                                     │
-│  ┌───────────────────────────────┐ │
-│  │ 👤 jane.smith@gmail.com       │ │
-│  │    Jane Smith                 │ │
-│  └───────────────────────────────┘ │
-│                                     │
-│  [Use another account]              │
-└─────────────────────────────────────┘
-```
-*Note: This is Google's native picker, not your custom screen!*
-
-**State 4: Error**
-```
-┌─────────────────────────────────────┐
-│   ⚠️ Sign in failed                │
-│   Please try again or check your   │
-│   internet connection              │
-│                                     │
-│      [  G  ] Try Again             │
-└─────────────────────────────────────┘
-```
-
-**Acceptance Criteria:**
-- ✅ Google Sign-In button follows Google's brand guidelines
-- ✅ Button is prominent and easy to find
-- ✅ Loading state provides feedback
-- ✅ Error messages are helpful and friendly
-- ✅ Works on first launch (no existing account needed)
-- ✅ Accessible (proper contrast, touch target size)
-
-**Design Specifications:**
-- **Button Dimensions:** Full width - 32dp padding, min height 48dp
-- **Google Logo:** Official Google "G" logo (provided by SDK)
-- **Colors:** 
-  - Button background: White (#FFFFFF)
-  - Button text: Google Blue (#4285F4) or black (#000000) per guidelines
-  - Button border: Light gray (#DADCE0)
-- **Typography:** 
-  - Button text: Roboto Medium, 14sp
-  - Tagline: Roboto Regular, 16sp
-  - Supporting text: Roboto Regular, 12sp
-
-**Why This Design Works:**
-1. **Familiar:** Users recognize Google's button instantly
-2. **Trustworthy:** Google brand inspires confidence
-3. **Simple:** No form fields, no password management
-4. **Fast:** One tap to authenticate
-5. **Accessible:** Clear, high contrast, large touch target
+**Behavior:**
+- Single tap → Google account picker (OS-level, not custom UI)
+- First-time user → Firebase creates account automatically
+- Returning user → logs in directly
+- On success → navigates to `HomeScreen`, clears navigation stack
 
 ---
 
-## ~~Ekran 2: Register Screen~~ [REMOVED - NOT NEEDED WITH GOOGLE SIGN-IN! 🎉]
+## Screen 2: HomeScreen
 
-**Status:** ❌ Obsolete  
-**Reason:** Google Sign-In automatically handles registration  
-
-**🎨 The Magic of SSO:**
-With Google Sign-In, there's NO separate registration! The first time a user signs in with Google, Firebase automatically creates their account. It's like having a universal key card - first time you use it at a new building, it just works!
-
-**What Happens Under the Hood:**
 ```
-First-time user taps "Sign in with Google"
-   ↓
-Google authenticates the user
-   ↓
-Firebase receives the authentication
-   ↓
-Firebase checks: "Is this user in my database?"
-   ↓
-NO → Firebase automatically creates new user account
-YES → Firebase logs in existing user
-   ↓
-User goes to Home screen
+┌─────────────────────────────────────┐
+│  Friendsheet                    ⋮  │
+├─────────────────────────────────────┤
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  📅 Import your past meetings │  │  ← CalendarOnboardingCta
+│  │  Connect Google Calendar to   │  │    visible when < 50 meetings
+│  │  get started quickly          │  │    AND not dismissed
+│  │                               │  │
+│  │  [Import from Calendar]  [X]  │  │  ← dismiss button removes CTA
+│  └───────────────────────────────┘  │
+│                                     │
+│  <   Statistics             🎛  >  │  ← section header
+│  ┌───────────────────────────────┐  │
+│  │                               │  │
+│  │     [Statistics Card]         │  │  ← PageView carousel (swipeable)
+│  │                               │  │
+│  └───────────────────────────────┘  │
+│              ● ○ ○                  │  ← page indicator dots
+│                                     │
+└─────────────────────────────────────┘
+│  🏠    │  📅    │  👥    │  🏷️    │
+└─────────────────────────────────────┘
 ```
 
-**Time Saved:** No registration screen to design, build, or test!
+### CalendarOnboardingCta
+- Visible when: `totalMeetings < 50` AND not dismissed
+- Dismissed by: tapping `[X]` OR tapping `[Import from Calendar]`
+- Dismissed state persisted in SharedPreferences — survives app restart
+- Once dismissed or ≥ 50 meetings → never shown again
+
+### Statistics Section Header
+```
+[<]   Statistics   [🎛]   [>]
+```
+- `[<]` / `[>]` — carousel arrow navigation, wrap-around (last→first, first→last)
+- `[🎛]` — `Icons.tune` — opens `StatisticsVisibilityDialog`
+- Arrows show `onPressed: null` (visually disabled) when only 1 card visible
+- Swipe gesture on carousel works in parallel with arrows
+
+### Statistics Cards (StatCard enum)
+| Card | Content |
+|------|---------|
+| `activityBreakdown` | Animated bar chart — top activities by occurrence |
+| `whoPerActivity` | Who you do each activity with |
+| `interactionDistribution` | Interaction weight per person (yearly/cumulative toggle) |
+
+Each card:
+- Persists state via `AutomaticKeepAliveClientMixin` (no reload on swipe)
+- Has individual year filter (3m / 6m / 12m / all time)
+- Has visibility toggle managed by `StatisticsVisibilityDialog`
+
+### StatisticsVisibilityDialog
+```
+┌─────────────────────────────────────┐
+│  Statistics Cards               [☑] │  ← three-state select-all
+├─────────────────────────────────────┤
+│  ☑  Activity Breakdown              │
+│  ☑  Who Per Activity                │
+│  ☐  Interaction Distribution        │  ← unchecked = hidden from carousel
+│                                     │
+│  ☑  [last visible — disabled]       │  ← tooltip: "At least 1 card must
+│                                     │    remain visible"
+├─────────────────────────────────────┤
+│                         [  CLOSE  ] │
+└─────────────────────────────────────┘
+```
+
+**Select-all toggle states:**
+
+| Icon | Meaning | Tap action |
+|------|---------|------------|
+| `check_box` | All visible | Deselect all (min 1 enforced) |
+| `indeterminate_check_box` | Partial | Select all |
+| `check_box_outline_blank` | All hidden | Select all |
+
+- Changes apply immediately — no confirm step
+- Persistence: SharedPreferences key `stats_carousel_hidden_cards`
 
 ---
 
-## Main App Screen: Home with Logout
+## Screen 3: MeetingsListScreen
 
+### Default State
 ```
 ┌─────────────────────────────────────┐
-│  FRIENDSHEET                    ⋮   │← Menu icon
+│  MY MEETINGS                🔍  ⋮  │  ← search icon expands inline
 ├─────────────────────────────────────┤
 │                                     │
-│  Welcome back, John! 👋             │
-│  john.doe@gmail.com                 │
+│  2026  ▼                            │
+│    March 2026 · 3 meetings  ▼       │
+│    ┌─────────────────────────────┐  │
+│    │ Coffee with Anna   Feb 8 ⚖3│  │  ← compact MeetingCard
+│    └─────────────────────────────┘  │
+│    ┌─────────────────────────────┐  │
+│    │ Team lunch         Feb 5 ⚖8│  │
+│    └─────────────────────────────┘  │
+│    February 2026 · 2 meetings  ▶    │  ← collapsed month
 │                                     │
-│  [+ ADD NEW MEETING]                │
+│  2025  ▶  (collapsed year)          │
 │                                     │
-│  Your recent meetings               │
-│  (Future feature - not in MVP)      │
-│                                     │
-│                                     │
-│                                     │
+└─────────────────────────────────────┘
+│  🏠  │  📅  │  👥  │  🏷️          │
 └─────────────────────────────────────┘
 ```
 
-**Tapping menu (⋮) opens drawer:**
+### Grouping & Collapse Behavior
+- Structure: Year → Month → MeetingCards
+- Current month: expanded by default
+- Previous month: expanded by default
+- Older months: collapsed
+- Current year: expanded by default
+- Older years: collapsed
+- Tap year/month header → toggle expand/collapse
 
+### MeetingCard (compact variant)
 ```
 ┌─────────────────────────────────────┐
-│ FRIENDSHEET                         │
+│ Coffee with Anna          Feb 8  ⚖3│
+│ 2 people · Running, Coffee          │
+└─────────────────────────────────────┘
+```
+- Reduced padding and font sizes vs original card
+- Tap → `MeetingDetailScreen`
+
+### Search State
+```
+┌─────────────────────────────────────┐
+│  [🔍 Search meetings...        ] ✕  │  ← tap 🔍 to expand, ✕ to close
 ├─────────────────────────────────────┤
-│                                     │
-│  👤 John Doe                        │
-│     john.doe@gmail.com              │
-│                                     │
-├─────────────────────────────────────┤
-│                                     │
-│  🏠 Home                            │
-│  📊 Statistics (Coming Soon)        │
-│  ⚙️  Settings (Coming Soon)         │
-│                                     │
-│  ──────────────────────                │
-│                                     │
-│  🚪 Log Out                         │
-│                                     │
+│  [filtered meeting cards]           │
 └─────────────────────────────────────┘
 ```
 
-**Logout Confirmation Dialog:**
-
+### Empty State
 ```
 ┌─────────────────────────────────────┐
-│          LOG OUT?              [X]  │
-├─────────────────────────────────────┤
-│                                     │
-│  Are you sure you want to log out?  │
-│                                     │
-│  You'll need to sign in again to    │
-│  access your meetings.              │
-│                                     │
-│     [CANCEL]      [LOG OUT]        │
-│                                     │
+│             [Illustration]          │
+│       No meetings yet!              │
+│    Tap + to add your first          │
 └─────────────────────────────────────┘
 ```
 
 ---
 
-## Screen 3: Add Meeting Screen (UNCHANGED)
+## Screen 4: MeetingDetailScreen
+
+```
+┌─────────────────────────────────────┐
+│  ← Meeting Detail           ✏️  🗑  │
+├─────────────────────────────────────┤
+│                                     │
+│  Coffee with Anna                   │
+│  February 8, 2026                   │
+│  ⚖  Weight: 3                       │
+│                                     │
+│  Participants                        │
+│  Anna Smith · John Doe              │
+│                                     │
+│  Activities                          │
+│  ☕ Coffee · 🏃 Running              │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- `✏️` → opens `EditMeetingScreen` (pre-filled form)
+- `🗑` → confirmation dialog → delete → back to `MeetingsListScreen`
+- Participants shown as resolved full names (not IDs)
+- Activities shown with category icons
+
+---
+
+## Screen 5: Add / Edit Meeting Screen
 
 ```
 ┌─────────────────────────────────────┐
@@ -258,511 +274,468 @@ User goes to Home screen
 │  └─────────────────────────────┘   │
 │  0/50                               │
 │                                     │
-│  Meeting Date *                     │
+│  Date *                             │
 │  ┌──────────────────┐  📅          │
-│  │  02/12/2026      │  [Calendar]  │
+│  │  08/02/2026      │              │
 │  └──────────────────┘              │
 │                                     │
-│  Meeting Weight *                   │
+│  Weight *                           │
 │  ┌──────────────────────────────┐  │
-│  │   [-]    8    [+]            │  │
+│  │   [-]    3    [+]            │  │
 │  └──────────────────────────────┘  │
-│  (1, 2, 3, 5, 8, 13, 21)           │
+│  Fibonacci: 1, 2, 3, 5, 8, 13, 21  │
 │                                     │
-│  Participants * (min. 1)           │
+│  Participants * (min. 1)            │
 │  ┌─────────────────────────────┐   │
 │  │ 🔍 Type name...             │   │
 │  └─────────────────────────────┘   │
-│  ┌───────────────────────────────┐ │
-│  │ [x] Anna Smith               │ │
-│  │ [x] John Doe                 │ │
-│  └───────────────────────────────┘ │
+│  [x] Anna Smith  [x] John Doe       │
 │                                     │
-│  Activities * (min. 1)             │
+│  Activities * (min. 1)              │
 │  ┌─────────────────────────────┐   │
 │  │ 🔍 Add activity...          │   │
 │  └─────────────────────────────┘   │
-│  ┌───────────────────────────────┐ │
-│  │ [x] Coffee ☕                 │ │
-│  │ [x] Walking 🚶               │ │
-│  └───────────────────────────────┘ │
+│  [x] Coffee ☕  [x] Running 🏃      │
 │                                     │
 │  ┌─────────────────────────────────┐│
-│  │       SAVE MEETING              ││
+│  │          SAVE MEETING           ││
 │  └─────────────────────────────────┘│
 │                                     │
 └─────────────────────────────────────┘
 ```
 
-*This screen remains the same - no changes needed for authentication method!*
+**Behavior:**
+- Name: max 50 chars, required
+- Date: defaults to today, date picker on tap
+- Weight: Fibonacci stepper (1→2→3→5→8→13→21), default 3
+- Participants: autocomplete from Firestore — `"Add [name]"` option creates new person
+- Activities: autocomplete from user's category tree — `"Add [name]"` creates root category
+- Save button disabled during network call (prevents double submit)
+- Validation: all three required fields must be filled before save
 
 ---
 
-## User Flow - Complete Authentication Journey
+## Screen 6: PersonsListScreen (Friends Tab)
 
-```mermaid
-flowchart TD
-    A[App Starts] --> B{User Authenticated?}
-    B -->|NO| C[Show Login Screen]
-    B -->|YES| D[Show Home Screen]
-    
-    C --> E[User Taps 'Sign in with Google']
-    E --> F[Google SDK Opens]
-    F --> G{User Selects Account}
-    
-    G -->|Cancel| C
-    G -->|Select Account| H[Google Authenticates]
-    
-    H --> I{Authentication Success?}
-    I -->|NO| J[Show Error]
-    J --> C
-    
-    I -->|YES| K{First Time User?}
-    K -->|YES| L[Firebase Creates New User]
-    K -->|NO| M[Firebase Logs In User]
-    
-    L --> D
-    M --> D
-    
-    D --> N[User Uses App]
-    N --> O{User Clicks Logout?}
-    O -->|YES| P[Show Confirmation]
-    P --> Q{Confirm?}
-    Q -->|NO| N
-    Q -->|YES| R[Sign Out from Google + Firebase]
-    R --> C
-```
-
-**🎨 The Journey Metaphor:**
-
-Think of authentication like entering a members-only club:
-
-1. **App Starts** = You arrive at the club entrance
-2. **Check Authentication** = Bouncer checks if you have a valid membership
-3. **Not Authenticated** = You need to show ID
-4. **Tap Google Sign-In** = You show your universal membership card (Google)
-5. **Google Authenticates** = The card scanner verifies it's real
-6. **First Time?** = If new, they create your club profile automatically
-7. **Enter App** = Welcome inside!
-8. **Logout** = You return your access badge when leaving
-
----
-
-## Comparison: Before vs. After
-
-### UI Screens Count:
-| Flow | Before (Email/Password) | After (Google SSO) | Reduction |
-|------|------------------------|-------------------|-----------|
-| Registration | Register Screen | ❌ Not needed | -1 screen |
-| Login | Login Screen | Login Screen | Same |
-| Forgot Password | Forgot Password Screen | ❌ Not needed | -1 screen |
-| Email Verification | Verification Screen | ❌ Not needed | -1 screen |
-| **Total Auth Screens** | **4 screens** | **1 screen** | **-75%!** |
-
-### User Steps to First Use:
-| Flow | Before (Email/Password) | After (Google SSO) |
-|------|------------------------|-------------------|
-| First Time User | 1. Enter email<br>2. Enter password<br>3. Confirm password<br>4. Submit<br>5. Wait for email<br>6. Open email<br>7. Click verification link<br>8. Return to app<br>**8 steps!** 😰 | 1. Tap "Sign in with Google"<br>2. Select account<br>**2 steps!** 🎉 |
-| Returning User | 1. Enter email<br>2. Enter password<br>3. Submit<br>**3 steps** | 1. Tap "Sign in with Google"<br>2. Select account<br>**2 steps** |
-
-### Development Effort:
-| Component | Before | After | Saved |
-|-----------|--------|-------|-------|
-| Screens | 4 | 1 | 3 screens |
-| Form Validations | Email, password, matching passwords | None! | All validations |
-| Error Handling | Email exists, weak password, network, verification | Just network & cancel | Simpler |
-| Email Service | Need email verification system | None! | Complete service |
-| Password Reset | Entire flow needed | None! | Entire feature |
-
----
-
-## Accessibility Considerations (UPDATED)
-
-### WCAG 2.1 Compliance for Login Screen:
-- **Color Contrast:** Google button meets 4.5:1 minimum
-- **Touch Targets:** Button is 48dp+ height (exceeds 44dp minimum)
-- **Text Size:** 14sp button text (exceeds 12sp minimum)
-- **Focus Indicators:** Google button has clear focus state
-- **Screen Reader:** Button announced as "Sign in with Google button"
-
-### Additional Accessibility Features:
-- High contrast mode support
-- Dynamic text sizing support
-- VoiceOver/TalkBack compatible
-- Keyboard navigation support (for future web version)
-
----
-
-## Animation & Transitions (SIMPLIFIED)
-
-### Login Flow:
-1. **Button Press:** Ripple effect (Material Design) - 200ms
-2. **Loading State:** Fade in spinner - 150ms
-3. **Success:** Slide to home screen - 300ms
-4. **Error:** Shake animation + fade in error - 250ms
-
-**Note:** Google account picker is handled by OS - we don't control its animations
-
----
-
-## Error States (SIMPLIFIED)
-
-### Possible Errors:
-
-**1. Network Error:**
 ```
 ┌─────────────────────────────────────┐
-│   ⚠️ No Internet Connection        │
-│   Please check your connection     │
-│   and try again                    │
-│                                     │
-│      [  G  ] Try Again             │
-└─────────────────────────────────────┘
-```
-
-**2. User Cancellation:**
-```
-┌─────────────────────────────────────┐
-│   Sign in cancelled                 │
-│   Tap the button to try again       │
-│                                     │
-│      [  G  ] Sign in with Google   │
-└─────────────────────────────────────┘
-```
-
-**3. Google Play Services Error:**
-```
-┌─────────────────────────────────────┐
-│   ⚠️ Google Play Services Required │
-│   Please update Google Play         │
-│   Services to continue             │
-│                                     │
-│      [Open Play Store]             │
-└─────────────────────────────────────┘
-```
-
-**4. Generic Error:**
-```
-┌─────────────────────────────────────┐
-│   ⚠️ Sign in failed                │
-│   Something went wrong.            │
-│   Please try again                 │
-│                                     │
-│      [  G  ] Try Again             │
-└─────────────────────────────────────┘
-```
-
-**Much simpler than before!** No more "email already exists", "weak password", "passwords don't match" errors!
-
----
-
-## Design Assets Needed
-
-### For Login Screen:
-- ✅ Friendsheet logo (SVG + PNG @1x, @2x, @3x)
-- ✅ Google Sign-In button (provided by `google_sign_in` package)
-- ✅ App icon
-- ✅ Splash screen background
-
-### Color Palette (Unchanged):
-- **Primary Color:** #4CAF50 (Green)
-- **Secondary Color:** #2196F3 (Blue)
-- **Error Color:** #F44336 (Red)
-- **Background:** #FFFFFF (White)
-- **Text Primary:** #212121 (Dark Gray)
-
-### Typography (Unchanged):
-- **Font:** Roboto (Material Design standard)
-- **Headings:** Roboto Medium
-- **Body:** Roboto Regular
-- **Buttons:** Roboto Medium
-
----
-
-## Developer Handoff Notes
-
-### What Changed:
-1. **Removed Screens:**
-   - ❌ Register Screen
-   - ❌ Forgot Password Screen
-   - ❌ Email Verification Screen
-
-2. **Simplified Screens:**
-   - ✅ Login Screen (just Google button + branding)
-   - ✅ Home Screen (added logout in drawer)
-
-3. **New Requirements:**
-   - Must use official Google Sign-In button
-   - Must follow Google's brand guidelines
-   - Must handle Google Play Services errors
-
-### Implementation Priority:
-1. **High:** Login with Google Sign-In
-2. **High:** Logout functionality
-3. **Medium:** Error handling
-4. **Low:** Confirmation dialogs (nice to have)
-
----
-
-## Testing Scenarios (SIMPLIFIED!)
-
-### Login Tests:
-- ✅ First-time user can sign in and account is created
-- ✅ Returning user can sign in
-- ✅ User can cancel sign-in
-- ✅ Network error is handled gracefully
-- ✅ Google Play Services error is handled
-- ✅ Loading state is shown during authentication
-- ✅ User is redirected to home after success
-
-### Logout Tests:
-- ✅ User can access logout option
-- ✅ Confirmation dialog appears (if implemented)
-- ✅ User is signed out from both Google and Firebase
-- ✅ User is redirected to login screen
-- ✅ Cannot access protected screens after logout
-
-**Previous test count:** ~15 test cases (email/password)  
-**New test count:** ~11 test cases (Google SSO)  
-**Reduction:** 27% fewer tests! 🎉
-
----
-
-## 📊 Summary of Changes
-
-### Before (Email/Password):
-- 4 authentication screens
-- 15+ test cases
-- 8 steps for first-time users
-- Complex form validations
-- Email verification system needed
-- Password reset flow needed
-
-### After (Google Sign-In):
-- 1 authentication screen ✨
-- 11 test cases ✨
-- 2 steps for first-time users ✨
-- No form validations ✨
-- No email verification ✨
-- No password reset ✨
-
-### Benefits:
-- ⏱️ **Faster to build:** -75% screens
-- 😊 **Better UX:** -75% user friction
-- 🔒 **More secure:** Google's infrastructure
-- 🧪 **Easier to test:** Fewer edge cases
-- 💼 **More professional:** Industry standard
-
----
-
-## Navigation: BottomNavigationBar (M2+)
-```
-┌─────────────────────────────────────┐
-│  Current Screen Title           ⋮  │
+│  Friends                  🔍  +  ⋮  │
 ├─────────────────────────────────────┤
 │                                     │
-│         [Screen Content]            │
+│  ┌─────────────────────────────┐   │
+│  │  AB  Anna Bogucka           │   │  ← initials avatar
+│  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │
+│  │  JD  John Doe               │   │
+│  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │
+│  │  MK  Maria Kowalska         │   │
+│  └─────────────────────────────┘   │
 │                                     │
 └─────────────────────────────────────┘
-│  🏠    │  📅    │  👥    │  🏷️    │
-│ Home   │Meetings│Persons │Activities│
-└────────┴────────┴────────┴──────────┘
+│  🏠  │  📅  │  👥  │  🏷️          │
+└─────────────────────────────────────┘
 ```
-
-**Tab Structure:**
-| Index | Icon | Label | Screen | Status |
-|-------|------|-------|--------|--------|
-| 0 | home | Home | HomeScreen | Existing |
-| 1 | calendar_today | Meetings | MeetingsListScreen | US-021 |
-| 2 | people | Persons | PersonsListScreen | US-024 |
-| 3 | sports_tennis | Activities | ActivitiesListScreen | US-026 |
 
 **Behavior:**
-- Active tab highlighted with primary color (#4CAF50)
-- Inactive tabs: gray (#9E9E9E)
-- Tapping active tab scrolls content to top (future enhancement)
-- BottomNavigationBar replaces Drawer as primary navigation
+- Alphabetical list
+- `🔍` → expandable search bar (same pattern as MeetingsListScreen)
+- `+` → Add Person dialog
+- Tap person row → `PersonDetailScreen`
 
-**Migration note:** Drawer remains accessible via ⋮ menu (logout only).
+### Empty State
+```
+│             [Illustration]          │
+│     No friends added yet!           │
+│  Tap + to add your first person     │
+```
 
+---
 
-## Activities List Screen (US-026)
+## Screen 7: PersonDetailScreen
+
+```
+┌─────────────────────────────────────┐
+│  ← Person Detail            ✏️  🗑  │
+├─────────────────────────────────────┤
+│                                     │
+│         AB                          │
+│      Anna Bogucka                   │
+│                                     │
+│  Meetings together: 7               │
+│  Last seen: Feb 8, 2026             │
+│                                     │
+│  ─────────────────────────────────  │
+│  Recent meetings                    │
+│  Coffee with Anna   Feb 8           │
+│  Running together   Jan 20          │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- `✏️` → Edit Person dialog (first name / last name)
+- `🗑` → confirmation dialog
+  - If person has meetings: warning shown before confirmation
+  - On confirm: person deleted, removed from participant lists in all meetings
+  - Meetings themselves are preserved
+
+---
+
+## Screen 8: ActivitiesListScreen
+
 ```
 ┌─────────────────────────────────────┐
 │  Activities                + 🔍    │
 ├─────────────────────────────────────┤
 │                                     │
-│  ▶ 🏃 Sport                    +   │
+│  ▶ 🏃 Sport                    +   │  ← global (long-press: no action)
 │  ▶ 🍕 Food & Drinks            +   │
 │  ▶ 🎬 Entertainment            +   │
-│  ▶ ✈️ Travel                   +   │
-│  ▶ 🏔️ Gory                    +   │  ← user-created root
+│  ▶ ✈️  Travel                  +   │
+│  ▶ 🏔️  Góry                   +   │  ← user-created root
 │                                     │
 └─────────────────────────────────────┘
-│  🏠    │  📅    │  👥    │  🏷️    │
-│ Home   │Meetings│Friends │Activities│
-└────────┴────────┴────────┴──────────┘
+│  🏠  │  📅  │  👥  │  🏷️          │
+└─────────────────────────────────────┘
 ```
 
-**Expanded state (after tapping Sport):**
+### Expanded State
 ```
-┌─────────────────────────────────────┐
-│  Activities                + 🔍    │
-├─────────────────────────────────────┤
-│                                     │
 │  ▼ 🏃 Sport                    +   │
-│      💪 Siłownia                   │  ← leaf tile (long-press to edit/delete)
-│      🎾 Tenis                      │
-│      🏔️ Góry                       │
+│      💪 Gym                        │  ← leaf (long-press → Edit/Delete)
+│      🎾 Tennis                     │
+│      🏔️  Hiking                   │
 │  ▶ 🍕 Food & Drinks            +   │
-│  ▶ 🏔️ Gory                    +   │  ← user-created (long-press available)
-│                                     │
-└─────────────────────────────────────┘
 ```
 
-**Add Activity Dialog:**
+### Add Activity Dialog
 ```
 ┌─────────────────────────────────────┐
 │  Add Activity                       │
 ├─────────────────────────────────────┤
-│                                     │
 │  Name                               │
-│  ┌─────────────────────────────┐    │
-│  │ e.g. Kayaking               │    │
-│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐   │
+│  │ e.g. Kayaking               │   │
+│  └─────────────────────────────┘   │
 │                                     │
 │  Parent category                    │
-│  ┌─────────────────────────────┐    │
-│  │ None (top-level)          ▼ │    │
-│  └─────────────────────────────┘    │
+│  ┌─────────────────────────────┐   │
+│  │ None (top-level)          ▼ │   │
+│  └─────────────────────────────┘   │
 │                                     │
 │  Icon                               │
 │  [🏃][🍕][🎬][✈️][💪][🎾]...      │
-│                                     │
-├─────────────────────────────────────┤
-│              CANCEL    SAVE         │
+│                          CANCEL SAVE│
 └─────────────────────────────────────┘
 ```
 
 **Behavior:**
-- All sections collapsed by default on screen open
-- `+` in AppBar → Add root category dialog (no parent preselected)
-- `+` on section row → Add child dialog (parent preselected)
-- Long-press on user-owned root → bottom sheet: Edit / Delete
-- Long-press on leaf tile → bottom sheet: Edit / Delete
-- Long-press on global category → no action (read-only)
+- All sections collapsed by default
+- `+` in AppBar → Add root category (no parent preselected)
+- `+` on section row → Add child (parent preselected)
+- Long-press on **user-owned** category → Edit / Delete bottom sheet
+- Long-press on **global** category → no action (read-only)
+- Delete parent → cascade deletes all children
 - Search filters leaf names, auto-expands matching sections
+
 ---
 
-## Screen: MeetingsListScreen (US-021)
+## Screen 9: SettingsScreen
 
-### Default State (meetings exist)
 ```
 ┌─────────────────────────────────────┐
-│  MY MEETINGS                    ⋮  │
+│  Settings                       ⋮  │
 ├─────────────────────────────────────┤
 │                                     │
-│  2026  ▼                           │
-│  ┌───────────────────────────────┐ │
-│  │ Coffee with Anna         📅  │ │
-│  │ Feb 12 · 2 people · ⚖️ 8    │ │
-│  └───────────────────────────────┘ │
-│  ┌───────────────────────────────┐ │
-│  │ Team lunch                📅  │ │
-│  │ Feb 5 · 4 people · ⚖️ 3     │ │
-│  └───────────────────────────────┘ │
+│  Account                            │
+│  ┌─────────────────────────────┐   │
+│  │  👤 John Doe                │   │
+│  │     john.doe@gmail.com      │   │
+│  └─────────────────────────────┘   │
 │                                     │
-│  2025  ▼                           │
-│  ┌───────────────────────────────┐ │
-│  │ New Year dinner           📅  │ │
-│  │ Jan 1 · 6 people · ⚖️ 13    │ │
-│  └───────────────────────────────┘ │
+│  Data                               │
+│  ┌─────────────────────────────┐   │
+│  │  📤 Export data as JSON     │   │
+│  └─────────────────────────────┘   │
 │                                     │
-│  2024  ▶  (collapsed)              │
+│  Google Calendar                    │
+│  ┌─────────────────────────────┐   │
+│  │  🔗 Connected               │   │  ← when connected
+│  │  Disconnect Calendar        │   │
+│  └─────────────────────────────┘   │
 │                                     │
-│  2023  ▶  (collapsed)              │
-│                                     │
-└─────────────────────────────────────┘
-│  🏠    │  📅    │  👥    │  🏷️    │
 └─────────────────────────────────────┘
 ```
+
+**Calendar section states:**
+
+| State | Content |
+|-------|---------|
+| Not connected | `"Connect Google Calendar"` tile → `CalendarPermissionScreen` |
+| Connected | `"Connected ✓"` label + `"Disconnect Calendar"` tile |
+
+**Export behavior:**
+- Exports all meetings to JSON
+- File saved to device Downloads folder: `friendsheet_export_YYYY-MM-DD.json`
+- Success snackbar with file path shown
+
+---
+
+## Screen 10: CalendarPermissionScreen
+
+```
+┌─────────────────────────────────────┐
+│  ← Import from Calendar             │
+├─────────────────────────────────────┤
+│                                     │
+│         [Calendar Icon]             │
+│                                     │
+│   Connect Google Calendar           │
+│                                     │
+│   Friendsheet will read your        │
+│   calendar events to help you       │
+│   add past meetings. Read-only      │
+│   access — we never modify your     │
+│   calendar.                         │
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │  Connect Google Calendar    │   │
+│  └─────────────────────────────┘   │
+│                                     │
+│           Not now                   │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- `"Connect Google Calendar"` → OAuth consent (Google account picker)
+- On grant → navigates to `CalendarEventsScreen`
+- `"Not now"` → back to previous screen
+- On deny → informative message, user can retry
+
+---
+
+## Screen 11: CalendarEventsScreen
+
+```
+┌─────────────────────────────────────┐
+│  ← Browse Events                    │
+├─────────────────────────────────────┤
+│  ▶ Filters                          │  ← collapsible filter panel
+├─────────────────────────────────────┤
+│                                     │
+│  ☐ Team standup        Mon Feb 3    │  ← CalendarEventCard
+│    👥 anna@, john@                  │
+│                                     │
+│  ☑ Coffee with Anna    Fri Jan 31   │  ← selected
+│    👥 anna@work.com                 │
+│                                     │
+│  ☐ All-hands meeting   Thu Jan 30   │
+│    (all day)                        │
+│                                     │
+│  2 selected  [Select All]           │
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │      Import (2)             │   │  ← disabled when 0 selected
+│  └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+```
+
+### Filter Panel (expanded)
+```
+┌─────────────────────────────────────┐
+│  ▼ Filters                          │
+│                                     │
+│  From    [Jan 1, 2025]  📅         │
+│  To      [Feb 8, 2026]  📅         │
+│                                     │
+│  Calendars                          │
+│  ☑ john.doe@gmail.com (primary)     │
+│  ☑ Work Calendar                    │
+│                                     │
+│  ☑ Exclude all-day events           │
+│                                     │
+│  [  Apply Filters  ]                │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Default date range: last 12 months
+- Default: primary calendar selected, all-day excluded
+- `"Apply Filters"` → triggers API call with new params
+- Multi-select with checkboxes; `"Select All"` / `"Deselect All"`
+- `"Import (N)"` disabled when 0 selected
+- On import → creates `ImportCandidate` list → navigates to `MeetingInboxScreen`
 
 ### Empty State
 ```
-┌─────────────────────────────────────┐
-│  MY MEETINGS                    ⋮  │
-├─────────────────────────────────────┤
-│                                     │
-│                                     │
-│           📅                       │
-│                                     │
-│    No meetings yet!                 │
-│    Tap + to add your first          │
-│    meeting.                         │
-│                                     │
-│                                     │
-└─────────────────────────────────────┘
-│  🏠    │  📅    │  👥    │  🏷️    │
-└─────────────────────────────────────┘
-```
-
-### MeetingCard Component
-```
-┌───────────────────────────────────┐
-│  Coffee with Anna                 │
-│  Feb 12, 2026 · 2 people · ⚖️ 8  │
-└───────────────────────────────────┘
-```
-
-**MeetingCard fields:**
-- Meeting name (bold)
-- Date (formatted: MMM dd, yyyy)
-- Participant count
-- Weight value with scale icon
-
-### Year Section Behavior
-- Current year: expanded by default
-- Previous year (current - 1): expanded by default
-- Older years: collapsed by default
-- Tap year header to toggle expanded/collapsed
-- Arrow icon indicates state: ▼ expanded / ▶ collapsed
-
-### Loading State
-```
-┌─────────────────────────────────────┐
-│  MY MEETINGS                    ⋮  │
-├─────────────────────────────────────┤
-│                                     │
-│    [shimmer/spinner]                │
-│                                     │
-└─────────────────────────────────────┘
+│           📅                        │
+│   No events found                   │
+│   Try adjusting the date range      │
+│   or calendar filters               │
 ```
 
 ---
 
-## Updated User Flow (M2)
-```mermaid
-flowchart TD
-    A[App Starts] --> B{Authenticated?}
-    B -->|NO| C[Login Screen]
-    B -->|YES| D[HomeScreen - Tab 0]
-    C --> E[Google Sign-In]
-    E --> D
+## Screen 12: MeetingInboxScreen
 
-    D --> F[BottomNavigationBar]
-    F --> G[Tab 1: MeetingsListScreen]
-    F --> H[Tab 2: PersonsListScreen - US-024]
-    F --> I[Tab 3: ActivitiesListScreen - US-026]
-
-    G --> J[Tap Meeting Card]
-    J --> K[MeetingDetailScreen - US-022]
-
-    D --> L[FAB: Add Meeting]
-    G --> L
-    L --> M[AddMeetingScreen]
-    M --> G
+```
+┌─────────────────────────────────────┐
+│  ← Meeting Inbox                    │
+│  2 of 5 reviewed                    │  ← progress indicator
+├─────────────────────────────────────┤
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  📅 Team standup   Feb 3      │  │  ← ImportCandidate card
+│  │  👥 anna@, john@              │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  📅 Coffee with Anna  Jan 31  │  │
+│  │  👥 anna@work.com             │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│  ┌───────────────────────────────┐  │  ← already reviewed cards
+│  │  ✅ All-hands   Jan 30        │  │    (confirmed or skipped)
+│  └───────────────────────────────┘  │
+│                                     │
+└─────────────────────────────────────┘
 ```
 
-**End of Updated Wireframes Documentation**
+**Behavior:**
+- Source-agnostic — Calendar (US-067) and Photos (US-070) both feed into same inbox
+- Candidates persisted in SharedPreferences (`meeting_inbox_candidates`) — survive app restart
+- `MeetingInboxProvider` owned by `MainScreen` for full-session lifetime
+- Drawer shows `"Pending Meetings (N)"` badge when inbox is non-empty
+- Tap card → `InboxItemEditScreen`
+- When inbox empty → `ImportSuccessScreen`
 
-**Next Step:** Implement US-004 (Google Sign-In) following this design! 🚀
+---
+
+## Screen 13: InboxItemEditScreen
+
+```
+┌─────────────────────────────────────┐
+│  ← Review Meeting                   │
+├─────────────────────────────────────┤
+│                                     │
+│  Meeting Name *                     │
+│  ┌─────────────────────────────┐   │
+│  │ Team standup                │   │  ← pre-filled from event title
+│  └─────────────────────────────┘   │
+│                                     │
+│  Date *                             │
+│  ┌──────────────────┐  📅          │
+│  │  03/02/2026      │              │  ← pre-filled from event date
+│  └──────────────────┘              │
+│                                     │
+│  Weight *                           │
+│  ┌──────────────────────────────┐  │
+│  │   [-]    3    [+]            │  │  ← default 3, Fibonacci stepper
+│  └──────────────────────────────┘  │
+│                                     │
+│  Participants                        │
+│  Suggested from attendees:          │
+│  [✓ Anna Smith]  [✓ John Doe]       │  ← email heuristic suggestions
+│  [+ Add manually]                   │
+│                                     │
+│  Activities * (min. 1)              │
+│  ┌─────────────────────────────┐   │
+│  │ 🔍 Add activity...          │   │  ← no pre-fill, standard autocomplete
+│  └─────────────────────────────┘   │
+│                                     │
+│  ┌──────────────┐  ┌─────────────┐ │
+│  │    SKIP      │  │   CONFIRM   │ │
+│  └──────────────┘  └─────────────┘ │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- `"Confirm"` → saves meeting to Firestore, removes candidate from inbox, back to inbox list
+- `"Skip"` → removes candidate from inbox without saving, back to inbox list
+- Back navigation (← ) → returns to inbox list without data loss
+- Participant suggestions: attendee emails parsed via heuristic (`firstname.lastname@domain`)
+- Each suggestion can be accepted (added as chip) or dismissed
+
+---
+
+## Screen 14: ImportSuccessScreen
+
+```
+┌─────────────────────────────────────┐
+│                                     │
+│         [Success Illustration]      │
+│                                     │
+│      Import complete! 🎉            │
+│                                     │
+│      4 meetings added to            │
+│      Friendsheet                    │
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │      Go to Meetings         │   │
+│  └─────────────────────────────┘   │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Shown when inbox is empty (all candidates confirmed or skipped)
+- Displays count of meetings actually confirmed (not total candidates)
+- `"Go to Meetings"` → navigates to `MeetingsListScreen`, clears inbox navigation stack
+
+---
+
+## Navigation Flow
+
+```
+LoginScreen
+    └── HomeScreen (Tab 0)
+          ├── [FAB] → AddMeetingScreen
+          ├── [CTA] → CalendarPermissionScreen → CalendarEventsScreen
+          │                                           └── [Import] → MeetingInboxScreen
+          │                                                               ├── card tap → InboxItemEditScreen
+          │                                                               └── (empty) → ImportSuccessScreen
+          │
+          ├── [Drawer] → "Import from Calendar"  → CalendarPermissionScreen
+          │           → "Browse & Import Events" → CalendarEventsScreen
+          │           → "Pending Meetings (N)"   → MeetingInboxScreen (when inbox non-empty)
+          │
+          ├── Tab 1: MeetingsListScreen
+          │     ├── MeetingCard tap → MeetingDetailScreen
+          │     │     └── [✏️] → EditMeetingScreen
+          │     └── [FAB] → AddMeetingScreen
+          │
+          ├── Tab 2: PersonsListScreen
+          │     └── Person tap → PersonDetailScreen
+          │
+          ├── Tab 3: ActivitiesListScreen
+          │
+          └── [⋮ Drawer] → SettingsScreen
+                └── Calendar section → CalendarPermissionScreen
+                                          └── CalendarEventsScreen
+```
+
+---
+
+## Design System Reference
+
+| Token | Value |
+|-------|-------|
+| Primary | `#43A047` (Green) |
+| Secondary | `#FFB300` (Amber) |
+| Error | `#E53935` (Red) |
+| Surface | `#FAFAF7` (Warm White) |
+| Font | Nunito |
+| Card radius | 16dp |
+| Button radius | 12dp |
+| Chip radius | 8dp |
+| Bottom sheet radius | 24dp (top corners) |
+| Dialog radius | 20dp |
+| Min touch target | 48dp |
+| Base spacing unit | 8dp |
+
+---
+
+*This document reflects the implemented state of Friendsheet as of US-060.*  
+*Update when new screens or significant UI changes are shipped.*
