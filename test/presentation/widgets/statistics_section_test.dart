@@ -7,6 +7,7 @@ import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
 import 'package:friendsheet/presentation/widgets/interaction_distribution_widget.dart';
 import 'package:friendsheet/presentation/widgets/statistics_section.dart';
+import 'package:friendsheet/presentation/widgets/statistics_visibility_dialog.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -129,7 +130,7 @@ void main() {
       expect(find.byType(InteractionDistributionWidget), findsOneWidget);
     });
 
-    testWidgets('long-press on card triggers toggleCardVisibility',
+    testWidgets('tapping options icon opens StatisticsVisibilityDialog',
         (tester) async {
       when(mockAuthService.currentUserId).thenReturn('user-1');
       when(mockRepository.getAvailableYears('user-1'))
@@ -139,23 +140,97 @@ void main() {
       await tester.pumpWidget(buildWidget());
       await tester.pump();
 
-      // All three cards visible before the long-press.
-      expect(statisticsProvider.visibleCards.length, equals(3));
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
 
-      // The first GestureDetector descendant of PageView is the page-level one
-      // from _buildCard — parent widgets precede their children in DFS order.
-      await tester.longPress(
-        find
-            .descendant(
-              of: find.byType(PageView),
-              matching: find.byType(GestureDetector),
-            )
-            .first,
-      );
+      expect(find.byType(StatisticsVisibilityDialog), findsOneWidget);
+    });
+
+    testWidgets('"Long-press to restore" text is never shown', (tester) async {
+      when(mockAuthService.currentUserId).thenReturn('user-1');
+      when(mockRepository.getAvailableYears('user-1'))
+          .thenAnswer((_) async => [2026]);
+
+      await statisticsProvider.initialize();
+      await tester.pumpWidget(buildWidget());
       await tester.pump();
 
-      // One card should now be hidden.
-      expect(statisticsProvider.visibleCards.length, lessThan(3));
+      expect(find.text('Long-press any card to restore'), findsNothing);
+      expect(find.text('Long-press to restore'), findsNothing);
+    });
+
+    testWidgets('arrow buttons present when 2+ cards visible', (tester) async {
+      when(mockAuthService.currentUserId).thenReturn('user-1');
+      when(mockRepository.getAvailableYears('user-1'))
+          .thenAnswer((_) async => [2026]);
+
+      await statisticsProvider.initialize();
+      await tester.pumpWidget(buildWidget());
+      await tester.pump();
+
+      expect(find.byKey(const Key('carousel_arrow_left')), findsOneWidget);
+      expect(find.byKey(const Key('carousel_arrow_right')), findsOneWidget);
+    });
+
+    testWidgets('right arrow advances carousel to next page', (tester) async {
+      when(mockAuthService.currentUserId).thenReturn('user-1');
+      when(mockRepository.getAvailableYears('user-1'))
+          .thenAnswer((_) async => [2026]);
+
+      await statisticsProvider.initialize();
+      await tester.pumpWidget(buildWidget());
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('carousel_arrow_right')));
+      await tester.pumpAndSettle();
+
+      // After tapping right, PageView should show page 1.
+      expect(find.byType(PageView), findsOneWidget);
+    });
+
+    testWidgets('left arrow navigates carousel back', (tester) async {
+      when(mockAuthService.currentUserId).thenReturn('user-1');
+      when(mockRepository.getAvailableYears('user-1'))
+          .thenAnswer((_) async => [2026]);
+
+      await statisticsProvider.initialize();
+      await tester.pumpWidget(buildWidget());
+      await tester.pump();
+
+      // Go to page 1 first via right arrow, then go back via left arrow.
+      await tester.tap(find.byKey(const Key('carousel_arrow_right')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('carousel_arrow_left')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PageView), findsOneWidget);
+    });
+
+    testWidgets('arrow buttons disabled when only 1 card visible',
+        (tester) async {
+      when(mockAuthService.currentUserId).thenReturn('user-1');
+      when(mockRepository.getAvailableYears('user-1'))
+          .thenAnswer((_) async => [2026]);
+
+      await statisticsProvider.initialize();
+      // Hide two of the three cards, leaving only one visible.
+      await statisticsProvider
+          .toggleCardVisibility(StatCardType.whoPerActivity);
+      await statisticsProvider
+          .toggleCardVisibility(StatCardType.interactionDistribution);
+
+      await tester.pumpWidget(buildWidget());
+      await tester.pump();
+
+      // Find arrow IconButtons by key and verify onPressed is null (disabled).
+      final leftButton = tester.widget<IconButton>(
+        find.byKey(const Key('carousel_arrow_left')),
+      );
+      final rightButton = tester.widget<IconButton>(
+        find.byKey(const Key('carousel_arrow_right')),
+      );
+      expect(leftButton.onPressed, isNull);
+      expect(rightButton.onPressed, isNull);
     });
   });
 }

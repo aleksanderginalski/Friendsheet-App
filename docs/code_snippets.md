@@ -1209,5 +1209,33 @@ void _applyToggleSelectAll() {
 
 Rule: always three states — never binary bool for "select all" toggle.
 Reuse this pattern in any future dialog with a checkbox list.
+
+## 26. Disabled arrow navigation when single card visible (US-060)
+
+When a carousel has arrow navigation buttons, hide or disable both arrows
+when only 1 item is visible. Reuse this pattern in any paginated carousel
+with dynamic visible item count.
+```dart
+// In StatisticsSection header row
+IconButton(
+  key: const Key('carousel_arrow_left'),
+  icon: const Icon(Icons.chevron_left),
+  onPressed: visibleCards.length > 1 ? () => _navigateCarousel(-1) : null,
+  tooltip: 'Previous statistic',
+),
+// ... title ...
+IconButton(
+  key: const Key('carousel_arrow_right'),
+  icon: const Icon(Icons.chevron_right),
+  onPressed: visibleCards.length > 1 ? () => _navigateCarousel(1) : null,
+  tooltip: 'Next statistic',
+),
+```
+
+Rule: `onPressed: null` renders IconButton as visually disabled automatically.
+No need for explicit color or opacity manipulation.
+Wrap-around logic lives in `_navigateCarousel(int direction)` — direction: -1 or +1.
+
+
 ---
 
