@@ -2249,33 +2249,33 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 5
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 11, 2026)
 **Labels:** `statistics`, `ux`, `home-screen`
 **Mode:** ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] Long-press on carousel card removed as a hide mechanism
-- [ ] Provided `stats_options_icon` asset shown in statistics section header
-- [ ] Tapping icon opens a dialog with one checkbox per statistics card
-- [ ] Unchecking a card hides it from the carousel
-- [ ] Minimum 1 card must remain visible — last checkbox cannot be unchecked
-- [ ] Persistence in `SharedPreferences` key `stats_carousel_hidden_cards` unchanged
-- [ ] US-051 empty state ("Long-press to restore") removed; replaced by dialog-driven restore
-- [ ] Left/right arrow buttons displayed in statistics section header, flanking the "Statistics" title: `[< Statistics  🎛]`
-- [ ] Tapping left arrow navigates to previous carousel card (wraps from first to last)
-- [ ] Tapping right arrow navigates to next carousel card (wraps from last to first)
-- [ ] Arrow navigation works in parallel with existing swipe gesture
-- [ ] Arrows respect hidden cards — skips hidden cards during navigation
-- [ ] Arrows are disabled (or hidden) when only 1 card is visible
+- [x] Long-press on carousel card removed as a hide mechanism
+- [x] Provided `stats_options_icon` asset shown in statistics section header
+- [x] Tapping icon opens a dialog with one checkbox per statistics card
+- [x] Unchecking a card hides it from the carousel
+- [x] Minimum 1 card must remain visible — last checkbox cannot be unchecked
+- [x] Persistence in `SharedPreferences` key `stats_carousel_hidden_cards` unchanged
+- [x] US-051 empty state ("Long-press to restore") removed; replaced by dialog-driven restore
+- [x] Left/right arrow buttons displayed in statistics section header, flanking the "Statistics" title: `[< Statistics  🎛]`
+- [x] Tapping left arrow navigates to previous carousel card (wraps from first to last)
+- [x] Tapping right arrow navigates to next carousel card (wraps from last to first)
+- [x] Arrow navigation works in parallel with existing swipe gesture
+- [x] Arrows respect hidden cards — skips hidden cards during navigation
+- [x] Arrows are disabled (or hidden) when only 1 card is visible
 
 **Tasks:**
-- [ ] **TASK-060.1:** Add `stats_options_icon` asset, register in `pubspec.yaml`
-- [ ] **TASK-060.2:** Remove `GestureDetector(onLongPress)` from carousel pages in `StatisticsSection`
-- [ ] **TASK-060.3:** Build `StatisticsVisibilityDialog` — checkbox per `StatCard` enum value, enforce min 1 visible
-- [ ] **TASK-060.4:** Wire dialog into `StatisticsSection` header
-- [ ] **TASK-060.5:** Update `StatisticsProvider` — remove long-press toggle path, keep dialog toggle
-- [ ] **TASK-060.6:** Update existing US-051 tests to reflect removed long-press behavior
-- [ ] **TASK-060.7:** Statistics Carousel Arrow Navigation
+- [x] **TASK-060.1:** Add `stats_options_icon` asset, register in `pubspec.yaml`
+- [x] **TASK-060.2:** Remove `GestureDetector(onLongPress)` from carousel pages in `StatisticsSection`
+- [x] **TASK-060.3:** Build `StatisticsVisibilityDialog` — checkbox per `StatCard` enum value, enforce min 1 visible
+- [x] **TASK-060.4:** Wire dialog into `StatisticsSection` header
+- [x] **TASK-060.5:** Update `StatisticsProvider` — remove long-press toggle path, keep dialog toggle
+- [x] **TASK-060.6:** Update existing US-051 tests to reflect removed long-press behavior
+- [x] **TASK-060.7:** Statistics Carousel Arrow Navigation
 
 ---
 
