@@ -205,8 +205,9 @@ void main() {
 
       // Only the selected year is displayed as text in YearStepper.
       expect(find.text('2026'), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      // YearStepper has one chevron_left; carousel header adds a second.
+      expect(find.byIcon(Icons.chevron_left), findsWidgets);
+      expect(find.byIcon(Icons.chevron_right), findsWidgets);
     });
 
     testWidgets('shows "Statistics" section header', (tester) async {

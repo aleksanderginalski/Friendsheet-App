@@ -8,12 +8,14 @@ import 'activity_selector_dialog.dart';
 import 'activity_visibility_dialog.dart';
 import 'interaction_distribution_widget.dart';
 import 'person_visibility_dialog.dart';
+import 'statistics_visibility_dialog.dart';
 import 'who_per_activity_widget.dart';
 import 'year_stepper.dart';
 
 /// Displays year selector and statistics cards in a swipeable PageView.
 /// YearStepper is pinned above the carousel — single global year selector.
-/// Long-pressing a card hides it; hidden state is persisted in SharedPreferences.
+/// The settings icon in the header opens StatisticsVisibilityDialog to
+/// show/hide individual cards. Hidden state is persisted in SharedPreferences.
 class StatisticsSection extends StatefulWidget {
   const StatisticsSection({super.key});
 
@@ -89,29 +91,40 @@ class _StatisticsSectionState extends State<StatisticsSection> {
     );
   }
 
-  // Returns the display label for a card type.
-  String _cardLabel(StatCardType card) {
-    switch (card) {
-      case StatCardType.activityBreakdown:
-        return 'Activity Breakdown';
-      case StatCardType.whoPerActivity:
-        return 'Who Per Activity';
-      case StatCardType.interactionDistribution:
-        return 'Interaction Distribution';
-    }
+  // Navigates the carousel by [direction] steps (-1 = left, +1 = right),
+  // wrapping around and skipping hidden cards.
+  void _navigateCarousel(int direction, int visibleCount) {
+    if (!_pageController.hasClients || visibleCount == 0) return;
+    final currentPage = _pageController.page?.round() ?? 0;
+    final nextPage = (currentPage + direction + visibleCount) % visibleCount;
+    _pageController.animateToPage(
+      nextPage,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
-  // Hides the tapped card immediately and shows a SnackBar feedback.
-  void _onCardLongPress(
+  void _openCardsVisibilityDialog(
     BuildContext context,
-    StatCardType card,
     StatisticsProvider provider,
   ) {
-    final label = _cardLabel(card);
-    provider.toggleCardVisibility(card);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$label hidden. Long-press any card to restore.'),
+    showDialog<void>(
+      context: context,
+      builder: (_) => StatisticsVisibilityDialog(
+        hiddenCards: provider.hiddenCards,
+        onToggleCard: provider.toggleCardVisibility,
+        onToggleSelectAll: (selectAll) {
+          if (selectAll) {
+            provider.restoreAllCards();
+          } else {
+            // Hide all cards except the first (activityBreakdown) — min-1 preserved.
+            for (final card in StatCardType.values.skip(1)) {
+              if (!provider.hiddenCards.contains(card)) {
+                provider.toggleCardVisibility(card);
+              }
+            }
+          }
+        },
       ),
     );
   }
@@ -150,19 +163,13 @@ class _StatisticsSectionState extends State<StatisticsSection> {
     }
   }
 
-  // Wraps a card content in a GestureDetector (page-level long-press) and
-  // SingleChildScrollView to handle variable card heights. The GestureDetector
-  // is placed above child widgets so individual chart bar long-press handlers
-  // in child widgets take priority in the gesture arena.
+  // Wraps a card content in a SingleChildScrollView.
   // _CarouselPage keeps the State alive while the card is off-screen so
   // widget state (e.g. color maps) survives swipe navigation.
   Widget _buildCard(StatCardType card, StatisticsProvider provider) {
     return _CarouselPage(
-      child: GestureDetector(
-        onLongPress: () => _onCardLongPress(context, card, provider),
-        child: SingleChildScrollView(
-          child: _cardContent(card, provider),
-        ),
+      child: SingleChildScrollView(
+        child: _cardContent(card, provider),
       ),
     );
   }
@@ -175,8 +182,6 @@ class _StatisticsSectionState extends State<StatisticsSection> {
           const Icon(Icons.bar_chart_outlined, size: 48),
           const SizedBox(height: 8),
           const Text('All statistics hidden'),
-          const SizedBox(height: 4),
-          const Text('Long-press any card to restore'),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () =>
@@ -195,9 +200,44 @@ class _StatisticsSectionState extends State<StatisticsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Statistics',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            Semantics(
+              label: 'Previous statistic',
+              child: IconButton(
+                key: const Key('carousel_arrow_left'),
+                icon: const Icon(Icons.chevron_left),
+                onPressed: provider.visibleCards.length > 1
+                    ? () => _navigateCarousel(-1, provider.visibleCards.length)
+                    : null,
+              ),
+            ),
+            const Expanded(
+              child: Text(
+                'Statistics',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Semantics(
+              label: 'Statistics card visibility',
+              child: IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: 'Show/hide statistics cards',
+                onPressed: () => _openCardsVisibilityDialog(context, provider),
+              ),
+            ),
+            Semantics(
+              label: 'Next statistic',
+              child: IconButton(
+                key: const Key('carousel_arrow_right'),
+                icon: const Icon(Icons.chevron_right),
+                onPressed: provider.visibleCards.length > 1
+                    ? () => _navigateCarousel(1, provider.visibleCards.length)
+                    : null,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         if (provider.isLoading)

@@ -221,6 +221,12 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+## v3.25.0 — US-060: Statistics Visibility Panel
+- ✅ Replaced long-press hide gesture with explicit Settings dialog (Icons.tune)
+- ✅ StatisticsVisibilityDialog: checkbox per card, three-state select-all, min-1 enforcement
+- ✅ Added left/right arrow navigation to carousel header with wrap-around
+- ✅ Removed "Long-press to restore" empty state
+
 ### v3.24.0 — Meetings Monthly Grouping, Compact Cards & Expandable Search (US-059) — March 2026
 - ✅ MeetingsListProvider extended — two-level grouping year→month (`Map<int, Map<int, List<Meeting>>>`)
 - ✅ Default expand: current month + last month with meeting data (not calendar-based)
