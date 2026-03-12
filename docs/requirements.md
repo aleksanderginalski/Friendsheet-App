@@ -1,14 +1,15 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 2.1  
-**Date:** March 05, 2026  
+**Version:** 2.2  
+**Date:** March 2026  
 **Author:** Product Owner  
-**Status:** Updated — M6 redesigned as Meeting Import Hub
+**Status:** Updated — US-062 Friend Groups added
 
 **Change Log:**
 - v1.1 — Authentication changed from email/password to Google Sign-In
 - v2.0 — Full roadmap requirements added for M2-M8
 - v2.1 — M6 redesigned: Google Photos replaced by Meeting Import Hub (Google Calendar + Google Photos); ImportCandidate architecture introduced
+- v2.2 — FR-026 added: Friend Groups (US-062); Person and FriendGroup data model updated
 
 ---
 
@@ -215,7 +216,32 @@ User can export all their data as a JSON file for backup purposes.
 
 ---
 
-## 5. Functional Requirements — M4: Google Play Release 
+## 5. Functional Requirements — M3.5: Visual Design & Brand Identity
+
+### FR-026: Friend Groups ✅
+**Priority:** SHOULD HAVE
+
+**Description:**
+User can organise their contacts into named groups (e.g. "Running Crew", "Work"). Groups have an optional icon chosen from the same predefined set as activity categories. A person can belong to multiple groups simultaneously. Persons not assigned to any group appear in a non-collapsible "Ungrouped" section.
+
+**Acceptance Criteria:**
+- Friends tab displays persons grouped by their assigned groups (ExpansionTile per group)
+- "Ungrouped" section always visible at the bottom — non-collapsible
+- AppBar `+` opens a bottom sheet offering "Add Person" or "Add Group"
+- Add Group: name required (max 50 chars), icon optional (from activity_icons set)
+- Edit Group: long-press on group header → bottom sheet → Edit / Delete
+- Delete Group: confirmation dialog; persons are NOT deleted when group is deleted
+- Assign persons to group: `person_add` icon on group trailing → multi-select bottom sheet (shows only persons not already in that group)
+- Remove person from group: `PersonDetailScreen` → "Groups" section → uncheck group checkbox
+- A person can belong to zero or more groups simultaneously
+- Deleting a person removes them from all groups atomically (WriteBatch)
+- Search in Friends tab flattens all groups into a single unstructured list
+- Firestore path: `users/{uid}/friend_groups/{groupId}`
+- Firestore security rules: path-based `userId` check (not `resource.data.userId`) — required for list queries
+
+---
+
+## 6. Functional Requirements — M4: Google Play Release 
 
 ### FR-016: Production Release
 **Priority:** MUST HAVE
@@ -229,10 +255,9 @@ App published on Google Play Store as a publicly downloadable application.
 - App passes Google Play review
 - Version numbered as 1.0.0
 
-
 ---
 
-## 6. Functional Requirements — M5: Meeting Import Hub
+## 7. Functional Requirements — M5: Meeting Import Hub
 
 **Overview:** M5 introduces an extensible import system that allows users to create meetings from external data sources. The shared `MeetingInbox` (review queue) is source-agnostic — both Calendar and Photos produce `ImportCandidate` objects that flow into the same review UX.
 
@@ -354,7 +379,7 @@ User grants read-only Google Photos access, browses their photo library, selects
 
 ---
 
-## 7. Functional Requirements — M6: Custom Dashboard
+## 8. Functional Requirements — M6: Custom Dashboard
 
 ### FR-023: Default Dashboard
 **Priority:** MUST HAVE
@@ -386,7 +411,7 @@ User can add, remove and reorder dashboard widgets.
 
 ---
 
-## 8. Functional Requirements — M7: AI Assistant
+## 9. Functional Requirements — M7: AI Assistant
 
 ### FR-025: AI-powered Insights
 **Priority:** COULD HAVE
@@ -404,7 +429,7 @@ User can ask natural language questions about their social data.
 
 ---
 
-## 9. Non-Functional Requirements
+## 10. Non-Functional Requirements
 
 ### NFR-001: Data Storage
 - Data stored in Firestore
@@ -464,9 +489,9 @@ User can ask natural language questions about their social data.
 
 ---
 
-## 10. Data Model
+## 11. Data Model
 
-### 10.1 Core Entities (M1 — implemented)
+### 11.1 Core Entities (M1 — implemented)
 
 #### Meeting
 ```
@@ -476,7 +501,7 @@ User can ask natural language questions about their social data.
 - date: DateTime
 - weight: int (1, 2, 3, 5, 8, 13, 21)
 - participantIds: List<string>
-- activityIds: List<string>
+- categoryIds: List<string>
 - createdAt: DateTime
 - updatedAt: DateTime
 ```
@@ -487,6 +512,7 @@ User can ask natural language questions about their social data.
 - userId: string (owner)
 - firstName: string
 - lastName: string (optional)
+- nicknames: List<string> (default: [])
 - createdAt: DateTime
 ```
 
@@ -500,7 +526,7 @@ User can ask natural language questions about their social data.
 - createdAt: DateTime
 ```
 
-### 10.2 New Entities (M2+)
+### 11.2 New Entities (M2+)
 
 #### ActivityCategory (M2)
 ```
@@ -513,6 +539,16 @@ User can ask natural language questions about their social data.
 - Firestore path: users/{userId}/activity_categories (subcollection per user)
 - Onboarding: global categories batch-copied to user on first login (US-020)
 - createdAt: DateTime
+```
+
+#### FriendGroup (M3.5 — US-062)
+```
+- id: string (auto-generated)
+- name: string (max 50 characters)
+- iconIdentifier: string? (optional, same predefined set as ActivityCategory)
+- personIds: List<string> (references to Person.id — many-to-many)
+- createdAt: DateTime?
+- Firestore path: users/{userId}/friend_groups (subcollection per user)
 ```
 
 #### InvitationCode (M5)
@@ -543,25 +579,25 @@ User can ask natural language questions about their social data.
 - updatedAt: DateTime
 ```
 
-### 10.3 Relationships
+### 11.3 Relationships
 - Meeting ↔ Person (many-to-many) via participantIds
-- Meeting ↔ Activity (many-to-many) via activityIds
-- Activity → ActivityCategory (optional) via categoryId
+- Meeting ↔ ActivityCategory (many-to-many) via categoryIds
 - ActivityCategory → ActivityCategory (self-reference) via parentCategoryId
+- FriendGroup ↔ Person (many-to-many) via personIds (group references persons, not vice versa)
 - InvitationCode → Person via targetPersonId
 - InvitationCode → User via senderId
 - ImportCandidate → Meeting (1:1, created on Confirm action in Inbox)
 
 ---
 
-## 11. Technical Dependencies
+## 12. Technical Dependencies
 
-### 11.1 Current Stack (M1)
+### 12.1 Current Stack (M1)
 - Flutter SDK 3.0+, Dart 2.17+
 - Firebase Auth, Cloud Firestore, Firebase Core
 - google_sign_in, provider, freezed, json_serializable
 
-### 11.2 Planned Additions
+### 12.2 Planned Additions
 
 | Milestone | Package | Purpose |
 |-----------|---------|---------|
@@ -588,8 +624,10 @@ User can ask natural language questions about their social data.
 - **ImportCandidate** — transient in-memory model representing an event or photo selected for import; never persisted to Firestore
 - **Meeting Inbox** — shared review queue (MeetingInboxScreen) that accepts ImportCandidate objects from any source; source-agnostic
 - **sourceType** — enum field on ImportCandidate indicating the origin: `calendar` or `photos`
+- **FriendGroup** — named bucket of person ID references; a person can belong to zero or more groups; groups are owned by a user via `users/{uid}/friend_groups` subcollection
+- **Ungrouped** — persons not assigned to any group; shown in a permanent non-collapsible section at the bottom of the Friends tab
 
 ---
 
 **End of Document**  
-**Version 2.1 — M5 redesigned as Meeting Import Hub**
+**Version 2.2 — FR-026 Friend Groups (US-062)**

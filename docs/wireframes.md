@@ -1,7 +1,7 @@
 # Friendsheet — Wireframes & UI Documentation
 
 **Responsible Role:** UX/UI Designer  
-**Version:** 2.0 (Full rewrite — reflects implemented state as of US-060)  
+**Version:** 2.1 (US-062 — Friend Groups added to Friends tab and PersonDetailScreen)  
 **Last Updated:** March 2026
 
 ---
@@ -33,8 +33,8 @@
 ### Drawer (accessible from ⋮ in AppBar)
 ```
 ┌─────────────────────────────────────┐
-│  👤 John Doe                        │
-│     john.doe@gmail.com              │
+│  [drawer_icon.png]                  │
+│  Friendsheet                        │
 │  ─────────────────────────────────  │
 │  📅 Import from Calendar            │  ← dynamic: "Browse & Import Events"
 │     when calendar connected         │    when calendar connected
@@ -215,7 +215,6 @@ Each card:
 
 ### Search State
 ```
-┌─────────────────────────────────────┐
 │  [🔍 Search meetings...        ] ✕  │  ← tap 🔍 to expand, ✕ to close
 ├─────────────────────────────────────┤
 │  [filtered meeting cards]           │
@@ -315,19 +314,26 @@ Each card:
 
 ---
 
-## Screen 6: PersonsListScreen (Friends Tab)
+## Screen 6: PersonsListScreen (Friends Tab) — US-062
+
+Persons are displayed in named groups (friend groups) with an "Ungrouped" section at the bottom for persons not assigned to any group.
 
 ```
 ┌─────────────────────────────────────┐
 │  Friends                  🔍  +  ⋮  │
 ├─────────────────────────────────────┤
 │                                     │
-│  ┌─────────────────────────────┐   │
-│  │  AB  Anna Bogucka           │   │  ← initials avatar
+│  ▼ 🏃 Running Crew            👤+  │  ← ExpansionTile: group name + icon
+│  ┌─────────────────────────────┐   │    👤+ = assign persons button
+│  │  AB  Anna Bogucka           │   │
 │  └─────────────────────────────┘   │
 │  ┌─────────────────────────────┐   │
 │  │  JD  John Doe               │   │
 │  └─────────────────────────────┘   │
+│                                     │
+│  ▶ ☕ Coffee Friends           👤+  │  ← collapsed group
+│                                     │
+│  ─── Ungrouped ──────────────────   │  ← always visible, non-collapsible
 │  ┌─────────────────────────────┐   │
 │  │  MK  Maria Kowalska         │   │
 │  └─────────────────────────────┘   │
@@ -337,11 +343,70 @@ Each card:
 └─────────────────────────────────────┘
 ```
 
-**Behavior:**
-- Alphabetical list
-- `🔍` → expandable search bar (same pattern as MeetingsListScreen)
-- `+` → Add Person dialog
-- Tap person row → `PersonDetailScreen`
+### AppBar `+` button — bottom sheet chooser
+```
+┌─────────────────────────────────────┐
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │  👤 Add Person              │   │
+│  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │
+│  │  📁 Add Group               │   │
+│  └─────────────────────────────┘   │
+│                                     │
+│                    [  CANCEL  ]     │
+└─────────────────────────────────────┘
+```
+
+### Group long-press → bottom sheet
+```
+┌─────────────────────────────────────┐
+│  Running Crew                       │
+│  ─────────────────────────────────  │
+│  ✏️  Edit group                     │
+│  🗑  Delete group                   │
+│                    [  CANCEL  ]     │
+└─────────────────────────────────────┘
+```
+- Delete: confirmation dialog — "Persons will not be deleted"
+
+### Add / Edit Group Dialog
+```
+┌─────────────────────────────────────┐
+│  Add Group                          │
+├─────────────────────────────────────┤
+│  Name (required)                    │
+│  ┌─────────────────────────────┐   │
+│  │ e.g. Running Crew           │   │
+│  └─────────────────────────────┘   │
+│                                     │
+│  Icon (optional)                    │
+│  ← [ None ][ 🏃 ][ ☕ ][ 🎬 ] →   │  ← horizontal scrollable icon picker
+│             selected                │    reuses activity_icons set
+│                                     │
+│                    [CANCEL]  [SAVE] │
+└─────────────────────────────────────┘
+```
+- Save disabled when name is empty
+- Edit mode: dialog pre-filled with current name and icon
+
+### Assign Persons Bottom Sheet (👤+ button on group)
+```
+┌─────────────────────────────────────┐
+│  Add to Running Crew                │
+├─────────────────────────────────────┤
+│  ☐  Maria Kowalska                  │  ← only persons NOT already in group
+│  ☐  Piotr Wiśniewski                │
+│                                     │
+│                         [  DONE  ]  │
+└─────────────────────────────────────┘
+```
+- Shows only persons not already assigned to this group
+- Snackbar shown if all persons are already in the group
+
+### Search State (active)
+- Search flattens all groups into a single unstructured list — no headers
+- Matches: firstName, lastName, all nicknames
 
 ### Empty State
 ```
@@ -350,9 +415,16 @@ Each card:
 │  Tap + to add your first person     │
 ```
 
+**Behavior:**
+- `🔍` → expandable search bar (same pattern as MeetingsListScreen)
+- `+` → bottom sheet chooser (Add Person / Add Group)
+- Tap person row → `PersonDetailScreen`
+- Long-press group header → Edit / Delete bottom sheet
+- `👤+` on group → `AssignPersonsBottomSheet`
+
 ---
 
-## Screen 7: PersonDetailScreen
+## Screen 7: PersonDetailScreen — US-062
 
 ```
 ┌─────────────────────────────────────┐
@@ -363,12 +435,16 @@ Each card:
 │      Anna Bogucka                   │
 │                                     │
 │  Meetings together: 7               │
-│  Last seen: Feb 8, 2026             │
 │                                     │
 │  ─────────────────────────────────  │
-│  Recent meetings                    │
-│  Coffee with Anna   Feb 8           │
-│  Running together   Jan 20          │
+│  Nicknames                          │
+│  [Ania ✕]  [Anka ✕]  [+ add]       │  ← InputChip list
+│                                     │
+│  ─────────────────────────────────  │
+│  Groups                             │
+│  ☑  🏃 Running Crew                 │  ← CheckboxListTile per group
+│  ☐  ☕ Coffee Friends               │  ← tap to add/remove from group
+│  ☐  (no icon) Book Club             │
 │                                     │
 └─────────────────────────────────────┘
 ```
@@ -377,8 +453,11 @@ Each card:
 - `✏️` → Edit Person dialog (first name / last name)
 - `🗑` → confirmation dialog
   - If person has meetings: warning shown before confirmation
-  - On confirm: person deleted, removed from participant lists in all meetings
+  - On confirm: person deleted, removed from all meetings AND all groups (cascade)
   - Meetings themselves are preserved
+- Nicknames section: add via text field, remove via `✕` chip
+- Groups section: each checkbox is a live toggle — checking adds to group, unchecking removes
+- Groups section visible only if at least one group exists for the user
 
 ---
 
@@ -707,7 +786,9 @@ LoginScreen
           │     └── [FAB] → AddMeetingScreen
           │
           ├── Tab 2: PersonsListScreen
-          │     └── Person tap → PersonDetailScreen
+          │     ├── Person tap → PersonDetailScreen (with FriendGroupsProvider injected)
+          │     ├── [+] → bottom sheet (Add Person / Add Group)
+          │     └── Group [👤+] → AssignPersonsBottomSheet
           │
           ├── Tab 3: ActivitiesListScreen
           │
@@ -737,5 +818,5 @@ LoginScreen
 
 ---
 
-*This document reflects the implemented state of Friendsheet as of US-060.*  
+*This document reflects the implemented state of Friendsheet as of US-062.*  
 *Update when new screens or significant UI changes are shipped.*
