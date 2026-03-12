@@ -32,6 +32,14 @@ service cloud.firestore {
       allow create, update: if isAuthenticated() && isOwner(userId);
     }
 
+    match /users/{userId}/friend_groups/{groupId} {
+      // Path-based userId check — required for list queries (resource.data unavailable)
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
     match /invitation_codes/{codeId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isOwner(request.resource.data.senderId);
