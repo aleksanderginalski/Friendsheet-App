@@ -69,7 +69,7 @@ The only third-party service that processes your data is **Google Firebase**, us
 
 ## 6. Data Retention
 
-Your data is retained for as long as you use the app. You may request deletion of your account and all associated data at any time by contacting us at **[aleksander.ginalski@example.com]**.
+Your data is retained for as long as you use the app. You may request deletion of your account and all associated data at any time by contacting us at **[aleksander.ginalski@gmail.com]**.
 
 ---
 
@@ -81,7 +81,7 @@ Depending on your location, you may have the following rights:
 - **Deletion** — request deletion of your data
 - **Portability** — request your data in a portable format
 
-To exercise any of these rights, contact us at **[aleksander.ginalski@example.com]**.
+To exercise any of these rights, contact us at **[aleksander.ginalski@gmail.com]**.
 
 ---
 
