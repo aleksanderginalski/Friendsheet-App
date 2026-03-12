@@ -36,6 +36,10 @@ class CalendarEventsProvider extends ChangeNotifier {
   final Set<String> _selectedEventIds = {};
   String? _errorMessage;
 
+  /// True when the last load failed due to an expired OAuth token.
+  /// The screen shows a "Reconnect" prompt instead of a generic error.
+  bool _requiresReconnect = false;
+
   // Filter state
   DateTime _dateFrom = DateTime.now().subtract(const Duration(days: 365));
   DateTime _dateTo = DateTime.now();
@@ -47,6 +51,7 @@ class CalendarEventsProvider extends ChangeNotifier {
   List<CalendarEvent> get events => _events;
   Set<String> get selectedEventIds => _selectedEventIds;
   String? get errorMessage => _errorMessage;
+  bool get requiresReconnect => _requiresReconnect;
   DateTime get dateFrom => _dateFrom;
   DateTime get dateTo => _dateTo;
   Set<String> get selectedCalendarIds => _selectedCalendarIds;
@@ -85,8 +90,17 @@ class CalendarEventsProvider extends ChangeNotifier {
         (id) => _events.any((e) => e.id == id),
       );
       _status = CalendarEventsStatus.loaded;
+      _requiresReconnect = false;
+    } on CalendarAuthException {
+      // Token expired and silent refresh failed — prompt the user to reconnect.
+      _requiresReconnect = true;
+      _errorMessage = null;
+      _status = CalendarEventsStatus.error;
     } catch (e) {
-      _errorMessage = e.toString();
+      // Generic error (network, timeout, etc.) — show a user-friendly message.
+      _requiresReconnect = false;
+      _errorMessage =
+          'Could not load calendar. Check your internet connection.';
       _status = CalendarEventsStatus.error;
     }
 

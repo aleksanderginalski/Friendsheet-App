@@ -11,13 +11,23 @@ import '../widgets/calendar_event_card.dart';
 /// Screen for browsing and selecting calendar events for import.
 /// Receives [calendars] from the caller — works for both HomeScreen CTA
 /// and SettingsScreen entry points.
+///
+/// [onReconnect] is called when the user taps "Reconnect" after a token
+/// expiry. The caller is responsible for closing this screen first and then
+/// launching the reconnect/permission flow.
 class CalendarEventsScreen extends StatefulWidget {
   const CalendarEventsScreen({
     super.key,
     required this.calendars,
+    this.onReconnect,
   });
 
   final List<GoogleCalendar> calendars;
+
+  /// Optional callback invoked by the Reconnect button.
+  /// The button pops this screen and then calls this callback so the caller
+  /// can open the OAuth permission flow using a context that is still alive.
+  final VoidCallback? onReconnect;
 
   @override
   State<CalendarEventsScreen> createState() => _CalendarEventsScreenState();
@@ -204,11 +214,17 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
         return const Center(child: CircularProgressIndicator());
 
       case CalendarEventsStatus.error:
+        if (provider.requiresReconnect) {
+          return _buildReconnectPrompt(context);
+        }
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(provider.errorMessage ?? 'An error occurred'),
+              Text(
+                provider.errorMessage ??
+                    'Could not load calendar. Check your internet connection.',
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: provider.loadEvents,
@@ -248,5 +264,45 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
           },
         );
     }
+  }
+
+  /// Shown when [CalendarEventsProvider.requiresReconnect] is true.
+  /// The Reconnect button pops this screen and delegates to [widget.onReconnect].
+  Widget _buildReconnectPrompt(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.link_off, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'Calendar access expired',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please reconnect Google Calendar to continue.',
+              style: TextStyle(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: widget.onReconnect != null
+                  ? () {
+                      // Pop this screen before handing off to onReconnect so
+                      // the caller's context is still alive when navigating.
+                      Navigator.of(context).pop();
+                      widget.onReconnect!();
+                    }
+                  : null,
+              child: const Text('Reconnect'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
