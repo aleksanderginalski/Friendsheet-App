@@ -221,6 +221,12 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.31.0 — US-077: UI Assets — Drawer Illustration & Meetings List (March 12, 2026)
+- ✅ `drawer_icon.png` added to DrawerHeader green area — `Image.asset` below "Friendsheet" label, height 80, `BoxFit.contain`
+- ✅ `waiting_room.png` shown as decorative last item in Pending Meetings list — only when list non-empty (`itemCount = items.length + 1`)
+- ✅ `waiting_room.png` replaces generic `Icons.inbox` in Pending Meetings empty state (`_buildEmptyState`)
+- ✅ Meeting item tiles in My Meetings: padding changed from `symmetric(horizontal: 8)` to `fromLTRB(24, 2, 8, 2)` — 16dp extra left indent vs month headers
+- ✅ Total test count: 531 (unchanged — visual-only changes)
 
 ### v3.30.0 — US-075: Statistics & Activities UI Polish (March 12, 2026)
 - ✅ Fixed pre-animation flash on year change — all three chart widgets now call `controller.reset()` before `forward()` in `didUpdateWidget`
