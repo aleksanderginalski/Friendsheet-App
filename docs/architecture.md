@@ -743,6 +743,10 @@ Calendar selection and ALL-DAY preference persisted in SharedPreferences:
 - On grant: `Navigator.pushReplacement` → SettingsScreen (calendar section visible)
 - On deny: error message shown inline, retry available
 
+**Token refresh:** `_withTokenRetry<T>` generic helper in `GoogleCalendarService`
+wraps any API call with a single silent-refresh retry on `CalendarAuthException`.
+Reuse this pattern for Google Photos (`fetchPhotos()`) in FEATURE-014.
+
 ---
 
 ### M5 — Meeting Inbox Architecture (US-068)

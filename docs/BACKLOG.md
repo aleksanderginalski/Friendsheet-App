@@ -2863,7 +2863,7 @@ Source-agnostic: Calendar (US-067) and Photos (US-070) both call
 **Labels:** `bug` `calendar` `P1`
 **Story Points:** 3
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Feature:** FEATURE-013: Google Calendar Import
 **Epic:** EPIC-005
 
@@ -2871,24 +2871,24 @@ Source-agnostic: Calendar (US-067) and Photos (US-070) both call
 Error appears intermittently — every few sessions or after a longer idle period. Disconnect + reconnect always fixes it, which points to an **expired OAuth token** not being refreshed automatically. The fix should: detect token expiry on the API call, silently refresh via `signInSilently()` and retry once, and only prompt the user to reconnect if the token cannot be refreshed (revoked/permission removed).
 
 **Acceptance Criteria:**
-- [ ] If OAuth token is expired, the app silently refreshes it and retries — user sees no error
-- [ ] If token cannot be refreshed, a clear actionable message is shown: "Calendar access expired — please reconnect" with a "Reconnect" button
-- [ ] Generic "failed to load calendar" error is eliminated
-- [ ] No regression: connect and disconnect flows still work correctly
-- [ ] TC-CAL-001 passes
+- [x] If OAuth token is expired, the app silently refreshes it and retries — user sees no error
+- [x] If token cannot be refreshed, a clear actionable message is shown: "Calendar access expired — please reconnect" with a "Reconnect" button
+- [x] Generic "failed to load calendar" error is eliminated
+- [x] No regression: connect and disconnect flows still work correctly
+- [x] TC-CAL-001 passes
 
 **Tasks:**
-- [ ] **TASK-078.1:** Audit `CalendarService` / calendar repository — identify where the API call fails and what error type is caught
-- [ ] **TASK-078.2:** Identify the `GoogleSignIn` token refresh path (`signInSilently()` / `getAccessToken()`)
-- [ ] **TASK-078.3:** Implement retry-on-auth-error: catch 401/auth error → call `signInSilently()` → retry calendar load once
-- [ ] **TASK-078.4:** If refresh fails, show actionable "Reconnect" CTA instead of generic error message
-- [ ] **TASK-078.5:** Run `flutter analyze` + `flutter test`, report back
+- [x] **TASK-078.1:** Audit `CalendarService` / calendar repository — identify where the API call fails and what error type is caught
+- [x] **TASK-078.2:** Identify the `GoogleSignIn` token refresh path (`signInSilently()` / `getAccessToken()`)
+- [x] **TASK-078.3:** Implement retry-on-auth-error: catch 401/auth error → call `signInSilently()` → retry calendar load once
+- [x] **TASK-078.4:** If refresh fails, show actionable "Reconnect" CTA instead of generic error message
+- [x] **TASK-078.5:** Run `flutter analyze` + `flutter test`, report back
 
 **Definition of Done:**
-- [ ] Token expiry no longer produces "failed to load calendar"
-- [ ] Silent refresh works for the common expiry case
-- [ ] TC-CAL-001 passes
-- [ ] `flutter analyze` clean, `flutter test` green
+- [x] Token expiry no longer produces "failed to load calendar"
+- [x] Silent refresh works for the common expiry case
+- [x] TC-CAL-001 passes
+- [x] `flutter analyze` clean, `flutter test` green
 
 ---
 
