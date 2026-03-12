@@ -222,6 +222,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 ## 📖 Version History
 
 
+### v3.30.0 — US-075: Statistics & Activities UI Polish (March 12, 2026)
+- ✅ Fixed pre-animation flash on year change — all three chart widgets now call `controller.reset()` before `forward()` in `didUpdateWidget`
+- ✅ Extracted shared `AppConstants.chartAnimationDuration` (1000ms) — single source of truth for all chart animations
+- ✅ Synchronized Who per Activity animation speed to 1000ms (was 600ms) — all three charts now animate in unison
+- ✅ Added child count badge to parent activity categories — shows direct child count, hidden on leaf nodes, updates live on add/delete
+- ✅ Total test count: 531 (unchanged — pure presentation layer change)
+
 ### v3.29.0 — US-076: Delete Account & All User Data (March 12, 2026)
 - ✅ `AccountDeletionService` — re-authentication via `reauthenticateWithCredential()`, paginated Firestore subcollection delete (batches of 500), Firebase Auth user delete, full local storage clear (SharedPreferences + flutter_secure_storage + Hive)
 - ✅ `DeleteAccountProvider` — isLoading/errorMessage state, no-op guard against double-tap, navigation via `appNavigatorKey` on success

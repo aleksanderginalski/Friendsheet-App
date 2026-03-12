@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/repositories/statistics_repository.dart';
@@ -18,7 +19,8 @@ const _kChartHeight = _kMaxBarHeight + _kWeightHeight + _kNameHeight;
 const _kItemWidth = 56.0;
 
 /// Duration for bar-height and position entrance/change animations.
-const _kAnimationDuration = Duration(milliseconds: 600);
+/// Uses the shared constant so all three chart widgets stay in sync.
+const _kAnimationDuration = AppConstants.chartAnimationDuration;
 
 double _barHeight(int weight, int maxW) =>
     (weight / maxW * _kMaxBarHeight).clamp(2.0, _kMaxBarHeight);
@@ -159,12 +161,13 @@ class _BarChartState extends State<_BarChart>
       // Lock order before restarting the controller so targetLeft values
       // are stable for the entire animation duration.
       _animatingEntries = widget.visibleEntries;
-      // Defer controller restart to the next frame so all _AnimatedBarItem
-      // children receive new targetLeft via didUpdateWidget first. This
-      // guarantees their tweens capture the correct current visual position
-      // (controller still at previous value) before the reset to 0.
+      // Reset synchronously so this frame renders bars at their start values
+      // (controller = 0.0) rather than the previous animation's end state.
+      // Defer forward() to the next frame so _AnimatedBarItem children first
+      // process didUpdateWidget and update their tweens with new targets.
+      _controller.reset();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _controller.forward(from: 0.0);
+        if (mounted) _controller.forward();
       });
     }
   }
