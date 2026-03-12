@@ -73,13 +73,11 @@ EPIC-007: Friendsheet M7 - AI Assistant
 ---
 
 ## 🔧 FEATURE-001: Project Infrastructure Setup
-
 **Priority:** P0 (Critical - Foundation)  
 **Sprint:** Sprint 1  
 **Total Points:** 13  
 **Role:** DevOps + Developer
 **Status:** ✅ COMPLETED 
----
 
 ### US-001: Initialize Flutter Project
 
@@ -189,7 +187,6 @@ EPIC-007: Friendsheet M7 - AI Assistant
 
 **Role:** Developer
 **Status:** ✅ COMPLETED 
----
 
 ### US-004: User Registration
 
@@ -312,13 +309,94 @@ If you already created a GitHub issue for US-005, you can:
 3. ✅ After logout, protected screens are inaccessible
 4. ✅ After logout, user must re-authenticate to access app
 
+
+### 🐛 US-074: Fix — Session Not Restored After App Restart
+
+**As a** returning user
+**I want** the app to skip the login screen when I reopen it
+**So that** I can access my data immediately without re-authenticating
+
+**Labels:** `bug` `auth` `P0`
+**Story Points:** 3
+**Priority:** P0
+**Status:** 📋 Planned
+**Feature:** FEATURE-002: User Authentication
+**Epic:** EPIC-001
+
+**Context / Root Cause Area:**
+Session restoration fails on every cold start (100% reproducible). The user is never logged out, but the app always shows the login screen. Tapping "Login" bypasses the Google account picker and goes directly to HomeScreen — confirming Firebase still holds a valid token. Root cause is likely `silentSignIn()` not being awaited before routing, or `authStateChanges` stream not being handled before the first frame renders.
+
+**Acceptance Criteria:**
+- [ ] Reopening the app after cold start (removed from recents) navigates directly to HomeScreen — no login screen shown
+- [ ] Google account picker is NOT triggered during session restore (silent re-auth only)
+- [ ] If session is genuinely expired, login screen is shown normally with account picker
+- [ ] No regression: explicit logout still works, first-time login still works
+- [ ] TC-AUTH-003 passes
+
+**Tasks:**
+- [ ] **TASK-074.1:** Audit `AuthService` — verify `silentSignIn()` is called on app start and its result is awaited before routing
+- [ ] **TASK-074.2:** Audit `main.dart` / root widget — verify `authStateChanges` stream decision (authenticated → HomeScreen, unauthenticated → LoginScreen) happens before first meaningful frame
+- [ ] **TASK-074.3:** Fix routing so a loading/splash state is shown while auth resolves, then navigate without flashing login screen
+- [ ] **TASK-074.4:** Update auth restore widget test
+- [ ] **TASK-074.5:** Run `flutter analyze` + `flutter test`, report back
+
+**Definition of Done:**
+- [ ] Cold start goes directly to HomeScreen — 100% reproducible
+- [ ] No login screen flash before HomeScreen
+- [ ] TC-AUTH-003 passes
+- [ ] `flutter analyze` clean, `flutter test` green
+
+
+### US-076: Delete Account and All User Data
+
+**As a** user
+**I want** to permanently delete my account and all associated data
+**So that** I have full control over my personal information
+
+**Labels:** `profile` `gdpr` `P1`
+**Story Points:** 8
+**Priority:** P1
+**Status:** 📋 Planned
+**Feature:** FEATURE-002: User Authentication
+**Epic:** EPIC-001
+
+**Context:**
+Entry point: Side Drawer → Profile → "Delete Account". Full hard-delete required: Firebase Auth account + all Firestore subcollections (`meetings`, `persons`, `activity_categories`, root `users/{uid}` document). Firebase requires re-authentication before sensitive operations — this must be handled. After deletion: navigate to LoginScreen with stack cleared via `pushAndRemoveUntil`.
+
+**Acceptance Criteria:**
+- [ ] "Delete Account" option visible in Profile section of side drawer
+- [ ] Tapping it shows a confirmation dialog with clear destructive action warning
+- [ ] User must re-authenticate with Google before deletion proceeds
+- [ ] On confirm: all Firestore data deleted — `meetings`, `persons`, `activity_categories` subcollections + root `users/{uid}` document
+- [ ] Firebase Auth account deleted after Firestore cleanup
+- [ ] User navigated to LoginScreen with navigation stack cleared
+- [ ] If deletion fails (network error), error message shown and account is NOT partially deleted
+- [ ] Loading state shown during deletion
+
+**Tasks:**
+- [ ] **TASK-076.1:** Add "Delete Account" tile to Profile section in side drawer
+- [ ] **TASK-076.2:** Create confirmation dialog with destructive styling (red confirm button)
+- [ ] **TASK-076.3:** Implement `deleteAccount()` in `AuthService`: re-authenticate → delete Firestore subcollections → delete Auth account
+- [ ] **TASK-076.4:** Implement Firestore subcollection deletion (meetings, persons, activity_categories, root user doc) — sequential with per-step error handling
+- [ ] **TASK-076.5:** Ensure no partial deletion on failure — surface error and halt if any step fails
+- [ ] **TASK-076.6:** Navigate to LoginScreen with `pushAndRemoveUntil` on success
+- [ ] **TASK-076.7:** Write unit tests for `deleteAccount()` logic
+- [ ] **TASK-076.8:** Run `flutter analyze` + `flutter test`, report back
+
+**Definition of Done:**
+- [ ] Full deletion flow works end-to-end on device
+- [ ] Firestore data confirmed deleted in Firebase Console after flow
+- [ ] Firebase Auth account confirmed deleted after flow
+- [ ] Error handling works (simulate network failure — no partial state)
+- [ ] `flutter analyze` clean, `flutter test` green
+
 ---
 
 ## 💾 FEATURE-003: Data Models
 
 **Role:** Developer + Solution Architect
 **Status:** ✅ COMPLETED 
----
+
 
 ### US-007: Meeting Model
 
@@ -427,7 +505,7 @@ If you already created a GitHub issue for US-005, you can:
 
 **Role:** Developer + UX Designer
 **Status:** ✅ COMPLETED 
----
+
 
 ### US-010: Add Meeting Screen UI
 
@@ -627,7 +705,7 @@ If you already created a GitHub issue for US-005, you can:
 
 **Role:** QA Engineer + Developer
 **Status:** ✅ COMPLETED 
----
+
 
 ### US-016: Unit Tests
 
@@ -738,7 +816,7 @@ If you already created a GitHub issue for US-005, you can:
 **Priority:** P0  
 **Role:** Developer + UX Designer  
 **Status:** ✅ COMPLETED 
----
+
 
 ### US-021: Meetings List Screen
 
@@ -827,9 +905,8 @@ If you already created a GitHub issue for US-005, you can:
 
 **Priority:** P0  
 **Role:** Developer + UX Designer  
-**Status:** 📋 Planned
 **Status:** ✅ COMPLETED 
----
+
 
 ### US-024: Persons List Screen
 **Status:** ✅ COMPLETED (February 23, 2026)
@@ -1450,6 +1527,52 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 - [x] **TASK-031.2:** Add file write using path_provider + dart:io
 - [x] **TASK-031.3:** Build export trigger UI (button + confirmation)
 - [x] **TASK-031.4:** Write tests
+
+### US-075: Statistics & Activities UI Polish
+
+**As a** user viewing Statistics and Activities
+**I want** charts to animate smoothly from zero and feel consistent, and activity categories to clearly show whether they have subcategories
+**So that** the UI feels polished and intentional
+
+**Labels:** `statistics` `activities` `ux` `P2`
+**Story Points:** 5
+**Priority:** P2
+**Status:** 📋 Planned
+**Feature:** FEATURE-009: Core Statistics / FEATURE-008: Activities View & Categories
+**Epic:** EPIC-003 / EPIC-002
+
+**Context:**
+Three independent polish items grouped due to low complexity and shared "find widget → adjust appearance" workflow:
+
+1. **Pre-animation flash** — Who per Activity, Activity Breakdown, Interaction Distribution all briefly show their final state before animating. Classic "render then animate" issue — `AnimationController` starts at end value instead of 0.
+2. **Animation duration mismatch** — Who per Activity animates noticeably faster than the other two charts. Should use a single shared constant.
+3. **Child activity badge** — No visual indicator shows which categories have subcategories. A small badge with the direct child count (e.g. "3") should appear next to parent category names. Leaf nodes show no badge.
+
+**Acceptance Criteria:**
+- [ ] On tab load or year change, all three charts start from zero/empty and animate forward — no pre-flash of final values
+- [ ] Who per Activity, Activity Breakdown, and Interaction Distribution run at identical animation duration
+- [ ] Duration defined as a single shared constant (e.g. `AppConstants.chartAnimationDuration`), not hardcoded per widget
+- [ ] Parent categories (≥1 child) display a badge showing direct child count
+- [ ] Leaf categories display no badge
+- [ ] Badge updates correctly when a child is added or deleted
+- [ ] Badge is visually consistent with app design system
+- [ ] No regression on chart data correctness, or activity expand/collapse/edit/delete flows
+
+**Tasks:**
+- [ ] **TASK-075.1:** Audit animation controller initialization in all three chart widgets — ensure `forward()` is called after first frame (`addPostFrameCallback` or correct `initState` ordering), values start at 0
+- [ ] **TASK-075.2:** Fix initialization order so animated values start at 0 before first paint — verify flash is gone for all three widgets on device
+- [ ] **TASK-075.3:** Extract animation duration to shared constant and apply to all three chart widgets
+- [ ] **TASK-075.4:** Identify widget rendering each activity category row in the tree
+- [ ] **TASK-075.5:** Add badge widget (small rounded container + count text) visible only when `children.length > 0`, styled with app theme
+- [ ] **TASK-075.6:** Verify badge updates live on child add/remove
+- [ ] **TASK-075.7:** Run `flutter analyze` + `flutter test`, report back
+
+**Definition of Done:**
+- [ ] No pre-animation flash on any of the three chart types
+- [ ] All three chart animations run at identical duration via shared constant
+- [ ] Badge visible on parent categories, absent on leaf categories, count accurate
+- [ ] `flutter analyze` clean, `flutter test` green
+
 
 ## 📱 FEATURE-017: Sideload Release
 
@@ -2118,6 +2241,47 @@ US-051 App Icon ─────────────────────�
 - US-054 Empty States
 - US-055 Empty State Activities
 
+
+### US-077: UI Assets — Drawer Illustration & Meetings List
+
+**As a** user
+**I want** to see a graphic in the side drawer header and a decorative image at the end of the Pending Meetings list, with meeting names visibly indented under month headers
+**So that** the app feels visually complete and the meeting hierarchy is immediately readable
+
+**Labels:** `ui` `design` `P2`
+**Story Points:** 5
+**Priority:** P2
+**Status:** 📋 Planned
+**Feature:** FEATURE-020: Illustrations & Empty States / FEATURE-006: Meetings View
+**Epic:** EPIC-009 / EPIC-002
+
+**Context:**
+Three visual polish items grouped because all require user-supplied assets and touch the same general area (drawer + meetings list):
+
+1. **Drawer header illustration** — green area below "Friendsheet" title is empty. User supplies asset.
+2. **Pending Meetings end asset** — list ends abruptly. Decorative image as last list item. User supplies asset. Only shown when list has ≥1 item (not on empty state).
+3. **My Meetings indentation** — meeting name items share left-alignment with month headers, making the tree look flat. Adding ~16–24dp extra left padding to meeting items makes the hierarchy obvious.
+
+**Acceptance Criteria:**
+- [ ] Graphic visible in green header area of side drawer, below "Friendsheet" label, correctly sized without overflow
+- [ ] Decorative image visible at end of Pending Meetings list, after the last meeting card, only when list is non-empty
+- [ ] Both assets registered in `pubspec.yaml` under `flutter: assets:`
+- [ ] Meeting name items in My Meetings have visibly greater left indent than month header rows (16–24dp difference)
+- [ ] No regression on drawer header layout, list scrolling, or meeting card interactions
+
+**Tasks:**
+- [ ] **TASK-077.1:** Confirm asset filenames, add both to `assets/` folder and `pubspec.yaml`
+- [ ] **TASK-077.2:** Update drawer header widget — add `Image.asset` in the green area with correct sizing/constraints
+- [ ] **TASK-077.3:** Add `Image.asset` as last item in Pending Meetings `ListView` builder, conditional on list non-empty
+- [ ] **TASK-077.4:** Increase left `padding`/`margin` on meeting item tiles in My Meetings list
+- [ ] **TASK-077.5:** Visual check on device — all three changes verified
+- [ ] **TASK-077.6:** Run `flutter analyze` + `flutter test`, report back
+
+**Definition of Done:**
+- [ ] All three visual changes verified on device
+- [ ] No layout overflow warnings
+- [ ] `flutter analyze` clean, `flutter test` green
+
 ## 🎨 FEATURE-021: UX/UI Improvements — Statistics, Meetings & Friends
 
 **Description:** Polishes the existing app experience across three core areas — statistics readability, meeting history navigation, and friends management — so Friendsheet feels production-ready before Google Play release.
@@ -2417,23 +2581,24 @@ US-051 App Icon ─────────────────────�
 **As a** developer  
 **I want to** prepare all required Google Play assets  
 **So that** the app can be submitted for review
+**Status:** ✅ COMPLETED (March 12, 2026)
 
 **Story Points:** 5  
 **Priority:** P0
 
 **Acceptance Criteria:**
-- [ ] App icon (512x512 PNG)
-- [ ] Feature graphic (1024x500 PNG)
-- [ ] Screenshots (min 2, phone format)
-- [ ] Short description (max 80 chars)
-- [ ] Full description
-- [ ] Privacy Policy published at accessible URL
+- [x] App icon (512x512 PNG)
+- [x] Feature graphic (1024x500 PNG)
+- [x] Screenshots (min 2, phone format)
+- [x] Short description (max 80 chars)
+- [x] Full description
+- [x] Privacy Policy published at accessible URL
 
 **Tasks:**
-- [ ] **TASK-046.1:** Design app icon - 2h
-- [ ] **TASK-046.2:** Create store screenshots - 2h
-- [ ] **TASK-046.3:** Write store description - 1h
-- [ ] **TASK-046.4:** Create and publish Privacy Policy page - 2h
+- [x] **TASK-046.1:** Design app icon - 2h
+- [x] **TASK-046.2:** Create store screenshots - 2h
+- [x] **TASK-046.3:** Write store description - 1h
+- [x] **TASK-046.4:** Create and publish Privacy Policy page - 2h
 
 ---
 
@@ -2472,20 +2637,21 @@ US-051 App Icon ─────────────────────�
 
 **Story Points:** 3  
 **Priority:** P0
+**Status:** ✅ COMPLETED (March 12, 2026)
 
 **Acceptance Criteria:**
-- [ ] Google Play Developer account created ($25 one-time fee)
-- [ ] Account verified
-- [ ] App created in Play Console
-- [ ] Internal testing track configured
-- [ ] App tested via Internal Testing before public release
+- [x] Google Play Developer account created ($25 one-time fee)
+- [x] Account verified
+- [x] App created in Play Console
+- [x] Internal testing track configured
+- [x] App tested via Internal Testing before public release
 
 **Tasks:**
-- [ ] **TASK-033.1:** Create Google Play Developer account - 30min
-- [ ] **TASK-033.2:** Create app in Play Console - 30min
-- [ ] **TASK-033.3:** Upload to Internal Testing track - 1h
-- [ ] **TASK-033.4:** Test Internal build on real device - 1h
-- [ ] **TASK-033.5:** Submit for production review - 1h
+- [x] **TASK-033.1:** Create Google Play Developer account - 30min
+- [x] **TASK-033.2:** Create app in Play Console - 30min
+- [x] **TASK-033.3:** Upload to Internal Testing track - 1h
+- [x] **TASK-033.4:** Test Internal build on real device - 1h
+- [x] **TASK-033.5:** Submit for production review - 1h
 
 ---
 
@@ -2684,6 +2850,44 @@ app restarts. Provider is owned by `MainScreen` for full-session lifetime.
 Drawer shows `Pending Meetings (N)` badge when inbox is non-empty.
 Source-agnostic: Calendar (US-067) and Photos (US-070) both call
 `addCandidates()` on the same provider.
+
+
+
+### 🐛 US-078: Fix — "Failed to Load Calendar" on Browse & Import Events
+
+**As a** user with Google Calendar connected
+**I want** the calendar event screen to load reliably without manual reconnection
+**So that** I can import events without interruption
+
+**Labels:** `bug` `calendar` `P1`
+**Story Points:** 3
+**Priority:** P1
+**Status:** 📋 Planned
+**Feature:** FEATURE-013: Google Calendar Import
+**Epic:** EPIC-005
+
+**Context:**
+Error appears intermittently — every few sessions or after a longer idle period. Disconnect + reconnect always fixes it, which points to an **expired OAuth token** not being refreshed automatically. The fix should: detect token expiry on the API call, silently refresh via `signInSilently()` and retry once, and only prompt the user to reconnect if the token cannot be refreshed (revoked/permission removed).
+
+**Acceptance Criteria:**
+- [ ] If OAuth token is expired, the app silently refreshes it and retries — user sees no error
+- [ ] If token cannot be refreshed, a clear actionable message is shown: "Calendar access expired — please reconnect" with a "Reconnect" button
+- [ ] Generic "failed to load calendar" error is eliminated
+- [ ] No regression: connect and disconnect flows still work correctly
+- [ ] TC-CAL-001 passes
+
+**Tasks:**
+- [ ] **TASK-078.1:** Audit `CalendarService` / calendar repository — identify where the API call fails and what error type is caught
+- [ ] **TASK-078.2:** Identify the `GoogleSignIn` token refresh path (`signInSilently()` / `getAccessToken()`)
+- [ ] **TASK-078.3:** Implement retry-on-auth-error: catch 401/auth error → call `signInSilently()` → retry calendar load once
+- [ ] **TASK-078.4:** If refresh fails, show actionable "Reconnect" CTA instead of generic error message
+- [ ] **TASK-078.5:** Run `flutter analyze` + `flutter test`, report back
+
+**Definition of Done:**
+- [ ] Token expiry no longer produces "failed to load calendar"
+- [ ] Silent refresh works for the common expiry case
+- [ ] TC-CAL-001 passes
+- [ ] `flutter analyze` clean, `flutter test` green
 
 ---
 
