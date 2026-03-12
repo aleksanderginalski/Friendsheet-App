@@ -73,7 +73,11 @@ class MeetingInboxScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.inbox, size: 64, color: Colors.grey),
+            Image.asset(
+              'assets/images/waiting_room.png',
+              height: 160,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(height: 16),
             const Text(
               'No pending meetings',
@@ -122,10 +126,23 @@ class MeetingInboxScreen extends StatelessWidget {
     BuildContext context,
     MeetingInboxProvider provider,
   ) {
+    final items = provider.candidates;
     return ListView.builder(
-      itemCount: provider.candidates.length,
+      itemCount: items.length + 1,
       itemBuilder: (context, index) {
-        final candidate = provider.candidates[index];
+        if (index == items.length) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24.0),
+            child: Center(
+              child: Image.asset(
+                'assets/images/waiting_room.png',
+                height: 160,
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
+        }
+        final candidate = items[index];
         return _CandidateCard(
           candidate: candidate,
           onTap: () => _openEditScreen(context, candidate),

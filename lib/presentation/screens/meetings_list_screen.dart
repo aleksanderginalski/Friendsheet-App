@@ -178,10 +178,7 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
               ))
                 for (final meeting in monthEntry.value)
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(24, 2, 8, 2),
                     child: MeetingCard(
                       meeting: meeting,
                       onTap: () {
