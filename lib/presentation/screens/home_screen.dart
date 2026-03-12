@@ -62,8 +62,33 @@ class HomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            CalendarEventsScreen(calendars: calendars),
+                        builder: (_) => CalendarEventsScreen(
+                          calendars: calendars,
+                          onReconnect: () async {
+                            // Re-run the full requestAccess flow — same path
+                            // as the initial "Import" tap above.
+                            try {
+                              final newCalendars =
+                                  await GoogleCalendarService().requestAccess();
+                              if (!context.mounted) return;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CalendarEventsScreen(
+                                    calendars: newCalendars,
+                                  ),
+                                ),
+                              );
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Calendar access denied'),
+                                ),
+                              );
+                            }
+                          },
+                        ),
                       ),
                     );
                   },
