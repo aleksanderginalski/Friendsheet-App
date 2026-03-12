@@ -14,6 +14,7 @@ class Person with _$Person {
     required String firstName,
     String? lastName,
     required DateTime createdAt,
+    @Default([]) List<String> nicknames,
   }) = _Person;
 
   /// Returns full display name, e.g. "Anna" or "Anna Smith"
@@ -32,6 +33,10 @@ class Person with _$Person {
       firstName: (data['firstName'] ?? '') as String,
       lastName: data['lastName'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      nicknames: (data['nicknames'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
     );
   }
 
@@ -43,6 +48,7 @@ class Person with _$Person {
       'firstName': firstName,
       if (lastName != null) 'lastName': lastName,
       'createdAt': Timestamp.fromDate(createdAt),
+      'nicknames': nicknames,
     };
   }
 

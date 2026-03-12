@@ -1,6 +1,9 @@
 // lib/presentation/providers/add_meeting_provider.dart
 
+// lib/presentation/providers/add_meeting_provider.dart
+
 import 'package:flutter/foundation.dart';
+import '../../core/utils/person_search_helper.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/models/meeting.dart';
 import '../../data/models/person.dart';
@@ -156,13 +159,13 @@ class AddMeetingProvider extends ChangeNotifier {
     }
   }
 
-  // Returns persons matching the query, excluding already selected ones
+  // Returns persons matching the query, excluding already selected ones.
+  // Matches against firstName, lastName, and any nickname.
   List<Person> searchPersons(String query) {
     if (query.trim().isEmpty) return [];
-    final lower = query.toLowerCase();
     return _availablePersons
         .where((p) => !_selectedPersons.contains(p))
-        .where((p) => p.fullName.toLowerCase().contains(lower))
+        .where((p) => PersonSearchHelper.matches(p, query))
         .toList();
   }
 
