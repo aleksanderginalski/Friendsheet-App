@@ -17,6 +17,11 @@ _$PersonImpl _$$PersonImplFromJson(Map<String, dynamic> json) => $checkedCreate(
           lastName: $checkedConvert('lastName', (v) => v as String?),
           createdAt:
               $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
+          nicknames: $checkedConvert(
+              'nicknames',
+              (v) =>
+                  (v as List<dynamic>?)?.map((e) => e as String).toList() ??
+                  const []),
         );
         return val;
       },
@@ -29,4 +34,5 @@ Map<String, dynamic> _$$PersonImplToJson(_$PersonImpl instance) =>
       'firstName': instance.firstName,
       'lastName': instance.lastName,
       'createdAt': instance.createdAt.toIso8601String(),
+      'nicknames': instance.nicknames,
     };

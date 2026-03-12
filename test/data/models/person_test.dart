@@ -142,6 +142,48 @@ void main() {
         expect(map.containsKey('firstName'), true);
         expect(map.containsKey('createdAt'), true);
       });
+
+      test('includes nicknames key with empty list by default', () {
+        final map = personWithLastName.toFirestore();
+        expect(map.containsKey('nicknames'), true);
+        expect(map['nicknames'], <String>[]);
+      });
+
+      test('includes nicknames when present', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+          nicknames: ['Ania', 'Anka'],
+        );
+        final map = person.toFirestore();
+        expect(map['nicknames'], ['Ania', 'Anka']);
+      });
+    });
+
+    group('nicknames', () {
+      test('defaults to empty list when not provided', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+        );
+        expect(person.nicknames, isEmpty);
+      });
+
+      test('JSON round-trip preserves nicknames', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+          nicknames: ['Ania', 'Anka'],
+        );
+        final restored = Person.fromJson(person.toJson());
+        expect(restored.nicknames, ['Ania', 'Anka']);
+      });
     });
   });
 }

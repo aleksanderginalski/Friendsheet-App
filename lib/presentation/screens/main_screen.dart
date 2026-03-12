@@ -268,7 +268,6 @@ class _MainScreenState extends State<MainScreen> {
               decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Friendsheet',
@@ -277,7 +276,6 @@ class _MainScreenState extends State<MainScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 8),
                   Image.asset(
                     'assets/images/drawer_icon.png',
                     height: 80,

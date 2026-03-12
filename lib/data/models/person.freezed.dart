@@ -25,6 +25,7 @@ mixin _$Person {
   String get firstName => throw _privateConstructorUsedError;
   String? get lastName => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  List<String> get nicknames => throw _privateConstructorUsedError;
 
   /// Serializes this Person to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,7 +46,8 @@ abstract class $PersonCopyWith<$Res> {
       String userId,
       String firstName,
       String? lastName,
-      DateTime createdAt});
+      DateTime createdAt,
+      List<String> nicknames});
 }
 
 /// @nodoc
@@ -68,6 +70,7 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
     Object? firstName = null,
     Object? lastName = freezed,
     Object? createdAt = null,
+    Object? nicknames = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -90,6 +93,10 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      nicknames: null == nicknames
+          ? _value.nicknames
+          : nicknames // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 }
@@ -106,7 +113,8 @@ abstract class _$$PersonImplCopyWith<$Res> implements $PersonCopyWith<$Res> {
       String userId,
       String firstName,
       String? lastName,
-      DateTime createdAt});
+      DateTime createdAt,
+      List<String> nicknames});
 }
 
 /// @nodoc
@@ -127,6 +135,7 @@ class __$$PersonImplCopyWithImpl<$Res>
     Object? firstName = null,
     Object? lastName = freezed,
     Object? createdAt = null,
+    Object? nicknames = null,
   }) {
     return _then(_$PersonImpl(
       id: null == id
@@ -149,6 +158,10 @@ class __$$PersonImplCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      nicknames: null == nicknames
+          ? _value._nicknames
+          : nicknames // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -161,8 +174,10 @@ class _$PersonImpl extends _Person {
       required this.userId,
       required this.firstName,
       this.lastName,
-      required this.createdAt})
-      : super._();
+      required this.createdAt,
+      final List<String> nicknames = const []})
+      : _nicknames = nicknames,
+        super._();
 
   factory _$PersonImpl.fromJson(Map<String, dynamic> json) =>
       _$$PersonImplFromJson(json);
@@ -177,10 +192,18 @@ class _$PersonImpl extends _Person {
   final String? lastName;
   @override
   final DateTime createdAt;
+  final List<String> _nicknames;
+  @override
+  @JsonKey()
+  List<String> get nicknames {
+    if (_nicknames is EqualUnmodifiableListView) return _nicknames;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_nicknames);
+  }
 
   @override
   String toString() {
-    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt)';
+    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt, nicknames: $nicknames)';
   }
 
   @override
@@ -195,13 +218,15 @@ class _$PersonImpl extends _Person {
             (identical(other.lastName, lastName) ||
                 other.lastName == lastName) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            const DeepCollectionEquality()
+                .equals(other._nicknames, _nicknames));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, userId, firstName, lastName, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, userId, firstName, lastName,
+      createdAt, const DeepCollectionEquality().hash(_nicknames));
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.
@@ -225,7 +250,8 @@ abstract class _Person extends Person {
       required final String userId,
       required final String firstName,
       final String? lastName,
-      required final DateTime createdAt}) = _$PersonImpl;
+      required final DateTime createdAt,
+      final List<String> nicknames}) = _$PersonImpl;
   const _Person._() : super._();
 
   factory _Person.fromJson(Map<String, dynamic> json) = _$PersonImpl.fromJson;
@@ -240,6 +266,8 @@ abstract class _Person extends Person {
   String? get lastName;
   @override
   DateTime get createdAt;
+  @override
+  List<String> get nicknames;
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.

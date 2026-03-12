@@ -2451,24 +2451,24 @@ Three visual polish items grouped because all require user-supplied assets and t
 
 **Story Points:** 8
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Labels:** `friends`, `data-model`, `autocomplete`
 **Mode:** ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] `Person` model extended with `nicknames: List<String>` (empty list = no nicknames)
-- [ ] `PersonDetailScreen` allows adding, editing and removing nicknames
-- [ ] Autocomplete in `AddMeetingScreen` searches `firstName`, `lastName` **and** all `nicknames`
-- [ ] Suggestion displays: full name + nickname in parentheses, e.g. `Małgorzata Bielawska (Gosia)`
-- [ ] Firestore schema change is backwards-compatible — missing field treated as empty list
-- [ ] Data migration not required (field is optional)
+- [x] `Person` model extended with `nicknames: List<String>` (empty list = no nicknames)
+- [x] `PersonDetailScreen` allows adding, editing and removing nicknames
+- [x] Autocomplete in `AddMeetingScreen` searches `firstName`, `lastName` **and** all `nicknames`
+- [x] Suggestion displays: full name + nickname in parentheses, e.g. `Małgorzata Bielawska (Gosia)`
+- [x] Firestore schema change is backwards-compatible — missing field treated as empty list
+- [x] Data migration not required (field is optional)
 
 **Tasks:**
-- [ ] **TASK-061.1:** Extend `Person` Freezed model — add `nicknames: List<String>`, update `fromFirestore`/`toFirestore`, regenerate `.freezed.dart`
-- [ ] **TASK-061.2:** Update `PersonRepository` — persist and read `nicknames` field
-- [ ] **TASK-061.3:** Add nickname management UI to `PersonDetailScreen` (add/remove chips)
-- [ ] **TASK-061.4:** Extend `PersonAutocomplete` — include nicknames in search, update suggestion label format
-- [ ] **TASK-061.5:** Write tests (model, repository, autocomplete search logic)
+- [x] **TASK-061.1:** Extend `Person` Freezed model — add `nicknames: List<String>`, update `fromFirestore`/`toFirestore`, regenerate `.freezed.dart`
+- [x] **TASK-061.2:** Update `PersonRepository` — persist and read `nicknames` field
+- [x] **TASK-061.3:** Add nickname management UI to `PersonDetailScreen` (add/remove chips)
+- [x] **TASK-061.4:** Extend `PersonAutocomplete` — include nicknames in search, update suggestion label format
+- [x] **TASK-061.5:** Write tests (model, repository, autocomplete search logic)
 
 ---
 
