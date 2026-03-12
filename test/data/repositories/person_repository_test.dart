@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/repositories/friend_group_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 
@@ -16,6 +17,7 @@ void main() {
     repository = PersonRepository(
       firestore: fakeFirestore,
       meetingRepository: meetingRepository,
+      friendGroupRepository: FriendGroupRepository(firestore: fakeFirestore),
     );
   });
 
