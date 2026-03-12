@@ -76,6 +76,29 @@ class PersonDetailProvider extends ChangeNotifier {
     }
   }
 
+  // Adds a nickname to the person. Silently ignores empty or duplicate values.
+  Future<void> addNickname(String nickname) async {
+    final trimmed = nickname.trim();
+    if (trimmed.isEmpty) return;
+    if (_person!.nicknames.contains(trimmed)) return;
+    final updated = _person!.copyWith(
+      nicknames: [..._person!.nicknames, trimmed],
+    );
+    await _personRepository.updatePerson(updated);
+    _person = updated;
+    notifyListeners();
+  }
+
+  // Removes a nickname from the person.
+  Future<void> removeNickname(String nickname) async {
+    final updated = _person!.copyWith(
+      nicknames: _person!.nicknames.where((n) => n != nickname).toList(),
+    );
+    await _personRepository.updatePerson(updated);
+    _person = updated;
+    notifyListeners();
+  }
+
   // Deletes the person and removes them from all associated meetings.
   // Returns false and resets _isDeleting if the repository call fails.
   Future<bool> deletePerson() async {

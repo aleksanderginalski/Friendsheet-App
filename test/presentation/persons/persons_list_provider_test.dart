@@ -21,6 +21,7 @@ void main() {
       firstName: 'Zofia',
       lastName: 'Nowak',
       createdAt: DateTime(2026, 1, 1),
+      nicknames: ['Zosia'],
     ),
     Person(
       id: 'p2',
@@ -101,6 +102,28 @@ void main() {
 
       expect(provider.errorMessage, isNotNull);
       expect(provider.isLoading, isFalse);
+    });
+
+    test('filter by nickname returns matching person', () async {
+      when(mockPersonRepository.getPersonsByUser('u1'))
+          .thenAnswer((_) async => testPersons);
+
+      await provider.initialize();
+      provider.setSearchQuery('zosia'); // nickname of Zofia
+
+      expect(provider.persons.length, equals(1));
+      expect(provider.persons.first.firstName, equals('Zofia'));
+    });
+
+    test('filter by name still works after nickname refactor', () async {
+      when(mockPersonRepository.getPersonsByUser('u1'))
+          .thenAnswer((_) async => testPersons);
+
+      await provider.initialize();
+      provider.setSearchQuery('kowalska'); // lastName of Anna
+
+      expect(provider.persons.length, equals(1));
+      expect(provider.persons.first.firstName, equals('Anna'));
     });
   });
 }
