@@ -54,11 +54,13 @@ erDiagram
     USER ||--o{ PERSON : owns
     USER ||--o{ ACTIVITY : owns
     USER ||--o{ ACTIVITY_CATEGORY : owns
+    USER ||--o{ FRIEND_GROUP : owns
     USER ||--o{ INVITATION_CODE : generates
     USER ||--o{ DASHBOARD_CONFIG : configures
     MEETING }o--o{ ACTIVITY_CATEGORY : has_categories
     ACTIVITY }o--o| ACTIVITY_CATEGORY : belongs_to
     ACTIVITY_CATEGORY }o--o| ACTIVITY_CATEGORY : has_parent
+    FRIEND_GROUP }o--o{ PERSON : contains
 
     USER {
         string uid PK
@@ -84,6 +86,16 @@ erDiagram
         string userId FK
         string firstName
         string lastName
+        array nicknames
+        datetime createdAt
+    }
+    
+    FRIEND_GROUP {
+        string id PK
+        string userId FK
+        string name
+        string iconIdentifier "nullable, same set as ActivityCategory"
+        array personIds "references Person.id — many-to-many"
         datetime createdAt
     }
     
@@ -156,8 +168,9 @@ graph TB
         C3[Person Repository]
         C4[Activity Category Repository - M2]
         C5[Statistics Repository - M3]
-        C6[Invitation Code Repository - M5]
-        C7[Dashboard Config Repository - M7]
+        C6[Friend Group Repository - US-062]
+        C7[Invitation Code Repository - M5]
+        C8[Dashboard Config Repository - M7]
     end
     
     subgraph "Cache Layer"
@@ -296,6 +309,68 @@ Persists `selectedYear` and `availableYears` during session.
 
 **Animated bar chart pattern (US-048, US-049):**
 Use `_lastTargetLeft` / `_lastTargetBarHeight` fields (not `evaluate(controller)`) as tween begin values in `didUpdateWidget`. This guarantees stationary bars have `begin == end` regardless of controller timing or number of `didUpdateWidget` calls.
+
+---
+
+### M3.5 — Friend Groups Architecture (US-062)
+
+**Overview:** Friends tab gains a grouped view. Groups are named buckets with an optional icon that hold references to existing `Person` IDs. A person can belong to multiple groups. Persons without a group appear in a non-collapsible "Ungrouped" section at the bottom of the Friends tab.
+
+**Firestore path:** `users/{uid}/friend_groups/{groupId}`
+
+**FriendGroup model:**
+```dart
+FriendGroup {
+  id: string            // Firestore auto-generated
+  name: string
+  iconIdentifier: string?  // nullable, reuses same predefined set as ActivityCategory
+  personIds: List<String>  // references to Person.id — many-to-many
+  createdAt: DateTime?
+}
+```
+
+**Repository cascade dependency:**
+`PersonRepository` depends on `FriendGroupRepository`. When a person is deleted,
+`deletePerson()` runs `removePersonFromMeetings` and `removePersonFromAllGroups`
+in parallel via `Future.wait` before deleting the person document.
+
+```dart
+// PersonRepository.deletePerson cascade:
+await Future.wait([
+  _meetingRepository.removePersonFromMeetings(userId, personId),
+  _friendGroupRepository.removePersonFromAllGroups(userId, personId),
+]);
+await _personsRef(userId).doc(personId).delete();
+```
+
+`removePersonFromAllGroups` uses `WriteBatch` — queries all groups containing `personId`
+and removes it via `FieldValue.arrayRemove` in a single atomic operation.
+
+**FriendGroupsProvider:** Owned by `MainScreen` alongside `PersonsListProvider`.
+Reloaded on Friends tab tap (index == 2). Optimistic updates for `addPersonToGroup`
+and `removePersonFromGroup` — updates local `_groups` list before Firestore call,
+reverts via `loadGroups()` on error.
+
+**Icon system reuse:** `iconIdentifier` uses the same string key format and the same
+`activity_icons.dart` resolver (`resolveActivityIcon()`) as `ActivityCategory`.
+No new icon assets introduced.
+
+**PersonsListScreen layout (post US-062):**
+```
+ExpansionTile per FriendGroup (ordered by createdAt)
+  └── PersonListTile per assigned person
+─── Ungrouped ─────────────────────────────  ← always visible, non-collapsible
+      PersonListTile (persons in no group)
+```
+
+**Group management entry points:**
+- **[C-A]** From group row: `person_add` icon → `AssignPersonsBottomSheet` (multi-select)
+- **[C-B]** From person: `PersonDetailScreen` → "Groups" section → `CheckboxListTile` per group
+
+**Provider injection at call-site:**
+`FriendGroupsProvider` is passed to `PersonDetailScreen` via `ChangeNotifierProvider.value`
+at the navigation call-site in `PersonsListScreen`. `PersonDetailScreen` does not
+instantiate providers internally.
 
 ---
 
@@ -452,12 +527,15 @@ graph LR
     U --> UAC["activity_categories/ (subcollection)"]
     U --> UM["meetings/ (subcollection)"]
     U --> UP["persons/ (subcollection)"]
+    U --> UFG["friend_groups/ (subcollection)"]
 
     UAC --> UAC1["{categoryId}<br/>- isGlobal: false<br/>- userId: String<br/>- name<br/>- iconIdentifier<br/>- parentCategoryId?<br/>- isSelectableAsActivity<br/>- copiedFromId?"]
 
     UM --> UM1["{meetingId}<br/>- userId<br/>- name<br/>- date<br/>- weight<br/>- participantIds[]<br/>- categoryIds[]<br/>- createdAt<br/>- updatedAt"]
 
-    UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- createdAt"]
+    UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- nicknames[]<br/>- createdAt"]
+
+    UFG --> UFG1["{groupId}<br/>- name<br/>- iconIdentifier?<br/>- personIds[]<br/>- createdAt"]
 ```
 
 **Global vs Private data pattern:**
@@ -508,6 +586,14 @@ service cloud.firestore {
     match /users/{userId}/persons/{personId} {
       allow read, delete: if isAuthenticated() && isOwner(userId);
       allow create, update: if isAuthenticated() && isOwner(userId);
+    }
+
+    match /users/{userId}/friend_groups/{groupId} {
+      // Path-based userId check — required for list queries (resource.data unavailable)
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
     }
 
     match /invitation_codes/{codeId} {
@@ -743,10 +829,6 @@ Calendar selection and ALL-DAY preference persisted in SharedPreferences:
 - On grant: `Navigator.pushReplacement` → SettingsScreen (calendar section visible)
 - On deny: error message shown inline, retry available
 
-**Token refresh:** `_withTokenRetry<T>` generic helper in `GoogleCalendarService`
-wraps any API call with a single silent-refresh retry on `CalendarAuthException`.
-Reuse this pattern for Google Photos (`fetchPhotos()`) in FEATURE-014.
-
 ---
 
 ### M5 — Meeting Inbox Architecture (US-068)
@@ -772,4 +854,4 @@ import source requires only a new data-fetching layer.
 
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-073 persistent Hive cache + HomeLoadingScreen added)
+**Last Updated:** March 2026 (US-062 Friend Groups — FriendGroup model, FriendGroupRepository, FriendGroupsProvider, friend_groups Firestore subcollection + security rules)
