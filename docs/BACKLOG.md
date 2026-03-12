@@ -1536,7 +1536,7 @@ Activity Breakdown correctly shows 82 meetings with „Planszówki" in 2023, but
 **Labels:** `statistics` `activities` `ux` `P2`
 **Story Points:** 5
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Feature:** FEATURE-009: Core Statistics / FEATURE-008: Activities View & Categories
 **Epic:** EPIC-003 / EPIC-002
 
@@ -1548,29 +1548,29 @@ Three independent polish items grouped due to low complexity and shared "find wi
 3. **Child activity badge** — No visual indicator shows which categories have subcategories. A small badge with the direct child count (e.g. "3") should appear next to parent category names. Leaf nodes show no badge.
 
 **Acceptance Criteria:**
-- [ ] On tab load or year change, all three charts start from zero/empty and animate forward — no pre-flash of final values
-- [ ] Who per Activity, Activity Breakdown, and Interaction Distribution run at identical animation duration
-- [ ] Duration defined as a single shared constant (e.g. `AppConstants.chartAnimationDuration`), not hardcoded per widget
-- [ ] Parent categories (≥1 child) display a badge showing direct child count
-- [ ] Leaf categories display no badge
-- [ ] Badge updates correctly when a child is added or deleted
-- [ ] Badge is visually consistent with app design system
-- [ ] No regression on chart data correctness, or activity expand/collapse/edit/delete flows
+- [x] On tab load or year change, all three charts start from zero/empty and animate forward — no pre-flash of final values
+- [x] Who per Activity, Activity Breakdown, and Interaction Distribution run at identical animation duration
+- [x] Duration defined as a single shared constant (e.g. `AppConstants.chartAnimationDuration`), not hardcoded per widget
+- [x] Parent categories (≥1 child) display a badge showing direct child count
+- [x] Leaf categories display no badge
+- [x] Badge updates correctly when a child is added or deleted
+- [x] Badge is visually consistent with app design system
+- [x] No regression on chart data correctness, or activity expand/collapse/edit/delete flows
 
 **Tasks:**
-- [ ] **TASK-075.1:** Audit animation controller initialization in all three chart widgets — ensure `forward()` is called after first frame (`addPostFrameCallback` or correct `initState` ordering), values start at 0
-- [ ] **TASK-075.2:** Fix initialization order so animated values start at 0 before first paint — verify flash is gone for all three widgets on device
-- [ ] **TASK-075.3:** Extract animation duration to shared constant and apply to all three chart widgets
-- [ ] **TASK-075.4:** Identify widget rendering each activity category row in the tree
-- [ ] **TASK-075.5:** Add badge widget (small rounded container + count text) visible only when `children.length > 0`, styled with app theme
-- [ ] **TASK-075.6:** Verify badge updates live on child add/remove
-- [ ] **TASK-075.7:** Run `flutter analyze` + `flutter test`, report back
+- [x] **TASK-075.1:** Audit animation controller initialization in all three chart widgets — ensure `forward()` is called after first frame (`addPostFrameCallback` or correct `initState` ordering), values start at 0
+- [x] **TASK-075.2:** Fix initialization order so animated values start at 0 before first paint — verify flash is gone for all three widgets on device
+- [x] **TASK-075.3:** Extract animation duration to shared constant and apply to all three chart widgets
+- [x] **TASK-075.4:** Identify widget rendering each activity category row in the tree
+- [x] **TASK-075.5:** Add badge widget (small rounded container + count text) visible only when `children.length > 0`, styled with app theme
+- [x] **TASK-075.6:** Verify badge updates live on child add/remove
+- [x] **TASK-075.7:** Run `flutter analyze` + `flutter test`, report back
 
 **Definition of Done:**
-- [ ] No pre-animation flash on any of the three chart types
-- [ ] All three chart animations run at identical duration via shared constant
-- [ ] Badge visible on parent categories, absent on leaf categories, count accurate
-- [ ] `flutter analyze` clean, `flutter test` green
+- [x] No pre-animation flash on any of the three chart types
+- [x] All three chart animations run at identical duration via shared constant
+- [x] Badge visible on parent categories, absent on leaf categories, count accurate
+- [x] `flutter analyze` clean, `flutter test` green
 
 
 ## 📱 FEATURE-017: Sideload Release
