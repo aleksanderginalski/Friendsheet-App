@@ -2250,7 +2250,7 @@ US-051 App Icon ─────────────────────�
 **Labels:** `ui` `design` `P2`
 **Story Points:** 5
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Feature:** FEATURE-020: Illustrations & Empty States / FEATURE-006: Meetings View
 **Epic:** EPIC-009 / EPIC-002
 
@@ -2262,24 +2262,24 @@ Three visual polish items grouped because all require user-supplied assets and t
 3. **My Meetings indentation** — meeting name items share left-alignment with month headers, making the tree look flat. Adding ~16–24dp extra left padding to meeting items makes the hierarchy obvious.
 
 **Acceptance Criteria:**
-- [ ] Graphic visible in green header area of side drawer, below "Friendsheet" label, correctly sized without overflow
-- [ ] Decorative image visible at end of Pending Meetings list, after the last meeting card, only when list is non-empty
-- [ ] Both assets registered in `pubspec.yaml` under `flutter: assets:`
-- [ ] Meeting name items in My Meetings have visibly greater left indent than month header rows (16–24dp difference)
-- [ ] No regression on drawer header layout, list scrolling, or meeting card interactions
+- [x] Graphic visible in green header area of side drawer, below "Friendsheet" label, correctly sized without overflow
+- [x] Decorative image visible at end of Pending Meetings list, after the last meeting card, only when list is non-empty
+- [x] Both assets registered in `pubspec.yaml` under `flutter: assets:`
+- [x] Meeting name items in My Meetings have visibly greater left indent than month header rows (16–24dp difference)
+- [x] No regression on drawer header layout, list scrolling, or meeting card interactions
 
 **Tasks:**
-- [ ] **TASK-077.1:** Confirm asset filenames, add both to `assets/` folder and `pubspec.yaml`
-- [ ] **TASK-077.2:** Update drawer header widget — add `Image.asset` in the green area with correct sizing/constraints
-- [ ] **TASK-077.3:** Add `Image.asset` as last item in Pending Meetings `ListView` builder, conditional on list non-empty
-- [ ] **TASK-077.4:** Increase left `padding`/`margin` on meeting item tiles in My Meetings list
-- [ ] **TASK-077.5:** Visual check on device — all three changes verified
-- [ ] **TASK-077.6:** Run `flutter analyze` + `flutter test`, report back
+- [x] **TASK-077.1:** Confirm asset filenames, add both to `assets/` folder and `pubspec.yaml`
+- [x] **TASK-077.2:** Update drawer header widget — add `Image.asset` in the green area with correct sizing/constraints
+- [x] **TASK-077.3:** Add `Image.asset` as last item in Pending Meetings `ListView` builder, conditional on list non-empty
+- [x] **TASK-077.4:** Increase left `padding`/`margin` on meeting item tiles in My Meetings list
+- [x] **TASK-077.5:** Visual check on device — all three changes verified
+- [x] **TASK-077.6:** Run `flutter analyze` + `flutter test`, report back
 
 **Definition of Done:**
-- [ ] All three visual changes verified on device
-- [ ] No layout overflow warnings
-- [ ] `flutter analyze` clean, `flutter test` green
+- [x] All three visual changes verified on device
+- [x] No layout overflow warnings
+- [x] `flutter analyze` clean, `flutter test` green
 
 ## 🎨 FEATURE-021: UX/UI Improvements — Statistics, Meetings & Friends
 
