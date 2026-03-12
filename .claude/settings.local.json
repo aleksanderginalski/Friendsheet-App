@@ -21,7 +21,8 @@
       "Bash(grep -v \"^$\")",
       "Bash(wc -l c:/Programowanie/Friendsheet-App/lib/presentation/import/*.dart c:/Programowanie/Friendsheet-App/lib/presentation/providers/meeting_inbox_provider.dart c:/Programowanie/Friendsheet-App/lib/presentation/providers/inbox_item_edit_provider.dart)",
       "Bash(find /c/Programowanie/Friendsheet-App/test -type f -name *statistics* -o -type f -name *who_per_activity*)",
-      "Bash(firebase deploy:*)"
+      "Bash(firebase deploy:*)",
+      "Bash(echo \"FORMAT_EXIT:$?\")"
     ]
   }
 }
