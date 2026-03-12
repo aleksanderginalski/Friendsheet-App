@@ -2353,24 +2353,25 @@ Three visual polish items grouped because all require user-supplied assets and t
 
 **Story Points:** 8
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Labels:** `statistics`, `who-per-activity`, `ux`
 **Mode:** ⚙️ Task
 
 **Acceptance Criteria:**
-- [ ] `ActivitySelectorDialog` refactored to show full category tree with icons (parent → child hierarchy)
-- [ ] Selecting an activity in the tree refreshes the chart immediately
-- [ ] Person filtering available via filter icon (same pattern as US-057)
-- [ ] Person filter dialog has checkboxes + "Select all" / "Deselect all"
-- [ ] Long-press on bar remains as a secondary shortcut (hide/show person) — both mechanisms coexist
-- [ ] Activity icons consistent with Activities tab
+- [x] `ActivitySelectorDialog` refactored to show full category tree with icons (parent → child hierarchy)
+- [x] Selecting an activity in the tree refreshes the chart immediately
+- [x] Person filtering available via filter icon (same pattern as US-057)
+- [x] Person filter dialog has checkboxes + "Select all" / "Deselect all"
+- [x] Long-press on bar removed — person visibility managed exclusively via Person Filter Dialog
+- [x] Person Filter Dialog includes "Auto-select top 10" button (top 10 by weightSum for current activity)
+- [x] Activity icons consistent with Activities tab
 
 **Tasks:**
-- [ ] **TASK-058.1:** Refactor `ActivitySelectorDialog` — replace flat list with tree layout using `ActivityCategory` hierarchy and icons
-- [ ] **TASK-058.2:** Add filter icon to `WhoPerActivityWidget` header
-- [ ] **TASK-058.3:** Build `WhoPerActivityPersonFilterDialog` — checkboxes + select/deselect all
-- [ ] **TASK-058.4:** Wire dialog into `WhoPerActivityWidget`; preserve long-press as shortcut
-- [ ] **TASK-058.5:** Write tests
+- [x] **TASK-058.1:** Refactor `ActivitySelectorDialog` — replace flat list with tree layout using `ActivityCategory` hierarchy and icons
+- [x] **TASK-058.2:** Add filter icon to `WhoPerActivityWidget` header
+- [x] **TASK-058.3:** Build `WhoPerActivityPersonFilterDialog` — checkboxes + select/deselect all
+- [x] **TASK-058.4:** Wire dialog into `WhoPerActivityWidget`; preserve long-press as shortcut
+- [x] **TASK-058.5:** Write tests
 
 ---
 
