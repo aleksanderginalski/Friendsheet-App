@@ -356,39 +356,38 @@ Session restoration fails on every cold start (100% reproducible). The user is n
 **Labels:** `profile` `gdpr` `P1`
 **Story Points:** 8
 **Priority:** P1
-**Status:** 📋 Planned
-**Feature:** FEATURE-002: User Authentication
-**Epic:** EPIC-001
+**Status:** ✅ COMPLETED (March 12, 2026)
+
 
 **Context:**
 Entry point: Side Drawer → Profile → "Delete Account". Full hard-delete required: Firebase Auth account + all Firestore subcollections (`meetings`, `persons`, `activity_categories`, root `users/{uid}` document). Firebase requires re-authentication before sensitive operations — this must be handled. After deletion: navigate to LoginScreen with stack cleared via `pushAndRemoveUntil`.
 
 **Acceptance Criteria:**
-- [ ] "Delete Account" option visible in Profile section of side drawer
-- [ ] Tapping it shows a confirmation dialog with clear destructive action warning
-- [ ] User must re-authenticate with Google before deletion proceeds
-- [ ] On confirm: all Firestore data deleted — `meetings`, `persons`, `activity_categories` subcollections + root `users/{uid}` document
-- [ ] Firebase Auth account deleted after Firestore cleanup
-- [ ] User navigated to LoginScreen with navigation stack cleared
-- [ ] If deletion fails (network error), error message shown and account is NOT partially deleted
-- [ ] Loading state shown during deletion
+- [x] "Delete Account" option visible in Profile section of side drawer
+- [x] Tapping it shows a confirmation dialog with clear destructive action warning
+- [x] User must re-authenticate with Google before deletion proceeds
+- [x] On confirm: all Firestore data deleted — `meetings`, `persons`, `activity_categories` subcollections + root `users/{uid}` document
+- [x] Firebase Auth account deleted after Firestore cleanup
+- [x] User navigated to LoginScreen with navigation stack cleared
+- [x] If deletion fails (network error), error message shown and account is NOT partially deleted
+- [x] Loading state shown during deletion
 
 **Tasks:**
-- [ ] **TASK-076.1:** Add "Delete Account" tile to Profile section in side drawer
-- [ ] **TASK-076.2:** Create confirmation dialog with destructive styling (red confirm button)
-- [ ] **TASK-076.3:** Implement `deleteAccount()` in `AuthService`: re-authenticate → delete Firestore subcollections → delete Auth account
-- [ ] **TASK-076.4:** Implement Firestore subcollection deletion (meetings, persons, activity_categories, root user doc) — sequential with per-step error handling
-- [ ] **TASK-076.5:** Ensure no partial deletion on failure — surface error and halt if any step fails
-- [ ] **TASK-076.6:** Navigate to LoginScreen with `pushAndRemoveUntil` on success
-- [ ] **TASK-076.7:** Write unit tests for `deleteAccount()` logic
-- [ ] **TASK-076.8:** Run `flutter analyze` + `flutter test`, report back
+- [x] **TASK-076.1:** Add "Delete Account" tile to Profile section in side drawer
+- [x] **TASK-076.2:** Create confirmation dialog with destructive styling (red confirm button)
+- [x] **TASK-076.3:** Implement `deleteAccount()` in `AuthService`: re-authenticate → delete Firestore subcollections → delete Auth account
+- [x] **TASK-076.4:** Implement Firestore subcollection deletion (meetings, persons, activity_categories, root user doc) — sequential with per-step error handling
+- [x] **TASK-076.5:** Ensure no partial deletion on failure — surface error and halt if any step fails
+- [x] **TASK-076.6:** Navigate to LoginScreen with `pushAndRemoveUntil` on success
+- [x] **TASK-076.7:** Write unit tests for `deleteAccount()` logic
+- [x] **TASK-076.8:** Run `flutter analyze` + `flutter test`, report back
 
 **Definition of Done:**
-- [ ] Full deletion flow works end-to-end on device
-- [ ] Firestore data confirmed deleted in Firebase Console after flow
-- [ ] Firebase Auth account confirmed deleted after flow
-- [ ] Error handling works (simulate network failure — no partial state)
-- [ ] `flutter analyze` clean, `flutter test` green
+- [x] Full deletion flow works end-to-end on device
+- [x] Firestore data confirmed deleted in Firebase Console after flow
+- [x] Firebase Auth account confirmed deleted after flow
+- [x] Error handling works (simulate network failure — no partial state)
+- [x] `flutter analyze` clean, `flutter test` green
 
 ---
 
@@ -2994,12 +2993,20 @@ Error appears intermittently — every few sessions or after a longer idle perio
 - [ ] User can see active/expired codes they generated
 
 **Tasks:**
-- [ ] **TASK-169:** Create InvitationCode model and Firestore collection - 2h
-- [ ] **TASK-170:** Implement code generation logic in InvitationService - 2h
-- [ ] **TASK-171:** Add Firestore Security Rules for invitations collection - 1h
-- [ ] **TASK-172:** Build GenerateInvitationScreen UI - 2h
-- [ ] **TASK-173:** Implement share sheet integration - 1h
-- [ ] **TASK-174:** Write tests - 1h
+- [ ] **TASK-034.1:** Create InvitationCode model and Firestore collection - 2h
+- [ ] **TASK-034.2:** Implement code generation logic in InvitationService - 2h
+- [ ] **TASK-034.3:** Add Firestore Security Rules for invitations collection - 1h
+- [ ] **TASK-034.4:** Build GenerateInvitationScreen UI - 2h
+- [ ] **TASK-034.5:** Implement share sheet integration - 1h
+- [ ] **TASK-034.6:** Write tests - 1h
+- [ ] **TASK-034.7:** Extend `AccountDeletionService._deleteFirestoreData()` — add deletion of `users/{uid}/invitation_codes` subcollection to the batch delete sequence
+
+**Architecture Note:**
+`AccountDeletionService` (US-076) deletes all user subcollections on account removal.
+When implementing US-034, extend `_deleteFirestoreData()` to also delete
+`users/{uid}/invitation_codes` — otherwise orphaned codes remain in Firestore
+after account deletion.
+
 
 ---
 

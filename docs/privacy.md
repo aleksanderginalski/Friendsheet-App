@@ -81,9 +81,21 @@ The only third-party services that process your data are:
 
 ---
 
-## 6. Data Retention
-
-Your data is retained for as long as you use the app. You may request deletion of your account and all associated data at any time by contacting us at **aleksander.ginalski@gmail.com**.
+## 6. Data Retention and Deletion
+ 
+Your data is retained for as long as you use the app.
+ 
+**You can permanently delete your account and all associated data directly from the app:**
+Settings → Delete Account
+ 
+This will immediately and permanently remove:
+- All your meetings, friends, and activity categories from Firestore
+- Your account from Firebase Authentication
+- All locally cached data (preferences, OAuth tokens, statistics cache)
+ 
+This action is irreversible. Once deleted, your data cannot be recovered.
+ 
+You may also request deletion by contacting us at **aleksander.ginalski@gmail.com**.
 
 ---
 
