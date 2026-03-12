@@ -2,7 +2,7 @@ name: friendsheet
 description: Track your meetings with friends and generate insightful statistics
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 3.25.3+8
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
