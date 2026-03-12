@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/google_calendar.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
@@ -148,7 +149,10 @@ class _MainScreenState extends State<MainScreen> {
                 MaterialPageRoute(
                   builder: (_) => ChangeNotifierProvider.value(
                     value: _meetingInboxProvider,
-                    child: CalendarEventsScreen(calendars: calendars),
+                    child: CalendarEventsScreen(
+                      calendars: calendars,
+                      onReconnect: _openCalendarPermissionScreen,
+                    ),
                   ),
                 ),
               );
@@ -294,14 +298,27 @@ class _MainScreenState extends State<MainScreen> {
                           MaterialPageRoute(
                             builder: (_) => ChangeNotifierProvider.value(
                               value: _meetingInboxProvider,
-                              child: CalendarEventsScreen(calendars: calendars),
+                              child: CalendarEventsScreen(
+                                calendars: calendars,
+                                onReconnect: _openCalendarPermissionScreen,
+                              ),
+                            ),
+                          ),
+                        );
+                      } on CalendarAuthException {
+                        messenger?.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Calendar access expired — please reconnect',
                             ),
                           ),
                         );
                       } catch (e) {
                         messenger?.showSnackBar(
                           const SnackBar(
-                            content: Text('Failed to load calendars'),
+                            content: Text(
+                              'Could not load calendars. Check your connection.',
+                            ),
                           ),
                         );
                       }

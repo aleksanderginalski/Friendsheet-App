@@ -26,15 +26,25 @@ This data is provided by Google and is used solely to identify your account with
 ### 2.2 App Data
 Data you enter manually into the app:
 - Meeting records (name, date, participants)
-- Friend profiles (name, optional notes)
+- Friend profiles (first name, last name)
 - Activity categories
 
-### 2.3 Data We Do NOT Collect
+### 2.3 Google Calendar Data (optional)
+If you choose to connect Google Calendar, we temporarily access:
+- Event titles
+- Event start dates and times
+- Whether an event is all-day
+- Attendee email addresses (used to suggest friends)
+- Calendar name and ID (used to identify which calendar to import from)
+
+This data is used **only during the import process** to pre-fill meeting suggestions. It is **never stored in our database (Firestore)**. Once you confirm or discard the import, the data is discarded from memory.
+
+### 2.4 Data We Do NOT Collect
 - Location data
 - Device identifiers
 - Usage analytics
 - Advertising identifiers
-- Any data from other Google services (Gmail, Drive, Calendar, etc.)
+- Data from Google Drive, Gmail, or any other Google services not listed above
 
 ---
 
@@ -44,6 +54,7 @@ Your data is used exclusively to provide the app's core functionality:
 - Displaying your meetings, friends, and activities
 - Generating statistics about your social activity
 - Persisting your data across app sessions
+- Suggesting meeting entries based on your Google Calendar events (only when you explicitly initiate an import)
 
 We do not use your data for advertising, profiling, or any commercial purpose.
 
@@ -53,9 +64,10 @@ We do not use your data for advertising, profiling, or any commercial purpose.
 
 Your data is stored in **Google Firebase Firestore** under your unique Google account identifier (UID). Firebase is a Google Cloud service subject to [Google's Privacy Policy](https://policies.google.com/privacy).
 
-- Data is stored in the EU (Firebase region: `europe-west`)
+- Data is stored in the **EU (Firebase region: `europe-central2`, Warsaw, Poland)**
 - Data is encrypted at rest and in transit
 - Only you can access your own data (enforced by Firebase Security Rules)
+- Google Calendar data is **never stored in Firestore** — it is processed in memory only during import
 
 ---
 
@@ -63,13 +75,15 @@ Your data is stored in **Google Firebase Firestore** under your unique Google ac
 
 We do not sell, rent, or share your personal data with any third parties.
 
-The only third-party service that processes your data is **Google Firebase**, used for authentication and data storage.
+The only third-party services that process your data are:
+- **Google Firebase** — used for authentication and data storage
+- **Google Calendar API** — used only when you explicitly connect your calendar and initiate an import
 
 ---
 
 ## 6. Data Retention
 
-Your data is retained for as long as you use the app. You may request deletion of your account and all associated data at any time by contacting us at **[aleksander.ginalski@gmail.com]**.
+Your data is retained for as long as you use the app. You may request deletion of your account and all associated data at any time by contacting us at **aleksander.ginalski@gmail.com**.
 
 ---
 
@@ -81,7 +95,7 @@ Depending on your location, you may have the following rights:
 - **Deletion** — request deletion of your data
 - **Portability** — request your data in a portable format
 
-To exercise any of these rights, contact us at **[aleksander.ginalski@gmail.com]**.
+To exercise any of these rights, contact us at **aleksander.ginalski@gmail.com**.
 
 ---
 
@@ -101,7 +115,7 @@ We may update this Privacy Policy from time to time. We will notify you of signi
 
 If you have any questions about this Privacy Policy, please contact us at:
 
-**[aleksander.ginalski@gmail.com]**
+**aleksander.ginalski@gmail.com**
 
 ---
 

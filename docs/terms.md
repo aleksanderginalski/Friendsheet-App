@@ -17,15 +17,18 @@ Friendsheet is a mobile application that allows users to track meetings and time
 
 ---
 
-## 3. Google Sign-In
+## 3. Google Sign-In and Google Services
 
-Friendsheet uses Google Sign-In for authentication. By signing in, you authorize Friendsheet to access your basic Google account information (name, email address, profile photo). We do not access your Google Drive, Gmail, or any other Google services.
+Friendsheet uses Google Sign-In for authentication. By signing in, you authorize Friendsheet to access your basic Google account information (name, email address, profile photo). We do not access your Gmail or Google Drive.
+
+Friendsheet offers an optional integration with **Google Calendar**. If you choose to connect your calendar, you authorize Friendsheet to access your calendar events (read-only) for the sole purpose of suggesting meeting entries. This access can be revoked at any time from within the app. Calendar data is never stored in our database.
 
 ---
 
 ## 4. Data Storage
 
 - Your data (meetings, friends, activities) is stored in Firebase Firestore under your Google account UID.
+- Google Calendar data is processed in memory only during import and is never stored in Firestore.
 - You can delete your account and all associated data at any time by contacting us.
 - We do not sell, share, or transfer your data to third parties.
 
@@ -33,7 +36,7 @@ Friendsheet uses Google Sign-In for authentication. By signing in, you authorize
 
 ## 5. Privacy
 
-We collect only the data you explicitly enter into the app. We do not use your data for advertising or analytics beyond basic app functionality.
+We collect only the data you explicitly enter into the app or authorize through Google integrations. We do not use your data for advertising or analytics beyond basic app functionality.
 
 For more details, see our [Privacy Policy](https://aleksanderginalski.github.io/Friendsheet-App/privacy).
 
@@ -70,7 +73,7 @@ We may update these Terms at any time. Continued use of the app after changes co
 
 If you have any questions about these Terms, please contact us at:
 
-**[aleksander.ginalski@gmail.com]**
+**aleksander.ginalski@gmail.com**
 
 ---
 
