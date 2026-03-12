@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (507)
+✅ All tests passing (518)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -221,6 +221,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+
+### v3.28.0 — US-078: Fix — Silent OAuth Token Refresh for Calendar (March 2026)
+- ✅ `_withTokenRetry<T>` generic helper extracted in `GoogleCalendarService` — single retry on `CalendarAuthException`, reusable for future API integrations (Google Photos)
+- ✅ Silent token refresh applied to both `fetchCalendars()` and `fetchEvents()` — expired token no longer produces "Failed to load calendars" after ~2h inactivity
+- ✅ `CalendarAuthException` caught separately from network errors in drawer handler
+- ✅ Drawer snackbar messages updated: auth expiry vs. network error have distinct messages
+- ✅ `requiresReconnect` state in `CalendarEventsProvider` — surfaces "Calendar access expired" with Reconnect CTA instead of generic error
+- ✅ Total test count: 507 → 518 tests (+11)
 
 ### v3.27.0 — US-058: Who Per Activity — Person Filter Dialog & Activity Tree Picker (March 2026)
 - ✅ ActivitySelectorDialog refactored — flat list replaced with two-level tree (category headers + child activities with icons)
