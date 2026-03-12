@@ -13,11 +13,8 @@ class FriendGroupRepository {
 
   // Returns all groups for the user, ordered by createdAt ascending.
   Future<List<FriendGroup>> getGroupsByUser(String userId) async {
-    final snapshot =
-        await _groupsRef(userId).orderBy('createdAt').get();
-    return snapshot.docs
-        .map((doc) => FriendGroup.fromFirestore(doc))
-        .toList();
+    final snapshot = await _groupsRef(userId).orderBy('createdAt').get();
+    return snapshot.docs.map((doc) => FriendGroup.fromFirestore(doc)).toList();
   }
 
   // Creates a new group. Firestore auto-generates the document ID.
@@ -53,8 +50,7 @@ class FriendGroupRepository {
 
   // Removes a personId from ALL groups that contain it.
   // Uses WriteBatch — call this when deleting a Person.
-  Future<void> removePersonFromAllGroups(
-      String userId, String personId) async {
+  Future<void> removePersonFromAllGroups(String userId, String personId) async {
     final snapshot = await _groupsRef(userId)
         .where('personIds', arrayContains: personId)
         .get();
