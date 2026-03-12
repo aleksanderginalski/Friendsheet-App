@@ -1,4 +1,8 @@
-### 🗺️ Roadmap
+# Sekcje do zastąpienia w README.md
+
+---
+
+## 🗺️ Roadmap
 
 | Milestone | Name | Status |
 |-----------|------|--------|
@@ -6,61 +10,41 @@
 | M2 | Management & CRUD | ✅ Completed |
 | M3 | Statistics & Export | ✅ Completed |
 | M3.5 | Visual Design & Brand Identity | ✅ Completed |
-| M4 | Google Play Release |✅ Completed |
-| M5 | Social: Data Sharing | 🔄 In Progress |
+| M4 | Google Play Release | ✅ Completed |
+| M5 | Meeting Import Hub | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
 | M7 | AI Assistant | 💡 Future |
 
-**M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year (collapsed for older years). Activity categories with icons and 2-level hierarchy.
+**M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year and month. Activity categories with icons and 2-level hierarchy. Friend groups for organising contacts.
 
-**M3 — Statistics & Export:** Person frequency stats, activity stats with category hierarchy filtering, "haven't seen in a while" alerts, JSON data export.
+**M3 — Statistics & Export:** Activity breakdown, who-per-activity and interaction distribution charts with animated bars. Year stepper with offline-first Hive cache. JSON data export.
 
-**M4 — Google Play Release:** Production build, store assets, Privacy Policy, public release. Portfolio milestone.
+**M3.5 — Visual Design & Brand Identity:** Custom app icon, splash screen, Nunito typography, green/amber design system, empty state illustrations, friend groups UI.
 
-**M5 — Social: Data Sharing:** Invitation code system — Person A generates a code, Person B redeems it and receives copies of all shared meetings. Copy-based (no real-time sync).
+**M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
+
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
 **M7 — AI Assistant:** Natural language queries about social data. LLM API selection requires cost/privacy spike first.
 
-## 🏗️ Architecture
-
-This project follows **MVVM** principles with clear separation of concerns:
-```
-lib/
-├── core/              # Constants, theme, utilities
-├── data/              # Models, repositories, services
-│   ├── interfaces/    # CacheInvalidator and other abstractions
-│   ├── models/        # Freezed data models
-│   ├── repositories/  # Firestore CRUD
-│   └── services/      # Auth, export, calendar, Hive
-├── presentation/      # Screens, widgets, providers (ViewModels)
-│   ├── screens/       # Full screens
-│   ├── widgets/       # Reusable UI components
-│   └── providers/     # ChangeNotifier state management
-├── services/          # HiveService (app-level lifecycle)
-├── main.dart          # Entry point, Firebase + Hive init
-└── firebase_options.dart
-```
-
-**Tech Stack:**
-- **Frontend:** Flutter 3.0+ (Dart)
-- **Backend:** Firebase (Auth + Firestore)
-- **Architecture:** MVVM / Provider
-- **Local Cache:** Hive (offline-first statistics)
-- **State Management:** Provider (ChangeNotifier)
+---
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the project root:
+Comprehensive documentation is available in the [`docs/`](docs/) folder:
 
-- [Requirements Documentation](requirements.md) - Functional and non-functional requirements
-- [Architecture Documentation](architecture.md) - System design and diagrams
-- [UI/UX Documentation](wireframes.md) - Screen designs and user flows
-- [Design Brief](docs/friendsheet_design_brief.md) - Visual identity, color palette and typography guidelines
-- [Code Examples](code_snippets.md) - Implementation snippets
-- [Project Structure](PROJECT_FILES.md) - Folder organization
-- [Product Backlog](BACKLOG.md) - Sprint planning and user stories
+- [Requirements Documentation](docs/requirements.md) — Functional and non-functional requirements
+- [Architecture Documentation](docs/architecture.md) — System design and diagrams
+- [UI/UX Documentation](docs/wireframes.md) — Screen designs and user flows
+- [Design Brief](docs/friendsheet_design_brief.md) — Visual identity, color palette and typography guidelines
+- [Test Cases](docs/TEST_CASES.md) — Manual test cases
+- [Code Examples](docs/code_snippets.md) — Implementation snippets
+- [Project Structure](docs/PROJECT_FILES.md) — Full file inventory
+- [Product Backlog](docs/BACKLOG.md) — Sprint planning and user stories
+
+---
 
 ## 🚀 Getting Started
 
@@ -73,57 +57,40 @@ Comprehensive documentation is available in the project root:
 - **Git** for version control
 - **Firebase Account** (free tier)
 
-
 ### Installation
 
 1. **Clone the repository**
 ```powershell
 git clone https://github.com/aleksanderginalski/friendsheet-app.git
-cd friendsheet
-
+cd friendsheet-app
 ```
-2. **Claude Code users:**
-A `CLAUDE.md` file is included in the repository with project conventions and workflow instructions. Claude Code reads this automatically on every session start.
 
-
-3. **Install dependencies**
+2. **Install dependencies**
 ```powershell
 flutter pub get
 ```
 
-4. **Firebase Setup**
+3. **Firebase Setup**
 
 You need to set up your own Firebase project:
 
-a. Create a Firebase project at https://console.firebase.google.com
-b. Add an Android app with package name: `com.friendsheet.app`
-c. Download `google-services.json` 
-d. Place it in: `android/app/google-services.json`
-e. Create `lib/firebase_options.dart` with your Firebase configuration
+   a. Create a Firebase project at https://console.firebase.google.com  
+   b. Add an Android app with package name: `com.friendsheet.app`  
+   c. Download `google-services.json`  
+   d. Place it in: `android/app/google-services.json`  
+   e. Run `flutterfire configure` to generate `lib/firebase_options.dart`
 
-**Note:** `google-services.json` and `firebase_options.dart` are gitignored for security. You must create your own Firebase project.
+   **Note:** `google-services.json` and `firebase_options.dart` are gitignored for security. You must create your own Firebase project.
 
-5. **Create firebase_options.dart**
-
-You need to create your own Firebase configuration:
-
-a. If using FlutterFire CLI (recommended):
-```bash
-flutterfire configure
-```
-
-b. Or copy the example template and fill in your credentials:
-```bash
-cp lib/firebase_options.example.dart lib/firebase_options.dart
-# Edit lib/firebase_options.dart with your Firebase project details
-```
-
-6. **Run the app**
+4. **Run the app**
 ```powershell
 flutter run
 ```
 
+---
+
 ## 🧪 Testing
+
 ```powershell
 # Run all tests
 flutter test
@@ -146,42 +113,14 @@ flutter format --set-exit-if-changed .
 ✅ CI/CD pipeline operational
 ```
 
+---
+
 ## 📱 Supported Platforms
 
-- ✅ **Android** - API 21+ (Android 5.0) - Current focus
-- 🔄 **Google Play** - Internal Testing track active
+- ✅ **Android** — API 21+ (Android 5.0) — current focus
+- 🔄 **Google Play** — Internal Testing track active
 
-## 🗂️ Project Structure
-```
-friendsheet/
-├── lib/
-│   ├── core/
-│   │   ├── constants/      # App-wide constants
-│   │   ├── errors/         # Error handling
-│   │   └── utils/          # Utility functions
-│   ├── data/
-│   │   ├── models/         # Data models (Freezed)
-│   │   ├── repositories/   # Repository implementations
-│   │   └── datasources/    # Firebase datasources
-│   ├── domain/
-│   │   ├── entities/       # Business entities
-│   │   ├── repositories/   # Repository interfaces
-│   │   └── usecases/       # Business use cases
-│   ├── presentation/
-│   │   ├── screens/        # UI screens
-│   │   ├── widgets/        # Reusable widgets
-│   │   └── providers/      # State management
-│   ├── main.dart           # App entry point
-│   └── firebase_options.dart  # Firebase configuration
-├── android/
-│   └── app/
-│       ├── google-services.json  # Firebase config (gitignored)
-│       └── build.gradle
-├── test/                   # Unit and widget tests
-├── pubspec.yaml            # Dependencies
-├── analysis_options.yaml   # Linting rules
-└── README.md              # This file
-```
+---
 
 ## 🎨 Code Style
 
@@ -192,38 +131,43 @@ This project follows Flutter's official style guide and uses `flutter_lints` for
 - Prefer single quotes for strings
 - Use trailing commas for better formatting
 - Keep files focused and under 300 lines
-- Document public APIs with /// comments
+- Document public APIs with `///` comments
+- Code comments and documentation in English only
+
+---
 
 ## 🤝 Contributing
 
-This is currently a learning project. Contributions, issues, and feature requests are welcome!
+This is a personal portfolio project. If you'd like to contribute or have ideas, please **reach out to me first** before opening a pull request — I'd love to hear from you.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+📧 Contact via GitHub: [@aleksanderginalski](https://github.com/aleksanderginalski)
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
 - Flutter team for the amazing framework
 - Firebase for backend services
 - Material Design for UI components
-- Clean Architecture pattern by Uncle Bob
+- Anthropic Claude for AI-assisted development workflow
+
+---
 
 ## 📧 Contact
 
-Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://github.com/aleksanderginalski/friendsheet-app)
+Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://github.com/aleksanderginalski/Friendsheet-App)
 
 ---
 
 **Made with ❤️ and Flutter**
 
-**Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
+*This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
 
