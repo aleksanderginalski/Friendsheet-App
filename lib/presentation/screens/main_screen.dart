@@ -266,12 +266,22 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF4CAF50)),
-              child: Text(
-                'Friendsheet',
-                style: GoogleFonts.pacifico(
-                  fontSize: 28,
-                  color: Colors.white,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Friendsheet',
+                    style: GoogleFonts.pacifico(
+                      fontSize: 28,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Image.asset(
+                    'assets/images/drawer_icon.png',
+                    height: 80,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
             ),
             ValueListenableBuilder<bool>(

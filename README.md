@@ -5,12 +5,11 @@
 | M1 | Add Meeting | ✅ Completed |
 | M2 | Management & CRUD | ✅ Completed |
 | M3 | Statistics & Export | ✅ Completed |
-| M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
-| M4 | Google Play Release | 🔄 In Progress |
-| M5 | Social: Data Sharing | 🔄 In Progress |
-| M6 | Google Photos Integration | 📋 Planned |
-| M7 | Custom Dashboard | 📋 Planned |
-| M8 | AI Assistant | 💡 Future |
+| M3.5 | Visual Design & Brand Identity | ✅ Completed |
+| M4 | Google Play Release |✅ Completed |
+| M5 | User's Onboarding | 🔄 In Progress |
+| M6 | Custom Dashboard | 📋 Planned |
+| M7 | AI Assistant | 💡 Future |
 
 **M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year (collapsed for older years). Activity categories with icons and 2-level hierarchy.
 
@@ -221,6 +220,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+### v3.31.0 — US-061: Friends Nicknames & Activities Search Fix (March 12, 2026)
+- ✅ Extended `Person` model with `nicknames: List<String>` — backward-compatible, missing Firestore field treated as empty list
+- ✅ Added nickname management UI in `PersonDetailScreen` — InputChip list with add/remove, silent dedup
+- ✅ Extracted `PersonSearchHelper.matches()` — shared util used by PersonsListProvider, PersonAutocomplete, AddMeetingProvider, InboxItemEditProvider
+- ✅ Nickname-aware search in Friends tab and AddMeeting autocomplete — nicknames are search keys only, suggestion always shows full name
+- ✅ Fixed Activities search — parent categories now appear when query matches parent name directly; parent + matching children shown when child matches
+- ✅ Total test count: 551 (+20)
 
 ### v3.30.0 — US-075: Statistics & Activities UI Polish (March 12, 2026)
 - ✅ Fixed pre-animation flash on year change — all three chart widgets now call `controller.reset()` before `forward()` in `didUpdateWidget`
