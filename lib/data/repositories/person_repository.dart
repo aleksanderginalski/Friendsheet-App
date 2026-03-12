@@ -3,11 +3,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/person.dart';
 import 'cache_invalidator.dart';
+import 'friend_group_repository.dart';
 import 'meeting_repository.dart';
 
 class PersonRepository {
   final FirebaseFirestore _firestore;
   final MeetingRepository _meetingRepository;
+  final FriendGroupRepository _friendGroupRepository;
 
   /// Optional invalidator — when set, cleared after any write so that
   /// statistics caches reflect the latest person data.
@@ -16,9 +18,12 @@ class PersonRepository {
   PersonRepository({
     FirebaseFirestore? firestore,
     MeetingRepository? meetingRepository,
+    FriendGroupRepository? friendGroupRepository,
     this.cacheInvalidator,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _meetingRepository = meetingRepository ?? MeetingRepository();
+        _meetingRepository = meetingRepository ?? MeetingRepository(),
+        _friendGroupRepository =
+            friendGroupRepository ?? FriendGroupRepository();
 
   CollectionReference _personsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('persons');
@@ -56,8 +61,11 @@ class PersonRepository {
 
   /// Deletes a person and removes them from all associated meetings atomically.
   Future<void> deletePerson(String userId, String personId) async {
-    // Remove personId from participantIds in all meetings before deleting the person
-    await _meetingRepository.removePersonFromMeetings(userId, personId);
+    // Remove personId from meetings and groups before deleting the person
+    await Future.wait([
+      _meetingRepository.removePersonFromMeetings(userId, personId),
+      _friendGroupRepository.removePersonFromAllGroups(userId, personId),
+    ]);
     await _personsRef(userId).doc(personId).delete();
     await cacheInvalidator?.invalidatePersonsCache();
   }
