@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/person.dart';
+import '../activities/activity_icons.dart';
+import 'friend_groups_provider.dart';
+import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
 
 /// Displays full details of a single person and supports edit and delete.
@@ -219,93 +222,57 @@ class _PersonDetailBody extends StatelessWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
-        _NicknamesSection(provider: provider, person: person),
+        NicknamesSection(provider: provider, person: person),
+        _GroupsSection(person: person),
       ],
     );
   }
 }
 
-class _NicknamesSection extends StatefulWidget {
-  final PersonDetailProvider provider;
+// Groups section — shows all friend groups with a checkbox for this person.
+// FriendGroupsProvider is injected at the call-site (PersonsListScreen._openPerson).
+class _GroupsSection extends StatelessWidget {
   final Person person;
 
-  const _NicknamesSection({required this.provider, required this.person});
-
-  @override
-  State<_NicknamesSection> createState() => _NicknamesSectionState();
-}
-
-class _NicknamesSectionState extends State<_NicknamesSection> {
-  final TextEditingController _nicknameController = TextEditingController();
-
-  @override
-  void dispose() {
-    _nicknameController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _addNickname() async {
-    final value = _nicknameController.text;
-    if (value.trim().isEmpty) return;
-    await widget.provider.addNickname(value);
-    _nicknameController.clear();
-  }
+  const _GroupsSection({required this.person});
 
   @override
   Widget build(BuildContext context) {
-    final nicknames = widget.person.nicknames;
+    final groupsProvider = context.watch<FriendGroupsProvider>();
+    final groups = groupsProvider.groups;
+    final theme = Theme.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Nicknames',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Groups', style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          if (nicknames.isEmpty)
+          if (groups.isEmpty)
             Text(
-              'No nicknames added yet',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: Colors.grey),
+              'No groups yet',
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
             )
           else
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: nicknames
-                  .map(
-                    (n) => InputChip(
-                      label: Text(n),
-                      onDeleted: () => widget.provider.removeNickname(n),
-                    ),
-                  )
-                  .toList(),
-            ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _nicknameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Add nickname',
-                    isDense: true,
-                    border: OutlineInputBorder(),
-                  ),
-                  onSubmitted: (_) => _addNickname(),
+            ...groups.map(
+              (group) => CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: ActivityIcon(
+                  identifier: group.iconIdentifier,
+                  size: 20,
                 ),
+                title: Text(group.name),
+                value: group.personIds.contains(person.id),
+                onChanged: (checked) {
+                  if (checked == true) {
+                    groupsProvider.addPersonToGroup(group.id, person.id);
+                  } else {
+                    groupsProvider.removePersonFromGroup(group.id, person.id);
+                  }
+                },
               ),
-              TextButton(
-                onPressed: _addNickname,
-                child: const Text('Add'),
-              ),
-            ],
-          ),
+            ),
         ],
       ),
     );
