@@ -9,6 +9,7 @@ import 'activity_visibility_dialog.dart';
 import 'interaction_distribution_widget.dart';
 import 'person_visibility_dialog.dart';
 import 'statistics_visibility_dialog.dart';
+import 'who_per_activity_person_filter_dialog.dart';
 import 'who_per_activity_widget.dart';
 import 'year_stepper.dart';
 
@@ -91,6 +92,23 @@ class _StatisticsSectionState extends State<StatisticsSection> {
     );
   }
 
+  void _openWhoPerActivityFilterDialog(
+    BuildContext context,
+    StatisticsProvider provider,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => WhoPerActivityPersonFilterDialog(
+        allEntries: provider.whoPerActivity,
+        hiddenPersonIds: provider.hiddenPersonsActivity,
+        onTogglePersonVisibility: provider.toggleHiddenPerson,
+        onToggleSelectAll: (bool selectAll) =>
+            provider.setAllPersonsActivityVisibility(selectAll),
+        onAutoSelectTop10: provider.autoSelectTop10ForActivity,
+      ),
+    );
+  }
+
   // Navigates the carousel by [direction] steps (-1 = left, +1 = right),
   // wrapping around and skipping hidden cards.
   void _navigateCarousel(int direction, int visibleCount) {
@@ -145,10 +163,9 @@ class _StatisticsSectionState extends State<StatisticsSection> {
           categories: provider.allCategories,
           selectedCategoryId: provider.selectedActivityId,
           hiddenPersonIds: provider.hiddenPersonsActivity,
-          hiddenCount: provider.hiddenCountForActivity,
           onSelectActivity: () => _openActivitySelector(context, provider),
-          onToggleHidden: (personId, _) =>
-              provider.toggleHiddenPerson(personId),
+          onOpenFilterDialog: () =>
+              _openWhoPerActivityFilterDialog(context, provider),
         );
       case StatCardType.interactionDistribution:
         return InteractionDistributionWidget(
