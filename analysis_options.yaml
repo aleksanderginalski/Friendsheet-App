@@ -39,6 +39,7 @@ analyzer:
   exclude:
     - '**/*.g.dart'
     - '**/*.freezed.dart'
+    - '**/*.mocks.dart'
     - '**/generated/**'
   
   # Treat certain issues as errors
