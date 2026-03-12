@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/utils/person_search_helper.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
@@ -26,12 +27,12 @@ class PersonsListProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
 
   // Returns alphabetically sorted list filtered by current search query.
+  // Matches against firstName, lastName, and any nickname.
   List<Person> get persons {
-    final query = _searchQuery.toLowerCase().trim();
-    final filtered = query.isEmpty
+    final filtered = _searchQuery.trim().isEmpty
         ? List<Person>.from(_allPersons)
         : _allPersons
-            .where((p) => p.fullName.toLowerCase().contains(query))
+            .where((p) => PersonSearchHelper.matches(p, _searchQuery))
             .toList();
     filtered.sort((a, b) => a.fullName.compareTo(b.fullName));
     return filtered;
