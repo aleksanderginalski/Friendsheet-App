@@ -1892,7 +1892,7 @@ no SQL, no native dependencies.
 
 **Design Tools:** Figma (free plan), Midjourney (subscribed), Flutter ThemeData.
 
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 
 ---
 
@@ -1976,7 +1976,7 @@ no SQL, no native dependencies.
 
 **Priority:** P0
 **Role:** UX Designer + Developer
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 
 ---
 
@@ -2286,7 +2286,7 @@ Three visual polish items grouped because all require user-supplied assets and t
 **Description:** Polishes the existing app experience across three core areas — statistics readability, meeting history navigation, and friends management — so Friendsheet feels production-ready before Google Play release.
 **Priority:** P1
 **Role:** Developer + UX Designer
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 
 ### US-071: Statistics Home — Illustration & Enhanced Year Picker
 
@@ -2475,32 +2475,37 @@ Three visual polish items grouped because all require user-supplied assets and t
 ### US-062: Friends — Groups
 
 **As a** user
-**I want to** organize friends into named groups
+**I want to** organize friends into named groups with icons
 **So that** I can find and browse friends more easily
 
 **Story Points:** 8
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 12, 2026)
 **Labels:** `friends`, `data-model`, `groups`
 **Mode:** ⚙️ Task
 **Depends on:** US-061 (stable `Person` model)
 
 **Acceptance Criteria:**
-- [ ] New `FriendGroup` model (`id`, `name`, `personIds: List<String>`)
-- [ ] `FriendGroupRepository` with full CRUD stored under `users/{uid}/friend_groups`
-- [ ] `PersonsListScreen` shows friends grouped into named sections
-- [ ] User can create, rename and delete groups from the Friends tab
-- [ ] A person can belong to multiple groups
-- [ ] People without a group shown in an "Ungrouped" section
-- [ ] Search works globally across all groups
+- [x] New `FriendGroup` model (`id`, `name`, `iconIdentifier`, `personIds: List<String>`)
+- [x] `FriendGroupRepository` with full CRUD stored under `users/{uid}/friend_groups`
+- [x] `PersonsListScreen` shows friends grouped into named sections (ExpansionTile pattern, same as Activities)
+- [x] Each group section displays icon + name in header
+- [x] User can create a group via `+` in AppBar — dialog with name field + icon picker (same icon set as Activities)
+- [x] Long-press on group → bottom sheet with Edit / Delete options
+- [x] [C-A] `+` button on group section row → bottom sheet multi-select to assign persons to group
+- [x] [C-B] `PersonDetailScreen` shows "Groups" section — multi-select to assign person to groups
+- [x] A person can belong to multiple groups
+- [x] People without a group shown in a non-collapsible "Ungrouped" section at the bottom
+- [x] Search works globally across all groups and Ungrouped section
+- [x] Deleting a group removes the group document; persons remain (no cascade delete of persons)
 
 **Tasks:**
-- [ ] **TASK-062.1:** Create `FriendGroup` Freezed model + `FriendGroupRepository`
-- [ ] **TASK-062.2:** Add Firestore security rules for `friend_groups` subcollection
-- [ ] **TASK-062.3:** Build `FriendGroupsProvider` — CRUD + loading state
-- [ ] **TASK-062.4:** Refactor `PersonsListScreen` — render group sections with "Ungrouped" fallback
-- [ ] **TASK-062.5:** Build group management UI (create/rename/delete group, assign persons)
-- [ ] **TASK-062.6:** Write tests (model, repository, provider)
+- [x] **TASK-062.1:** Create `FriendGroup` Freezed model + `FriendGroupRepository`
+- [x] **TASK-062.2:** Add Firestore security rules for `friend_groups` subcollection
+- [x] **TASK-062.3:** Build `FriendGroupsProvider` — CRUD + loading state
+- [x] **TASK-062.4:** Refactor `PersonsListScreen` — render group sections (ExpansionTile) + Ungrouped separator
+- [x] **TASK-062.5:** Build group management UI — Add Group dialog, Edit/Delete bottom sheet, [C-A] assign persons from group, [C-B] Groups section in PersonDetailScreen
+- [x] **TASK-062.6:** Write tests (model, repository, provider)
 
 ---
 

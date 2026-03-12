@@ -8,6 +8,7 @@ import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/models/stats_data_bundle.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/friend_group_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
@@ -32,6 +33,7 @@ void main() {
     personRepository = PersonRepository(
       firestore: fakeFirestore,
       meetingRepository: MeetingRepository(firestore: fakeFirestore),
+      friendGroupRepository: FriendGroupRepository(firestore: fakeFirestore),
     );
     repository = StatisticsRepository(
       firestore: fakeFirestore,
