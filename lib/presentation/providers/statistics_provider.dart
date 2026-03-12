@@ -258,6 +258,44 @@ class StatisticsProvider extends ChangeNotifier {
     );
   }
 
+  /// Hides all persons in the who-per-activity chart except the top 10
+  /// by weightSum (already sorted descending in [_whoPerActivity]).
+  /// When fewer than 10 persons exist, all are made visible.
+  /// Persists updated state to SharedPreferences.
+  Future<void> autoSelectTop10ForActivity() async {
+    if (_whoPerActivity.isEmpty) return;
+
+    final top10Ids = _whoPerActivity.take(10).map((e) => e.personId).toSet();
+    _hiddenPersonsActivity = {
+      for (final e in _whoPerActivity)
+        if (!top10Ids.contains(e.personId)) e.personId,
+    };
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenPersonsKey,
+      _hiddenPersonsActivity.toList(),
+    );
+  }
+
+  /// Sets all persons in the who-per-activity chart as visible (true) or
+  /// hidden (false). Persists updated state to SharedPreferences.
+  Future<void> setAllPersonsActivityVisibility(bool visible) async {
+    if (visible) {
+      _hiddenPersonsActivity = {};
+    } else {
+      _hiddenPersonsActivity = _whoPerActivity.map((e) => e.personId).toSet();
+    }
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _kHiddenPersonsKey,
+      _hiddenPersonsActivity.toList(),
+    );
+  }
+
   /// Reads the persisted hidden-persons list from SharedPreferences.
   /// Called once during initialize().
   Future<void> loadHiddenPersons() async {
