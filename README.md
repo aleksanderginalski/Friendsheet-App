@@ -6,8 +6,8 @@
 | M2 | Management & CRUD | ✅ Completed |
 | M3 | Statistics & Export | ✅ Completed |
 | M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
-| M4 | Google Play Release | 📋 Planned |
-| M5 | Social: Data Sharing | 📋 Planned |
+| M4 | Google Play Release | 🔄 In Progress |
+| M5 | Social: Data Sharing | 🔄 In Progress |
 | M6 | Google Photos Integration | 📋 Planned |
 | M7 | Custom Dashboard | 📋 Planned |
 | M8 | AI Assistant | 💡 Future |
@@ -143,7 +143,7 @@ flutter format --set-exit-if-changed .
 ## 📱 Supported Platforms
 
 - ✅ **Android** - API 21+ (Android 5.0) - Current focus
-- 📋 **Google Play** - Planned for M4
+- 🔄 **Google Play** - Internal Testing track active
 
 ## 🗂️ Project Structure
 ```
@@ -220,6 +220,14 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.26.0 - US-046 App Store Assets & Metadata (March 12, 2026)
+- ✅ Store listing prepared: short description, full description
+- ✅ Screenshots brief created
+- ✅ App registered in Google Play Console
+- ✅ Internal Testing track configured and active
+- ✅ Fix: Google Sign-In on release build — added SHA-256 (release keystore) to Firebase
+- ✅ Fix: Google Sign-In on AAB — added Google Play signing key SHA-1/SHA-256 to Firebase
 
 ## v3.25.0 — US-060: Statistics Visibility Panel
 - ✅ Replaced long-press hide gesture with explicit Settings dialog (Icons.tune)
