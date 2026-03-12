@@ -22,31 +22,59 @@ class ActivitiesListProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   String get searchQuery => _searchQuery;
 
+  // Returns filtered tree respecting parent-child visibility rules:
+  // - If parent name matches query → show parent only (no children shown)
+  // - If child name matches query → show parent + only matching children
+  // - If neither matches → hide both
+  // Returns all categories when query is empty.
+  List<ActivityCategory> get filteredCategories {
+    if (_searchQuery.trim().isEmpty) return _allCategories;
+
+    final q = _searchQuery.toLowerCase().trim();
+    final result = <ActivityCategory>[];
+    final parents = _allCategories.where((c) => c.parentCategoryId == null);
+
+    for (final parent in parents) {
+      if (parent.name.toLowerCase().contains(q)) {
+        result.add(parent);
+        continue;
+      }
+      final matchingChildren = _allCategories
+          .where((c) =>
+              c.parentCategoryId == parent.id &&
+              c.name.toLowerCase().contains(q))
+          .toList();
+      if (matchingChildren.isNotEmpty) {
+        result.add(parent);
+        result.addAll(matchingChildren);
+      }
+    }
+
+    return result;
+  }
+
   // Returns level-1 categories (parentCategoryId == null), sorted alphabetically.
+  // When a search query is active, only parents present in filteredCategories are returned.
   List<ActivityCategory> get rootCategories {
-    return _allCategories.where((c) => c.parentCategoryId == null).toList()
+    return filteredCategories.where((c) => c.parentCategoryId == null).toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
 
-  // Returns children of [parentId], filtered by search query if active,
-  // sorted alphabetically by name.
+  // Returns children of [parentId] present in filteredCategories, sorted alphabetically.
   List<ActivityCategory> childrenOf(String parentId) {
-    final query = _searchQuery.toLowerCase().trim();
-    return _allCategories.where((c) {
-      if (c.parentCategoryId != parentId) return false;
-      if (query.isEmpty) return true;
-      return c.name.toLowerCase().contains(query);
-    }).toList()
+    return filteredCategories
+        .where((c) => c.parentCategoryId == parentId)
+        .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
   }
 
   bool isExpanded(String categoryId) => _expandedIds.contains(categoryId);
 
-  // Returns false when a non-empty search query matches no child categories.
+  // Returns false when a non-empty search query matches nothing in filteredCategories.
   // Used by the screen to switch to an empty state instead of showing empty parents.
   bool get hasSearchResults {
     if (_searchQuery.isEmpty) return true;
-    return rootCategories.any((root) => childrenOf(root.id).isNotEmpty);
+    return filteredCategories.isNotEmpty;
   }
 
   // Fetches all categories for [userId] from the repository.
