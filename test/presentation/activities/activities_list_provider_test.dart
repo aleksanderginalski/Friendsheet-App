@@ -221,18 +221,64 @@ void main() {
         expect(provider.hasSearchResults, isFalse);
       });
 
-      test('returns false even when query matches only a root category name',
-          () async {
-        // 'Sports' is a root name — hasSearchResults only checks children.
-        // childrenOf('root-a') filtered by 'Sports' → empty (Tennis/Basketball
-        // do not contain 'Sports'). childrenOf('root-b') → empty (no children).
+      test('returns true when query matches a root category name', () async {
+        // After fix: 'Sports' is a root name — filteredCategories returns
+        // [Sports], so hasSearchResults is true.
         when(mockRepository.getAllCategories('u1'))
             .thenAnswer((_) async => flatList);
 
         await provider.initialize('u1');
         provider.setSearchQuery('Sports');
 
-        expect(provider.hasSearchResults, isFalse);
+        expect(provider.hasSearchResults, isTrue);
+      });
+    });
+
+    group('filteredCategories', () {
+      test('empty query returns all categories', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.filteredCategories.length, equals(flatList.length));
+      });
+
+      test('query matching parent returns parent only, no children', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('Sports');
+
+        final filtered = provider.filteredCategories;
+        expect(filtered.length, equals(1));
+        expect(filtered.first.id, equals('root-a'));
+      });
+
+      test('query matching child returns parent + only matching child',
+          () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('Tennis');
+
+        final filtered = provider.filteredCategories;
+        expect(filtered.length, equals(2));
+        expect(filtered.any((c) => c.id == 'root-a'), isTrue);
+        expect(filtered.any((c) => c.id == 'child-a1'), isTrue);
+        expect(filtered.any((c) => c.id == 'child-a2'), isFalse);
+      });
+
+      test('query matching neither hides both parent and children', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+        provider.setSearchQuery('zzznomatch');
+
+        expect(provider.filteredCategories, isEmpty);
       });
     });
   });
