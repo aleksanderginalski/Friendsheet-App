@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 11, 2026
+**Last Updated:** marca 12, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -62,7 +62,7 @@
 - lib/presentation/providers/inbox_item_edit_provider.dart - InboxItemEditProvider — form state for InboxItemEditScreen; initialized from ImportCandidate; validates name/participants/categories; calls MeetingRepository.saveMeeting() on confirm (US-068)
 - lib/presentation/providers/meeting_inbox_provider.dart - MeetingInboxProvider — owns List<ImportCandidate> with SharedPreferences persistence (key: meeting_inbox_candidates); addCandidates() merges by id; markConfirmed/skip remove candidate; clear() resets after success; owned by MainScreen (US-068)
 - lib/presentation/providers/meetings_list_provider.dart - State for Meetings List screen — Firestore stream, two-level grouping year→month (Map<int, Map<int, List<Meeting>>>), expand/collapse for years and months, _initDefaultExpandedMonths (current month + last month with data), client-side search via meetingsByYearAndMonth getter (US-021, US-054, US-059)
-- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, setAllActivitiesVisibility(bool) + setAllPersonsVisibility(bool), StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, hiddenCards getter); _isInitialized/_lastLoadedYear guard — initialize() and selectYear() skip fetch if data already loaded for same year; resetCache() for logout/user-switch; stores _currentBundle (StatsDataBundle) and calls compute* methods — zero additional Firestore reads on selectActivity/loadDistribution; owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-060, US-072)
+- lib/presentation/providers/statistics_provider.dart - StatisticsProvider — manages availableYears, selectedYear, activityBreakdown, whoPerActivity, interactionDistribution (yearly/cumulative mode), hidden activities + hidden persons per metric, setAllActivitiesVisibility(bool) + setAllPersonsActivityVisibility(bool), autoSelectTop10ForActivity() (top 10 by weightSum for current activity), StatCardType enum, carousel hidden-cards state (visibleCards, toggleCardVisibility, hiddenCards getter); _isInitialized/_lastLoadedYear guard — initialize() and selectYear() skip fetch if data already loaded for same year; resetCache() for logout/user-switch; stores _currentBundle (StatsDataBundle) and calls compute* methods — zero additional Firestore reads on selectActivity/loadDistribution; owned by MainScreen (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-058, US-060, US-072)
 - lib/presentation/screens/add_meeting_screen.dart - Add/Edit Meeting screen — dual mode based on initialMeeting parameter (US-023)
 - lib/presentation/screens/calendar_events_screen.dart - CalendarEventsScreen — browse and multi-select Google Calendar events; date range + calendar filters; _handleImport reads MeetingInboxProvider from context, calls addCandidates(), navigates to MeetingInboxScreen (US-067, US-068)
 - lib/presentation/screens/calendar_permission_screen.dart - CalendarPermissionScreen — explanation UI with grant/deny flow; calls CalendarSettingsProvider.connectCalendar(), navigates to SettingsScreen on success, shows CalendarAuthException error with retry option (US-065 stub, US-066 full implementation)
@@ -75,7 +75,7 @@
 - lib/presentation/screens/splash_screen.dart - SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — callback-based (selectedCategories, onCategoryAdded, onCategoryRemoved); ancestor propagation, add-new-activity flow, ActivityIcon for chips; reusable in AddMeetingScreen and InboxItemEditScreen (US-020, US-042, US-055, US-068)
 - lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, ChartColors gradient per categoryId, delta % indicator (▲/▼/NEW), filter_icon.png visibility dialog trigger (replaces gear icon), auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049, US-057, US-063)
-- lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree for selecting activity filter in WhoPerActivity metric (US-029)
+- lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree (parent headers + child activities with icons) for selecting activity filter in WhoPerActivity metric (US-029, US-058)
 - lib/presentation/widgets/activity_visibility_dialog.dart - Dialog with hierarchical checkbox list + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) for managing activity visibility; activity icons 31px (US-048, US-057)
 - lib/presentation/widgets/calendar_event_card.dart
 - lib/presentation/widgets/easter_egg_dialog.dart - EasterEggDialog — dismisses on tap anywhere; displays easter_egg_icon asset + special thanks message; injectable imageWidget parameter for test isolation (US-064)
@@ -92,7 +92,8 @@
 - lib/presentation/widgets/shared_search_bar.dart - Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens as expandable AppBar search (US-055, US-059)
 - lib/presentation/widgets/statistics_section.dart
 - lib/presentation/widgets/statistics_visibility_dialog.dart
-- lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); long-press hide/show; SharedPreferences hidden persons (US-029, US-050, US-063)
+- lib/presentation/widgets/who_per_activity_person_filter_dialog.dart - Person filter dialog for WhoPerActivity — checkbox list, three-state select-all toggle, Auto-select top 10 (top 10 by weightSum for current activity), min-1 constraint (US-058)
+- lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); filter_icon.png opens WhoPerActivityPersonFilterDialog; long-press removed (US-029, US-050, US-058, US-063)
 - lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget; 5-slot row layout: [←] [prev year dimmed] [active year centered, bold, primary color] [next year dimmed] [→]; arrows disabled at year boundaries; neighbour slots fixed width 48dp for stable layout; swipe gesture preserved (US-027, US-071)
 
 ## lib/services/
@@ -137,7 +138,7 @@
 - test/presentation/providers/meeting_inbox_provider_test.dart - MeetingInboxProvider tests — initialize with empty/existing prefs, skip, markConfirmed, isEmpty, persistence after confirm (US-068)
 - test/presentation/providers/meetings_list_provider_test.dart - MeetingsListProvider tests — stream grouping year→month, expand/collapse years and months, _initDefaultExpandedMonths (current + last with data), search filtering with two-level map, no-results state (US-021, US-054, US-059)
 - test/presentation/providers/meetings_list_provider_test.mocks.dart - Generated mocks for MeetingsListProvider tests
-- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, setAllActivitiesVisibility, setAllPersonsVisibility, carousel state (toggleCardVisibility, hiddenCards getter, restoreAllCards, allCardsHidden), SharedPreferences persistence, idempotent initialize guard, selectYear no-op for same year, compute* reuse via _currentBundle (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-060, US-072)
+- test/presentation/providers/statistics_provider_test.dart - StatisticsProvider tests — initialize, selectYear, activityBreakdown, whoPerActivity, interactionDistribution, toggleMode, toggleHiddenActivity, toggleHiddenPerson, autoSelectTop10, autoSelectTop10ForActivity, setAllActivitiesVisibility, setAllPersonsActivityVisibility, carousel state (toggleCardVisibility, hiddenCards getter, restoreAllCards, allCardsHidden), SharedPreferences persistence, idempotent initialize guard, selectYear no-op for same year, compute* reuse via _currentBundle (US-027, US-028, US-029, US-030, US-048, US-050, US-051, US-057, US-058, US-060, US-072)
 - test/presentation/providers/statistics_provider_test.mocks.dart - Generated mocks for StatisticsProvider tests
 - test/presentation/screens/add_meeting_screen_test.dart - AddMeetingScreen tests (5 tests)
 - test/presentation/screens/add_meeting_screen_test.mocks.dart - Generated mocks for AddMeetingScreen tests
@@ -150,6 +151,7 @@
 - test/presentation/screens/meetings_list_screen_test.dart - MeetingsListScreen tests — month-grouped rendering, year/month expand/collapse, expandable search (tap icon → field → filter → clear), no-results EmptyStateWidget (US-021, US-054, US-059)
 - test/presentation/screens/splash_screen_test.dart - SplashScreen tests — 'Friendsheet' text rendered, background color #FAFAF7; uses MockVideoPlayerControllerInterface (US-052)
 - test/presentation/screens/splash_screen_test.mocks.dart
+- test/presentation/widgets/activity_selector_dialog_test.dart
 - test/presentation/widgets/empty_state_widget_test.dart - EmptyStateWidget tests — renders image asset, renders message, different messages render correctly (US-054)
 - test/presentation/widgets/interaction_distribution_widget_test.dart - InteractionDistributionWidget tests — rendering, hidden hint, info icon visibility, toggle label, empty state, isLoading spinner presence/absence (US-030, US-051)
 - test/presentation/widgets/meeting_date_field_test.dart - MeetingDateField tests (4 tests)
@@ -161,6 +163,7 @@
 - test/presentation/widgets/shared_search_bar_test.dart - SharedSearchBar tests — hint text, onChanged callback, clear button visibility and behavior (US-055)
 - test/presentation/widgets/statistics_section_test.dart - StatisticsSection tests — PageView present when cards visible, empty state when all hidden, InteractionDistributionWidget always in tree regardless of isDistributionLoading, tapping Icons.tune opens StatisticsVisibilityDialog, long-press restore text never shown (US-051, US-060)
 - test/presentation/widgets/statistics_section_test.mocks.dart
+- test/presentation/widgets/who_per_activity_person_filter_dialog_test.dart - WhoPerActivityPersonFilterDialog tests — all persons checked by default, toggle callback, three-state toggle, last-visible disabled, auto-select top 10 present and callable (US-058)
 - test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case, dimmed neighbour years visible/hidden (US-027, US-071)
 
 ## test/
@@ -176,7 +179,7 @@
 - assets/images/empty_state_friends.png - Friends empty state illustration — single cartoon character waving, Midjourney-generated (US-054)
 - assets/images/empty_state_activities.png - Activities empty state illustration — cartoon character with clipboard, Midjourney-generated (US-055)
 - assets/images/statistics_illustration.png - Statistics Home illustration — Midjourney-generated, displayed at bottom of HomeScreen left-aligned (US-071)
-- assets/images/filter_icon.png - Filter icon asset — replaces gear icon in ActivityBreakdownWidget and InteractionDistributionWidget header (US-057)
+- assets/images/filter_icon.png - Filter icon asset — replaces gear icon in ActivityBreakdownWidget, InteractionDistributionWidget, and WhoPerActivityWidget header (US-057, US-058)
 - assets/images/easter_egg_icon.png - Easter egg asset — displayed in EasterEggDialog triggered by 8 taps on AppBar title (US-064)
 - assets/images/cta_stats.png - Onboarding CTA illustration — displayed in OnboardingCalendarCtaCard on HomeScreen for users with fewer than 50 meetings (US-065)
 - assets/images/loading_icon.png - Loading screen icon — displayed in HomeLoadingScreen while HomeProvider awaits first stream emission (US-073)

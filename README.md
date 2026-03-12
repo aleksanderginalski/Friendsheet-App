@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (487)
+✅ All tests passing (507)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -220,6 +220,15 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+
+### v3.27.0 — US-058: Who Per Activity — Person Filter Dialog & Activity Tree Picker (March 2026)
+- ✅ ActivitySelectorDialog refactored — flat list replaced with two-level tree (category headers + child activities with icons)
+- ✅ WhoPerActivityPersonFilterDialog — checkbox list, three-state select-all toggle, Auto-select top 10 (by weightSum for current activity), min-1 constraint
+- ✅ Long-press hide removed — person visibility managed exclusively via filter dialog (consistent with Activity Breakdown and Interaction Distribution)
+- ✅ Filter icon unified — filter_icon.png replacing previous icon (consistent with other stats widgets)
+- ✅ autoSelectTop10ForActivity() added to StatisticsProvider
+- ✅ Total test count: 487 → 507 tests (+20)
 
 ### v3.26.0 - US-046 App Store Assets & Metadata (March 12, 2026)
 - ✅ Store listing prepared: short description, full description

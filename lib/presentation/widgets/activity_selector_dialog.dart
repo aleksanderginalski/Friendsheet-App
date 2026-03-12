@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/activity_category.dart';
+import '../activities/activity_icons.dart';
 
 /// Dialog that displays a scrollable two-level category tree.
 /// Tapping any node (root or child) closes the dialog and returns
@@ -108,6 +109,8 @@ class _CategoryTile extends StatelessWidget {
         ),
         child: Row(
           children: [
+            ActivityIcon(identifier: category.iconIdentifier, size: 20),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 category.name,

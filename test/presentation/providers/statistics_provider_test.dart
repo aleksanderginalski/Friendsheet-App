@@ -782,6 +782,98 @@ void main() {
       });
     });
 
+    group('autoSelectTop10ForActivity()', () {
+      test('hides all except top 10 when more than 10 persons exist', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_activity': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        // 12 entries sorted descending — top 10 = p-12 … p-3.
+        final entries = List.generate(
+          12,
+          (i) => PersonActivityEntry(
+            personId: 'p-${12 - i}',
+            name: 'Person ${12 - i}',
+            weightSum: 12 - i,
+          ),
+        );
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computePersonsForActivity(any, any))
+            .thenReturn(entries);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([
+          const ActivityBreakdownEntry(
+            categoryId: 'cat-a',
+            name: 'Running',
+            currentYearWeight: 10,
+            previousYearWeight: 0,
+          ),
+        ]);
+
+        await provider.initialize();
+        await provider.selectActivity('cat-a');
+
+        await provider.autoSelectTop10ForActivity();
+
+        // Bottom 2 (p-1, p-2) are hidden; top 10 remain visible.
+        expect(provider.hiddenPersonsActivity, hasLength(2));
+        expect(provider.hiddenPersonsActivity, containsAll(['p-1', 'p-2']));
+        expect(provider.hiddenPersonsActivity, isNot(contains('p-12')));
+      });
+
+      test('shows all persons when fewer than 10 exist', () async {
+        SharedPreferences.setMockInitialValues({
+          'stats_hidden_persons_activity': <String>[],
+        });
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => [2026]);
+        // Only 5 entries — all should remain visible after top-10 auto-select.
+        final entries = List.generate(
+          5,
+          (i) => PersonActivityEntry(
+            personId: 'p-${5 - i}',
+            name: 'Person ${5 - i}',
+            weightSum: 5 - i,
+          ),
+        );
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computePersonsForActivity(any, any))
+            .thenReturn(entries);
+        // ignore: argument_type_not_assignable
+        when(mockRepository.computeActivityBreakdown(any)).thenReturn([
+          const ActivityBreakdownEntry(
+            categoryId: 'cat-a',
+            name: 'Running',
+            currentYearWeight: 5,
+            previousYearWeight: 0,
+          ),
+        ]);
+
+        await provider.initialize();
+        await provider.selectActivity('cat-a');
+
+        // Pre-hide one person to verify the method resets state correctly.
+        await provider.toggleHiddenPerson('p-3');
+        expect(provider.hiddenPersonsActivity, contains('p-3'));
+
+        await provider.autoSelectTop10ForActivity();
+
+        // Fewer than 10 persons — hidden set is empty (all visible).
+        expect(provider.hiddenPersonsActivity, isEmpty);
+      });
+
+      test('no-op when whoPerActivity is empty', () async {
+        expect(provider.whoPerActivity, isEmpty);
+
+        await provider.autoSelectTop10ForActivity();
+
+        expect(provider.hiddenPersonsActivity, isEmpty);
+      });
+    });
+
     group('autoSelectTopPersonsDistribution()', () {
       test('hides all except top 10 by currentYearWeight', () async {
         SharedPreferences.setMockInitialValues({
