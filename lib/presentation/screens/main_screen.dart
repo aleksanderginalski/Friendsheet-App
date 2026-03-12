@@ -20,6 +20,7 @@ import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
 import '../import/meeting_inbox_screen.dart';
+import '../persons/friend_groups_provider.dart';
 import '../persons/persons_list_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
@@ -52,6 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   Timer? _titleTapTimer;
   late final HomeProvider _homeProvider;
   late final PersonsListProvider _personsListProvider;
+  late final FriendGroupsProvider _friendGroupsProvider;
   late final ActivitiesListProvider _activitiesListProvider;
   late final StatisticsProvider _statisticsProvider;
   late final CalendarSettingsProvider _calendarSettingsProvider;
@@ -65,6 +67,7 @@ class _MainScreenState extends State<MainScreen> {
       personRepository: PersonRepository(),
       authService: AuthService(),
     )..initialize();
+    _friendGroupsProvider = FriendGroupsProvider();
     _activitiesListProvider = ActivitiesListProvider(
       repository: ActivityCategoryRepository(),
     );
@@ -100,6 +103,7 @@ class _MainScreenState extends State<MainScreen> {
         _homeProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);
       }
+      _friendGroupsProvider.loadGroups();
       _statisticsProvider.initialize();
       _calendarSettingsProvider.initialize();
       _meetingInboxProvider.loadFromPrefs();
@@ -133,6 +137,7 @@ class _MainScreenState extends State<MainScreen> {
     _titleTapTimer?.cancel();
     _homeProvider.dispose();
     _personsListProvider.dispose();
+    _friendGroupsProvider.dispose();
     _activitiesListProvider.dispose();
     _statisticsProvider.dispose();
     _calendarSettingsProvider.dispose();
@@ -228,6 +233,7 @@ class _MainScreenState extends State<MainScreen> {
       providers: [
         ChangeNotifierProvider.value(value: _homeProvider),
         ChangeNotifierProvider.value(value: _personsListProvider),
+        ChangeNotifierProvider.value(value: _friendGroupsProvider),
         ChangeNotifierProvider.value(value: _activitiesListProvider),
         ChangeNotifierProvider.value(value: _statisticsProvider),
         ChangeNotifierProvider.value(value: _calendarSettingsProvider),
@@ -437,9 +443,12 @@ class _MainScreenState extends State<MainScreen> {
           onTap: (index) {
             // Re-fetch statistics every time the Home tab becomes active.
             if (index == 0) _statisticsProvider.initialize();
-            // Re-fetch persons every time the Friends tab becomes active so
-            // people added via AddMeetingScreen are visible immediately.
-            if (index == 2) _personsListProvider.initialize();
+            // Re-fetch persons and groups every time the Friends tab becomes
+            // active so changes from other screens are reflected immediately.
+            if (index == 2) {
+              _personsListProvider.initialize();
+              _friendGroupsProvider.loadGroups();
+            }
             // Re-fetch categories every time the Activities tab becomes active.
             if (index == 3) {
               final userId = AuthService().currentUserId;

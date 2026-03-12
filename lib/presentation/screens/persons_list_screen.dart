@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/friend_group.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../persons/add_edit_group_dialog.dart';
+import '../persons/assign_persons_bottom_sheet.dart';
+import '../persons/friend_groups_provider.dart';
+import '../persons/group_section_widgets.dart';
 import '../persons/person_detail_provider.dart';
 import '../persons/person_detail_screen.dart';
 import '../persons/person_list_tile.dart';
@@ -13,15 +18,13 @@ import '../widgets/empty_state_widget.dart';
 import '../widgets/person_autocomplete.dart';
 import '../widgets/shared_search_bar.dart';
 
-/// Displays the list of all persons for the current user with search support.
-/// PersonsListProvider is provided by MainScreen via ChangeNotifierProvider.value.
+/// Displays persons grouped by friend groups with an Ungrouped fallback section.
+/// PersonsListProvider and FriendGroupsProvider are provided by MainScreen.
 class PersonsListScreen extends StatelessWidget {
   const PersonsListScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const _PersonsListView();
-  }
+  Widget build(BuildContext context) => const _PersonsListView();
 }
 
 class _PersonsListView extends StatefulWidget {
@@ -53,16 +56,14 @@ class _PersonsListViewState extends State<_PersonsListView> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<PersonsListProvider>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('MY PEOPLE'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add),
-            tooltip: 'Add person',
-            onPressed: () => _showAddPersonDialog(context),
+            icon: const Icon(Icons.add),
+            tooltip: 'Add',
+            onPressed: () => _showAddBottomSheet(context),
           ),
           IconButton(
             icon: Icon(_isSearchActive ? Icons.search_off : Icons.search),
@@ -80,23 +81,48 @@ class _PersonsListViewState extends State<_PersonsListView> {
               onChanged: (value) =>
                   context.read<PersonsListProvider>().setSearchQuery(value),
             ),
-          Expanded(
-            child: _PersonsListBody(provider: provider),
-          ),
+          const Expanded(child: _PersonsListBody()),
         ],
       ),
     );
   }
 
-  // Shows the AddPersonDialog and saves the new person to Firestore on confirm.
+  // Bottom sheet for choosing between adding a person or a group.
+  void _showAddBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.person_add),
+              title: const Text('Add Person'),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _showAddPersonDialog(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group_add),
+              title: const Text('Add Group'),
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _showAddGroupDialog(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _showAddPersonDialog(BuildContext context) async {
     final result = await showDialog<({String firstName, String lastName})>(
       context: context,
       builder: (_) => const AddPersonDialog(initialFirstName: ''),
     );
-
     if (result == null || !context.mounted) return;
-
     try {
       final userId = AuthService().currentUserId!;
       final person = Person(
@@ -107,7 +133,6 @@ class _PersonsListViewState extends State<_PersonsListView> {
         createdAt: DateTime.now(),
       );
       await PersonRepository().addPerson(person);
-
       if (context.mounted) {
         context.read<PersonsListProvider>().initialize();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -128,64 +153,220 @@ class _PersonsListViewState extends State<_PersonsListView> {
       }
     }
   }
+
+  void _showAddGroupDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AddEditGroupDialog(
+        onSave: (name, icon) => context.read<FriendGroupsProvider>().addGroup(
+              name: name,
+              iconIdentifier: icon,
+            ),
+      ),
+    );
+  }
 }
 
 class _PersonsListBody extends StatelessWidget {
-  final PersonsListProvider provider;
+  const _PersonsListBody();
 
-  const _PersonsListBody({required this.provider});
+  // Navigates to PersonDetailScreen, injecting FriendGroupsProvider at call-site.
+  Future<void> _openPerson(BuildContext context, Person person) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (_) => PersonDetailProvider(
+                personRepository: PersonRepository(),
+                meetingRepository: MeetingRepository(),
+                authService: AuthService(),
+              ),
+            ),
+            ChangeNotifierProvider.value(
+              value: context.read<FriendGroupsProvider>(),
+            ),
+          ],
+          child: PersonDetailScreen(person: person),
+        ),
+      ),
+    );
+    if (context.mounted) context.read<PersonsListProvider>().initialize();
+  }
+
+  // Resolves Person objects for a group from the full list.
+  // Stale IDs (person deleted but still in a group) are silently skipped.
+  List<Person> _resolvePersons(FriendGroup group, List<Person> allPersons) {
+    final index = {for (final p in allPersons) p.id: p};
+    return group.personIds.map((id) => index[id]).whereType<Person>().toList();
+  }
+
+  // Shows bottom sheet with Edit / Delete options for a group.
+  // Uses parent [context] after sheet closes — Stale Context Rule.
+  void _showGroupOptions(BuildContext context, FriendGroup group) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetCtx) {
+        final errorColor = Theme.of(sheetCtx).colorScheme.error;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('Edit group'),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _showEditGroupDialog(context, group);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete, color: errorColor),
+                title: Text(
+                  'Delete group',
+                  style: TextStyle(color: errorColor),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _showDeleteGroupConfirmation(context, group);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditGroupDialog(BuildContext context, FriendGroup group) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AddEditGroupDialog(
+        initialGroup: group,
+        onSave: (name, icon) =>
+            context.read<FriendGroupsProvider>().updateGroup(
+                  group.copyWith(name: name, iconIdentifier: icon),
+                ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteGroupConfirmation(
+      BuildContext context, FriendGroup group) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Group?'),
+        content: Text('Delete "${group.name}"?\nPersons will not be deleted.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await context.read<FriendGroupsProvider>().deleteGroup(group.id);
+  }
+
+  // Shows assign-persons sheet, or snackbar if all persons already assigned.
+  void _showAssignPersonsSheet(
+      BuildContext context, FriendGroup group, List<Person> allPersons) {
+    final available =
+        allPersons.where((p) => !group.personIds.contains(p.id)).toList();
+    if (available.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All friends are already in this group'),
+        ),
+      );
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (_, scrollController) => AssignPersonsBottomSheet(
+          group: group,
+          available: available,
+          groupsProvider: context.read<FriendGroupsProvider>(),
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (provider.errorMessage != null) {
-      return Center(child: Text(provider.errorMessage!));
-    }
-
-    final persons = provider.persons;
-
-    if (persons.isEmpty && provider.searchQuery.isEmpty) {
-      return const EmptyStateWidget(
-        imagePath: 'assets/images/empty_state_friends.png',
-        message: 'No friends added yet — tap + to get started!',
-      );
-    }
-
-    if (persons.isEmpty) {
-      return EmptyStateWidget(
-        imagePath: 'assets/images/empty_state_friends.png',
-        message: 'No results for "${provider.searchQuery}"',
-      );
-    }
-
-    return ListView.builder(
-      itemCount: persons.length,
-      itemBuilder: (context, index) {
-        final person = persons[index];
-        return PersonListTile(
-          person: person,
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ChangeNotifierProvider(
-                  create: (_) => PersonDetailProvider(
-                    personRepository: PersonRepository(),
-                    meetingRepository: MeetingRepository(),
-                    authService: AuthService(),
-                  ),
-                  child: PersonDetailScreen(person: person),
-                ),
-              ),
+    return Consumer2<PersonsListProvider, FriendGroupsProvider>(
+      builder: (context, personsProvider, groupsProvider, _) {
+        if (personsProvider.isLoading || groupsProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (personsProvider.errorMessage != null) {
+          return Center(child: Text(personsProvider.errorMessage!));
+        }
+        final allPersons = personsProvider.persons;
+        if (allPersons.isEmpty && personsProvider.searchQuery.isEmpty) {
+          return const EmptyStateWidget(
+            imagePath: 'assets/images/empty_state_friends.png',
+            message: 'No friends added yet — tap + to get started!',
+          );
+        }
+        // Search active: flat filtered results across all sections.
+        if (personsProvider.searchQuery.isNotEmpty) {
+          if (allPersons.isEmpty) {
+            return EmptyStateWidget(
+              imagePath: 'assets/images/empty_state_friends.png',
+              message: 'No results for "${personsProvider.searchQuery}"',
             );
-            // Refresh after returning — person may have been edited or deleted.
-            if (context.mounted) {
-              context.read<PersonsListProvider>().initialize();
-            }
-          },
+          }
+          return ListView.builder(
+            itemCount: allPersons.length,
+            itemBuilder: (context, i) => PersonListTile(
+              person: allPersons[i],
+              onTap: () => _openPerson(context, allPersons[i]),
+            ),
+          );
+        }
+        // Grouped view: one ExpansionTile per group, then Ungrouped section.
+        final groups = groupsProvider.groups;
+        final assignedIds = groups.expand((g) => g.personIds).toSet();
+        final ungrouped =
+            allPersons.where((p) => !assignedIds.contains(p.id)).toList();
+        return ListView(
+          children: [
+            for (final group in groups)
+              GroupSection(
+                group: group,
+                persons: _resolvePersons(group, allPersons),
+                onPersonTap: (p) => _openPerson(context, p),
+                onGroupLongPress: () => _showGroupOptions(context, group),
+                onAssignPersonTap: () =>
+                    _showAssignPersonsSheet(context, group, allPersons),
+              ),
+            if (ungrouped.isNotEmpty)
+              UngroupedSection(
+                persons: ungrouped,
+                onPersonTap: (p) => _openPerson(context, p),
+              ),
+          ],
         );
       },
     );
