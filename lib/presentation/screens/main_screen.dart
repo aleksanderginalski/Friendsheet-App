@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
@@ -9,6 +12,7 @@ import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../data/services/account_deletion_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/export_service.dart';
 import '../../data/services/google_calendar_service.dart';
@@ -18,6 +22,7 @@ import '../activities/activities_list_screen.dart';
 import '../import/meeting_inbox_screen.dart';
 import '../persons/persons_list_provider.dart';
 import '../providers/calendar_settings_provider.dart';
+import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
@@ -366,6 +371,16 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         ChangeNotifierProvider.value(
                           value: _calendarSettingsProvider,
+                        ),
+                        ChangeNotifierProvider(
+                          create: (_) => DeleteAccountProvider(
+                            deletionService: AccountDeletionService(
+                              firebaseAuth: FirebaseAuth.instance,
+                              firestore: FirebaseFirestore.instance,
+                              googleSignIn: GoogleSignIn(),
+                              calendarService: GoogleCalendarService(),
+                            ),
+                          ),
                         ),
                       ],
                       child: const SettingsScreen(),
