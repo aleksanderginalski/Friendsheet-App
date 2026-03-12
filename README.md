@@ -134,7 +134,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (518)
+✅ All tests passing (531)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -221,6 +221,13 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 
 ## 📖 Version History
 
+
+### v3.29.0 — US-076: Delete Account & All User Data (March 12, 2026)
+- ✅ `AccountDeletionService` — re-authentication via `reauthenticateWithCredential()`, paginated Firestore subcollection delete (batches of 500), Firebase Auth user delete, full local storage clear (SharedPreferences + flutter_secure_storage + Hive)
+- ✅ `DeleteAccountProvider` — isLoading/errorMessage state, no-op guard against double-tap, navigation via `appNavigatorKey` on success
+- ✅ `SettingsScreen` — destructive "Delete Account" tile at bottom with confirmation dialog; listener pattern mirrors ExportProvider
+- ✅ GDPR requirement for Google Play Data Safety section satisfied — in-app deletion available
+- ✅ Total test count: 531 tests (+11 new: 3 service + 8 provider)
 
 ### v3.28.0 — US-078: Fix — Silent OAuth Token Refresh for Calendar (March 2026)
 - ✅ `_withTokenRetry<T>` generic helper extracted in `GoogleCalendarService` — single retry on `CalendarAuthException`, reusable for future API integrations (Google Photos)

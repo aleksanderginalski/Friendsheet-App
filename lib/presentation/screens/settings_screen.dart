@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../providers/calendar_settings_provider.dart';
+import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
 import 'calendar_permission_screen.dart';
 
-/// Settings screen with calendar connection and data export functionality.
+/// Settings screen with calendar connection, data export, and account deletion.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -19,17 +20,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Listen for export outcome after the first frame to show SnackBars.
+    // Listen for export and delete outcomes after the first frame to show SnackBars.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ExportProvider>().addListener(_onExportStateChanged);
+      context.read<DeleteAccountProvider>().addListener(_onDeleteStateChanged);
     });
   }
 
   @override
   void dispose() {
-    // Remove listener safely — the provider outlives this widget.
+    // Remove listeners safely — providers outlive this widget.
     if (mounted) {
       context.read<ExportProvider>().removeListener(_onExportStateChanged);
+      context
+          .read<DeleteAccountProvider>()
+          .removeListener(_onDeleteStateChanged);
     }
     super.dispose();
   }
@@ -43,6 +48,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SnackBar(content: Text('Exported to: ${provider.lastExportPath}')),
       );
     }
+
+    if (provider.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
+      provider.clearError();
+    }
+  }
+
+  void _onDeleteStateChanged() {
+    if (!mounted) return;
+    final provider = context.read<DeleteAccountProvider>();
 
     if (provider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -87,10 +107,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _confirmAndDeleteAccount(BuildContext context) async {
+    // Read userId BEFORE opening dialog — avoid async context gap.
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and all data including '
+          'meetings, friends and activities. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            child: const Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await context.read<DeleteAccountProvider>().deleteAccount(userId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final exportProvider = context.watch<ExportProvider>();
     final calendarProvider = context.watch<CalendarSettingsProvider>();
+    final deleteProvider = context.watch<DeleteAccountProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -114,6 +170,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             enabled: !exportProvider.isLoading,
             onTap:
                 exportProvider.isLoading ? null : () => _handleExport(context),
+          ),
+          const Divider(),
+          ListTile(
+            leading: deleteProvider.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(Icons.delete_forever, color: colorScheme.error),
+            title: Text(
+              'Delete Account',
+              style: TextStyle(color: colorScheme.error),
+            ),
+            subtitle:
+                const Text('Permanently delete your account and all data'),
+            enabled: !deleteProvider.isLoading,
+            onTap: deleteProvider.isLoading
+                ? null
+                : () => _confirmAndDeleteAccount(context),
           ),
         ],
       ),
