@@ -305,6 +305,7 @@ class _RootCategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isExpanded = provider.isExpanded(category.id);
     final children = provider.childrenOf(category.id);
+    final theme = Theme.of(context);
     return GestureDetector(
       onLongPress: category.isGlobal ? null : () => _showOptions(context),
       child: ExpansionTile(
@@ -315,6 +316,21 @@ class _RootCategoryTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Badge showing direct child count — hidden for leaf categories.
+            if (children.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${children.length}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Add child activity',
