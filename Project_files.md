@@ -5,6 +5,7 @@
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
 
 ## lib/core/
+- lib/core/constants/app_constants.dart - AppConstants — shared app-wide constants; chartAnimationDuration: Duration(milliseconds: 1000) used by all three statistics chart widgets (US-075)
 - lib/core/theme/app_theme.dart - AppTheme — ThemeData with Nunito typography, ColorScheme from design brief, CardThemeData (16dp), ElevatedButton (12dp), AppBar, FAB, BottomNavigationBar (US-050)
 - lib/core/theme/chart_colors.dart - ChartColors — 8-color Vivid Social palette for statistics bar charts; horizontal 4-stop cylinder gradient (edge → center → center → edge); stable id.hashCode assignment; getGradient(), getBaseColor(), getStrokeColor() (US-063)
 - lib/core/utils/firebase_test.dart - Firebase connection test
@@ -43,7 +44,7 @@
 
 ## lib/presentation/
 - lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search, CRUD with cascade delete, hasSearchResults getter (US-026, US-043, US-055)
-- lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, subcategory indentation with T/L tree lines (CustomPainter), EmptyStateWidget for empty list and no search results, long-press edit/delete for private categories, expandable search icon in AppBar (US-026, US-055)
+- lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, subcategory indentation with T/L tree lines (CustomPainter), child count badge on parent categories (US-075), EmptyStateWidget for empty list and no search results, long-press edit/delete for private categories, expandable search icon in AppBar (US-026, US-055)
 - lib/presentation/activities/activity_icons.dart - PNG asset icon map (51 entries) + resolveActivityIcon(String?) returning asset path or null + ActivityIcon widget with Icons.category fallback (US-026, US-055)
 - lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, 2D icon picker grid (Dialog replaces AlertDialog to avoid RenderIntrinsicWidth crash) (US-026, US-055)
 - lib/presentation/import/import_success_screen.dart - ImportSuccessScreen — confirmed meeting count, 'GO TO MEETINGS' CTA, clears MeetingInboxProvider (US-068)
@@ -76,14 +77,14 @@
 - lib/presentation/screens/settings_screen.dart - Settings screen — Calendar section (connect/disconnect, revoke); Export Data tile triggers ExportProvider.exportData(); Delete Account destructive tile with confirmation dialog and reauthentication flow (US-031, US-066, US-076)
 - lib/presentation/screens/splash_screen.dart - SplashScreen — plays assets/animations/splash.mp4 via VideoPlayerControllerInterface, shows 'Friendsheet' in Pacifico below video, navigates to AuthWrapper on completion via pushReplacement (US-052, US-053)
 - lib/presentation/widgets/activity_autocomplete.dart - Unified activity autocomplete — callback-based (selectedCategories, onCategoryAdded, onCategoryRemoved); ancestor propagation, add-new-activity flow, ActivityIcon for chips; reusable in AddMeetingScreen and InboxItemEditScreen (US-020, US-042, US-055, US-068)
-- lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, ChartColors gradient per categoryId, delta % indicator (▲/▼/NEW), filter_icon.png visibility dialog trigger (replaces gear icon), auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation (US-028, US-048, US-049, US-057, US-063)
+- lib/presentation/widgets/activity_breakdown_widget.dart - Animated vertical bar chart — Stack + absolute positioning, ChartColors gradient per categoryId, delta % indicator (▲/▼/NEW), filter_icon.png visibility dialog trigger (replaces gear icon), auto-select top 10 logic; _lastTargetLeft fix for stationary bar animation; AnimationController reset before forward() on year change — no pre-animation flash (US-028, US-048, US-049, US-057, US-063, US-075)
 - lib/presentation/widgets/activity_selector_dialog.dart - Dialog with full category tree (parent headers + child activities with icons) for selecting activity filter in WhoPerActivity metric (US-029, US-058)
 - lib/presentation/widgets/activity_visibility_dialog.dart - Dialog with hierarchical checkbox list + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) for managing activity visibility; activity icons 31px (US-048, US-057)
 - lib/presentation/widgets/calendar_event_card.dart
 - lib/presentation/widgets/easter_egg_dialog.dart - EasterEggDialog — dismisses on tap anywhere; displays easter_egg_icon asset + special thanks message; injectable imageWidget parameter for test isolation (US-064)
 - lib/presentation/widgets/empty_state_widget.dart - Reusable empty state component — illustration + message; used by MeetingsListScreen and PersonsListScreen (US-054), ActivitiesListScreen (US-055)
 - lib/presentation/widgets/home_loading_screen.dart - HomeLoadingScreen — centered loading widget with loading_icon.png (120x120) and 'Checking who you've been hanging out with...' text; shown by HomeScreen until HomeProvider._initialized is true (US-073)
-- lib/presentation/widgets/interaction_distribution_widget.dart - Animated bar chart showing meeting weight per person — yearly/cumulative toggle, isLoading inline spinner (widget always stays in tree), info icon (>100% explanation), filter_icon.png visibility dialog trigger (replaces gear icon), _lastTargetLeft animation architecture, ChartColors gradient per personId (US-030, US-051, US-057, US-063)
+- lib/presentation/widgets/interaction_distribution_widget.dart - Animated bar chart showing meeting weight per person — yearly/cumulative toggle, isLoading inline spinner (widget always stays in tree), info icon (>100% explanation), filter_icon.png visibility dialog trigger (replaces gear icon), _lastTargetLeft animation architecture, ChartColors gradient per personId; AnimationController reset before forward() on year change — no pre-animation flash (US-030, US-051, US-057, US-063, US-075)
 - lib/presentation/widgets/meeting_card.dart - Meeting card widget — compact layout: name, date, participant count, weight; reduced vertical padding (8dp) and font sizes as new default (US-021, US-059)
 - lib/presentation/widgets/meeting_date_field.dart - Date picker widget (US-011)
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget — pre-fills from provider in edit mode (US-023)
@@ -95,7 +96,7 @@
 - lib/presentation/widgets/statistics_section.dart
 - lib/presentation/widgets/statistics_visibility_dialog.dart
 - lib/presentation/widgets/who_per_activity_person_filter_dialog.dart - Person filter dialog for WhoPerActivity — checkbox list, three-state select-all toggle, Auto-select top 10 (top 10 by weightSum for current activity), min-1 constraint (US-058)
-- lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); filter_icon.png opens WhoPerActivityPersonFilterDialog; long-press removed (US-029, US-050, US-058, US-063)
+- lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); filter_icon.png opens WhoPerActivityPersonFilterDialog; AnimationController reset before forward() on year change — no pre-animation flash; duration unified to AppConstants.chartAnimationDuration (US-029, US-050, US-058, US-063, US-075)
 - lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget; 5-slot row layout: [←] [prev year dimmed] [active year centered, bold, primary color] [next year dimmed] [→]; arrows disabled at year boundaries; neighbour slots fixed width 48dp for stable layout; swipe gesture preserved (US-027, US-071)
 
 ## lib/services/
