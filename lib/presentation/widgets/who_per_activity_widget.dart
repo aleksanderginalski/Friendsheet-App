@@ -24,15 +24,15 @@ double _barHeight(int weight, int maxW) =>
     (weight / maxW * _kMaxBarHeight).clamp(2.0, _kMaxBarHeight);
 
 /// Displays a vertical bar chart of persons ranked by meeting weight for
-/// the selected activity, with hide/show controls.
+/// the selected activity. Person visibility is managed via the filter dialog
+/// opened by the filter icon in the header.
 class WhoPerActivityWidget extends StatelessWidget {
   final List<PersonActivityEntry> entries;
   final List<ActivityCategory> categories;
   final String? selectedCategoryId;
   final Set<String> hiddenPersonIds;
-  final int hiddenCount;
   final VoidCallback onSelectActivity;
-  final void Function(String personId, String name) onToggleHidden;
+  final VoidCallback onOpenFilterDialog;
 
   const WhoPerActivityWidget({
     super.key,
@@ -40,9 +40,8 @@ class WhoPerActivityWidget extends StatelessWidget {
     required this.categories,
     required this.selectedCategoryId,
     required this.hiddenPersonIds,
-    required this.hiddenCount,
     required this.onSelectActivity,
-    required this.onToggleHidden,
+    required this.onOpenFilterDialog,
   });
 
   String _selectedName() {
@@ -63,9 +62,25 @@ class WhoPerActivityWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Text(
-          'Who Per Activity',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Who Per Activity',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            IconButton(
+              icon: Image.asset(
+                'assets/images/filter_icon.png',
+                width: 40,
+                height: 40,
+              ),
+              tooltip: 'Filter persons',
+              onPressed: onOpenFilterDialog,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -85,63 +100,8 @@ class WhoPerActivityWidget extends StatelessWidget {
             style: TextStyle(color: Colors.grey),
           )
         else
-          _BarChart(
-            visibleEntries: visibleEntries,
-            onToggleHidden: onToggleHidden,
-          ),
-        if (hiddenCount > 0)
-          GestureDetector(
-            onTap: () => _showHiddenPersonsDialog(context),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '$hiddenCount person(s) hidden — tap to show',
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ),
+          _BarChart(visibleEntries: visibleEntries),
       ],
-    );
-  }
-
-  void _showHiddenPersonsDialog(BuildContext context) {
-    final hiddenEntries =
-        entries.where((e) => hiddenPersonIds.contains(e.personId)).toList();
-
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Hidden Persons'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: hiddenEntries
-                .map(
-                  (e) => ListTile(
-                    title: Text(e.name),
-                    trailing: TextButton(
-                      onPressed: () {
-                        onToggleHidden(e.personId, e.name);
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Show'),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CLOSE'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -152,12 +112,8 @@ class WhoPerActivityWidget extends StatelessWidget {
 /// smoothly when the ranking changes between years.
 class _BarChart extends StatefulWidget {
   final List<PersonActivityEntry> visibleEntries;
-  final void Function(String personId, String name) onToggleHidden;
 
-  const _BarChart({
-    required this.visibleEntries,
-    required this.onToggleHidden,
-  });
+  const _BarChart({required this.visibleEntries});
 
   @override
   State<_BarChart> createState() => _BarChartState();
@@ -220,27 +176,6 @@ class _BarChartState extends State<_BarChart>
     super.dispose();
   }
 
-  void _showOptions(BuildContext context, String personId, String name) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.visibility_off),
-              title: Text('Hide $name'),
-              onTap: () {
-                Navigator.of(context).pop();
-                widget.onToggleHidden(personId, name);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     // _animatingEntries is locked at animation start — using it here
@@ -273,8 +208,6 @@ class _BarChartState extends State<_BarChart>
                 controller: _curvedAnimation,
                 targetLeft: index * _kItemWidth,
                 targetBarHeight: _barHeight(entry.weightSum, maxW),
-                onLongPress: () =>
-                    _showOptions(context, entry.personId, entry.name),
               );
             }).toList(),
           ),
@@ -295,7 +228,6 @@ class _AnimatedBarItem extends StatefulWidget {
   final Animation<double> controller;
   final double targetLeft;
   final double targetBarHeight;
-  final VoidCallback onLongPress;
 
   const _AnimatedBarItem({
     super.key,
@@ -304,7 +236,6 @@ class _AnimatedBarItem extends StatefulWidget {
     required this.controller,
     required this.targetLeft,
     required this.targetBarHeight,
-    required this.onLongPress,
   });
 
   @override
@@ -425,12 +356,9 @@ class _AnimatedBarItemState extends State<_AnimatedBarItem> {
           top: 0,
           width: _kItemWidth,
           height: _kChartHeight,
-          child: GestureDetector(
-            onLongPress: widget.onLongPress,
-            child: Opacity(
-              opacity: opacity.clamp(0.0, 1.0),
-              child: _buildBarColumn(barHeight),
-            ),
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: _buildBarColumn(barHeight),
           ),
         );
       },
