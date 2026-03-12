@@ -7,7 +7,7 @@
 | M3 | Statistics & Export | ✅ Completed |
 | M3.5 | Visual Design & Brand Identity | ✅ Completed |
 | M4 | Google Play Release |✅ Completed |
-| M5 | User's Onboarding | 🔄 In Progress |
+| M5 | Social: Data Sharing | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
 | M7 | AI Assistant | 💡 Future |
 
@@ -19,30 +19,36 @@
 
 **M5 — Social: Data Sharing:** Invitation code system — Person A generates a code, Person B redeems it and receives copies of all shared meetings. Copy-based (no real-time sync).
 
-**M6 — Google Photos Integration:** Browse device photos, select one to pre-fill meeting date. Teaches external OAuth API integration.
+**M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
-
-**M8 — AI Assistant:** Natural language queries about social data. LLM API selection requires cost/privacy spike first.
+**M7 — AI Assistant:** Natural language queries about social data. LLM API selection requires cost/privacy spike first.
 
 ## 🏗️ Architecture
 
-This project follows **Clean Architecture** principles with clear separation of concerns:
+This project follows **MVVM** principles with clear separation of concerns:
 ```
 lib/
-├── core/           # Core utilities, constants, errors
-├── data/           # Data layer (models, repositories, datasources)
-├── domain/         # Business logic layer (entities, use cases)
-├── presentation/   # UI layer (screens, widgets, providers)
-├── main.dart       # Application entry point
-└── firebase_options.dart  # Firebase configuration
+├── core/              # Constants, theme, utilities
+├── data/              # Models, repositories, services
+│   ├── interfaces/    # CacheInvalidator and other abstractions
+│   ├── models/        # Freezed data models
+│   ├── repositories/  # Firestore CRUD
+│   └── services/      # Auth, export, calendar, Hive
+├── presentation/      # Screens, widgets, providers (ViewModels)
+│   ├── screens/       # Full screens
+│   ├── widgets/       # Reusable UI components
+│   └── providers/     # ChangeNotifier state management
+├── services/          # HiveService (app-level lifecycle)
+├── main.dart          # Entry point, Firebase + Hive init
+└── firebase_options.dart
 ```
 
 **Tech Stack:**
 - **Frontend:** Flutter 3.0+ (Dart)
 - **Backend:** Firebase (Auth + Firestore)
-- **Architecture:** Clean Architecture / MVVM
-- **State Management:** Provider
+- **Architecture:** MVVM / Provider
+- **Local Cache:** Hive (offline-first statistics)
+- **State Management:** Provider (ChangeNotifier)
 
 ## 📚 Documentation
 
@@ -51,6 +57,7 @@ Comprehensive documentation is available in the project root:
 - [Requirements Documentation](requirements.md) - Functional and non-functional requirements
 - [Architecture Documentation](architecture.md) - System design and diagrams
 - [UI/UX Documentation](wireframes.md) - Screen designs and user flows
+- [Design Brief](docs/friendsheet_design_brief.md) - Visual identity, color palette and typography guidelines
 - [Code Examples](code_snippets.md) - Implementation snippets
 - [Project Structure](PROJECT_FILES.md) - Folder organization
 - [Product Backlog](BACKLOG.md) - Sprint planning and user stories
@@ -77,7 +84,7 @@ cd friendsheet
 ```
 2. **Claude Code users:**
 A `CLAUDE.md` file is included in the repository with project conventions and workflow instructions. Claude Code reads this automatically on every session start.
-```
+
 
 3. **Install dependencies**
 ```powershell
@@ -133,7 +140,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (591)
+✅ All tests passing (593)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -219,6 +226,18 @@ Project Link: [https://github.com/aleksanderginalski/friendsheet-app](https://gi
 **Note:** This is a learning project to understand SDLC (Software Development Life Cycle) and mobile app development with Flutter.
 
 ## 📖 Version History
+
+### v3.32.0 — US-062: Friends — Groups (March 12, 2026)
+- ✅ `FriendGroup` Freezed model — `id`, `name`, `iconIdentifier` (nullable), `personIds: List<String>`; stored under `users/{uid}/friend_groups`
+- ✅ `FriendGroupRepository` — full CRUD + `addPersonToGroup` (arrayUnion, idempotent), `removePersonFromGroup` (arrayRemove), `removePersonFromAllGroups` (WriteBatch cascade)
+- ✅ `PersonRepository.deletePerson` — cascade extended: `Future.wait([removePersonFromMeetings, removePersonFromAllGroups])`
+- ✅ `FriendGroupsProvider` — owned by `MainScreen`, optimistic updates for add/remove person, `groupsForPerson` client-side filter, reloaded on Friends tab tap
+- ✅ `PersonsListScreen` refactored — `Consumer2<PersonsListProvider, FriendGroupsProvider>`; ExpansionTile per group (icon + person count badge) + non-collapsible Ungrouped section at bottom
+- ✅ Group management UI — `AddEditGroupDialog` (name + horizontal icon picker), `AssignPersonsBottomSheet` (multi-select unassigned persons), long-press → Edit/Delete bottom sheet
+- ✅ `PersonDetailScreen` — `_GroupsSection` with `CheckboxListTile` per group; `FriendGroupsProvider` injected at call-site
+- ✅ Firestore security rules deployed for `friend_groups` subcollection (path-based `userId` check)
+- ✅ `NicknamesSection` extracted from `PersonDetailScreen` (< 300 lines rule)
+- ✅ Total test count: 551 → 593 tests (+42: model 13, repository 14, provider 15)
 
 ### v3.31.0 — US-061: Friends Nicknames & Activities Search Fix (March 12, 2026)
 - ✅ Extended `Person` model with `nicknames: List<String>` — backward-compatible, missing Firestore field treated as empty list
