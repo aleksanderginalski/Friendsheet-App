@@ -16,6 +16,24 @@ void main() {
     currentYearWeight: 7,
     previousYearWeight: 0,
   );
+  const charlie = InteractionDistributionEntry(
+    personId: 'p-3',
+    name: 'Charlie',
+    currentYearWeight: 3,
+    previousYearWeight: 0,
+  );
+  const lukasz = InteractionDistributionEntry(
+    personId: 'p-4',
+    name: 'Łukasz',
+    currentYearWeight: 5,
+    previousYearWeight: 0,
+  );
+  const ludwik = InteractionDistributionEntry(
+    personId: 'p-5',
+    name: 'Ludwik',
+    currentYearWeight: 4,
+    previousYearWeight: 0,
+  );
 
   // Helper: wraps the dialog widget directly in a MaterialApp so Navigator
   // and Theme are available without needing showDialog.
@@ -148,6 +166,25 @@ void main() {
       await tester.pumpWidget(buildDialog(entries: [alice]));
 
       expect(find.text('CLOSE'), findsOneWidget);
+    });
+
+    testWidgets('renders persons in alphabetical order with Polish diacritics',
+        (tester) async {
+      // Input: Łukasz, Charlie, Ludwik, Bob, Alice — intentionally unsorted.
+      // Expected: Alice, Bob, Charlie, Ludwik, Łukasz (ł sorts after l).
+      await tester.pumpWidget(buildDialog(
+        entries: [lukasz, charlie, ludwik, bob, alice],
+      ));
+
+      final tiles = tester
+          .widgetList<CheckboxListTile>(
+            find.byType(CheckboxListTile),
+          )
+          .toList();
+
+      final names = tiles.map((t) => (t.title as Text).data!).toList();
+
+      expect(names, equals(['Alice', 'Bob', 'Charlie', 'Ludwik', 'Łukasz']));
     });
   });
 }
