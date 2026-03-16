@@ -20,6 +20,16 @@ void main() {
     name: 'Carol',
     weightSum: 4,
   );
+  const ludwik = PersonActivityEntry(
+    personId: 'p-4',
+    name: 'Ludwik',
+    weightSum: 6,
+  );
+  const lukasz = PersonActivityEntry(
+    personId: 'p-5',
+    name: 'Łukasz',
+    weightSum: 5,
+  );
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -182,6 +192,25 @@ void main() {
       expect(called, isTrue);
       // Dialog dismissed after tap.
       expect(find.text('Filter persons'), findsNothing);
+    });
+
+    testWidgets('renders persons in alphabetical order with Polish diacritics',
+        (tester) async {
+      // Input: Łukasz, carol, Ludwik, bob, alice — intentionally unsorted.
+      // Expected: Alice, Bob, Carol, Ludwik, Łukasz (ł sorts after l).
+      await tester.pumpWidget(buildDialog(
+        entries: [lukasz, carol, ludwik, bob, alice],
+      ));
+
+      final tiles = tester
+          .widgetList<CheckboxListTile>(
+            find.byType(CheckboxListTile),
+          )
+          .toList();
+
+      final names = tiles.map((t) => ((t.title as Text).data!)).toList();
+
+      expect(names, equals(['Alice', 'Bob', 'Carol', 'Ludwik', 'Łukasz']));
     });
 
     testWidgets('"CLOSE" button dismisses the dialog', (tester) async {
