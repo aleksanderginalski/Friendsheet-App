@@ -1,5 +1,5 @@
 ﻿# Friendsheet - Project File Structure
-**Last Updated:** marca 12, 2026
+**Last Updated:** marca 16, 2026
 
 ## Root
 - CLAUDE.md - Claude Code instructions — project invariants, conventions, git workflow
@@ -10,6 +10,7 @@
 - lib/core/theme/chart_colors.dart - ChartColors — 8-color Vivid Social palette for statistics bar charts; horizontal 4-stop cylinder gradient (edge → center → center → edge); stable id.hashCode assignment; getGradient(), getBaseColor(), getStrokeColor() (US-063)
 - lib/core/utils/firebase_test.dart - Firebase connection test
 - lib/core/utils/person_search_helper.dart - PersonSearchHelper — static matches(person, query) checks firstName, lastName, and all nicknames; shared by PersonsListProvider and PersonAutocomplete to avoid duplication (US-061)
+- lib/core/utils/person_sort.dart - normalizeForSort() — Polish diacritic-aware string normalization for A→Z sorting (ą→az, ć→cz, ę→ez, ł→lz, ń→nz, ó→oz, ś→sz, ź→zz, ż→zz); shared by PersonVisibilityDialog and WhoPerActivityPersonFilterDialog (US-079)
 
 ## lib/data/
 - lib/data/models/activity_category.dart - ActivityCategory model (Freezed) — nullable createdAt fallback, isSelectableAsActivity, copiedFromId, parentCategoryId, iconIdentifier (US-019, US-020, US-026)
@@ -101,11 +102,11 @@
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 - lib/presentation/widgets/onboarding_calendar_cta_card.dart - OnboardingCalendarCtaCard — centered Card with headline, subtext, 'Import from Calendar' ElevatedButton, cta_stats.png illustration; onDismiss (X button) and onImport callbacks (US-065)
 - lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget — callback-based (selectedPersons, onPersonAdded, onPersonRemoved); search via PersonSearchHelper.matches() (firstName, lastName, nicknames); AddPersonDialog; reusable in AddMeetingScreen and InboxItemEditScreen (US-068, US-061)
-- lib/presentation/widgets/person_visibility_dialog.dart - Flat checkbox list dialog for managing person visibility in Interaction Distribution metric + Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) (US-030, US-057)
+- lib/presentation/widgets/person_visibility_dialog.dart - Flat checkbox list dialog for managing person visibility in Interaction Distribution metric — persons sorted A→Z using normalizeForSort() (Polish diacritics aware); Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) (US-030, US-057, US-079)
 - lib/presentation/widgets/shared_search_bar.dart - Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens as expandable AppBar search (US-055, US-059)
 - lib/presentation/widgets/statistics_section.dart
 - lib/presentation/widgets/statistics_visibility_dialog.dart
-- lib/presentation/widgets/who_per_activity_person_filter_dialog.dart - Person filter dialog for WhoPerActivity — checkbox list, three-state select-all toggle, Auto-select top 10 (top 10 by weightSum for current activity), min-1 constraint (US-058)
+- lib/presentation/widgets/who_per_activity_person_filter_dialog.dart - Person filter dialog for WhoPerActivity — persons sorted A→Z using normalizeForSort() (Polish diacritics aware); checkbox list, three-state select-all toggle, Auto-select top 10 (top 10 by weightSum for current activity), min-1 constraint (US-058, US-079)
 - lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); filter_icon.png opens WhoPerActivityPersonFilterDialog; AnimationController reset before forward() on year change — no pre-animation flash; duration unified to AppConstants.chartAnimationDuration (US-029, US-050, US-058, US-063, US-075)
 - lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget; 5-slot row layout: [←] [prev year dimmed] [active year centered, bold, primary color] [next year dimmed] [→]; arrows disabled at year boundaries; neighbour slots fixed width 48dp for stable layout; swipe gesture preserved (US-027, US-071)
 
@@ -185,11 +186,11 @@
 - test/presentation/widgets/meeting_name_field_test.dart - MeetingNameField tests (5 tests)
 - test/presentation/widgets/meeting_name_field_test.mocks.dart - Generated mocks for MeetingNameField tests
 - test/presentation/widgets/meeting_weight_stepper_test.dart - MeetingWeightStepper tests (5 tests)
-- test/presentation/widgets/person_visibility_dialog_test.dart - PersonVisibilityDialog tests — checkbox state, toggle callback, auto-select top 10, three-state toggle icon (US-030, US-057)
+- test/presentation/widgets/person_visibility_dialog_test.dart - PersonVisibilityDialog tests — checkbox state, toggle callback, auto-select top 10, three-state toggle icon, alphabetical order with Polish diacritics (Ludwik before Łukasz) (US-030, US-057, US-079)
 - test/presentation/widgets/shared_search_bar_test.dart - SharedSearchBar tests — hint text, onChanged callback, clear button visibility and behavior (US-055)
 - test/presentation/widgets/statistics_section_test.dart - StatisticsSection tests — PageView present when cards visible, empty state when all hidden, InteractionDistributionWidget always in tree regardless of isDistributionLoading, tapping Icons.tune opens StatisticsVisibilityDialog, long-press restore text never shown (US-051, US-060)
 - test/presentation/widgets/statistics_section_test.mocks.dart - Generated mocks for StatisticsSection tests
-- test/presentation/widgets/who_per_activity_person_filter_dialog_test.dart - WhoPerActivityPersonFilterDialog tests — all persons checked by default, toggle callback, three-state toggle, last-visible disabled, auto-select top 10 present and callable (US-058)
+- test/presentation/widgets/who_per_activity_person_filter_dialog_test.dart - WhoPerActivityPersonFilterDialog tests — all persons checked by default, toggle callback, three-state toggle, last-visible disabled, auto-select top 10 present and callable, alphabetical order with Polish diacritics (Ludwik before Łukasz) (US-058, US-079)
 - test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case, dimmed neighbour years visible/hidden (US-027, US-071)
 
 ## test/
