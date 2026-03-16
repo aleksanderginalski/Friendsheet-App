@@ -14,9 +14,9 @@
 | M1 | Add Meeting | ✅ COMPLETED |
 | M2 | Management & CRUD | ✅ COMPLETED |
 | M3 | Statistics & Export | ✅ COMPLETED |
-| M3.5 | Visual Design & Brand Identity | 🔄 In Progress |
-| M4 | Google Play Release | 📋 Planned |
-| M5 | Meeting Import Hub | 📋 Planned |
+| M3.5 | Visual Design & Brand Identity | ✅ COMPLETED |
+| M4 | Google Play Release | ✅ COMPLETED |
+| M5 | Meeting Import Hub | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
 | M7 | AI Assistant | 💡 Future |
 ---
@@ -45,15 +45,16 @@ EPIC-003: Friendsheet M3 - Statistics & Export
 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
 ├── FEATURE-018: Design System & Theme ✅
 ├── FEATURE-019: App Assets (Icon + Splash) ✅
-└── FEATURE-020: Illustrations & Empty States
+└── FEATURE-020: Illustrations & Empty States ✅
 
-EPIC-004: Friendsheet M4 - Google Play Release
-└── FEATURE-011: Store Release Preparation
+EPIC-004: Friendsheet M4 - Google Play Release ✅
+└── FEATURE-011: Store Release Preparation ✅
 
 EPIC-005: Friendsheet M5 - Meeting Import Hub
-├── FEATURE-013: Google Calendar Import      ← before Google Play
+├── FEATURE-013: Google Calendar Import ✅
 ├── FEATURE-014: Google Photos Import        ← post Google Play, backlog
-└── FEATURE-012: Invitation Code System
+├── FEATURE-012: Invitation Code System
+└── FEATURE-022: After Release fixes
 
 EPIC-006: Friendsheet M6 - Custom Dashboard
 └── FEATURE-015: Configurable Metrics Dashboard
@@ -3042,6 +3043,324 @@ after account deletion.
 - [ ] **TASK-179:** Build success/error feedback screens - 1h
 - [ ] **TASK-180:** Write tests - 2h
 
+
+## 🎨 FEATURE-022: After Release Fixes
+
+### US-079: Alphabetical Sorting in Person Filter Dialogs
+ 
+**As a** user  
+**I want to** see persons sorted alphabetically in statistics filter dialogs (Manage Persons)  
+**So that** I can quickly find specific people when filtering Interaction Distribution or Who Per Activity
+ 
+**Story Points:** 2  
+**Priority:** P1  
+**Status:** 📋 Planned  
+**Labels:** `statistics`, `ux`, `filter`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-009: Core Statistics
+ 
+**Acceptance Criteria:**
+- [ ] `PersonVisibilityDialog` displays persons sorted A→Z by full name (firstName + lastName)
+- [ ] Sorting is case-insensitive
+- [ ] Sorting applies to both `InteractionDistributionWidget` and `WhoPerActivityWidget` filter dialogs
+- [ ] No impact on the order of bars in charts (chart order remains by weight/value)
+ 
+**Tasks:**
+- [ ] **TASK-079.1:** Update `PersonVisibilityDialog` to sort persons alphabetically before rendering
+- [ ] **TASK-079.2:** Write test verifying alphabetical order in dialog
+ 
+**Technical Notes:**
+- Sort in the widget/dialog layer, not in repository — chart data order must remain by value
+- Use Polish locale-aware sorting for correct diacritics order (ą after a, ć after c, etc.)
+- Implementation: `List.sort()` with `compareNatural` from `package:collection` or custom comparator using `String.compareTo` with Polish collation
+ 
+---
+ 
+### US-080: Flat Search Results in Meetings List
+ 
+**As a** user  
+**I want to** see all matching meetings in a flat list (no year/month grouping) when searching  
+**So that** I can scan search results quickly without expanding collapsed sections
+ 
+**Story Points:** 3  
+**Priority:** P1  
+**Status:** 📋 Planned  
+**Labels:** `meetings`, `ux`, `search`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-006: Meetings View
+ 
+**Acceptance Criteria:**
+- [ ] When search query has 3+ characters, meetings are displayed as a flat list (no year headers, no expansion tiles)
+- [ ] Each meeting card shows: name (full, not truncated), date (already includes year), participant count, weight
+- [ ] When search query is cleared or has fewer than 3 characters, view returns to standard grouped layout
+- [ ] Search still filters by meeting name (existing behavior)
+- [ ] Empty state shown when no meetings match search query
+ 
+**Tasks:**
+- [ ] **TASK-080.1:** Add `isSearchActive` computed property to `MeetingsListProvider` (true when query.length >= 3)
+- [ ] **TASK-080.2:** Update `MeetingsListScreen` to render flat `ListView` when `isSearchActive`
+- [ ] **TASK-080.3:** Ensure `MeetingCard` displays full name without truncation in search mode
+- [ ] **TASK-080.4:** Write tests for search mode layout switching
+ 
+**Technical Notes:**
+- Threshold of 3 characters prevents excessive re-renders on single keystrokes
+- Consider debouncing search input (200ms) if performance issues arise
+- No additional year label needed — MeetingCard date already shows full date with year
+ 
+---
+ 
+### US-081: Continuous Year Slider in Statistics
+ 
+**As a** user  
+**I want to** slide through years continuously by dragging horizontally  
+**So that** I can quickly navigate to older years without repeated tapping
+ 
+**Story Points:** 3  
+**Priority:** P2  
+**Status:** 📋 Planned  
+**Labels:** `statistics`, `ux`, `year-selector`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-009: Core Statistics
+ 
+**Acceptance Criteria:**
+- [ ] Year selector supports continuous horizontal drag gesture (slider behavior)
+- [ ] While dragging, year label updates in real-time (visual feedback)
+- [ ] Statistics data loads only after user releases finger (debounced load)
+- [ ] Existing tap-to-step (< >) buttons remain functional
+- [ ] Single swipe gesture (quick flick) still advances by one year (existing behavior preserved)
+- [ ] Year range: from first meeting year to current year (derived from data)
+- [ ] Visual indicator showing position in year range (e.g., subtle track or dots)
+ 
+**Tasks:**
+- [ ] **TASK-081.1:** Extend `YearStepper` with `GestureDetector.onHorizontalDragUpdate` for slider behavior
+- [ ] **TASK-081.2:** Implement "preview year" state — updates label without triggering data fetch
+- [ ] **TASK-081.3:** Implement `onHorizontalDragEnd` — commits selected year and triggers `StatisticsProvider.selectYear()`
+- [ ] **TASK-081.4:** Add visual track/indicator showing year range position
+- [ ] **TASK-081.5:** Write tests for drag interaction and debounce behavior
+ 
+**Technical Notes:**
+- Slider approach: drag distance maps to year delta (e.g., 50px = 1 year)
+- Preview state: `_previewYear` (int?) separate from `_selectedYear` in provider
+- Debounce on release prevents unnecessary Firestore reads
+- Keep existing < > buttons and single-swipe behavior intact
+ 
+---
+ 
+### US-082: Unique Activity Names Validation
+ 
+**As a** user  
+**I want to** be prevented from creating activities with duplicate names  
+**So that** my activity list stays clean and unambiguous
+ 
+**Story Points:** 3  
+**Priority:** P1  
+**Status:** 📋 Planned  
+**Labels:** `activities`, `validation`, `data-integrity`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-008: Activities View & Categories
+ 
+**Acceptance Criteria:**
+- [ ] When adding a new activity, system checks if name already exists (case-insensitive)
+- [ ] When editing an activity, system checks if new name conflicts with existing (excluding self)
+- [ ] Uniqueness is global across entire activity tree (not scoped to parent)
+- [ ] If duplicate detected → show error message, block save
+- [ ] Error message: "Activity with this name already exists"
+- [ ] Validation happens before Firestore write (client-side + repository-level)
+ 
+**Tasks:**
+- [ ] **TASK-082.1:** Add `activityNameExists(String name, {String? excludeId})` method to `ActivityCategoryRepository`
+- [ ] **TASK-082.2:** Update `AddActivityDialog` to validate name before save
+- [ ] **TASK-082.3:** Update `EditActivityDialog` to validate name before save (exclude current activity ID)
+- [ ] **TASK-082.4:** Write tests for duplicate detection (add + edit scenarios)
+ 
+**Technical Notes:**
+- Use `.toLowerCase()` for case-insensitive comparison
+- Query all user's activities once, filter client-side (avoid multiple Firestore reads)
+- Consider caching activity names in provider for faster validation
+ 
+---
+ 
+### US-083: Unique Person Names with Nickname Enforcement
+ 
+**As a** user  
+**I want to** be prevented from creating duplicate persons (same first + last name) without a distinguishing nickname  
+**So that** I can always tell people apart in my meetings
+ 
+**Story Points:** 5  
+**Priority:** P1  
+**Status:** 📋 Planned  
+**Labels:** `friends`, `validation`, `data-integrity`, `migration`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-007: Persons View  
+**Depends on:** US-061 (Nicknames) ✅
+ 
+**Acceptance Criteria:**
+ 
+### US-084: Fix Duplicate Activities on Onboarding
+ 
+**As a** new user  
+**I want to** see each activity only once after creating my account  
+**So that** my activity list is clean and usable from the start
+ 
+**Story Points:** 5  
+**Priority:** P0 (Bug — affects all new users)  
+**Status:** 📋 Planned  
+**Labels:** `bug`, `onboarding`, `activities`, `data-integrity`, `migration`  
+**Mode:** ⚙️ Task  
+**Feature:** FEATURE-008: Activities View & Categories
+ 
+**Bug Description:**
+When a new user creates an account and logs in, all global activity categories are copied twice to their `users/{uid}/activity_categories` subcollection. This results in duplicate entries with:
+- Same name
+- Same parent
+- Different document IDs
+ 
+**Root Cause (Suspected):**
+`_copyGlobalCategories()` in `AuthService` lacks idempotency check — it runs on every login instead of only on first login.
+ 
+**Acceptance Criteria:**
+ 
+#### Fix for Future Users
+- [ ] Onboarding category copy runs only once per user (idempotent)
+- [ ] Check if user already has categories before copying
+- [ ] If `users/{uid}/activity_categories` is non-empty → skip copy
+- [ ] New users see exactly one copy of each global category
+ 
+#### Migration for Existing Users
+- [ ] One-time migration detects and removes duplicate activities
+- [ ] Duplicates identified by: same `name` + same `parentCategoryId` (case-insensitive)
+- [ ] Keep the document with earliest `createdAt` (or first alphabetically by ID if no timestamp)
+- [ ] Delete all other duplicates
+- [ ] Migration runs on app startup, before UI renders
+- [ ] Migration flag in SharedPreferences: `activity_duplicates_cleaned`
+- [ ] Log migration results: "Removed X duplicate activities for user Y"
+ 
+#### Data Integrity
+- [ ] Meetings referencing deleted duplicate activity IDs are updated to point to the kept activity ID
+- [ ] No orphaned references after migration
+ 
+**Tasks:**
+- [ ] **TASK-084.1:** Add idempotency check to `_copyGlobalCategories()` — query user's categories first, skip if non-empty
+- [ ] **TASK-084.2:** Create `DuplicateActivityMigration` service with `cleanDuplicateActivities()` method
+- [ ] **TASK-084.3:** Implement duplicate detection logic (group by name+parent, keep oldest)
+- [ ] **TASK-084.4:** Implement meeting reference update — find meetings with deleted activity IDs, replace with kept ID
+- [ ] **TASK-084.5:** Wire migration to run on app startup (SharedPreferences flag check)
+- [ ] **TASK-084.6:** Write tests for idempotency and migration scenarios
+- [ ] **TASK-084.7:** Manual verification with test account
+ 
+**Technical Notes:**
+ 
+#### Idempotency Fix (AuthService)
+```dart
+Future<void> _copyGlobalCategories(String userId) async {
+  // Check if user already has categories
+  final existingCategories = await _firestore
+      .collection('users')
+      .doc(userId)
+      .collection('activity_categories')
+      .limit(1)
+      .get();
+  
+  if (existingCategories.docs.isNotEmpty) {
+    // User already has categories — skip copy
+    return;
+  }
+  
+  // Proceed with copy...
+}
+```
+ 
+#### Migration Logic
+```dart
+Future<void> cleanDuplicateActivities(String userId) async {
+  final categories = await _getAllUserCategories(userId);
+  
+  // Group by (name.toLowerCase, parentCategoryId)
+  final groups = <String, List<ActivityCategory>>{};
+  for (final cat in categories) {
+    final key = '${cat.name.toLowerCase()}|${cat.parentCategoryId ?? "root"}';
+    groups.putIfAbsent(key, () => []).add(cat);
+  }
+  
+  // For each group with >1 item, keep oldest, delete rest
+  for (final group in groups.values) {
+    if (group.length > 1) {
+      group.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      final toKeep = group.first;
+      final toDelete = group.skip(1).toList();
+      
+      // Update meeting references and delete duplicates
+      for (final duplicate in toDelete) {
+        await _updateMeetingReferences(userId, duplicate.id, toKeep.id);
+        await _deleteCategory(userId, duplicate.id);
+      }
+    }
+  }
+}
+```
+ 
+#### Migration Execution Order
+1. Check SharedPreferences flag `activity_duplicates_cleaned`
+2. If false → run migration
+3. Set flag to true
+4. Continue to `runApp()`
+ 
+**Testing Checklist:**
+- [ ] New user gets exactly one copy of each global category
+- [ ] Existing user with duplicates → duplicates removed after migration
+- [ ] Meetings with duplicate activity IDs → references updated correctly
+- [ ] Migration runs only once (flag check)
+- [ ] Second login does not create new duplicates
+
+
+#### New Person Validation
+- [ ] When adding a person, system checks if firstName + lastName combo already exists (case-insensitive)
+- [ ] If duplicate detected → nickname field becomes required for the NEW person
+- [ ] Error message: "A person with this name already exists. Add a nickname to distinguish them."
+- [ ] Both persons must have unique nicknames (new person's nickname cannot match existing person's nickname)
+- [ ] Validation blocks save until valid nickname provided
+ 
+#### Edit Person Validation
+- [ ] When editing a person's name to match another existing person → nickname required
+- [ ] Same rules as adding: unique nickname mandatory
+ 
+#### Migration (Existing Duplicates)
+- [ ] One-time migration script runs on app update
+- [ ] Detects all duplicate firstName + lastName combinations
+- [ ] Auto-assigns suffix nicknames: "(2)", "(3)", etc. to duplicates
+- [ ] First occurrence keeps no suffix, subsequent get "(2)", "(3)"
+- [ ] Migration logged for debugging
+- [ ] User can later edit these auto-nicknames to something meaningful
+ 
+**Tasks:**
+- [ ] **TASK-083.1:** Add `personNameExists(String firstName, String lastName, {String? excludeId})` to `PersonRepository`
+- [ ] **TASK-083.2:** Update `AddPersonDialog` — if duplicate detected, show nickname field as required
+- [ ] **TASK-083.3:** Update `PersonDetailScreen` edit flow — same validation logic
+- [ ] **TASK-083.4:** Create `DuplicatePersonMigration` service with `migrateExistingDuplicates()` method
+- [ ] **TASK-083.5:** Wire migration to run once on app startup (use SharedPreferences flag `duplicates_migrated`)
+- [ ] **TASK-083.6:** Write tests for validation (add/edit) and migration scenarios
+ 
+**Technical Notes:**
+- Migration runs in `main.dart` after Firebase init, before `runApp()`
+- Use batch write for migration to ensure atomicity
+- Suffix format: nickname = "(2)" — simple and clear
+- Log migration results: "Migrated X duplicate persons"
+- If user has 3 "Jan Kowalski" → first stays as-is, second gets "(2)", third gets "(3)"
+ 
+**Migration Example:**
+```
+Before:
+- Jan Kowalski (id: abc, nickname: null)
+- Jan Kowalski (id: def, nickname: null)
+- Jan Kowalski (id: ghi, nickname: null)
+ 
+After migration:
+- Jan Kowalski (id: abc, nickname: null)      ← first occurrence unchanged
+- Jan Kowalski (id: def, nickname: "(2)")
+- Jan Kowalski (id: ghi, nickname: "(3)")
+```
+
+
 ---
 
 ---
@@ -3059,7 +3378,7 @@ after account deletion.
 
 ---
 
-## 🎛️ FEATURE-014: Configurable Metrics Dashboard
+## 🎛️ FEATURE-01: Configurable Metrics Dashboard
 
 **Priority:** P0  
 **Role:** Developer + UX Designer  
@@ -3119,146 +3438,181 @@ after account deletion.
 
 ---
 
-# 📦 EPIC-007: Friendsheet M8 - AI Assistant
+# 📦 EPIC-007: Friendsheet M7 - AI Assistant
 
-**Goal:** Allow users to ask natural language questions about their social data and get AI-powered insights
+**Goal:** Allow users to ask natural language questions about their social data and receive AI-powered insights
 
 **Business Value:** Transforms the app from a tracker into an intelligent social advisor. Demonstrates AI integration skills for portfolio.
 
+**Status:** 📋 Planned
+
 **Architecture Notes:**
-- Integration with external LLM API (Claude API or OpenAI — decision pending cost analysis)
-- User data never sent to LLM without explicit consent — privacy-first approach
-- Context window: relevant statistics summary sent as context, not raw Firestore data
-- Spike required before full implementation to evaluate: API costs per query, response latency, privacy implications
-- Consider: on-device models (Gemini Nano on Android) as zero-cost alternative for basic queries
+- BYOK (Bring Your Own Key) — user provides their own OpenAI API key
+- API calls made client-side from Flutter (key never leaves the device)
+- Personal data never sent to external API — pseudonymization on-device before every request
+- Context window: anonymized statistics summary (~200-300 tokens), not raw Firestore data
+- API key stored in Flutter Secure Storage (Android Keystore backed)
+- Explicit user consent required before first use
 
-**Decision Pending:**
-- Which LLM API to use (Claude / OpenAI / Gemini Nano on-device)
-- Cost model: per-query pricing vs subscription
-- Privacy: what data is sent as context
-
----
-
-## 🤖 FEATURE-015: AI-powered Insights
-
-**Priority:** P0  
-**Role:** Developer  
-**Status:** 💡 Future - Spike Required
+**Decisions Made:**
+- LLM provider: OpenAI (GPT-4o) — user's own key
+- Architecture: client-side BYOK (no backend proxy)
+- Pseudonymization: silent, in background — user sees real names in UI
+- Local model (Gemini Nano): deferred to future epic
 
 ---
 
-### US-040: AI Integration Spike
+## 🔑 FEATURE-023: AI Infrastructure & Privacy
 
-**As a** developer  
-**I want to** evaluate LLM API options and costs  
-**So that** I can make an informed decision before full implementation
-
-**Story Points:** 5  
-**Priority:** P0 (must complete before US-041)
-
-**Acceptance Criteria:**
-- [ ] At least 2 LLM APIs evaluated (e.g. Claude API, Gemini Nano)
-- [ ] Cost per query estimated based on typical context size
-- [ ] Latency measured for typical query
-- [ ] Privacy implications documented
-- [ ] Decision documented with rationale
-- [ ] Simple proof of concept built
-
-**Tasks:**
-- [ ] **TASK-199:** Research Claude API and OpenAI pricing - 2h
-- [ ] **TASK-200:** Research Gemini Nano on-device option - 2h
-- [ ] **TASK-201:** Build minimal proof of concept with chosen API - 3h
-- [ ] **TASK-202:** Document decision - 1h
-
----
-
-### US-047: AI Assistant Screen
-
-**As a** user  
-**I want to** ask the AI assistant questions about my social life  
-**So that** I get personalized insights beyond standard statistics
-
-**Story Points:** 13  
+**Description:** Enables users to securely connect their own OpenAI API key and gives informed consent before any data leaves the device. This is the foundation all other AI features depend on.
 **Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-088: API Key Management
+
+**As a** user
+**I want to** securely store my OpenAI API key in the app
+**So that** I can use the AI Assistant without exposing my credentials
+
+**Story Points:** 5
+**Priority:** P0
+**Labels:** `ai`, `security`, `settings`
+**Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] Chat-like UI for asking questions
-- [ ] AI has context of user's statistics summary (not raw data)
-- [ ] Example queries: "Who should I reach out to this week?", "What's my most social month?"
-- [ ] Response streamed or shown with loading indicator
-- [ ] User informed that data is sent to external API (consent)
-- [ ] Error handling for API failures
+- [ ] User can enter OpenAI API key in Settings → AI Assistant
+- [ ] Key is stored using Flutter Secure Storage (Android Keystore backed)
+- [ ] Key is masked in UI (shows only last 4 characters)
+- [ ] User can delete the key at any time
+- [ ] Key is validated before saving (format check: must start with "sk-")
+- [ ] Key is never written to Firestore, logs, or debug console
 
 **Tasks:**
-- [ ] **TASK-203:** Create AIAssistantScreen with chat UI - 3h
-- [ ] **TASK-204:** Implement context builder (statistics → prompt) - 2h
-- [ ] **TASK-205:** Integrate chosen LLM API - 3h
-- [ ] **TASK-206:** Implement consent/disclaimer flow - 1h
-- [ ] **TASK-207:** Write tests - 1h
+- [ ] **TASK-088.1:** Add `flutter_secure_storage` to pubspec.yaml — 0.5h
+- [ ] **TASK-088.2:** Create `AIKeyRepository` (save / load / delete) — 1h
+- [ ] **TASK-088.3:** Create `AISettingsScreen` with masked key input UI — 2h
+- [ ] **TASK-088.4:** Add navigation entry: Settings → AI Assistant — 0.5h
+- [ ] **TASK-088.5:** Write unit tests for `AIKeyRepository` — 1h
+
+**Dependencies:** None
+**Blocks:** US-085, US-086, US-087
 
 ---
 
-## 📝 Definition of Ready (DoR)
+### US-085: Consent Flow & Privacy Policy Update
 
-Before a User Story can be pulled into a sprint:
-- [ ] User story written in standard format
-- [ ] Acceptance criteria defined
-- [ ] Dependencies identified
-- [ ] Design/wireframes available (if UI story)
-- [ ] Technical approach discussed
+**As a** user
+**I want to** understand what data is sent to OpenAI before using AI features
+**So that** I can make an informed decision about my privacy
 
----
+**Story Points:** 3
+**Priority:** P0
+**Labels:** `ai`, `gdpr`, `legal`
+**Status:** 📋 Planned
 
-## ✅ Definition of Done (DoD)
+**Acceptance Criteria:**
+- [ ] One-time consent screen shown before the first AI query
+- [ ] Consent screen clearly explains: what IS sent (anonymized stats) and what is NOT (real names, raw data)
+- [ ] User must actively confirm with a button tap — no auto-accept
+- [ ] Consent state persisted in SharedPreferences
+- [ ] Link to full Privacy Policy available from consent screen
+- [ ] Privacy Policy updated with section 2.5 (AI data processing)
 
-Before a User Story is considered complete:
-- [ ] Code written and follows style guide
-- [ ] Unit tests written and pass
-- [ ] Widget/integration tests (if applicable)
-- [ ] Code reviewed and approved
-- [ ] Merged to main branch
-- [ ] Acceptance criteria met
-- [ ] Documentation updated
-- [ ] No critical bugs
-- [ ] Tested on target device (Android)
+**Tasks:**
+- [ ] **TASK-085.1:** Create `AIConsentScreen` widget — 1.5h
+- [ ] **TASK-085.2:** Persist consent flag in SharedPreferences — 0.5h
+- [ ] **TASK-085.3:** Add consent gate before every AI query — 0.5h
+- [ ] **TASK-085.4:** Update `privacy.md` with section 2.5 — 0.5h
 
----
-
-## 🐛 Bug Tracking Template
-
-```markdown
-**Bug ID:** BUG-XXX
-**Severity:** Critical / High / Medium / Low
-**Priority:** P0 / P1 / P2 / P3
-**Found in Sprint:** X
-**Assigned to:** Developer Name
-
-**Description:**
-Clear description of the bug
-
-**Steps to Reproduce:**
-1. Step 1
-2. Step 2
-3. Step 3
-
-**Expected Behavior:**
-What should happen
-
-**Actual Behavior:**
-What actually happens
-
-**Screenshots/Logs:**
-Attach if available
-
-**Environment:**
-- Device: 
-- OS Version:
-- App Version:
-```
+**Dependencies:** US-088
+**Blocks:** US-087
 
 ---
 
+## 🧠 FEATURE-024: Context Engine
+
+**Description:** Builds an anonymized, token-efficient summary of the user's social statistics that can be safely sent to the AI. Real friend names are replaced with generic identifiers on-device — they never leave the phone.
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
 ---
+
+### US-086: Statistics Context Builder
+
+**As a** developer
+**I want to** build a service that converts user statistics into an anonymized AI prompt context
+**So that** the AI has relevant data without receiving any personal information
+
+**Story Points:** 8
+**Priority:** P0
+**Labels:** `ai`, `privacy`, `data`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Service reads meetings and persons from Firestore / Hive cache
+- [ ] Real names replaced with Friend_A, Friend_B... (pseudonymization)
+- [ ] Local mapping table kept in memory: Friend_A ↔ real name
+- [ ] Context includes per-person: meeting count, top 3 activities, last meeting date, most active period
+- [ ] Default time window: last 12 months (configurable)
+- [ ] Serialized context fits within ~300 tokens
+- [ ] Service is fully unit testable with mock data
+
+**Tasks:**
+- [ ] **TASK-086.1:** Create `ContextBuilderService` with pseudonymization logic — 2h
+- [ ] **TASK-086.2:** Implement statistics aggregation (per-person summary) — 2h
+- [ ] **TASK-086.3:** Implement prompt serializer (stats object → string) — 1h
+- [ ] **TASK-086.4:** Write unit tests: pseudonymization, aggregation, serialization — 2h
+
+**Dependencies:** US-088
+**Blocks:** US-087
+
+---
+
+## 💬 FEATURE-025: AI Chat Interface
+
+**Description:** The user-facing AI assistant — a chat screen where users ask natural language questions about their social life and receive personalized answers based on their own data.
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-087: AI Assistant Screen
+
+**As a** user
+**I want to** ask natural language questions about my social life
+**So that** I get personalized insights beyond what standard statistics show me
+
+**Story Points:** 8
+**Priority:** P0
+**Labels:** `ai`, `ui`, `feature`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Chat-like UI with user message bubbles and AI response bubbles
+- [ ] On open: consent check — redirect to `AIConsentScreen` if not given
+- [ ] On open: API key check — redirect to `AISettingsScreen` if key missing
+- [ ] User types a question → context built by `ContextBuilderService` → sent to OpenAI API
+- [ ] Loading indicator shown during API call
+- [ ] Error handling: invalid key, network failure, quota exceeded (distinct messages)
+- [ ] Conversation history visible within session (not persisted between sessions)
+- [ ] Empty state shows 3 example prompts (e.g. "Who did I see most this year?")
+
+**Tasks:**
+- [ ] **TASK-087.1:** Create `AIChatScreen` with message list and input UI — 2h
+- [ ] **TASK-087.2:** Create `OpenAIService` (HTTP client for `/v1/chat/completions`) — 2h
+- [ ] **TASK-087.3:** Wire `ContextBuilderService` → `OpenAIService` → chat UI — 1h
+- [ ] **TASK-087.4:** Implement guard logic (consent + key check on screen open) — 0.5h
+- [ ] **TASK-087.5:** Add example prompts for empty state — 0.5h
+- [ ] **TASK-087.6:** Write widget tests — 1h
+
+**Dependencies:** US-085, US-086
+**Blocks:** None (MVP complete)
+
 
 # 📦 EPIC-INF: Developer Experience & AI Tooling
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/utils/person_sort.dart';
 import '../../data/repositories/statistics_repository.dart';
 
 /// Dialog for toggling person visibility in the Interaction Distribution chart.
@@ -114,7 +115,9 @@ class _PersonVisibilityDialogState extends State<PersonVisibilityDialog> {
               ],
             ),
             const SizedBox(height: 8),
-            ...widget.allEntries.map((entry) {
+            ...([...widget.allEntries]..sort((a, b) => normalizeForSort(a.name)
+                    .compareTo(normalizeForSort(b.name))))
+                .map((entry) {
               final isVisible = !_hidden.contains(entry.personId);
               return CheckboxListTile(
                 value: isVisible,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/utils/person_sort.dart';
 import '../../data/repositories/statistics_repository.dart';
 
 /// Dialog for managing person visibility in the Who Per Activity chart.
@@ -128,7 +129,9 @@ class _WhoPerActivityPersonFilterDialogState
               ],
             ),
             const SizedBox(height: 8),
-            ...widget.allEntries.map((entry) {
+            ...([...widget.allEntries]..sort((a, b) => normalizeForSort(a.name)
+                    .compareTo(normalizeForSort(b.name))))
+                .map((entry) {
               final isVisible = !_hidden.contains(entry.personId);
               final isDisabled = _isLastVisible(entry.personId);
               return Tooltip(
