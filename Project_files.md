@@ -49,10 +49,10 @@
 - lib/main.dart - App entry point, Firebase initialization, AuthWrapper, SplashScreen as home (US-052)
 
 ## lib/presentation/
-- lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search with parent-aware filtering (parent shown when query matches parent OR any child), CRUD with cascade delete, hasSearchResults getter (US-026, US-043, US-055, US-061)
+- lib/presentation/activities/activities_list_provider.dart - State for Activities List screen — fetch all categories (global + private), tree expansion, search with parent-aware filtering (parent shown when query matches parent OR any child), CRUD with cascade delete, hasSearchResults getter, activityNameExists(name, {excludeId}) for case-insensitive duplicate check (US-026, US-043, US-055, US-061, US-082)
 - lib/presentation/activities/activities_list_screen.dart - Activities list screen — expandable category tree, subcategory indentation with T/L tree lines (CustomPainter), child count badge on parent categories (US-075), EmptyStateWidget for empty list and no search results, long-press edit/delete for private categories, expandable search icon in AppBar (US-026, US-055)
 - lib/presentation/activities/activity_icons.dart - PNG asset icon map (51 entries) + resolveActivityIcon(String?) returning asset path or null + ActivityIcon widget with Icons.category fallback (US-026, US-055)
-- lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, 2D icon picker grid (Dialog replaces AlertDialog to avoid RenderIntrinsicWidth crash) (US-026, US-055)
+- lib/presentation/activities/add_edit_activity_dialog.dart - Add/Edit activity category dialog — name, parent selector, 2D icon picker grid (Dialog replaces AlertDialog to avoid RenderIntrinsicWidth crash); duplicate name validation via activityNameExists before save, inline _duplicateError display (US-026, US-055, US-082)
 - lib/presentation/import/import_success_screen.dart - ImportSuccessScreen — confirmed meeting count, 'GO TO MEETINGS' CTA, clears MeetingInboxProvider (US-068)
 - lib/presentation/import/inbox_item_edit_screen.dart - InboxItemEditScreen — pre-filled form per ImportCandidate; reuses PersonAutocomplete, ActivityAutocomplete, MeetingWeightStepper; Confirm saves to Firestore, Skip discards (US-068)
 - lib/presentation/import/meeting_inbox_screen.dart - MeetingInboxScreen (Pending Meetings) — list of ImportCandidate cards with progress indicator; empty state with Import from Calendar CTA; auto-navigates to ImportSuccessScreen when inbox empty after processing (US-068)
@@ -67,7 +67,7 @@
 - lib/presentation/persons/person_detail_screen.dart - Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation, NicknamesSection, _GroupsSection with CheckboxListTile per group (toggle calls addPersonToGroup/removePersonFromGroup); FriendGroupsProvider injected at call-site (US-025, US-061, US-062)
 - lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
 - lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side filter via PersonSearchHelper.matches() (firstName, lastName, nicknames), Polish diacritic-aware A→Z sort via _normalizeForSort() (US-024, US-061, US-080)
-- lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection, searchPersons uses PersonSearchHelper (US-020, US-026, US-042, US-061)
+- lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection with duplicate name validation (Check 1: _availableCategories, Check 2: _selectedCategories session), searchPersons uses PersonSearchHelper (US-020, US-026, US-042, US-061, US-082)
 - lib/presentation/providers/calendar_events_provider.dart - CalendarEventsProvider — loads calendar events via GoogleCalendarService; requiresReconnect flag set on CalendarAuthException (expired/revoked token), errorMessage set on network/other errors; reset on successful load and disconnect (US-067, US-078)
 - lib/presentation/providers/calendar_settings_provider.dart - CalendarSettingsProvider — isConnected, availableCalendars, selectedCalendarIds, includeAllDay; connectCalendar() triggers OAuth flow, toggleCalendar/toggleAllDay persist to SharedPreferences, revokeAccess() clears token and prefs; auto-selects primary calendar on first connect (US-066)
 - lib/presentation/providers/delete_account_provider.dart - DeleteAccountProvider — isLoading/errorMessage state, no-op guard against double-tap, navigates to LoginScreen via appNavigatorKey on success, clearError() (US-076)
@@ -136,10 +136,11 @@
 - test/data/services/google_calendar_service_test.mocks.dart
 
 ## test/presentation/
-- test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering with parent-aware search (parent shown when matches OR has matching child), expand/collapse, CRUD, deleteWithChildren verification, hasSearchResults getter (US-026, US-043, US-055, US-061)
+- test/presentation/activities/activities_list_provider_test.dart - ActivitiesListProvider tests — initialize, tree filtering with parent-aware search (parent shown when matches OR has matching child), expand/collapse, CRUD, deleteWithChildren verification, hasSearchResults getter, activityNameExists group (7 tests: empty list, no match, exact, case-insensitive, trim, excludeId self, excludeId conflict) (US-026, US-043, US-055, US-061, US-082)
 - test/presentation/activities/activities_list_provider_test.mocks.dart - Generated mocks for ActivitiesListProvider tests
 - test/presentation/activities/activities_list_screen_test.dart - ActivitiesListScreen tests — EmptyStateWidget for empty list, EmptyStateWidget for no search results, categories visible when present (US-055)
 - test/presentation/activities/activity_icons_test.dart - activity_icons tests — resolveActivityIcon returns PNG path, null for unknown/empty/null, map size 51, all values are valid PNG paths (US-055)
+- test/presentation/activities/add_edit_activity_dialog_test.dart - AddEditActivityDialog widget tests — duplicate name blocked in Add mode, duplicate name blocked in Edit mode, editing own name (excludeId) succeeds; uses _StubActivitiesListProvider (US-082)
 - test/presentation/meetings/meeting_detail_provider_test.dart - MeetingDetailProvider tests — categoryIds resolution, activityIds removed (US-020, US-042)
 - test/presentation/meetings/meeting_detail_provider_test.mocks.dart - Generated mocks for MeetingDetailProvider tests
 - test/presentation/persons/friend_groups_provider_test.dart - FriendGroupsProvider tests — loadGroups, loadGroups error, addGroup, updateGroup, deleteGroup, addPersonToGroup optimistic update, removePersonFromGroup optimistic update, groupsForPerson filter, clearError (15 tests) (US-062)
@@ -148,7 +149,7 @@
 - test/presentation/persons/person_detail_provider_test.mocks.dart - Generated mocks for PersonDetailProvider tests
 - test/presentation/persons/persons_list_provider_test.dart - PersonsListProvider tests — filter by firstName, lastName, nickname; no match; empty query returns all; Polish diacritic-aware sort (Łukasz after Ludwik) (US-024, US-061, US-080)
 - test/presentation/persons/persons_list_provider_test.mocks.dart - Generated mocks for PersonsListProvider tests
-- test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests — categories, ancestor propagation, addNewActivity (US-020, US-042)
+- test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests — categories, ancestor propagation, addNewActivity, addNewActivity duplicate validation group (3 tests: conflict with Firestore activities, conflict within session, unique name passes) (US-020, US-042, US-082)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
 - test/presentation/providers/calendar_events_provider_test.dart - CalendarEventsProvider tests — CalendarAuthException sets requiresReconnect true (no errorMessage), generic exception sets errorMessage (requiresReconnect false), success resets both flags (US-078)
 - test/presentation/providers/calendar_events_provider_test.mocks.dart

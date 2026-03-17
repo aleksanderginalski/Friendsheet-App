@@ -31,12 +31,18 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
   late String? _selectedParentId;
   late String _selectedIcon;
   bool _isSaving = false;
+  String? _duplicateError;
 
   @override
   void initState() {
     super.initState();
     final cat = widget.initialCategory;
     _nameController = TextEditingController(text: cat?.name ?? '');
+    _nameController.addListener(() {
+      if (_duplicateError != null) {
+        setState(() => _duplicateError = null);
+      }
+    });
     _selectedParentId = cat?.parentCategoryId ?? widget.preselectedParentId;
     _selectedIcon = (cat?.iconIdentifier.isNotEmpty == true)
         ? cat!.iconIdentifier
@@ -54,13 +60,20 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
   Future<void> _save(BuildContext context) async {
     if (!_formKey.currentState!.validate()) return;
 
+    final provider = context.read<ActivitiesListProvider>();
+    final name = _nameController.text.trim();
+    final excludeId = _isEditMode ? widget.initialCategory!.id : null;
+
+    if (provider.activityNameExists(name, excludeId: excludeId)) {
+      setState(
+          () => _duplicateError = 'Activity with this name already exists');
+      return;
+    }
+
     setState(() => _isSaving = true);
 
-    final provider = context.read<ActivitiesListProvider>();
-    final userId = AuthService().currentUserId!;
-    final name = _nameController.text.trim();
-
     try {
+      final userId = AuthService().currentUserId!;
       if (_isEditMode) {
         await provider.updateCategory(
           userId,
@@ -132,6 +145,16 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
                             return null;
                           },
                         ),
+                        if (_duplicateError != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            _duplicateError!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 16),
                         DropdownButtonFormField<String?>(
                           initialValue: _selectedParentId,
