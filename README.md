@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (603)
+✅ All tests passing (610)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.35.0 — US-081: Continuous Year Slider in Statistics (March 17, 2026)
+- ✅ `YearStepper` converted to `StatefulWidget` with `_previewYear` / `_dragAccumulator` state
+- ✅ `onHorizontalDragUpdate` — accumulates total displacement, updates year label in real-time (italic, 60% opacity)
+- ✅ `onHorizontalDragEnd` — commits selected year via `onYearChanged`, triggers `StatisticsProvider.selectYear()`
+- ✅ `onHorizontalDragCancel` — resets without committing (no accidental year change)
+- ✅ `LinearProgressIndicator` track shows position in year range — hidden when only one year exists
+- ✅ Multi-year drag works correctly (total displacement, not delta-per-frame)
+- ✅ Arrows `< >` and single-swipe behavior preserved
+- ✅ Total test count: 603 → 610 tests (+7)
 
 ### v3.34.0 — US-080: Flat Search Results in Meetings List (March 17, 2026)
 - ✅ `MeetingsListProvider` — `isSearchActive` computed getter (true when query.length >= 3), `filteredMeetings` getter for flat list rendering
