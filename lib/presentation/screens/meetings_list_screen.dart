@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/meeting.dart';
 import '../../data/services/auth_service.dart';
 import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
@@ -137,6 +138,10 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
       );
     }
 
+    if (provider.isSearchActive) {
+      return _buildFlatSearchResults(provider.filteredMeetings);
+    }
+
     final filteredMap = provider.meetingsByYearAndMonth;
     if (filteredMap.isEmpty) {
       return EmptyStateWidget(
@@ -200,6 +205,34 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             ],
         ],
       ],
+    );
+  }
+
+  // Renders a flat scrollable list of meetings for active search queries.
+  // Shows an inline message when no meetings match the query.
+  Widget _buildFlatSearchResults(List<Meeting> meetings) {
+    if (meetings.isEmpty) {
+      return EmptyStateWidget(
+        imagePath: 'assets/images/empty_state_meetings.png',
+        message: 'No results for "${_provider.searchQuery}"',
+      );
+    }
+    return ListView.builder(
+      itemCount: meetings.length,
+      itemBuilder: (context, index) {
+        final meeting = meetings[index];
+        return MeetingCard(
+          meeting: meeting,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MeetingDetailScreen(meeting: meeting),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
