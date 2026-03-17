@@ -59,6 +59,24 @@ class PersonRepository {
     await cacheInvalidator?.invalidatePersonsCache();
   }
 
+  /// Returns true if another person with the same firstName + lastName exists.
+  /// Comparison is case-insensitive and trimmed.
+  /// [excludeId] — omit this person's own document (use during edit).
+  Future<bool> isDuplicateName(
+    String userId,
+    String firstName,
+    String lastName, {
+    String? excludeId,
+  }) async {
+    final persons = await getPersonsByUser(userId);
+    final normalizedFirst = firstName.trim().toLowerCase();
+    final normalizedLast = lastName.trim().toLowerCase();
+    return persons.any((p) =>
+        p.id != excludeId &&
+        p.firstName.trim().toLowerCase() == normalizedFirst &&
+        (p.lastName?.trim().toLowerCase() ?? '') == normalizedLast);
+  }
+
   /// Deletes a person and removes them from all associated meetings atomically.
   Future<void> deletePerson(String userId, String personId) async {
     // Remove personId from meetings and groups before deleting the person

@@ -188,7 +188,11 @@ class _PersonsListBody extends StatelessWidget {
               value: context.read<FriendGroupsProvider>(),
             ),
           ],
-          child: PersonDetailScreen(person: person),
+          child: PersonDetailScreen(
+            person: person,
+            personNameExists:
+                context.read<PersonsListProvider>().personNameExists,
+          ),
         ),
       ),
     );

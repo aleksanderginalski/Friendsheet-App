@@ -73,6 +73,18 @@ class PersonsListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns true if a person with the same firstName + lastName exists.
+  /// [excludeId] — omit during edit to avoid self-match.
+  bool personNameExists(String firstName, String lastName,
+      {String? excludeId}) {
+    final normalizedFirst = firstName.trim().toLowerCase();
+    final normalizedLast = lastName.trim().toLowerCase();
+    return _allPersons.any((p) =>
+        p.id != excludeId &&
+        p.firstName.trim().toLowerCase() == normalizedFirst &&
+        (p.lastName?.trim().toLowerCase() ?? '') == normalizedLast);
+  }
+
   // Fetches all persons for the current user and stores them.
   // Sets errorMessage if the fetch fails.
   Future<void> initialize() async {
