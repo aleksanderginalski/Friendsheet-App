@@ -126,6 +126,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
               onNewPerson: provider.addNewPerson,
               onPersonRemoved: provider.removePerson,
               participantsError: provider.participantsError,
+              personNameExists: provider.personNameExists,
             ),
             const SizedBox(height: 24),
 

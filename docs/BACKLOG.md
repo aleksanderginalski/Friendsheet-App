@@ -3181,51 +3181,93 @@ after account deletion.
 ---
  
 ### US-083: Unique Person Names with Nickname Enforcement
- 
-**As a** user  
-**I want to** be prevented from creating duplicate persons (same first + last name) without a distinguishing nickname  
+
+**As a** user
+**I want to** be prevented from creating duplicate persons (same first + last name) without a distinguishing nickname
 **So that** I can always tell people apart in my meetings
- 
-**Story Points:** 5  
-**Priority:** P1  
-**Status:** 📋 Planned  
-**Labels:** `friends`, `validation`, `data-integrity`, `migration`  
-**Mode:** ⚙️ Task  
-**Feature:** FEATURE-007: Persons View  
+
+**Story Points:** 5
+**Priority:** P1
+**Status:** ✅ COMPLETED
+**Labels:** `friends`, `validation`, `data-integrity`, `ux`
+**Mode:** ⚙️ Task
+**Feature:** FEATURE-007: Persons View
 **Depends on:** US-061 (Nicknames) ✅
- 
+
 **Acceptance Criteria:**
- 
+
+#### New Person Validation
+- [x] If firstName + lastName already exists (case-insensitive, trimmed) → nickname field revealed and required
+- [x] ADD button blocked until nickname is non-empty when duplicate detected
+- [x] Editing firstName/lastName resets duplicate state — nick field hides if name is no longer a duplicate
+- [x] Error message shown inline below name fields
+
+#### Edit Person Validation
+- [x] Warning banner shown at top of edit form when person has a duplicate name and no nickname
+- [x] Banner is non-blocking — edit can be saved without nickname (user's choice)
+- [x] Banner suppressed when person already has at least one nickname
+
+#### Contextual Nick Display
+- [x] Person displayed as `"Jan Kowalski · nick"` only when another person with same name exists
+- [x] Persons without duplicates display name only — nick never shown unconditionally
+- [x] Applied in: Friends tab list, Add Meeting autocomplete dropdown, participant chips
+
+#### Search
+- [x] Full-name combined search: `"Aleksander G"` matches `"Aleksander Ginalski"` (cross-field query)
+- [x] Case-insensitive full-name match
+- [x] Individual field search preserved (existing behaviour)
+
+#### Existing Duplicates
+- [x] No data migration — existing duplicates are not auto-modified
+- [x] Warning banner surfaces duplicates organically when user opens edit form
+
+**Tasks:**
+- [x] **TASK-083.1:** Add `isDuplicateName()` to `PersonRepository` — case-insensitive, `excludeId` support
+- [x] **TASK-083.2:** Add `personNameExists()` and `displayNameFor()` to `PersonsListProvider`
+- [x] **TASK-083.3:** Update `AddPersonDialog` — hidden nick field, duplicate check, blocked Save
+- [x] **TASK-083.4:** Add warning banner to `PersonDetailScreen` edit flow
+- [x] **TASK-083.5:** Fix double-pop Navigator crash and chip re-add state bug in `PersonAutocomplete`
+- [x] **TASK-083.6:** Add full-name combined search to `PersonSearchHelper`
+- [x] **TASK-083.7:** Contextual nick display in `PersonListTile`, `GroupSection`, `PersonAutocomplete`
+- [x] **TASK-083.8:** Propagate `personNameExists` to `AddMeetingProvider`, `InboxItemEditProvider`, all call-sites
+- [x] **TASK-083.9:** Write tests — `isDuplicateName` (5), `personNameExists` (4), `PersonSearchHelper` (3)
+
+**Definition of Done:**
+- `flutter analyze` → 0 issues
+- `flutter test` → 635/635 passed
+- Manual verification: duplicate detection, nick display, cross-field search — all confirmed
+---
+
 ### US-084: Fix Duplicate Activities on Onboarding
- 
-**As a** new user  
-**I want to** see each activity only once after creating my account  
+
+**As a** new user
+**I want to** see each activity only once after creating my account
 **So that** my activity list is clean and usable from the start
- 
-**Story Points:** 5  
-**Priority:** P0 (Bug — affects all new users)  
-**Status:** 📋 Planned  
-**Labels:** `bug`, `onboarding`, `activities`, `data-integrity`, `migration`  
-**Mode:** ⚙️ Task  
+
+**Story Points:** 5
+**Priority:** P0 (Bug — affects all new users)
+**Status:** 📋 Planned
+**Labels:** `bug`, `onboarding`, `activities`, `data-integrity`, `migration`
+**Mode:** ⚙️ Task
 **Feature:** FEATURE-008: Activities View & Categories
- 
+
 **Bug Description:**
-When a new user creates an account and logs in, all global activity categories are copied twice to their `users/{uid}/activity_categories` subcollection. This results in duplicate entries with:
-- Same name
-- Same parent
-- Different document IDs
- 
+When a new user creates an account and logs in, all global activity categories are copied
+twice to their `users/{uid}/activity_categories` subcollection. This results in duplicate
+entries with the same name, same parent, but different document IDs.
+
 **Root Cause (Suspected):**
-`_copyGlobalCategories()` in `AuthService` lacks idempotency check — it runs on every login instead of only on first login.
- 
+`_copyGlobalCategories()` in `AuthService` lacks idempotency check — it runs on every
+login instead of only on first login.
+
 **Acceptance Criteria:**
- 
+
 #### Fix for Future Users
 - [ ] Onboarding category copy runs only once per user (idempotent)
 - [ ] Check if user already has categories before copying
 - [ ] If `users/{uid}/activity_categories` is non-empty → skip copy
 - [ ] New users see exactly one copy of each global category
- 
+
 #### Migration for Existing Users
 - [ ] One-time migration detects and removes duplicate activities
 - [ ] Duplicates identified by: same `name` + same `parentCategoryId` (case-insensitive)
@@ -3234,11 +3276,11 @@ When a new user creates an account and logs in, all global activity categories a
 - [ ] Migration runs on app startup, before UI renders
 - [ ] Migration flag in SharedPreferences: `activity_duplicates_cleaned`
 - [ ] Log migration results: "Removed X duplicate activities for user Y"
- 
+
 #### Data Integrity
-- [ ] Meetings referencing deleted duplicate activity IDs are updated to point to the kept activity ID
+- [ ] Meetings referencing deleted duplicate activity IDs updated to point to kept activity ID
 - [ ] No orphaned references after migration
- 
+
 **Tasks:**
 - [ ] **TASK-084.1:** Add idempotency check to `_copyGlobalCategories()` — query user's categories first, skip if non-empty
 - [ ] **TASK-084.2:** Create `DuplicateActivityMigration` service with `cleanDuplicateActivities()` method
@@ -3247,121 +3289,6 @@ When a new user creates an account and logs in, all global activity categories a
 - [ ] **TASK-084.5:** Wire migration to run on app startup (SharedPreferences flag check)
 - [ ] **TASK-084.6:** Write tests for idempotency and migration scenarios
 - [ ] **TASK-084.7:** Manual verification with test account
- 
-**Technical Notes:**
- 
-#### Idempotency Fix (AuthService)
-```dart
-Future<void> _copyGlobalCategories(String userId) async {
-  // Check if user already has categories
-  final existingCategories = await _firestore
-      .collection('users')
-      .doc(userId)
-      .collection('activity_categories')
-      .limit(1)
-      .get();
-  
-  if (existingCategories.docs.isNotEmpty) {
-    // User already has categories — skip copy
-    return;
-  }
-  
-  // Proceed with copy...
-}
-```
- 
-#### Migration Logic
-```dart
-Future<void> cleanDuplicateActivities(String userId) async {
-  final categories = await _getAllUserCategories(userId);
-  
-  // Group by (name.toLowerCase, parentCategoryId)
-  final groups = <String, List<ActivityCategory>>{};
-  for (final cat in categories) {
-    final key = '${cat.name.toLowerCase()}|${cat.parentCategoryId ?? "root"}';
-    groups.putIfAbsent(key, () => []).add(cat);
-  }
-  
-  // For each group with >1 item, keep oldest, delete rest
-  for (final group in groups.values) {
-    if (group.length > 1) {
-      group.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      final toKeep = group.first;
-      final toDelete = group.skip(1).toList();
-      
-      // Update meeting references and delete duplicates
-      for (final duplicate in toDelete) {
-        await _updateMeetingReferences(userId, duplicate.id, toKeep.id);
-        await _deleteCategory(userId, duplicate.id);
-      }
-    }
-  }
-}
-```
- 
-#### Migration Execution Order
-1. Check SharedPreferences flag `activity_duplicates_cleaned`
-2. If false → run migration
-3. Set flag to true
-4. Continue to `runApp()`
- 
-**Testing Checklist:**
-- [ ] New user gets exactly one copy of each global category
-- [ ] Existing user with duplicates → duplicates removed after migration
-- [ ] Meetings with duplicate activity IDs → references updated correctly
-- [ ] Migration runs only once (flag check)
-- [ ] Second login does not create new duplicates
-
-
-#### New Person Validation
-- [ ] When adding a person, system checks if firstName + lastName combo already exists (case-insensitive)
-- [ ] If duplicate detected → nickname field becomes required for the NEW person
-- [ ] Error message: "A person with this name already exists. Add a nickname to distinguish them."
-- [ ] Both persons must have unique nicknames (new person's nickname cannot match existing person's nickname)
-- [ ] Validation blocks save until valid nickname provided
- 
-#### Edit Person Validation
-- [ ] When editing a person's name to match another existing person → nickname required
-- [ ] Same rules as adding: unique nickname mandatory
- 
-#### Migration (Existing Duplicates)
-- [ ] One-time migration script runs on app update
-- [ ] Detects all duplicate firstName + lastName combinations
-- [ ] Auto-assigns suffix nicknames: "(2)", "(3)", etc. to duplicates
-- [ ] First occurrence keeps no suffix, subsequent get "(2)", "(3)"
-- [ ] Migration logged for debugging
-- [ ] User can later edit these auto-nicknames to something meaningful
- 
-**Tasks:**
-- [ ] **TASK-083.1:** Add `personNameExists(String firstName, String lastName, {String? excludeId})` to `PersonRepository`
-- [ ] **TASK-083.2:** Update `AddPersonDialog` — if duplicate detected, show nickname field as required
-- [ ] **TASK-083.3:** Update `PersonDetailScreen` edit flow — same validation logic
-- [ ] **TASK-083.4:** Create `DuplicatePersonMigration` service with `migrateExistingDuplicates()` method
-- [ ] **TASK-083.5:** Wire migration to run once on app startup (use SharedPreferences flag `duplicates_migrated`)
-- [ ] **TASK-083.6:** Write tests for validation (add/edit) and migration scenarios
- 
-**Technical Notes:**
-- Migration runs in `main.dart` after Firebase init, before `runApp()`
-- Use batch write for migration to ensure atomicity
-- Suffix format: nickname = "(2)" — simple and clear
-- Log migration results: "Migrated X duplicate persons"
-- If user has 3 "Jan Kowalski" → first stays as-is, second gets "(2)", third gets "(3)"
- 
-**Migration Example:**
-```
-Before:
-- Jan Kowalski (id: abc, nickname: null)
-- Jan Kowalski (id: def, nickname: null)
-- Jan Kowalski (id: ghi, nickname: null)
- 
-After migration:
-- Jan Kowalski (id: abc, nickname: null)      ← first occurrence unchanged
-- Jan Kowalski (id: def, nickname: "(2)")
-- Jan Kowalski (id: ghi, nickname: "(3)")
-```
-
-
----
 
 ---
 
