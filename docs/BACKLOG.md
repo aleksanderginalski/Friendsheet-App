@@ -3084,23 +3084,23 @@ after account deletion.
  
 **Story Points:** 3  
 **Priority:** P1  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (March 17th 2026)
 **Labels:** `meetings`, `ux`, `search`  
 **Mode:** ⚙️ Task  
 **Feature:** FEATURE-006: Meetings View
  
 **Acceptance Criteria:**
-- [ ] When search query has 3+ characters, meetings are displayed as a flat list (no year headers, no expansion tiles)
-- [ ] Each meeting card shows: name (full, not truncated), date (already includes year), participant count, weight
-- [ ] When search query is cleared or has fewer than 3 characters, view returns to standard grouped layout
-- [ ] Search still filters by meeting name (existing behavior)
-- [ ] Empty state shown when no meetings match search query
+- [x] When search query has 3+ characters, meetings are displayed as a flat list (no year headers, no expansion tiles)
+- [x] Each meeting card shows: name (full, not truncated), date (already includes year), participant count, weight
+- [x] When search query is cleared or has fewer than 3 characters, view returns to standard grouped layout
+- [x] Search still filters by meeting name (existing behavior)
+- [x] Empty state shown when no meetings match search query
  
 **Tasks:**
-- [ ] **TASK-080.1:** Add `isSearchActive` computed property to `MeetingsListProvider` (true when query.length >= 3)
-- [ ] **TASK-080.2:** Update `MeetingsListScreen` to render flat `ListView` when `isSearchActive`
-- [ ] **TASK-080.3:** Ensure `MeetingCard` displays full name without truncation in search mode
-- [ ] **TASK-080.4:** Write tests for search mode layout switching
+- [x] **TASK-080.1:** Add `isSearchActive` computed property to `MeetingsListProvider` (true when query.length >= 3)
+- [x] **TASK-080.2:** Update `MeetingsListScreen` to render flat `ListView` when `isSearchActive`
+- [x] **TASK-080.3:** Ensure `MeetingCard` displays full name without truncation in search mode
+- [x] **TASK-080.4:** Write tests for search mode layout switching
  
 **Technical Notes:**
 - Threshold of 3 characters prevents excessive re-renders on single keystrokes

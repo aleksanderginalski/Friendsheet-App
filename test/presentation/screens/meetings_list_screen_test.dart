@@ -211,11 +211,65 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.search));
       await tester.pump();
-      await tester.enterText(find.byType(TextField), 'xyz');
+      // 'xy' is 2 chars — isSearchActive is false, grouped empty state shown.
+      await tester.enterText(find.byType(TextField), 'xy');
       await tester.pump();
 
       expect(find.byType(EmptyStateWidget), findsOneWidget);
-      expect(find.text('No results for "xyz"'), findsOneWidget);
+      expect(find.text('No results for "xy"'), findsOneWidget);
+    });
+
+    testWidgets('shows flat list when search query has 3+ characters',
+        (tester) async {
+      final meeting = makeMeeting(
+          id: 'm1', date: DateTime(2026, 3, 15), name: 'Coffee with Anna');
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {},
+      );
+      stub.setSearchQuery('cof');
+      await tester.pumpWidget(buildScreen(stub));
+
+      // Grouped layout (year header) must not be present.
+      expect(find.text('2026'), findsNothing);
+      // Flat list shows the matching card directly.
+      expect(find.byType(MeetingCard), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows grouped layout when search query has fewer than 3 characters',
+        (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 3, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {},
+      );
+      stub.setSearchQuery('co');
+      await tester.pumpWidget(buildScreen(stub));
+
+      // Grouped year header must be present.
+      expect(find.text('2026'), findsOneWidget);
+    });
+
+    testWidgets(
+        'shows flat empty message when active search returns no results',
+        (tester) async {
+      final meeting = makeMeeting(id: 'm1', date: DateTime(2026, 3, 15));
+      final stub = _StubMeetingsListProvider(
+        meetingsByYear: {
+          2026: [meeting]
+        },
+        expandedYears: {},
+      );
+      stub.setSearchQuery('zzz');
+      await tester.pumpWidget(buildScreen(stub));
+
+      expect(find.byType(EmptyStateWidget), findsOneWidget);
+      expect(find.text('No results for "zzz"'), findsOneWidget);
     });
   });
 }
@@ -285,6 +339,19 @@ class _StubMeetingsListProvider extends MeetingsListProvider {
       }
     }
     return result;
+  }
+
+  @override
+  bool get isSearchActive => _stubSearchQuery.trim().length >= 3;
+
+  @override
+  List<Meeting> get filteredMeetings {
+    final lower = _stubSearchQuery.trim().toLowerCase();
+    final allMeetings = _stubMeetingsByYear.values.expand((l) => l).toList();
+    if (lower.isEmpty) return allMeetings;
+    return allMeetings
+        .where((m) => m.name.toLowerCase().contains(lower))
+        .toList();
   }
 
   @override

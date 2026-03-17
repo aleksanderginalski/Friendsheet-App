@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (593)
+✅ All tests passing (603)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,18 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.34.0 — US-080: Flat Search Results in Meetings List (March 17, 2026)
+- ✅ `MeetingsListProvider` — `isSearchActive` computed getter (true when query.length >= 3), `filteredMeetings` getter for flat list rendering
+- ✅ `MeetingsListScreen` — conditional layout: flat `ListView` via `_buildFlatSearchResults` when search active, grouped year→month layout otherwise
+- ✅ Search empty state uses `EmptyStateWidget` (illustration + message) — consistent with all other empty states in the app
+- ✅ `PersonsListProvider` — Polish diacritic-aware A→Z sort via `_normalizeForSort()` (Ł after L, not after Z)
+- ✅ Total test count: 593 → 603 tests (+10)
+
+### v3.33.0 — UX Polish (March 16 2026)
+- ✅ Alphabetical sorting (A→Z) in person filter dialogs (Interaction Distribution & Who Per Activity)
+- ✅ Polish diacritic-aware sorting — Łukasz sorts after Ludwik, not after Z
+- ✅ Extracted `normalizeForSort()` helper to `lib/core/utils/person_sort.dart`
 
 ### v3.32.0 — US-062: Friends — Groups (March 12, 2026)
 - ✅ `FriendGroup` Freezed model — `id`, `name`, `iconIdentifier` (nullable), `personIds: List<String>`; stored under `users/{uid}/friend_groups`
