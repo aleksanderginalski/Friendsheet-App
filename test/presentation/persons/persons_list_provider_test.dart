@@ -125,5 +125,40 @@ void main() {
       expect(provider.persons.length, equals(1));
       expect(provider.persons.first.firstName, equals('Anna'));
     });
+
+    group('personNameExists', () {
+      test('returns false when list is empty', () {
+        expect(provider.personNameExists('Anna', 'Kowalska'), isFalse);
+      });
+
+      test('returns true for case-insensitive duplicate', () async {
+        when(mockPersonRepository.getPersonsByUser('u1'))
+            .thenAnswer((_) async => testPersons);
+        await provider.initialize();
+
+        // 'anna' / 'kowalska' matches p2 (Anna Kowalska)
+        expect(provider.personNameExists('anna', 'kowalska'), isTrue);
+      });
+
+      test('returns false when excludeId skips own entry', () async {
+        when(mockPersonRepository.getPersonsByUser('u1'))
+            .thenAnswer((_) async => testPersons);
+        await provider.initialize();
+
+        expect(
+          provider.personNameExists('Anna', 'Kowalska', excludeId: 'p2'),
+          isFalse,
+        );
+      });
+
+      test('returns false when firstName matches but lastName differs',
+          () async {
+        when(mockPersonRepository.getPersonsByUser('u1'))
+            .thenAnswer((_) async => testPersons);
+        await provider.initialize();
+
+        expect(provider.personNameExists('Anna', 'Nowak'), isFalse);
+      });
+    });
   });
 }

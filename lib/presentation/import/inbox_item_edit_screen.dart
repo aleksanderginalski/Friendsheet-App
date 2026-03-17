@@ -135,17 +135,19 @@ class _InboxItemEditScreenState extends State<InboxItemEditScreen> {
               selectedPersons: provider.selectedPersons,
               onSearch: provider.searchPersons,
               onPersonAdded: provider.addPerson,
-              onNewPerson: ({required firstName, lastName}) {
+              onNewPerson: ({required firstName, lastName, nickname}) {
                 final userId = AuthService().currentUserId;
                 if (userId == null) return Future.value();
                 return provider.addNewPerson(
                   userId: userId,
                   firstName: firstName,
                   lastName: lastName,
+                  nickname: nickname,
                 );
               },
               onPersonRemoved: provider.removePerson,
               participantsError: provider.participantsError,
+              personNameExists: provider.personNameExists,
             ),
             const SizedBox(height: 16),
             ActivityAutocomplete(
