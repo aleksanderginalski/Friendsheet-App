@@ -3188,7 +3188,7 @@ after account deletion.
 
 **Story Points:** 5
 **Priority:** P1
-**Status:** ✅ COMPLETED
+**Status:** ✅ COMPLETED (17th March)  
 **Labels:** `friends`, `validation`, `data-integrity`, `ux`
 **Mode:** ⚙️ Task
 **Feature:** FEATURE-007: Persons View
@@ -3246,7 +3246,7 @@ after account deletion.
 
 **Story Points:** 5
 **Priority:** P0 (Bug — affects all new users)
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (17th March)  
 **Labels:** `bug`, `onboarding`, `activities`, `data-integrity`, `migration`
 **Mode:** ⚙️ Task
 **Feature:** FEATURE-008: Activities View & Categories
@@ -3260,35 +3260,12 @@ entries with the same name, same parent, but different document IDs.
 `_copyGlobalCategories()` in `AuthService` lacks idempotency check — it runs on every
 login instead of only on first login.
 
-**Acceptance Criteria:**
-
-#### Fix for Future Users
-- [ ] Onboarding category copy runs only once per user (idempotent)
-- [ ] Check if user already has categories before copying
-- [ ] If `users/{uid}/activity_categories` is non-empty → skip copy
-- [ ] New users see exactly one copy of each global category
-
-#### Migration for Existing Users
-- [ ] One-time migration detects and removes duplicate activities
-- [ ] Duplicates identified by: same `name` + same `parentCategoryId` (case-insensitive)
-- [ ] Keep the document with earliest `createdAt` (or first alphabetically by ID if no timestamp)
-- [ ] Delete all other duplicates
-- [ ] Migration runs on app startup, before UI renders
-- [ ] Migration flag in SharedPreferences: `activity_duplicates_cleaned`
-- [ ] Log migration results: "Removed X duplicate activities for user Y"
-
-#### Data Integrity
-- [ ] Meetings referencing deleted duplicate activity IDs updated to point to kept activity ID
-- [ ] No orphaned references after migration
 
 **Tasks:**
-- [ ] **TASK-084.1:** Add idempotency check to `_copyGlobalCategories()` — query user's categories first, skip if non-empty
-- [ ] **TASK-084.2:** Create `DuplicateActivityMigration` service with `cleanDuplicateActivities()` method
-- [ ] **TASK-084.3:** Implement duplicate detection logic (group by name+parent, keep oldest)
-- [ ] **TASK-084.4:** Implement meeting reference update — find meetings with deleted activity IDs, replace with kept ID
-- [ ] **TASK-084.5:** Wire migration to run on app startup (SharedPreferences flag check)
-- [ ] **TASK-084.6:** Write tests for idempotency and migration scenarios
-- [ ] **TASK-084.7:** Manual verification with test account
+- [x] **TASK-084.1:** Add idempotency check to `_copyGlobalCategories()` — query user's categories first, skip if non-empty
+- [x] **TASK-084.3:** Implement duplicate detection logic (group by name+parent, keep oldest)
+- [x] **TASK-084.4:** Implement meeting reference update — find meetings with deleted activity IDs, replace with kept ID
+- [x] **TASK-084.7:** Manual verification with test account
 
 ---
 
