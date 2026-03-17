@@ -118,39 +118,43 @@ class _PersonsListViewState extends State<_PersonsListView> {
   }
 
   Future<void> _showAddPersonDialog(BuildContext context) async {
-    final result = await showDialog<({String firstName, String lastName})>(
+    final provider = context.read<PersonsListProvider>();
+    bool personAdded = false;
+
+    // AddPersonDialog calls onSave internally and pops exactly once.
+    // Creation happens before the pop, so personAdded is set before showDialog
+    // resolves, letting us correctly show the snackbar only on success.
+    await showDialog<void>(
       context: context,
-      builder: (_) => const AddPersonDialog(initialFirstName: ''),
+      builder: (_) => AddPersonDialog(
+        initialFirstName: '',
+        personNameExists: provider.personNameExists,
+        onSave: (
+            {required firstName, String? lastName, String? nickname}) async {
+          final userId = AuthService().currentUserId!;
+          final person = Person(
+            id: '',
+            userId: userId,
+            firstName: firstName,
+            lastName: lastName,
+            nicknames: nickname != null ? [nickname] : [],
+            createdAt: DateTime.now(),
+          );
+          await PersonRepository().addPerson(person);
+          personAdded = true;
+        },
+      ),
     );
-    if (result == null || !context.mounted) return;
-    try {
-      final userId = AuthService().currentUserId!;
-      final person = Person(
-        id: '',
-        userId: userId,
-        firstName: result.firstName,
-        lastName: result.lastName.isEmpty ? null : result.lastName,
-        createdAt: DateTime.now(),
+
+    if (!context.mounted) return;
+    if (personAdded) {
+      provider.initialize();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Person added'),
+          backgroundColor: Colors.green,
+        ),
       );
-      await PersonRepository().addPerson(person);
-      if (context.mounted) {
-        context.read<PersonsListProvider>().initialize();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Person added'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add person: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 
@@ -345,6 +349,7 @@ class _PersonsListBody extends StatelessWidget {
             itemCount: allPersons.length,
             itemBuilder: (context, i) => PersonListTile(
               person: allPersons[i],
+              displayName: personsProvider.displayNameFor(allPersons[i]),
               onTap: () => _openPerson(context, allPersons[i]),
             ),
           );
@@ -364,11 +369,13 @@ class _PersonsListBody extends StatelessWidget {
                 onGroupLongPress: () => _showGroupOptions(context, group),
                 onAssignPersonTap: () =>
                     _showAssignPersonsSheet(context, group, allPersons),
+                displayNameOf: personsProvider.displayNameFor,
               ),
             if (ungrouped.isNotEmpty)
               UngroupedSection(
                 persons: ungrouped,
                 onPersonTap: (p) => _openPerson(context, p),
+                displayNameOf: personsProvider.displayNameFor,
               ),
           ],
         );
