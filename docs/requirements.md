@@ -98,13 +98,28 @@ User can view, search, edit and delete persons.
 
 **Acceptance Criteria:**
 - Alphabetical list of all persons
-- Search/filter by name
+- Search/filter by name — supports full-name combined queries (e.g. "Jan K" matches "Jan Kowalski")
 - Person detail shows: full name, meeting count
 - Edit: first name and last name editable
 - Delete: requires confirmation
 - Warning shown if person has associated meetings
 - Cannot silently delete person with meetings — explicit confirmation required
+- Persons with duplicate names display contextual nick suffix: `"Jan Kowalski · nick"`
 
+### FR-028: Unique Person Names with Nickname Enforcement ✅
+**Priority:** MUST HAVE
+
+**Description:**
+User is prevented from creating two persons with identical first and last name without
+a distinguishing nickname.
+
+**Acceptance Criteria:**
+- Duplicate check: case-insensitive, trimmed firstName + lastName comparison
+- Adding a person with duplicate name: nickname field revealed and required before save
+- Editing a person's name to match another: non-blocking warning banner shown
+- Existing duplicates: surfaced via warning banner on edit, no automatic data migration
+- Contextual nick display: `"Jan Kowalski · nick"` shown only when duplicate name exists
+- Applied in: Friends tab, Add Meeting autocomplete, participant chips
 ---
 
 ### FR-009: Activity Categories ✅
