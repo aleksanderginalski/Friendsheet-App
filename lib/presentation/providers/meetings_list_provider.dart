@@ -29,6 +29,20 @@ class MeetingsListProvider extends ChangeNotifier {
   String? get error => _error;
   String get searchQuery => _searchQuery;
 
+  // Returns true when search query has 3 or more characters.
+  // Used by MeetingsListScreen to switch between grouped and flat layout.
+  bool get isSearchActive => _searchQuery.trim().length >= 3;
+
+  // Returns a flat list of meetings matching the current search query.
+  // Used by MeetingsListScreen when isSearchActive is true.
+  List<Meeting> get filteredMeetings {
+    final lower = _searchQuery.trim().toLowerCase();
+    if (lower.isEmpty) return List.unmodifiable(_meetings);
+    return _meetings
+        .where((m) => m.name.toLowerCase().contains(lower))
+        .toList();
+  }
+
   void setSearchQuery(String query) {
     _searchQuery = query;
     notifyListeners();
