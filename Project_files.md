@@ -108,7 +108,7 @@
 - lib/presentation/widgets/statistics_visibility_dialog.dart
 - lib/presentation/widgets/who_per_activity_person_filter_dialog.dart - Person filter dialog for WhoPerActivity — persons sorted A→Z using normalizeForSort() (Polish diacritics aware); checkbox list, three-state select-all toggle, Auto-select top 10 (top 10 by weightSum for current activity), min-1 constraint (US-058, US-079)
 - lib/presentation/widgets/who_per_activity_widget.dart - Animated vertical bar chart showing persons ranked by weight sum for selected activity — ChartColors gradient per personId, _lastTargetLeft/_lastTargetBarHeight reorder animation, fixed column tops, no legend (labels below bars only); filter_icon.png opens WhoPerActivityPersonFilterDialog; AnimationController reset before forward() on year change — no pre-animation flash; duration unified to AppConstants.chartAnimationDuration (US-029, US-050, US-058, US-063, US-075)
-- lib/presentation/widgets/year_stepper.dart - YearStepper — pure StatelessWidget; 5-slot row layout: [←] [prev year dimmed] [active year centered, bold, primary color] [next year dimmed] [→]; arrows disabled at year boundaries; neighbour slots fixed width 48dp for stable layout; swipe gesture preserved (US-027, US-071)
+- lib/presentation/widgets/year_stepper.dart - YearStepper — StatefulWidget; 5-slot row layout: [←] [prev year dimmed] [active year bold/primary] [next year dimmed] [→]; onHorizontalDragUpdate accumulates displacement (_kPixelsPerYear=50.0) → updates _previewYear (italic, 60% opacity); onHorizontalDragEnd commits via onYearChanged, onHorizontalDragCancel resets without commit; LinearProgressIndicator track shows position in year range, hidden when minYear==maxYear; arrows and single-swipe behavior preserved (US-027, US-071, US-081)
 
 ## lib/services/
 - lib/services/hive_service.dart - HiveService — opens all Hive boxes at startup (stats_meetings, stats_categories, stats_persons, stats_available_years); box() accessor; clearUserData(userId) removes all cache entries for a given user across all boxes; called from main.dart before runApp() and from AuthService on logout (US-073)
@@ -191,7 +191,7 @@
 - test/presentation/widgets/statistics_section_test.dart - StatisticsSection tests — PageView present when cards visible, empty state when all hidden, InteractionDistributionWidget always in tree regardless of isDistributionLoading, tapping Icons.tune opens StatisticsVisibilityDialog, long-press restore text never shown (US-051, US-060)
 - test/presentation/widgets/statistics_section_test.mocks.dart - Generated mocks for StatisticsSection tests
 - test/presentation/widgets/who_per_activity_person_filter_dialog_test.dart - WhoPerActivityPersonFilterDialog tests — all persons checked by default, toggle callback, three-state toggle, last-visible disabled, auto-select top 10 present and callable, alphabetical order with Polish diacritics (Ludwik before Łukasz) (US-058, US-079)
-- test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case, dimmed neighbour years visible/hidden (US-027, US-071)
+- test/presentation/widgets/year_stepper_test.dart - YearStepper tests — rendering, boundary disabled states, tap callbacks, single-year edge case, dimmed neighbour years visible/hidden; drag preview (italic label during drag), commit on dragEnd, reset after dragEnd, clamp at minYear, clamp at maxYear, track hidden when single year (19 tests) (US-027, US-071, US-081)
 
 ## test/
 - test/widget_test.dart - AuthWrapper tests
