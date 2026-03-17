@@ -108,6 +108,33 @@ void main() {
       expect(countAfterSecond, equals(1));
     });
 
+    test(
+        'skips batch-copy when user already has categories in subcollection '
+        '(no onboardingCompletedAt set)', () async {
+      await seedGlobalCategory(name: 'Sport');
+
+      // Pre-populate the user's subcollection directly — simulates a user who
+      // has categories but whose onboardingCompletedAt field is absent.
+      await fakeFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('activity_categories')
+          .add({
+        'userId': userId,
+        'name': 'ExistingCategory',
+        'iconIdentifier': 'icon',
+        'isGlobal': false,
+        'isSelectableAsActivity': true,
+        'createdAt': Timestamp.now(),
+      });
+
+      await authService.copyGlobalCategoriesToUserForTest(userId);
+
+      // Subcollection guard fired — count must remain 1 (the seeded doc).
+      final snapshot = await userCategoriesRef(userId).get();
+      expect(snapshot.docs.length, equals(1));
+    });
+
     test('remaps parentCategoryId to new user copy IDs', () async {
       final parentRef =
           await fakeFirestore.collection('activity_categories').add({
