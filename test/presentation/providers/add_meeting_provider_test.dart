@@ -344,6 +344,55 @@ void main() {
     });
   });
 
+  group('addNewActivity duplicate validation', () {
+    test(
+        'blocks save when name matches existing Firestore activity (case-insensitive)',
+        () async {
+      // Pre-load a 'Climbing' category from Firestore into _availableCategories.
+      when(mockCategoryRepository.getSelectableCategories('user1')).thenAnswer(
+          (_) async => [newCategory]); // newCategory.name == 'Climbing'
+      await provider.loadCategories('user1');
+
+      await provider.addNewActivity('climbing', 'user1');
+
+      expect(provider.activitiesError,
+          equals('Activity with this name already exists'));
+      verifyNever(mockCategoryRepository.createSelectableCategory(
+        name: anyNamed('name'),
+        userId: anyNamed('userId'),
+      ));
+    });
+
+    test(
+        'blocks save when name matches activity already added in current session',
+        () async {
+      // First addNewActivity succeeds and adds to session state.
+      await provider.addNewActivity('Climbing', 'user1');
+      // Reset mock call count so we can verify no second call.
+      clearInteractions(mockCategoryRepository);
+
+      await provider.addNewActivity('CLIMBING', 'user1');
+
+      expect(provider.activitiesError,
+          equals('Activity with this name already exists'));
+      verifyNever(mockCategoryRepository.createSelectableCategory(
+        name: anyNamed('name'),
+        userId: anyNamed('userId'),
+      ));
+    });
+
+    test('allows save when name is unique', () async {
+      await provider.addNewActivity('Climbing', 'user1');
+
+      expect(provider.activitiesError, isNull);
+      expect(provider.selectedCategories, contains(newCategory));
+      verify(mockCategoryRepository.createSelectableCategory(
+        name: 'Climbing',
+        userId: 'user1',
+      )).called(1);
+    });
+  });
+
   group('AddMeetingProvider - saveMeeting', () {
     // Sets up provider with valid form state ready to save
     Future<void> setupValidForm() async {
