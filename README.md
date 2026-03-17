@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (610)
+✅ All tests passing (635)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,17 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.37.0 — US-083: Unique Person Names with Nickname Enforcement (March 17, 2026)
+- ✅ `PersonRepository` — added `isDuplicateName(userId, firstName, lastName, {excludeId})` for case-insensitive, trimmed duplicate check
+- ✅ `PersonsListProvider` — added `personNameExists(firstName, lastName, {excludeId})` (client-side, zero Firestore reads) and `displayNameFor(person)` for contextual nick display
+- ✅ `AddPersonDialog` — hidden nickname field revealed on duplicate detection; ADD blocked until nick provided; editing name resets duplicate state
+- ✅ `PersonDetailScreen` — non-blocking warning banner when duplicate name exists and person has no nickname
+- ✅ `PersonAutocomplete` — contextual `· nick` suffix in dropdown and chips; fixed chip re-add state bug; fixed double-pop Navigator crash
+- ✅ `PersonListTile` + `GroupSection` — contextual nick display via `displayName` parameter
+- ✅ `PersonSearchHelper` — full-name combined search (`"Aleksander G"` matches `"Aleksander Ginalski"`)
+- ✅ `AddMeetingProvider`, `InboxItemEditProvider` — propagated `personNameExists` and `nickname` support
+- ✅ Total test count: 623 → 635 tests (+12)
 
 ### v3.36.0 — US-082: Unique Activity Names Validation (March 17, 2026)
 - ✅ `ActivitiesListProvider` — added `activityNameExists(name, {excludeId})` for case-insensitive, trimmed duplicate check against loaded activities

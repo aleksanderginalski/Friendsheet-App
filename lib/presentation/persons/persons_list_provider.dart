@@ -73,6 +73,33 @@ class PersonsListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns true if a person with the same firstName + lastName exists.
+  /// [excludeId] — omit during edit to avoid self-match.
+  bool personNameExists(String firstName, String lastName,
+      {String? excludeId}) {
+    final normalizedFirst = firstName.trim().toLowerCase();
+    final normalizedLast = lastName.trim().toLowerCase();
+    return _allPersons.any((p) =>
+        p.id != excludeId &&
+        p.firstName.trim().toLowerCase() == normalizedFirst &&
+        (p.lastName?.trim().toLowerCase() ?? '') == normalizedLast);
+  }
+
+  /// Returns display name for [person].
+  /// Appends first nickname with a middle dot only when another person with
+  /// the same firstName + lastName exists, to help distinguish duplicates.
+  String displayNameFor(Person person) {
+    final hasDuplicate = personNameExists(
+      person.firstName,
+      person.lastName ?? '',
+      excludeId: person.id,
+    );
+    if (hasDuplicate && person.nicknames.isNotEmpty) {
+      return '${person.fullName} \u00B7 ${person.nicknames.first}';
+    }
+    return person.fullName;
+  }
+
   // Fetches all persons for the current user and stores them.
   // Sets errorMessage if the fetch fails.
   Future<void> initialize() async {

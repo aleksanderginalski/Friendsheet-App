@@ -11,7 +11,17 @@ import 'person_detail_provider.dart';
 class PersonDetailScreen extends StatefulWidget {
   final Person person;
 
-  const PersonDetailScreen({super.key, required this.person});
+  /// Optional duplicate check passed from the list screen.
+  /// When provided, an informational banner is shown on the edit dialog
+  /// if the person's name collides with another entry in the user's list.
+  final bool Function(String firstName, String lastName, {String? excludeId})?
+      personNameExists;
+
+  const PersonDetailScreen({
+    super.key,
+    required this.person,
+    this.personNameExists,
+  });
 
   @override
   State<PersonDetailScreen> createState() => _PersonDetailScreenState();
@@ -59,6 +69,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     final lastNameController =
         TextEditingController(text: person.lastName ?? '');
 
+    // Show warning banner when: caller provided a check, the name already
+    // exists in the list (excluding self), and the person has no nicknames.
+    final showDuplicateWarning = widget.personNameExists != null &&
+        person.nicknames.isEmpty &&
+        widget.personNameExists!(
+          person.firstName,
+          person.lastName ?? '',
+          excludeId: person.id,
+        );
+
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -66,6 +86,31 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (showDuplicateWarning) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(ctx).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Theme.of(ctx).colorScheme.onErrorContainer),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'You already have someone with this name. Consider adding a nickname.',
+                        style: TextStyle(
+                          color: Theme.of(ctx).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             TextField(
               controller: firstNameController,
               decoration: const InputDecoration(labelText: 'First Name'),

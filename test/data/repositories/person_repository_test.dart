@@ -130,6 +130,54 @@ void main() {
       });
     });
 
+    group('isDuplicateName', () {
+      test('returns false when no persons exist', () async {
+        final result =
+            await repository.isDuplicateName('user-1', 'Anna', 'Kowalska');
+        expect(result, isFalse);
+      });
+
+      test('returns true for exact match', () async {
+        await repository
+            .addPerson(makePerson(firstName: 'Anna', lastName: 'Kowalska'));
+
+        final result =
+            await repository.isDuplicateName('user-1', 'Anna', 'Kowalska');
+        expect(result, isTrue);
+      });
+
+      test('returns true for case-insensitive match', () async {
+        await repository
+            .addPerson(makePerson(firstName: 'Anna', lastName: 'Kowalska'));
+
+        final result =
+            await repository.isDuplicateName('user-1', 'anna', 'kowalska');
+        expect(result, isTrue);
+      });
+
+      test('returns false when excludeId matches the only duplicate', () async {
+        final saved = await repository
+            .addPerson(makePerson(firstName: 'Anna', lastName: 'Kowalska'));
+
+        final result = await repository.isDuplicateName(
+          'user-1',
+          'Anna',
+          'Kowalska',
+          excludeId: saved.id,
+        );
+        expect(result, isFalse);
+      });
+
+      test('returns false when lastName differs', () async {
+        await repository
+            .addPerson(makePerson(firstName: 'Anna', lastName: 'Kowalska'));
+
+        final result =
+            await repository.isDuplicateName('user-1', 'Anna', 'Nowak');
+        expect(result, isFalse);
+      });
+    });
+
     group('deletePerson', () {
       test('removes document from Firestore', () async {
         final saved = await repository.addPerson(makePerson());

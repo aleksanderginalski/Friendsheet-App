@@ -15,6 +15,9 @@ class GroupSection extends StatelessWidget {
   final VoidCallback? onGroupLongPress;
   final VoidCallback? onAssignPersonTap;
 
+  /// Provider-computed display name per person. Falls back to fullName.
+  final String Function(Person)? displayNameOf;
+
   const GroupSection({
     super.key,
     required this.group,
@@ -22,6 +25,7 @@ class GroupSection extends StatelessWidget {
     required this.onPersonTap,
     this.onGroupLongPress,
     this.onAssignPersonTap,
+    this.displayNameOf,
   });
 
   @override
@@ -62,7 +66,11 @@ class GroupSection extends StatelessWidget {
           ],
         ),
         children: persons
-            .map((p) => PersonListTile(person: p, onTap: () => onPersonTap(p)))
+            .map((p) => PersonListTile(
+                  person: p,
+                  displayName: displayNameOf?.call(p),
+                  onTap: () => onPersonTap(p),
+                ))
             .toList(),
       ),
     );
@@ -74,10 +82,14 @@ class UngroupedSection extends StatelessWidget {
   final List<Person> persons;
   final ValueChanged<Person> onPersonTap;
 
+  /// Provider-computed display name per person. Falls back to fullName.
+  final String Function(Person)? displayNameOf;
+
   const UngroupedSection({
     super.key,
     required this.persons,
     required this.onPersonTap,
+    this.displayNameOf,
   });
 
   @override
@@ -105,7 +117,11 @@ class UngroupedSection extends StatelessWidget {
           ),
         ),
         ...persons.map(
-          (p) => PersonListTile(person: p, onTap: () => onPersonTap(p)),
+          (p) => PersonListTile(
+            person: p,
+            displayName: displayNameOf?.call(p),
+            onTap: () => onPersonTap(p),
+          ),
         ),
       ],
     );
