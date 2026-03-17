@@ -116,14 +116,30 @@ class AuthService {
   // parentCategoryId values are remapped to point to the new user-copy IDs.
   Future<void> _copyGlobalCategoriesToUser(String userId) async {
     try {
-      // 1. Check if onboarding has already been completed for this user.
+      // 1. Check if user already has categories in their subcollection.
+      // Uses limit(1) to minimise Firestore read cost — existence check only.
+      // Covers users who have categories but no onboardingCompletedAt field
+      // (e.g. accounts created before the timestamp guard was introduced).
+      final existingSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('activity_categories')
+          .limit(1)
+          .get();
+      if (existingSnapshot.docs.isNotEmpty) {
+        debugPrint(
+            'Skipping category copy: user $userId already has categories');
+        return;
+      }
+
+      // 2. Check if onboarding has already been completed for this user.
       final userDoc = await _firestore.collection('users').doc(userId).get();
       if (userDoc.data()?['onboardingCompletedAt'] != null) {
         // Already onboarded — skip batch-copy.
         return;
       }
 
-      // 2. Fetch all global categories.
+      // 3. Fetch all global categories.
       final globalSnapshot = await _firestore
           .collection('activity_categories')
           .where('isGlobal', isEqualTo: true)
@@ -133,7 +149,7 @@ class AuthService {
         return;
       }
 
-      // 3. Pre-create document references to get new IDs before the batch write.
+      // 4. Pre-create document references to get new IDs before the batch write.
       final newRefs = List.generate(
         globalSnapshot.docs.length,
         (_) => _firestore
@@ -149,7 +165,7 @@ class AuthService {
         globalToNewId[globalSnapshot.docs[i].id] = newRefs[i].id;
       }
 
-      // 4. Batch write user copies with remapped parentCategoryIds.
+      // 5. Batch write user copies with remapped parentCategoryIds.
       final batch = _firestore.batch();
       for (var i = 0; i < globalSnapshot.docs.length; i++) {
         final globalDoc = globalSnapshot.docs[i];
@@ -174,7 +190,7 @@ class AuthService {
 
       await batch.commit();
 
-      // 5. Mark onboarding as complete so this guard fires on subsequent logins.
+      // 6. Mark onboarding as complete so this guard fires on subsequent logins.
       await _firestore.collection('users').doc(userId).set(
         {'onboardingCompletedAt': Timestamp.now()},
         SetOptions(merge: true),
