@@ -83,5 +83,24 @@ void main() {
       final person = makePerson(firstName: 'Anna', lastName: null);
       expect(PersonSearchHelper.matches(person, 'smith'), isFalse);
     });
+
+    test('matches cross-field full name (firstName prefix + lastName prefix)',
+        () {
+      final person =
+          makePerson(firstName: 'Aleksander', lastName: 'Ginalski');
+      expect(PersonSearchHelper.matches(person, 'Aleksander G'), isTrue);
+    });
+
+    test('does not match reversed cross-field query (lastName first)', () {
+      final person =
+          makePerson(firstName: 'Aleksander', lastName: 'Ginalski');
+      expect(PersonSearchHelper.matches(person, 'ski Alek'), isFalse);
+    });
+
+    test('matches cross-field full name case-insensitively', () {
+      final person =
+          makePerson(firstName: 'Aleksander', lastName: 'Ginalski');
+      expect(PersonSearchHelper.matches(person, 'aleksander g'), isTrue);
+    });
   });
 }
