@@ -183,10 +183,22 @@ class AddMeetingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Saves new person to Firestore, then adds to available and selected lists
+  /// Returns true if any loaded person has the same firstName + lastName.
+  /// Used by AddPersonDialog to gate the save when a duplicate is detected.
+  bool personNameExists(String firstName, String lastName) {
+    final normalizedFirst = firstName.trim().toLowerCase();
+    final normalizedLast = lastName.trim().toLowerCase();
+    return _availablePersons.any((p) =>
+        p.firstName.trim().toLowerCase() == normalizedFirst &&
+        (p.lastName?.trim().toLowerCase() ?? '') == normalizedLast);
+  }
+
+  // Saves new person to Firestore, then adds to available and selected lists.
+  // [nickname] — optional; added when a duplicate name was detected in the dialog.
   Future<void> addNewPerson({
     required String firstName,
     String? lastName,
+    String? nickname,
   }) async {
     final userId = _authService.currentUserId;
     if (userId == null) return;
@@ -196,6 +208,7 @@ class AddMeetingProvider extends ChangeNotifier {
       userId: userId,
       firstName: firstName,
       lastName: lastName,
+      nicknames: nickname != null ? [nickname] : [],
       createdAt: DateTime.now(),
     );
 
