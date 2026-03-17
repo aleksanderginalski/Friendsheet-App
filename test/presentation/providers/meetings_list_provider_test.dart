@@ -336,6 +336,33 @@ void main() {
       });
     });
 
+    group('isSearchActive', () {
+      test('returns false when query is empty', () {
+        provider.setSearchQuery('');
+        expect(provider.isSearchActive, isFalse);
+      });
+
+      test('returns false when query has fewer than 3 characters', () {
+        provider.setSearchQuery('ab');
+        expect(provider.isSearchActive, isFalse);
+      });
+
+      test('returns true when query has exactly 3 characters', () {
+        provider.setSearchQuery('abc');
+        expect(provider.isSearchActive, isTrue);
+      });
+
+      test('returns true when query has more than 3 characters', () {
+        provider.setSearchQuery('abcd');
+        expect(provider.isSearchActive, isTrue);
+      });
+
+      test('trims whitespace before checking length', () {
+        provider.setSearchQuery('  a ');
+        expect(provider.isSearchActive, isFalse);
+      });
+    });
+
     group('error handling', () {
       test('error is set when stream emits an error', () async {
         final controller = StreamController<List<Meeting>>();
