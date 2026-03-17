@@ -271,7 +271,30 @@ class AddMeetingProvider extends ChangeNotifier {
   // Creates a new root selectable category in the user's subcollection and
   // immediately selects it as a chip. Bypasses getAncestorIds because the
   // newly created category is always a root (parentCategoryId: null).
+  // Returns early with an error if the name duplicates an existing activity.
   Future<void> addNewActivity(String name, String userId) async {
+    final normalized = name.trim().toLowerCase();
+
+    // Check 1: conflict with activities already loaded from Firestore.
+    final hasConflictInExisting = _availableCategories.any(
+      (c) => c.name.trim().toLowerCase() == normalized,
+    );
+    if (hasConflictInExisting) {
+      _activitiesError = 'Activity with this name already exists';
+      notifyListeners();
+      return;
+    }
+
+    // Check 2: conflict with activities added in the current session.
+    final hasConflictInSession = _selectedCategories.any(
+      (c) => c.name.trim().toLowerCase() == normalized,
+    );
+    if (hasConflictInSession) {
+      _activitiesError = 'Activity with this name already exists';
+      notifyListeners();
+      return;
+    }
+
     final category = await _categoryRepository.createSelectableCategory(
       name: name,
       userId: userId,
