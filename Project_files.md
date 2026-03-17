@@ -9,7 +9,7 @@
 - lib/core/theme/app_theme.dart - AppTheme — ThemeData with Nunito typography, ColorScheme from design brief, CardThemeData (16dp), ElevatedButton (12dp), AppBar, FAB, BottomNavigationBar (US-050)
 - lib/core/theme/chart_colors.dart - ChartColors — 8-color Vivid Social palette for statistics bar charts; horizontal 4-stop cylinder gradient (edge → center → center → edge); stable id.hashCode assignment; getGradient(), getBaseColor(), getStrokeColor() (US-063)
 - lib/core/utils/firebase_test.dart - Firebase connection test
-- lib/core/utils/person_search_helper.dart - PersonSearchHelper — static matches(person, query) checks firstName, lastName, and all nicknames; shared by PersonsListProvider and PersonAutocomplete to avoid duplication (US-061)
+- lib/core/utils/person_search_helper.dart - PersonSearchHelper — static matches(person, query) checks firstName, lastName, all nicknames, and combined full-name (cross-field queries like 'Jan K' match 'Jan Kowalski'); shared by PersonsListProvider and PersonAutocomplete (US-061, US-083)
 - lib/core/utils/person_sort.dart - normalizeForSort() — Polish diacritic-aware string normalization for A→Z sorting (ą→az, ć→cz, ę→ez, ł→lz, ń→nz, ó→oz, ś→sz, ź→zz, ż→zz); shared by PersonVisibilityDialog and WhoPerActivityPersonFilterDialog (US-079)
 
 ## lib/data/
@@ -36,10 +36,10 @@
 - lib/data/repositories/cache_invalidator.dart
 - lib/data/repositories/friend_group_repository.dart - FriendGroupRepository — CRUD under users/{uid}/friend_groups; addPersonToGroup (arrayUnion, idempotent), removePersonFromGroup (arrayRemove), removePersonFromAllGroups (WriteBatch cascade — called by PersonRepository.deletePerson) (US-062)
 - lib/data/repositories/meeting_repository.dart - MeetingRepository — Firestore CRUD (save, update, delete, stream, getMeetingsCountForPerson, removePersonFromMeetings); awaits cacheInvalidator.invalidateMeetingsCache() on write (US-072, US-073)
-- lib/data/repositories/person_repository.dart - PersonRepository — Firestore CRUD (getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds); deletePerson runs removePersonFromMeetings + removePersonFromAllGroups in parallel via Future.wait; awaits cacheInvalidator.invalidatePersonsCache() on write (US-072, US-073, US-062)
+- lib/data/repositories/person_repository.dart - PersonRepository — Firestore CRUD (getPersonsByUser, addPerson, updatePerson, deletePerson with cascade, getPersonsByIds, isDuplicateName); deletePerson runs removePersonFromMeetings + removePersonFromAllGroups in parallel via Future.wait; awaits cacheInvalidator.invalidatePersonsCache() on write (US-062, US-072, US-073, US-083)
 - lib/data/repositories/statistics_repository.dart - StatisticsRepository — implements CacheInvalidator; two-level cache: in-memory (_meetingsCache, _categoriesCache, _personsCache) + Hive persistent (stats_meetings, stats_categories, stats_persons, stats_available_years boxes); JSON bridge pattern for Hive serialization; invalidate*Cache() clears both levels; loadAllStatsData() parallel Future.wait; compute* pure synchronous methods; getAvailableYears, getMeetingsForYear, getCumulativeInteractions; injected ActivityCategoryRepository and PersonRepository (US-027, US-028, US-029, US-030, US-050, US-072, US-073)
 - lib/data/services/account_deletion_service.dart - AccountDeletionService — reauthenticateWithCredential() via Google, paginated Firestore subcollection delete (meetings, persons, activity_categories) in batches of 500, Firebase Auth user delete, SharedPreferences + secure storage + Hive clear (US-076)
-- lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — batch-copy global categories on first login (US-020); calls HiveService.clearUserData(uid) on logout (US-073)
+- lib/data/services/auth_service.dart - Google Sign-In + Firebase Auth (Singleton) — _copyGlobalCategoriesToUser: idempotent via subcollection existence check (limit:1) + onboardingCompletedAt guard; batch-copies global categories on first login only (US-020, US-084); runOnboardingIfNeeded() called from main.dart AuthWrapper; calls HiveService.clearUserData(uid) on logout (US-073)
 - lib/data/services/export_service.dart - ExportService — fetches meetings, persons, activityCategories for userId, serializes to JSON, writes to external storage; injectable directoryProvider for test isolation (US-031)
 - lib/data/services/google_calendar_service.dart - GoogleCalendarService (Singleton) — incremental OAuth via requestScopes(['calendar.readonly']), token persistence in flutter_secure_storage, fetchCalendars() and fetchEvents() via Calendar REST API with _withTokenRetry<T> silent refresh on 401, revokeAccess(); CalendarAuthException propagated on unrecoverable auth failure (US-066, US-078)
 
@@ -61,12 +61,12 @@
 - lib/presentation/persons/add_edit_group_dialog.dart - AddEditGroupDialog — dual-mode (Add/Edit) Dialog with name TextField (max 50 chars) and horizontal scrollable icon picker reusing activity_icons.dart; 'None' option as first item; Save disabled when name empty; pre-fills in Edit mode (US-062)
 - lib/presentation/persons/assign_persons_bottom_sheet.dart - AssignPersonsBottomSheet — CheckboxListTile multi-select of persons not yet in group; 'Done' button calls addPersonToGroup for each selected person; snackbar when all persons already assigned (US-062)
 - lib/presentation/persons/friend_groups_provider.dart - FriendGroupsProvider — loadGroups, addGroup, updateGroup, deleteGroup, addPersonToGroup (optimistic), removePersonFromGroup (optimistic), groupsForPerson (pure client-side filter); owned by MainScreen alongside PersonsListProvider; reloaded on Friends tab tap (US-062)
-- lib/presentation/persons/group_section_widgets.dart - GroupSection (ExpansionTile with ActivityIcon/fallback, person count badge, long-press handler, person_add trailing button) + UngroupedSection (divider-style header, always visible, non-collapsible) (US-062)
+- lib/presentation/persons/group_section_widgets.dart - GroupSection (ExpansionTile with ActivityIcon/fallback, person count badge, long-press handler, person_add trailing button) + UngroupedSection (divider-style header, always visible, non-collapsible); both accept optional displayNameOf callback passed to PersonListTile (US-062, US-083)
 - lib/presentation/persons/nicknames_section.dart - NicknamesSection — extracted from PersonDetailScreen to keep it under 300 lines; InputChip list with add field for managing person nicknames (US-061, US-062)
 - lib/presentation/persons/person_detail_provider.dart - State for Person Detail screen — fetches meeting count, handles update and delete, addNickname()/removeNickname() with silent dedup (US-025, US-061)
-- lib/presentation/persons/person_detail_screen.dart - Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation, NicknamesSection, _GroupsSection with CheckboxListTile per group (toggle calls addPersonToGroup/removePersonFromGroup); FriendGroupsProvider injected at call-site (US-025, US-061, US-062)
-- lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar (US-024)
-- lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side filter via PersonSearchHelper.matches() (firstName, lastName, nicknames), Polish diacritic-aware A→Z sort via _normalizeForSort() (US-024, US-061, US-080)
+- lib/presentation/persons/person_detail_screen.dart - Person detail screen — shows name, meeting count, edit via dialog, delete with confirmation, NicknamesSection, _GroupsSection; warning banner when duplicate name exists and person has no nicknames; FriendGroupsProvider injected at call-site (US-025, US-061, US-062, US-083)
+- lib/presentation/persons/person_list_tile.dart - Person list tile widget — shows full name with initials avatar; accepts optional displayName string for contextual nick suffix (US-024, US-083)
+- lib/presentation/persons/persons_list_provider.dart - State for Persons List screen — one-time fetch, client-side filter via PersonSearchHelper.matches() (firstName, lastName, nicknames), Polish diacritic-aware A→Z sort; personNameExists(firstName, lastName, {excludeId}) for duplicate validation; displayNameFor(person) for contextual nick suffix (US-024, US-061, US-080, US-083)
 - lib/presentation/providers/add_meeting_provider.dart - State for Add/Edit Meeting screen — dual mode, categories + ancestor propagation, addNewActivity creates root category in user subcollection with duplicate name validation (Check 1: _availableCategories, Check 2: _selectedCategories session), searchPersons uses PersonSearchHelper (US-020, US-026, US-042, US-061, US-082)
 - lib/presentation/providers/calendar_events_provider.dart - CalendarEventsProvider — loads calendar events via GoogleCalendarService; requiresReconnect flag set on CalendarAuthException (expired/revoked token), errorMessage set on network/other errors; reset on successful load and disconnect (US-067, US-078)
 - lib/presentation/providers/calendar_settings_provider.dart - CalendarSettingsProvider — isConnected, availableCalendars, selectedCalendarIds, includeAllDay; connectCalendar() triggers OAuth flow, toggleCalendar/toggleAllDay persist to SharedPreferences, revokeAccess() clears token and prefs; auto-selects primary calendar on first connect (US-066)
@@ -101,7 +101,7 @@
 - lib/presentation/widgets/meeting_name_field.dart - Name input widget — pre-fills from provider in edit mode (US-023)
 - lib/presentation/widgets/meeting_weight_stepper.dart - Fibonacci weight stepper widget (US-012)
 - lib/presentation/widgets/onboarding_calendar_cta_card.dart - OnboardingCalendarCtaCard — centered Card with headline, subtext, 'Import from Calendar' ElevatedButton, cta_stats.png illustration; onDismiss (X button) and onImport callbacks (US-065)
-- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget — callback-based (selectedPersons, onPersonAdded, onPersonRemoved); search via PersonSearchHelper.matches() (firstName, lastName, nicknames); AddPersonDialog; reusable in AddMeetingScreen and InboxItemEditScreen (US-068, US-061)
+- lib/presentation/widgets/person_autocomplete.dart - Participant autocomplete widget — callback-based (selectedPersons, onPersonAdded, onPersonRemoved); search via PersonSearchHelper.matches(); contextual nick display via _displayName(); AddPersonDialog with hidden nick field revealed on duplicate detection, onSave callback pattern (single Navigator.pop), _isSaving guard; reusable in AddMeetingScreen and InboxItemEditScreen (US-061, US-068, US-083)
 - lib/presentation/widgets/person_visibility_dialog.dart - Flat checkbox list dialog for managing person visibility in Interaction Distribution metric — persons sorted A→Z using normalizeForSort() (Polish diacritics aware); Auto-select top 10 + three-state toggle icon (check_box / indeterminate_check_box / check_box_outline_blank) (US-030, US-057, US-079)
 - lib/presentation/widgets/shared_search_bar.dart - Reusable search bar widget — optional TextEditingController, clear button, filled background from colorScheme.surfaceContainerHighest; used in Activities, Meetings, Friends screens as expandable AppBar search (US-055, US-059)
 - lib/presentation/widgets/statistics_section.dart
@@ -115,7 +115,7 @@
 
 ## test/core/
 - test/core/theme/chart_colors_test.dart - ChartColors tests — stable id→index assignment, palette bounds (0–7), gradient shape (4 colors, 4 stops), stop values [0.0, 0.3, 0.7, 1.0], stroke color charcoal full opacity (US-063)
-- test/core/utils/person_search_helper_test.dart - PersonSearchHelper tests — matches by firstName, lastName, nickname (exact + partial + case-insensitive), no match, empty query returns false (US-061)
+- test/core/utils/person_search_helper_test.dart - PersonSearchHelper tests — matches by firstName, lastName, nickname (exact + partial + case-insensitive), full-name combined query ('Jan K' matches 'Jan Kowalski'), reversed order non-match, no match, empty query returns false (US-061, US-083)
 
 ## test/data/
 - test/data/models/activity_category_test.dart - ActivityCategory model tests — isSelectableAsActivity, copiedFromId, equality, serialization (US-019, US-020)
@@ -125,11 +125,11 @@
 - test/data/repositories/activity_category_repository_test.dart - ActivityCategoryRepository tests — CRUD, deleteWithChildren, getSelectableCategories, getAncestorIds, createSelectableCategory (US-019, US-020, US-042, US-043)
 - test/data/repositories/friend_group_repository_test.dart - FriendGroupRepository tests — getGroupsByUser empty, addGroup, updateGroup, deleteGroup, addPersonToGroup idempotency, removePersonFromGroup, removePersonFromAllGroups WriteBatch across multiple groups (14 tests) (US-062)
 - test/data/repositories/meeting_repository_test.dart - MeetingRepository tests (9 tests)
-- test/data/repositories/person_repository_test.dart - PersonRepository tests (10 tests)
+- test/data/repositories/person_repository_test.dart - PersonRepository tests — CRUD, cascade delete, isDuplicateName (case-insensitive, excludeId, empty list, lastName mismatch) (15 tests) (US-083)
 - test/data/repositories/statistics_repository_test.dart - StatisticsRepository tests — getAvailableYears, getMeetingsForYear, getActivityWeightBreakdown, getPersonsForActivity (incl. >30 participants regression test), getInteractionDistribution, getCumulativeInteractions, cache hit/miss behavior, invalidation, Hive cache hit/miss/invalidation (US-027, US-028, US-029, US-030, US-050, US-072, US-073)
 - test/data/services/account_deletion_service_test.dart - AccountDeletionService tests — happy path (full sequence via FakeFirebaseFirestore + mocks), reauthentication failure (no Firestore calls), Auth delete failure (US-076)
 - test/data/services/account_deletion_service_test.mocks.dart
-- test/data/services/auth_service_test.dart - AuthService tests — batch-copy guard, first login flow (US-020)
+- test/data/services/auth_service_test.dart - AuthService tests — idempotency guard (subcollection non-empty skips copy), batch-copy first login flow (US-020, US-084)
 - test/data/services/export_service_test.dart - ExportService tests — happy path, empty data, repository throws (US-031)
 - test/data/services/export_service_test.mocks.dart
 - test/data/services/google_calendar_service_test.dart
@@ -147,7 +147,7 @@
 - test/presentation/persons/friend_groups_provider_test.mocks.dart - Generated mocks for FriendGroupsProvider tests
 - test/presentation/persons/person_detail_provider_test.dart - PersonDetailProvider tests — addNickname, removeNickname, silent dedup (US-025, US-061)
 - test/presentation/persons/person_detail_provider_test.mocks.dart - Generated mocks for PersonDetailProvider tests
-- test/presentation/persons/persons_list_provider_test.dart - PersonsListProvider tests — filter by firstName, lastName, nickname; no match; empty query returns all; Polish diacritic-aware sort (Łukasz after Ludwik) (US-024, US-061, US-080)
+- test/presentation/persons/persons_list_provider_test.dart - PersonsListProvider tests — filter by firstName, lastName, nickname; no match; empty query returns all; Polish diacritic-aware sort; personNameExists (case-insensitive, excludeId, empty list, lastName mismatch) (US-024, US-061, US-080, US-083)
 - test/presentation/persons/persons_list_provider_test.mocks.dart - Generated mocks for PersonsListProvider tests
 - test/presentation/providers/add_meeting_provider_test.dart - AddMeetingProvider tests — categories, ancestor propagation, addNewActivity, addNewActivity duplicate validation group (3 tests: conflict with Firestore activities, conflict within session, unique name passes) (US-020, US-042, US-082)
 - test/presentation/providers/add_meeting_provider_test.mocks.dart - Generated mocks for AddMeetingProvider tests
