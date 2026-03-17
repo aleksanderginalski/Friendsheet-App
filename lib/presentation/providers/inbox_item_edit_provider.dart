@@ -160,16 +160,29 @@ class InboxItemEditProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Returns true if any loaded person has the same firstName + lastName.
+  /// Used by AddPersonDialog to gate the save when a duplicate is detected.
+  bool personNameExists(String firstName, String lastName) {
+    final normalizedFirst = firstName.trim().toLowerCase();
+    final normalizedLast = lastName.trim().toLowerCase();
+    return _availablePersons.any((p) =>
+        p.firstName.trim().toLowerCase() == normalizedFirst &&
+        (p.lastName?.trim().toLowerCase() ?? '') == normalizedLast);
+  }
+
+  // [nickname] — optional; added when a duplicate name was detected in the dialog.
   Future<void> addNewPerson({
     required String userId,
     required String firstName,
     String? lastName,
+    String? nickname,
   }) async {
     final person = Person(
       id: '',
       userId: userId,
       firstName: firstName,
       lastName: lastName,
+      nicknames: nickname != null ? [nickname] : [],
       createdAt: DateTime.now(),
     );
     final saved = await _personRepository.addPerson(person);
