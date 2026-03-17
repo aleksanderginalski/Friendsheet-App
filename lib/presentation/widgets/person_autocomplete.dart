@@ -63,6 +63,20 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     setState(() => _suggestions = []);
   }
 
+  // Returns display name for [person], appending first nickname with a middle
+  // dot when personNameExists reports a duplicate (same firstName + lastName).
+  String _displayName(Person person) {
+    if (widget.personNameExists == null) return person.fullName;
+    final hasDuplicate = widget.personNameExists!(
+      person.firstName,
+      person.lastName ?? '',
+    );
+    if (hasDuplicate && person.nicknames.isNotEmpty) {
+      return '${person.fullName} \u00B7 ${person.nicknames.first}';
+    }
+    return person.fullName;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -93,7 +107,7 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
                 ..._suggestions.map(
                   (person) => ListTile(
                     leading: const Icon(Icons.person),
-                    title: Text(person.fullName),
+                    title: Text(_displayName(person)),
                     onTap: () => _onSelectPerson(person),
                   ),
                 ),
@@ -131,8 +145,17 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
               children: widget.selectedPersons
                   .map(
                     (person) => Chip(
-                      label: Text(person.fullName),
-                      onDeleted: () => widget.onPersonRemoved(person),
+                      label: Text(_displayName(person)),
+                      onDeleted: () {
+                        widget.onPersonRemoved(person);
+                        // Refresh suggestions immediately after removal so the
+                        // person can be re-selected without a forced retype.
+                        // onPersonRemoved updates the provider's selectedPersons
+                        // synchronously, so onSearch now returns correct results.
+                        setState(() {
+                          _suggestions = widget.onSearch(_controller.text);
+                        });
+                      },
                     ),
                   )
                   .toList(),
@@ -150,30 +173,25 @@ class _PersonAutocompleteState extends State<PersonAutocomplete> {
     final firstName = parts.first;
     final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
-    // Dialog returns raw strings; caller handles Firestore save via onNewPerson
-    final result = await showDialog<
-        ({String firstName, String lastName, String? nickname})>(
+    // AddPersonDialog calls onSave internally and then pops exactly once.
+    // This eliminates the double-pop that occurred when the dialog returned a
+    // record and the call-site also triggered onNewPerson after showDialog.
+    await showDialog<void>(
       context: context,
       builder: (_) => AddPersonDialog(
         initialFirstName: firstName,
         initialLastName: lastName,
         personNameExists: widget.personNameExists,
+        onSave: widget.onNewPerson,
       ),
     );
 
-    if (result != null && context.mounted) {
-      await widget.onNewPerson(
-        firstName: result.firstName,
-        lastName: result.lastName.isEmpty ? null : result.lastName,
-        nickname: result.nickname,
-      );
-      _clearInput();
-    }
+    if (context.mounted) _clearInput();
   }
 }
 
 // ---------------------------------------------------------------------------
-// Add Person Dialog — returns raw strings only, no Firestore logic
+// Add Person Dialog — calls onSave directly, then pops exactly once
 // ---------------------------------------------------------------------------
 
 class AddPersonDialog extends StatefulWidget {
@@ -184,9 +202,19 @@ class AddPersonDialog extends StatefulWidget {
   /// and save is blocked if a duplicate is found without a nickname.
   final bool Function(String firstName, String lastName)? personNameExists;
 
+  /// Called with the validated inputs before the dialog pops.
+  /// Matches the PersonAutocomplete.onNewPerson signature so it can be passed
+  /// directly without an adapter lambda.
+  final Future<void> Function({
+    required String firstName,
+    String? lastName,
+    String? nickname,
+  }) onSave;
+
   const AddPersonDialog({
     super.key,
     required this.initialFirstName,
+    required this.onSave,
     this.initialLastName = '',
     this.personNameExists,
   });
@@ -202,6 +230,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
   String? _firstNameError;
   String? _duplicateError;
   bool _showNickField = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -219,7 +248,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
     super.dispose();
   }
 
-  void _submit(BuildContext context) {
+  Future<void> _submit(BuildContext context) async {
     final firstName = _firstNameController.text.trim();
     if (firstName.isEmpty) {
       setState(() => _firstNameError = 'First name is required');
@@ -227,40 +256,44 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
     }
 
     final lastName = _lastNameController.text.trim();
+    final nick = _nickController.text.trim();
 
-    // Check for duplicate name when the caller provides a check function.
-    // If a duplicate is found and no nickname is entered, reveal the nick
-    // field and block the save until the user provides a distinguishing name.
+    // When a duplicate name is found and the user has not yet entered a
+    // nickname, reveal the nick field and block saving.
     if (widget.personNameExists != null &&
-        widget.personNameExists!(firstName, lastName)) {
-      final nick = _nickController.text.trim();
-      if (nick.isEmpty) {
-        setState(() {
-          _showNickField = true;
-          _duplicateError = '${[
-            firstName,
-            lastName
-          ].where((s) => s.isNotEmpty).join(' ')} already exists. Add a nickname to tell them apart.';
-        });
-        return;
-      }
-      // Duplicate found but nickname provided — proceed with nickname
-      Navigator.of(context).pop((
-        firstName: firstName,
-        lastName: lastName,
-        nickname: nick,
-      ));
+        widget.personNameExists!(firstName, lastName) &&
+        nick.isEmpty) {
+      setState(() {
+        _showNickField = true;
+        _duplicateError = '${[
+          firstName,
+          lastName
+        ].where((s) => s.isNotEmpty).join(' ')} already exists. Add a nickname to tell them apart.';
+      });
       return;
     }
 
-    // No duplicate — return without nickname (nick field was optional)
-    Navigator.of(context).pop((
-      firstName: firstName,
-      lastName: lastName,
-      nickname: _showNickField && _nickController.text.trim().isNotEmpty
-          ? _nickController.text.trim()
-          : null,
-    ));
+    // All validation passed — create the person, then pop exactly once.
+    setState(() => _isSaving = true);
+    try {
+      await widget.onSave(
+        firstName: firstName,
+        lastName: lastName.isEmpty ? null : lastName,
+        nickname: nick.isNotEmpty ? nick : null,
+      );
+      if (context.mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add person: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -278,12 +311,16 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
               border: const OutlineInputBorder(),
             ),
             onChanged: (_) {
-              if (_firstNameError != null) {
-                setState(() => _firstNameError = null);
-              }
-              // Clear duplicate error when the user edits the name
-              if (_duplicateError != null) {
-                setState(() => _duplicateError = null);
+              // Name changed — reset duplicate state so the check re-runs on
+              // the next submit with the updated name.
+              if (_firstNameError != null ||
+                  _duplicateError != null ||
+                  _showNickField) {
+                setState(() {
+                  _firstNameError = null;
+                  _duplicateError = null;
+                  _showNickField = false;
+                });
               }
             },
             textCapitalization: TextCapitalization.words,
@@ -296,8 +333,11 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
               border: OutlineInputBorder(),
             ),
             onChanged: (_) {
-              if (_duplicateError != null) {
-                setState(() => _duplicateError = null);
+              if (_duplicateError != null || _showNickField) {
+                setState(() {
+                  _duplicateError = null;
+                  _showNickField = false;
+                });
               }
             },
             textCapitalization: TextCapitalization.words,
@@ -322,11 +362,11 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (_) {
-                // Clear duplicate error once the user starts typing a nickname
-                if (_duplicateError != null &&
-                    _nickController.text.isNotEmpty) {
-                  setState(() => _duplicateError = null);
-                }
+                // Always rebuild so the ADD button can react to the nick field
+                // becoming non-empty. Also clear the error on first keystroke.
+                setState(() {
+                  if (_duplicateError != null) _duplicateError = null;
+                });
               },
               textCapitalization: TextCapitalization.words,
             ),
@@ -335,15 +375,22 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
           child: const Text('CANCEL'),
         ),
         ElevatedButton(
-          // Block save while nick field is visible but empty (duplicate pending)
-          onPressed: _showNickField && _nickController.text.trim().isEmpty
+          // Disabled while saving or while the nick field is visible but empty.
+          onPressed: _isSaving ||
+                  (_showNickField && _nickController.text.trim().isEmpty)
               ? null
               : () => _submit(context),
-          child: const Text('ADD'),
+          child: _isSaving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('ADD'),
         ),
       ],
     );
