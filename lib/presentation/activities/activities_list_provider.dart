@@ -161,4 +161,13 @@ class ActivitiesListProvider extends ChangeNotifier {
     await _repository.deleteWithChildren(userId, categoryId);
     await initialize(userId);
   }
+
+  /// Returns true if any loaded activity has the same name (case-insensitive, trimmed).
+  /// Pass [excludeId] when editing to exclude the current activity from the check.
+  bool activityNameExists(String name, {String? excludeId}) {
+    final normalized = name.trim().toLowerCase();
+    return _allCategories.any(
+      (c) => c.name.trim().toLowerCase() == normalized && c.id != excludeId,
+    );
+  }
 }

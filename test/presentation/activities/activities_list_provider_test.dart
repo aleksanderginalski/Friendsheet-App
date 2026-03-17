@@ -234,6 +234,77 @@ void main() {
       });
     });
 
+    group('activityNameExists', () {
+      test('returns false when list is empty', () {
+        expect(provider.activityNameExists('Kino'), isFalse);
+      });
+
+      test('returns false when no name matches', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.activityNameExists('Cinema'), isFalse);
+      });
+
+      test('returns true when exact name matches', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.activityNameExists('Tennis'), isTrue);
+      });
+
+      test('returns true when name matches case-insensitively', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.activityNameExists('tennis'), isTrue);
+        expect(provider.activityNameExists('SPORTS'), isTrue);
+      });
+
+      test('returns true when name matches after trimming', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        expect(provider.activityNameExists(' Tennis '), isTrue);
+      });
+
+      test('returns false when only match is excluded by excludeId', () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        // Editing 'Tennis' (child-a1) with the same name → should not report duplicate.
+        expect(
+          provider.activityNameExists('Tennis', excludeId: 'child-a1'),
+          isFalse,
+        );
+      });
+
+      test(
+          'returns true when different activity has same name despite excludeId',
+          () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        // Editing 'Basketball' (child-a2) but entering 'Tennis' → conflict.
+        expect(
+          provider.activityNameExists('Tennis', excludeId: 'child-a2'),
+          isTrue,
+        );
+      });
+    });
+
     group('filteredCategories', () {
       test('empty query returns all categories', () async {
         when(mockRepository.getAllCategories('u1'))
