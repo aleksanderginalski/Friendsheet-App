@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (635)
+✅ All tests passing (636)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.38.0 — US-084: Fix Duplicate Activities on Onboarding (March 17, 2026)
+- ✅ `AuthService._copyGlobalCategoriesToUser()` — added subcollection existence check (`limit(1)`) as first guard: if user already has categories → skip copy entirely
+- ✅ Double guard: subcollection check (covers pre-timestamp accounts) + `onboardingCompletedAt` timestamp (covers all subsequent logins)
+- ✅ New `runOnboardingIfNeeded(userId)` public method — called from `main.dart` AuthWrapper on every auth state change; non-fatal on failure
+- ✅ Total test count: 635 → 636 tests (+1)
 
 ### v3.37.0 — US-083: Unique Person Names with Nickname Enforcement (March 17, 2026)
 - ✅ `PersonRepository` — added `isDuplicateName(userId, firstName, lastName, {excludeId})` for case-insensitive, trimmed duplicate check
