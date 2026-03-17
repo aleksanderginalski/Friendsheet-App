@@ -171,6 +171,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.36.0 — US-082: Unique Activity Names Validation (March 17, 2026)
+- ✅ `ActivitiesListProvider` — added `activityNameExists(name, {excludeId})` for case-insensitive, trimmed duplicate check against loaded activities
+- ✅ `AddEditActivityDialog` — duplicate name validation before save in both Add and Edit modes; inline `_duplicateError` display; excludeId prevents false positive on self-edit
+- ✅ `AddMeetingProvider.addNewActivity()` — two-guard validation: Check 1 against `_availableCategories` (Firestore), Check 2 against `_selectedCategories` (current session)
+- ✅ Total test count: 610 → 623 tests (+13)
+
 ### v3.35.0 — US-081: Continuous Year Slider in Statistics (March 17, 2026)
 - ✅ `YearStepper` converted to `StatefulWidget` with `_previewYear` / `_dragAccumulator` state
 - ✅ `onHorizontalDragUpdate` — accumulates total displacement, updates year label in real-time (italic, 60% opacity)
