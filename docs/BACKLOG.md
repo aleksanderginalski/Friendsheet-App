@@ -3054,20 +3054,20 @@ after account deletion.
  
 **Story Points:** 2  
 **Priority:** P1  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (March 16th 2026)  
 **Labels:** `statistics`, `ux`, `filter`  
 **Mode:** ⚙️ Task  
 **Feature:** FEATURE-009: Core Statistics
  
 **Acceptance Criteria:**
-- [ ] `PersonVisibilityDialog` displays persons sorted A→Z by full name (firstName + lastName)
-- [ ] Sorting is case-insensitive
-- [ ] Sorting applies to both `InteractionDistributionWidget` and `WhoPerActivityWidget` filter dialogs
-- [ ] No impact on the order of bars in charts (chart order remains by weight/value)
+- [x] `PersonVisibilityDialog` displays persons sorted A→Z by full name (firstName + lastName)
+- [x] Sorting is case-insensitive
+- [x] Sorting applies to both `InteractionDistributionWidget` and `WhoPerActivityWidget` filter dialogs
+- [x] No impact on the order of bars in charts (chart order remains by weight/value)
  
 **Tasks:**
-- [ ] **TASK-079.1:** Update `PersonVisibilityDialog` to sort persons alphabetically before rendering
-- [ ] **TASK-079.2:** Write test verifying alphabetical order in dialog
+- [x] **TASK-079.1:** Update `PersonVisibilityDialog` to sort persons alphabetically before rendering
+- [x] **TASK-079.2:** Write test verifying alphabetical order in dialog
  
 **Technical Notes:**
 - Sort in the widget/dialog layer, not in repository — chart data order must remain by value
@@ -3117,26 +3117,26 @@ after account deletion.
  
 **Story Points:** 3  
 **Priority:** P2  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (17th March)  
 **Labels:** `statistics`, `ux`, `year-selector`  
 **Mode:** ⚙️ Task  
 **Feature:** FEATURE-009: Core Statistics
  
 **Acceptance Criteria:**
-- [ ] Year selector supports continuous horizontal drag gesture (slider behavior)
-- [ ] While dragging, year label updates in real-time (visual feedback)
-- [ ] Statistics data loads only after user releases finger (debounced load)
-- [ ] Existing tap-to-step (< >) buttons remain functional
-- [ ] Single swipe gesture (quick flick) still advances by one year (existing behavior preserved)
-- [ ] Year range: from first meeting year to current year (derived from data)
-- [ ] Visual indicator showing position in year range (e.g., subtle track or dots)
+- [x] Year selector supports continuous horizontal drag gesture (slider behavior)
+- [x] While dragging, year label updates in real-time (visual feedback)
+- [x] Statistics data loads only after user releases finger (debounced load)
+- [x] Existing tap-to-step (< >) buttons remain functional
+- [x] Single swipe gesture (quick flick) still advances by one year (existing behavior preserved)
+- [x] Year range: from first meeting year to current year (derived from data)
+- [x] Visual indicator showing position in year range (e.g., subtle track or dots)
  
 **Tasks:**
-- [ ] **TASK-081.1:** Extend `YearStepper` with `GestureDetector.onHorizontalDragUpdate` for slider behavior
-- [ ] **TASK-081.2:** Implement "preview year" state — updates label without triggering data fetch
-- [ ] **TASK-081.3:** Implement `onHorizontalDragEnd` — commits selected year and triggers `StatisticsProvider.selectYear()`
-- [ ] **TASK-081.4:** Add visual track/indicator showing year range position
-- [ ] **TASK-081.5:** Write tests for drag interaction and debounce behavior
+- [x] **TASK-081.1:** Extend `YearStepper` with `GestureDetector.onHorizontalDragUpdate` for slider behavior
+- [x] **TASK-081.2:** Implement "preview year" state — updates label without triggering data fetch
+- [x] **TASK-081.3:** Implement `onHorizontalDragEnd` — commits selected year and triggers `StatisticsProvider.selectYear()`
+- [x] **TASK-081.4:** Add visual track/indicator showing year range position
+- [x] **TASK-081.5:** Write tests for drag interaction and debounce behavior
  
 **Technical Notes:**
 - Slider approach: drag distance maps to year delta (e.g., 50px = 1 year)
