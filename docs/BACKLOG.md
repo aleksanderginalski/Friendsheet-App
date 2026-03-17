@@ -3154,24 +3154,24 @@ after account deletion.
  
 **Story Points:** 3  
 **Priority:** P1  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (17th March)  
 **Labels:** `activities`, `validation`, `data-integrity`  
 **Mode:** ⚙️ Task  
 **Feature:** FEATURE-008: Activities View & Categories
  
 **Acceptance Criteria:**
-- [ ] When adding a new activity, system checks if name already exists (case-insensitive)
-- [ ] When editing an activity, system checks if new name conflicts with existing (excluding self)
-- [ ] Uniqueness is global across entire activity tree (not scoped to parent)
-- [ ] If duplicate detected → show error message, block save
-- [ ] Error message: "Activity with this name already exists"
-- [ ] Validation happens before Firestore write (client-side + repository-level)
+- [x] When adding a new activity, system checks if name already exists (case-insensitive)
+- [x] When editing an activity, system checks if new name conflicts with existing (excluding self)
+- [x] Uniqueness is global across entire activity tree (not scoped to parent)
+- [x] If duplicate detected → show error message, block save
+- [x] Error message: "Activity with this name already exists"
+- [x] Validation happens before Firestore write (client-side + repository-level)
  
 **Tasks:**
-- [ ] **TASK-082.1:** Add `activityNameExists(String name, {String? excludeId})` method to `ActivityCategoryRepository`
-- [ ] **TASK-082.2:** Update `AddActivityDialog` to validate name before save
-- [ ] **TASK-082.3:** Update `EditActivityDialog` to validate name before save (exclude current activity ID)
-- [ ] **TASK-082.4:** Write tests for duplicate detection (add + edit scenarios)
+- [x] **TASK-082.1:** Add `activityNameExists(String name, {String? excludeId})` method to `ActivityCategoryRepository`
+- [x] **TASK-082.2:** Update `AddActivityDialog` to validate name before save
+- [x] **TASK-082.3:** Update `EditActivityDialog` to validate name before save (exclude current activity ID)
+- [x] **TASK-082.4:** Write tests for duplicate detection (add + edit scenarios)
  
 **Technical Notes:**
 - Use `.toLowerCase()` for case-insensitive comparison
