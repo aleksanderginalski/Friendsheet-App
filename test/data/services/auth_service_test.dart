@@ -190,6 +190,21 @@ void main() {
       }
     });
 
+    test('in-memory lock prevents duplicate copy on concurrent calls',
+        () async {
+      await seedGlobalCategory(name: 'Sport');
+      await seedGlobalCategory(name: 'Art');
+
+      // Fire two calls without awaiting the first — the lock must prevent the
+      // second invocation from writing a duplicate set of categories.
+      final first = authService.copyGlobalCategoriesToUserForTest(userId);
+      final second = authService.copyGlobalCategoriesToUserForTest(userId);
+      await Future.wait([first, second]);
+
+      final snapshot = await userCategoriesRef(userId).get();
+      expect(snapshot.docs.length, equals(2)); // 2 globals, not 4
+    });
+
     test('sets copiedFromId to original global document ID', () async {
       final globalRef =
           await fakeFirestore.collection('activity_categories').add({
