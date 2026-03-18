@@ -62,6 +62,8 @@ Jeśli coś wpływa na architekturę:
 ### Check each document explicitly before closing:
 - architecture.md — new services, data flows, Firestore paths, navigation changes?
 - requirements.md — new functional or non-functional requirements emerged?
+- wireframes.md — new screens or changed user flows described during session?
+- friendsheet_design_brief.md — new UI patterns or visual decisions made?
 
 For each: read the current content, compare with session decisions, update if stale.
 Do not skip — write "no changes needed" explicitly if nothing changed.

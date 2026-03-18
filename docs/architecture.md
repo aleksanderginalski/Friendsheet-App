@@ -156,7 +156,7 @@ graph TB
         B4[Activity Category Service - M2]
         B5[Statistics Service - M3]
         B6[Export Service - M3]
-        B7[Invitation Service - M5]
+        B7[Meeting Sharing Service - M5]
         B8[Google Calendar Service - M6]
         B8b[Google Photos Service - M6]
         B9[AI Context Builder - M8]
@@ -169,7 +169,7 @@ graph TB
         C4[Activity Category Repository - M2]
         C5[Statistics Repository - M3]
         C6[Friend Group Repository - US-062]
-        C7[Invitation Code Repository - M5]
+        C7[Sharing Token Repository - M5]
         C8[Dashboard Config Repository - M7]
     end
     
@@ -628,10 +628,13 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isOwner(userId);
     }
 
-    match /invitation_codes/{codeId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(request.resource.data.senderId);
-      allow update: if isAuthenticated();
+    // Removed: root-level invitation_codes collection no longer exists (replaced by
+    // users/{uid}/sharing_tokens subcollection — see M5 sharing section above)
+
+    match /users/{userId}/pending_meetings/{packageId} {
+      // Recipient reads/deletes their own packages; sender writes (linkedUserId validated in service)
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated();
     }
 
     match /users/{userId}/dashboard_config/{configId} {
