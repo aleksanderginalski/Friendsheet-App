@@ -76,18 +76,39 @@ git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
 
 After all documentation is updated, ask: "Chcesz uruchomić /retro przed pushem? (t/n)"
 
-Then remind the user:
+Then provide the full closing sequence — fill in actual branch name, US number, and files:
 
+**Step 1 — Commit docs**
 ```powershell
-# Documentation complete. Closing sequence:
 git add [list changed files explicitly]
 git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
-git push
-gh pr create --title "docs: US-XXX" --body "Documentation update"
-# After merge:
+```
+
+**Step 2 — Push**
+```powershell
+git push -u origin [branch-name]
+```
+
+**Step 3 — Pull Request**
+```powershell
+gh pr create --title "feat: US-XXX [short description]" --body "Closes #XXX"
+```
+Or create the PR manually on GitHub. Then merge it.
+
+**Step 4 — Confirm merge**
+Ask the user: "Czy zmergowałeś PR na GitHubie? Napisz 'tak' gdy gotowe."
+
+Wait for confirmation before showing Step 5.
+
+**Step 5 — Cleanup (after merge confirmation)**
+```powershell
 git checkout main
 git pull
+git branch -d [branch-name]
 ```
+
+Note: Never use `&&` to chain commands — run each command separately.
+PowerShell 5.x (Windows 10 default) does not support `&&`.
 
 ## Constraints
 - Never commit
