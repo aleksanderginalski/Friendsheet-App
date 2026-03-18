@@ -172,6 +172,8 @@ Add to `.claude/settings.json` in project root:
 
 Test after setup: stage a file with a fake key string → verify `git add` is blocked.
 
+> **Windows limitation:** PreToolUse/PostToolUse hooks do not support stdin parsing on Windows in Claude Code. The hook has been removed from this project. Protection is handled by `.gitignore` instead. Revisit if moving to macOS/Linux.
+
 **Files that must always be in `.gitignore`:**
 - `firebase_options.dart`
 - `google-services.json`
