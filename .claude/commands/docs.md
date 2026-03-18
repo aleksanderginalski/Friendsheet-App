@@ -53,6 +53,12 @@ For every US:
 - Technical debt? → flag in README or BACKLOG
 - Project Invariant changed? → alert user immediately
 
+## Commit message format
+
+`docs: update documentation for US-XXX (FileA, FileB, FileC)`
+
+List only files actually modified. Do not write "and others" — be explicit.
+
 ## Output
 
 ### Docs Report
@@ -60,7 +66,28 @@ For every US:
 - **Files updated:** [list]
 - **Architectural impact:** [none / description]
 - **Technical debt:** [none / description]
-- **Proposed commit:** `docs: update documentation for US-XXX`
+- **Proposed commit:**
+```powershell
+git add [list changed files explicitly]
+git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
+```
+
+## Closing sequence
+
+After all documentation is updated, ask: "Chcesz uruchomić /retro przed pushem? (t/n)"
+
+Then remind the user:
+
+```powershell
+# Documentation complete. Closing sequence:
+git add [list changed files explicitly]
+git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
+git push
+gh pr create --title "docs: US-XXX" --body "Documentation update"
+# After merge:
+git checkout main
+git pull
+```
 
 ## Constraints
 - Never commit
