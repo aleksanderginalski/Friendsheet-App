@@ -171,6 +171,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.39.0 — US-INF-004: Multi-Agent System Foundation (March 18, 2026)
+- ✅ `MULTI_AGENT_ARCHITECTURE.md` added — full architecture for 8 specialized Claude Code agents
+- ✅ `.claude/commands/` directory created with all 7 agent files: `/pm`, `/planning`, `/dev`, `/qa`, `/debug`, `/docs`, `/retro`, `/discover`
+- ✅ `CLAUDE.md` extended — Multi-Agent System reference section listing all 8 agents and daily/strategic workflows
+- ✅ `.claude/settings.json` evaluated and removed — `PreToolUse` hooks not supported on Windows; sensitive data protection handled via agent instructions instead
+- ✅ Multi-agent daily workflow established: `/pm → /planning → /dev → manual verify → /qa → /docs → [/retro]`
+
 ### v3.38.0 — US-084: Fix Duplicate Activities on Onboarding (March 17, 2026)
 - ✅ `AuthService._copyGlobalCategoriesToUser()` — added subcollection existence check (`limit(1)`) as first guard: if user already has categories → skip copy entirely
 - ✅ Double guard: subcollection check (covers pre-timestamp accounts) + `onboardingCompletedAt` timestamp (covers all subsequent logins)
