@@ -171,6 +171,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.40.0 — US-INF-005: Daily Flow Agents — Validation (March 18, 2026)
+- ✅ `/pm`, `/planning`, `/qa`, `/debug`, `/docs` agents validated on a real US (US-INF-005 self-test)
+- ✅ Full daily flow exercised: `/pm → /planning → /dev → /qa → /docs`
+- ✅ All agents confirmed: git approval rule respected — no autonomous commits
+- ✅ `TEST_CASES.md` extended — TC-AGENTS-001–004 manual test cases for agent behavior
+- ✅ `BACKLOG.md` — US-INF-005 marked ✅ COMPLETED
+
 ### v3.39.0 — US-INF-004: Multi-Agent System Foundation (March 18, 2026)
 - ✅ `MULTI_AGENT_ARCHITECTURE.md` added — full architecture for 8 specialized Claude Code agents
 - ✅ `.claude/commands/` directory created with all 7 agent files: `/pm`, `/planning`, `/dev`, `/qa`, `/debug`, `/docs`, `/retro`, `/discover`

@@ -1,8 +1,8 @@
 # Friendsheet — Manual Test Cases
 
-**Version:** 2.0  
-**Date:** March 2026  
-**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox  
+**Version:** 2.1
+**Date:** March 2026
+**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox · INF Multi-Agent System  
 **Tester:** QA Engineer  
 **Environment:** Android physical device / emulator (API 21+)
 
@@ -863,6 +863,61 @@
 
 ---
 
+## TC-AGENTS: Multi-Agent System (US-INF-005)
+
+Manual verification — no Flutter code involved. Run once after agent files are created or modified.
+
+### TC-AGENTS-001 — /pm session start
+**Priority:** P2
+**Related US:** US-INF-005
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Run `/pm` in Claude Code | Agent greets in Polish, runs `git status` and `git log main..HEAD` | ✅ | Verified March 18, 2026 |
+| 2 | Observe output | Reports clean repo or lists uncommitted changes/unpushed commits | ✅ | |
+| 3 | Ask about current US | Agent asks "Nad czym dziś pracujemy?" and waits | ✅ | |
+| 4 | Answer with US number | Agent routes to correct next agent (/planning, /qa, /debug, /docs) | ✅ | |
+
+---
+
+### TC-AGENTS-002 — /planning US verification
+**Priority:** P2
+**Related US:** US-INF-005
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Run `/planning` | Agent reads BACKLOG.md and asks which US to verify | ✅ | Verified March 18, 2026 |
+| 2 | Provide US number | Agent checks Acceptance Criteria, dependencies, labels | ✅ | |
+| 3 | Observe User Acceptance Scenario | Written in plain language, no technical jargon, in Polish | ✅ | |
+| 4 | Approve scenario | Agent generates Task instruction in English for /dev | ✅ | |
+| 5 | Observe instruction format | Contains: Context, Read, Tasks (numbered), Constraints, After implementation | ✅ | |
+
+---
+
+### TC-AGENTS-003 — /qa TEST_CASES.md update
+**Priority:** P2
+**Related US:** US-INF-005
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Run `/qa` | Agent asks what to test (a/b/c options) | ✅ | Verified March 18, 2026 |
+| 2 | Select d) TEST_CASES.md update for non-code US | Agent updates TEST_CASES.md with manual test cases | ✅ | |
+| 3 | Verify agent does NOT run flutter test | No test command executed for infrastructure-only US | ✅ | |
+| 4 | Check TEST_CASES.md | New TC-AGENTS section added | ✅ | |
+
+---
+
+### TC-AGENTS-004 — git approval rule
+**Priority:** P1
+**Related US:** US-INF-005
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Complete any agent task (/planning, /qa, /docs) | Agent produces output but does NOT run `git commit` or `git push` | ✅ | Verified March 18, 2026 |
+| 2 | Observe agent closing message | Agent instructs user to commit manually or approve commit | ✅ | |
+
+---
+
 ## Regression Checklist
 
 Run after every release or hotfix:
@@ -894,5 +949,5 @@ Run after every release or hotfix:
 
 ---
 
-*Document maintained alongside BACKLOG.md. Update Status column after each test run.*  
-*Scope: M1 + M2 + M3 + M3.5 (through US-062) + M5 Calendar Import and Meeting Inbox.*
+*Document maintained alongside BACKLOG.md. Update Status column after each test run.*
+*Scope: M1 + M2 + M3 + M3.5 (through US-062) + M5 Calendar Import and Meeting Inbox + INF Multi-Agent System.*

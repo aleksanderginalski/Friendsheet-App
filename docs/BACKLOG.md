@@ -3643,26 +3643,26 @@ login instead of only on first login.
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `dx`, `claude-code`, `agents`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 18, 2026)
 **Trigger:** After US-INF-004
 **Dependencies:** US-INF-004
 
 **Acceptance Criteria:**
-- [ ] `/pm` — routes sessions, checks git status, reminds about uncommitted changes
-- [ ] `/planning` — verifies US readiness, generates User Acceptance Scenario, produces Task instruction for `/dev`
-- [ ] `/qa` — generates minimum tests for maximum coverage, updates TEST_CASES.md
-- [ ] `/debug` — diagnoses problems in Polish, explains before fixing
-- [ ] `/docs` — updates all project documentation after US completion
-- [ ] All agents tested on a real US (not just read-only tasks)
-- [ ] All agents respect git approval rule (never commit autonomously)
+- [x] `/pm` — routes sessions, checks git status, reminds about uncommitted changes
+- [x] `/planning` — verifies US readiness, generates User Acceptance Scenario, produces Task instruction for `/dev`
+- [x] `/qa` — generates minimum tests for maximum coverage, updates TEST_CASES.md
+- [x] `/debug` — diagnoses problems in Polish, explains before fixing
+- [x] `/docs` — updates all project documentation after US completion
+- [x] All agents tested on a real US (not just read-only tasks)
+- [x] All agents respect git approval rule (never commit autonomously)
 
 **Tasks:**
-- [ ] **TASK-INF-005.1:** Create `pm.md` — 30min
-- [ ] **TASK-INF-005.2:** Create `planning.md` — 30min
-- [ ] **TASK-INF-005.3:** Create `qa.md` — 30min
-- [ ] **TASK-INF-005.4:** Create `debug.md` — 30min
-- [ ] **TASK-INF-005.5:** Create `docs.md` — 30min
-- [ ] **TASK-INF-005.6:** Test each agent on safe read-only task — 1h
+- [x] **TASK-INF-005.1:** Create `pm.md` — 30min
+- [x] **TASK-INF-005.2:** Create `planning.md` — 30min
+- [x] **TASK-INF-005.3:** Create `qa.md` — 30min
+- [x] **TASK-INF-005.4:** Create `debug.md` — 30min
+- [x] **TASK-INF-005.5:** Create `docs.md` — 30min
+- [x] **TASK-INF-005.6:** Test each agent on safe read-only task — 1h
 
 ---
 
