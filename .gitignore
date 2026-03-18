@@ -88,3 +88,6 @@ scripts/migration/.venv/
 
 # Claude Code local settings (may contain sensitive data)
 .claude/settings.local.json
+
+# Keystore certificates
+*.pem
