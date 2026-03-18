@@ -85,3 +85,6 @@ scripts/migration/serviceAccountKey.json
 scripts/migration/*.xlsx
 scripts/migration/__pycache__/
 scripts/migration/.venv/
+
+# Claude Code local settings (may contain sensitive data)
+.claude/settings.local.json
