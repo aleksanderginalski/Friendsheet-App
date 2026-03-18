@@ -33,6 +33,10 @@ class AuthService {
   late final FirebaseAuth _auth;
   late final GoogleSignIn _googleSignIn;
 
+  // In-memory lock: prevents duplicate batch-copy when auth stream fires
+  // multiple events in rapid succession before the first copy completes.
+  bool _isCopyingCategories = false;
+
   /// Get current authenticated user
   User? get currentUser => _auth.currentUser;
 
@@ -76,14 +80,7 @@ class AuthService {
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
 
-      final user = userCredential.user;
-      if (user != null) {
-        // Step 5: Ensure the user has their private category library.
-        // Copies global categories on first login; no-op on subsequent logins.
-        await _copyGlobalCategoriesToUser(user.uid);
-      }
-
-      return user;
+      return userCredential.user;
     } catch (e) {
       return null;
     }
@@ -115,6 +112,8 @@ class AuthService {
   // re-login and re-install do not duplicate categories.
   // parentCategoryId values are remapped to point to the new user-copy IDs.
   Future<void> _copyGlobalCategoriesToUser(String userId) async {
+    if (_isCopyingCategories) return;
+    _isCopyingCategories = true;
     try {
       // 1. Check if user already has categories in their subcollection.
       // Uses limit(1) to minimise Firestore read cost — existence check only.
@@ -197,6 +196,8 @@ class AuthService {
       );
     } catch (e) {
       rethrow;
+    } finally {
+      _isCopyingCategories = false;
     }
   }
 
