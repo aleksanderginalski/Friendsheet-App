@@ -3520,17 +3520,19 @@ login instead of only on first login.
 
 # 📦 EPIC-INF: Developer Experience & AI Tooling
 
-**Goal:** Continuously improve developer workflow by leveraging AI tooling, optimizing Claude Code integration, and gradually introducing specialized sub-agents.
+**Goal:** Build a complete multi-agent development system in Claude Code covering the full lifecycle — discovery, planning, implementation, testing, documentation, and retrospective. Continuously improve the system based on real usage.
 
-**Business Value:** Faster development cycles, better code quality, and hands-on experience with modern AI-assisted development — directly relevant for portfolio and career growth.
+**Business Value:** Faster development cycles, better code quality, hands-on experience with modern AI-assisted development and multi-agent orchestration — directly relevant for portfolio and career growth.
+**Status:** 🔜 In Progress
 
 ---
 
 ## 🔧 FEATURE-INF-001: Claude Code Optimization
 
-**Priority:** P1  
-**Role:** Developer  
-**Status:** 🔜 In Progress
+**Description:** Established Claude Code foundation — CLAUDE.md, project invariants, git workflow, and Flutter best practices. Evaluated Task Mode through M3–M5 usage. CLAUDE.md is now maintained continuously via /retro agent.
+**Priority:** P1
+**Role:** Developer
+**Status:** ✅ COMPLETED
 
 ---
 
@@ -3561,14 +3563,16 @@ login instead of only on first login.
 
 **Story Points:** 2  
 **Priority:** P2  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (March 18, 2026) 
 **Trigger:** After M2 completion
+**Note:** Evaluated organically during M3–M5. Decision: Claude Code for daily implementation, claude.ai for strategic decisions. Documented in MULTI_AGENT_ARCHITECTURE.md.
+
 
 **Acceptance Criteria:**
-- [ ] Retrospective completed: which tasks worked better in Claude Code vs chat
-- [ ] Decision made: whether to update CLAUDE.md based on findings
-- [ ] Short findings document created (can be a section in CLAUDE.md)
-- [ ] Workflow adjustments applied if needed
+- [x] Retrospective completed: which tasks worked better in Claude Code vs chat
+- [x] Decision made: whether to update CLAUDE.md based on findings
+- [x] Short findings document created (can be a section in CLAUDE.md)
+- [x] Workflow adjustments applied if needed
 
 ---
 
@@ -3580,93 +3584,142 @@ login instead of only on first login.
 
 **Story Points:** 2  
 **Priority:** P2  
-**Status:** 📋 Planned  
+**Status:** ✅ COMPLETED (March 18, 2026) 
 **Trigger:** After US-INF-002 evaluation
+**Note:** CLAUDE.md updated continuously through M3–M5. Ongoing maintenance handled by /retro agent.
+
 
 **Acceptance Criteria:**
-- [ ] CLAUDE.md updated with lessons learned from M2
-- [ ] New patterns documented (e.g. M2-specific repository patterns)
-- [ ] Outdated instructions removed or updated
-- [ ] Claude Code tested on fresh session with updated instructions
+- [x] CLAUDE.md updated with lessons learned from M2
+- [x] New patterns documented (e.g. M2-specific repository patterns)
+- [x] Outdated instructions removed or updated
+- [x] Claude Code tested on fresh session with updated instructions
 
 ---
 
-## 🤖 FEATURE-INF-002: Sub-agents
+## 🤖 FEATURE-INF-002: Multi-Agent System
 
-**Priority:** P2  
-**Role:** Developer  
-**Status:** 📋 Planned  
-**Note:** Sub-agents require solid CLAUDE.md foundation and developer familiarity with project patterns. Do not start before M3.
+**Description:** A system of 8 specialized Claude Code agents covering the full development lifecycle — from discovery and planning through implementation, testing, documentation, and retrospective.
+**Priority:** P1
+**Role:** Developer
+**Status:** 🔜 In Progress
 
 ---
 
-### US-INF-004: Tester Sub-agent
+### US-INF-004: Multi-Agent System — Foundation & Sensitive Data Protection
 
-**As a** Developer  
-**I want to** have a specialized Tester sub-agent in Claude Code  
-**So that** test generation follows project patterns automatically
+**As a** Developer
+**I want to** configure `.claude/settings.json` with a sensitive data hook and create the agent directory structure
+**So that** API keys are never accidentally committed and agents have a place to live
 
-**Story Points:** 5  
-**Priority:** P2  
-**Status:** 📋 Planned  
-**Trigger:** After M3/M4 completion
+**Story Points:** 2
+**Priority:** P0
+**Labels:** `dx`, `security`, `claude-code`
+**Status:** 📋 Planned
+**Trigger:** Now — prerequisite for all other INF agents
 
 **Acceptance Criteria:**
-- [ ] `/tester` slash command configured in Claude Code
-- [ ] Agent understands project test patterns (Mockito, fake_cloud_firestore, widget tests)
-- [ ] Agent generates tests consistent with Project Invariants
-- [ ] Agent mirrors lib/ structure in test/ automatically
-- [ ] User reviews and accepts every generated test before commit
-- [ ] Agent documented in CLAUDE.md
+- [ ] `.claude/settings.json` created with `PreToolUse` hook blocking `git add` when API key patterns detected
+- [ ] Hook tested: staging file with fake key → `git add` blocked
+- [ ] `.claude/commands/` directory created
+- [ ] `MULTI_AGENT_ARCHITECTURE.md` added to project root and Claude project knowledge
+- [ ] Reference section added to `CLAUDE.md` listing all 8 agents
+
+**Tasks:**
+- [ ] **TASK-INF-004.1:** Create `.claude/settings.json` with sensitive data hook — 30min
+- [ ] **TASK-INF-004.2:** Test hook with fake API key — 15min
+- [ ] **TASK-INF-004.3:** Create `.claude/commands/` directory — 5min
+- [ ] **TASK-INF-004.4:** Add `MULTI_AGENT_ARCHITECTURE.md` to repo root — 15min
+- [ ] **TASK-INF-004.5:** Add agent reference section to `CLAUDE.md` — 30min
 
 ---
 
-### US-INF-005: Analyst Sub-agent
+### US-INF-005: Daily Flow Agents — /pm, /planning, /qa, /debug, /docs
 
-**As a** Developer  
-**I want to** have a specialized Analyst sub-agent  
-**So that** documentation updates after US completion are semi-automated
+**As a** Developer
+**I want to** have 5 specialized agents covering the daily US implementation flow
+**So that** every step from US verification to documentation has a dedicated agent
 
-**Story Points:** 5  
-**Priority:** P2  
-**Status:** 📋 Planned  
-**Trigger:** After M4 completion
+**Story Points:** 8
+**Priority:** P1
+**Labels:** `dx`, `claude-code`, `agents`
+**Status:** 📋 Planned
+**Trigger:** After US-INF-004
+**Dependencies:** US-INF-004
 
 **Acceptance Criteria:**
-- [ ] `/analyst` slash command configured in Claude Code
-- [ ] Agent updates BACKLOG, PROJECT_FILES.md, README after US completion
-- [ ] Agent follows existing documentation conventions and language (English)
-- [ ] User reviews every change before commit
-- [ ] Agent documented in CLAUDE.md
+- [ ] `/pm` — routes sessions, checks git status, reminds about uncommitted changes
+- [ ] `/planning` — verifies US readiness, generates User Acceptance Scenario, produces Task instruction for `/dev`
+- [ ] `/qa` — generates minimum tests for maximum coverage, updates TEST_CASES.md
+- [ ] `/debug` — diagnoses problems in Polish, explains before fixing
+- [ ] `/docs` — updates all project documentation after US completion
+- [ ] All agents tested on a real US (not just read-only tasks)
+- [ ] All agents respect git approval rule (never commit autonomously)
+
+**Tasks:**
+- [ ] **TASK-INF-005.1:** Create `pm.md` — 30min
+- [ ] **TASK-INF-005.2:** Create `planning.md` — 30min
+- [ ] **TASK-INF-005.3:** Create `qa.md` — 30min
+- [ ] **TASK-INF-005.4:** Create `debug.md` — 30min
+- [ ] **TASK-INF-005.5:** Create `docs.md` — 30min
+- [ ] **TASK-INF-005.6:** Test each agent on safe read-only task — 1h
 
 ---
 
-### US-INF-006: Architect Sub-agent
+### US-INF-006: Strategic Agents — /discover, /retro
 
-**As a** Developer  
-**I want to** have a specialized Architect sub-agent  
-**So that** architectural decisions are validated against project standards before implementation
+**As a** Developer
+**I want to** have 2 strategic agents for discovery sessions and retrospectives
+**So that** new ideas land properly in the backlog and each US makes the system smarter
 
-**Story Points:** 5  
-**Priority:** P3  
-**Status:** 📋 Planned  
-**Trigger:** After M5 completion
+**Story Points:** 5
+**Priority:** P1
+**Labels:** `dx`, `claude-code`, `agents`
+**Status:** 📋 Planned
+**Trigger:** After US-INF-005
+**Dependencies:** US-INF-005
 
 **Acceptance Criteria:**
-- [ ] `/architect` slash command configured in Claude Code
-- [ ] Agent understands Clean Architecture constraints of this project
-- [ ] Agent validates new features against existing architecture before implementation
-- [ ] Agent suggests impact on existing layers (data/domain/presentation)
-- [ ] Agent documented in CLAUDE.md
+- [ ] `/discover` — leads strategic discussions, updates BACKLOG.md + architecture.md when user says "gotowe"
+- [ ] `/retro` — reads session logs, asks questions in Polish, proposes agent improvements with explanation on request
+- [ ] `/retro` reactive: identifies what went wrong this US
+- [ ] `/retro` proactive: suggests one system improvement every 3 US (e.g. Skills migration)
+- [ ] `/retro` updates `MULTI_AGENT_ARCHITECTURE.md` when agent scope changes
+- [ ] Both agents tested on real sessions
+
+**Tasks:**
+- [ ] **TASK-INF-006.1:** Create `discover.md` — 45min
+- [ ] **TASK-INF-006.2:** Create `retro.md` — 45min
+- [ ] **TASK-INF-006.3:** Run first `/discover` session on a real backlog item — 1h
+- [ ] **TASK-INF-006.4:** Run first `/retro` session after completing a US — 30min
 
 ---
+
+### US-INF-009: Skills Migration — Evaluate and Migrate Agents to Skills Format
+
+**As a** Developer
+**I want to** evaluate whether migrating agents from `.claude/commands/` to `.claude/skills/` format adds value
+**So that** agents that benefit from helper files (templates, checklists) get them
+
+**Story Points:** 3
+**Priority:** P3
+**Labels:** `dx`, `claude-code`, `agents`
+**Status:** 📋 Planned
+**Trigger:** After 3+ US completed with multi-agent system. `/retro` will suggest this proactively.
+
+**Acceptance Criteria:**
+- [ ] Retrospective completed: which agents would benefit from helper files
+- [ ] At least one agent migrated to Skills format as proof of concept
+- [ ] No regression in agent behavior after migration
+- [ ] Decision documented in `MULTI_AGENT_ARCHITECTURE.md`
 
 ## ⚙️ FEATURE-INF-003: CI/CD Enhancement
 
-**Priority:** P3  
-**Role:** DevOps + Developer  
-**Status:** 📋 Planned  
-**Note:** Requires GitHub Pro or sufficient Actions minutes. Evaluate cost before starting.
+**Description:** Professional CI/CD pipeline on GitHub Actions — automated test runs and coverage reports on every PR. Serves as portfolio showcase demonstrating production-grade project setup.
+**Priority:** P3
+**Role:** DevOps + Developer
+**Status:** 📋 Planned
+**Note:** Implement after multi-agent system is stable. Complements agents (second line of defence) rather than replacing them.
 
 ---
 

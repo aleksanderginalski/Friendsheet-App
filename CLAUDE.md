@@ -355,3 +355,30 @@ WidgetsBinding.instance.addPostFrameCallback((_) async {
 ```
 ---
 
+## Multi-Agent System
+
+8 specialized Claude Code agents. All follow Model 2.5: autonomous in code, git always requires user approval.
+
+### Daily Mode (every US)
+/pm → /planning → /dev → manual verify → /qa → /docs → [/retro optional]
+                              ↓
+                           /debug (on demand)
+
+### Strategic Mode (new ideas / Epics)
+/discover → discussion → BACKLOG.md + architecture.md updated → commit
+
+### Agent Directory
+
+| Agent | File | Language | Purpose |
+|---|---|---|---|
+| /pm | .claude/commands/pm.md | Polish | Session router, git status check |
+| /discover | .claude/commands/discover.md | Polish | Strategic sessions, new Epics |
+| /planning | .claude/commands/planning.md | Polish | US verification + Task instruction |
+| /dev | CLAUDE.md (this file) | English | Implementation |
+| /qa | .claude/commands/qa.md | English | Tests |
+| /debug | .claude/commands/debug.md | Polish | Problem solving |
+| /docs | .claude/commands/docs.md | English | Documentation update |
+| /retro | .claude/commands/retro.md | Polish | Retrospective |
+
+Full architecture: see MULTI_AGENT_ARCHITECTURE.md
+
