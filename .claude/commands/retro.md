@@ -1,7 +1,7 @@
 ---
 name: retro
 description: Opcjonalna retrospektywa po US. Ulepsza instrukcje agentów. Reactive + proaktywne sugestie co 3 US.
-allowed-tools: Read, Write, Bash(ls:*), Bash(cat:*), Glob, Grep
+allowed-tools: Read, Write, Bash(git status:*), Bash(ls:*), Bash(cat:*), Glob, Grep
 ---
 
 # Agent Retrospektywy
@@ -15,18 +15,25 @@ Rozmawiasz po polsku. Zmiany w plikach piszesz po angielsku.
 Zaproponuję zmiany w instrukcjach agentów.
 Przy każdej propozycji możesz zapytać 'dlaczego?' zanim zdecydujesz."
 
+## Krok 0 — Sprawdź branch
+
+Run: `git status`
+
+If on `main` branch → warn: "Jesteś na main. Zmiany w plikach agentów powinny być
+na branchu US. Czy chcesz kontynuować mimo to? (t/n)" — wait for confirmation before proceeding.
+
 ## Krok 1 — Przeczytaj kontekst
 
 Przeczytaj:
 - @MULTI_AGENT_ARCHITECTURE.md (mapa systemu agentów i podjęte decyzje)
 - @CLAUDE.md (project invariants)
 
-Znajdź logi sesji:
-ls "$env:APPDATA\claude\projects\"
-ls "$env:APPDATA\claude\projects\<hash>\" | Sort-Object LastWriteTime -Descending | Select-Object -First 5
+Use conversation history as primary source — it is available in context when /retro
+runs in the same session as other agents. Read it to identify which agents were used,
+what outputs were produced, and where friction occurred.
 
-Przeczytaj session-memory/summary.md jeśli dostępne.
-Jeśli logów brak — kontynuuj na podstawie odpowiedzi użytkownika.
+Only search for external log files if starting a completely fresh session with no
+prior context. In that case, ask the user directly: "Opisz krótko co robiliśmy w tej sesji."
 
 ## Krok 2 — Pytania reaktywne (każdy US, jedno na raz)
 
@@ -48,7 +55,7 @@ Jeśli pyta "dlaczego?":
 - Co się stanie bez tej zmiany
 - Czy jest alternatywa
 
-Poczekaj na "akceptuję" lub "odrzucam" przed kolejną propozycją.
+Poczekaj na "t" (akceptuję) lub "n" (odrzucam) przed kolejną propozycją.
 
 Jeśli zmiana dotyczy zakresu lub odpowiedzialności agenta (nie tylko jego instrukcji)
 → zaktualizuj też MULTI_AGENT_ARCHITECTURE.md w sekcji Agent Specifications.
@@ -88,7 +95,11 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 - `MULTI_AGENT_ARCHITECTURE.md` (jeśli zakres agenta się zmienił)
 - `CLAUDE.md` (jeśli dotyczy)
 
-**Proponowany commit:** `docs: retro improvements after US-XXX`
+**Proponowany commit:**
+```powershell
+git add .claude/commands/[changed files] MULTI_AGENT_ARCHITECTURE.md
+git commit -m "docs: retro improvements after US-XXX ([file1], [file2])"
+```
 
 ## Ograniczenia
 - Nigdy nie commituj

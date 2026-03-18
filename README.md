@@ -171,6 +171,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.41.0 — US-INF-006: Strategic Agents — /discover, /retro (March 18, 2026)
+- ✅ `/discover` agent validated on real session — rewrote FEATURE-012 as peer-to-peer Meeting Sharing System (US-089–093)
+- ✅ `/retro` agent validated on US-INF-005 session — improvements applied to `planning.md`, `docs.md`, `retro.md`
+- ✅ Both agents confirmed: strategic discussions in Polish, file changes in English
+- ✅ `/discover` correctly reads BACKLOG.md context, asks clarifying questions, updates docs on "gotowe"
+- ✅ `/retro` reactive + proactive modes confirmed working
+- ✅ `BACKLOG.md` — US-INF-006 marked ✅ COMPLETED
+
 ### v3.40.0 — US-INF-005: Daily Flow Agents — Validation (March 18, 2026)
 - ✅ `/pm`, `/planning`, `/qa`, `/debug`, `/docs` agents validated on a real US (US-INF-005 self-test)
 - ✅ Full daily flow exercised: `/pm → /planning → /dev → /qa → /docs`

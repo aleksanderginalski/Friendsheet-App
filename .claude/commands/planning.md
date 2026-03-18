@@ -53,8 +53,14 @@ Po akceptacji wygeneruj instrukcję w języku angielskim:
 - ## Constraints
 - ## After implementation
 
+Zapisz instrukcję do `.claude/current_task.md`:
+```
+# Current Task — [US number]
+[full task instruction here]
+```
+
 Napisz wyraźnie:
-"Instrukcja gotowa. Uruchom /dev i wklej poniższy tekst:"
+"Task instruction saved to `.claude/current_task.md`. Run /dev."
 
 ## Format outputu
 

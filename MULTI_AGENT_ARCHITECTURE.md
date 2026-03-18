@@ -475,6 +475,7 @@ Napisz wyraźnie:
 
 **Language:** English
 **Note:** Lives in `CLAUDE.md` — already exists.
+**Note:** `/dev` does NOT appear in slash command autocomplete — it has no `.claude/commands/` file. Invoke it by pasting the Task instruction from `.claude/current_task.md` directly into the chat.
 **Required:** Always include Manual Verification section at end of report.
 
 ---

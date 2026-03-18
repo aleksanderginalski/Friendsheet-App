@@ -53,7 +53,7 @@ EPIC-004: Friendsheet M4 - Google Play Release ✅
 EPIC-005: Friendsheet M5 - Meeting Import Hub
 ├── FEATURE-013: Google Calendar Import ✅
 ├── FEATURE-014: Google Photos Import        ← post Google Play, backlog
-├── FEATURE-012: Invitation Code System
+├── FEATURE-012: Meeting Sharing System
 └── FEATURE-022: After Release fixes
 
 EPIC-006: Friendsheet M6 - Custom Dashboard
@@ -2973,75 +2973,188 @@ Error appears intermittently — every few sessions or after a longer idle perio
 - [ ] **TASK-070.5:** Write tests — pagination, candidate mapping, empty state
 
 ---
-## 🔗 FEATURE-012: Invitation Code System
+## 🔗 FEATURE-012: Meeting Sharing System
 
-**Priority:** P0  
-**Role:** Developer  
+**Priority:** P0
+**Role:** Developer
 **Status:** 📋 Planned
 
+**Description:** Peer-to-peer meeting sharing between Friendsheet users. User C (new) generates
+a sharing token and sends it to User A (existing) out-of-band (e.g. WhatsApp). A enters the token
+in C's person profile to link accounts, then selects which meetings to share. C receives meetings
+in Pending Meetings with full conflict resolution for duplicate meetings, persons, and activities.
+
+> ~~US-034: Generate Invitation Code~~ → ❌ OBSOLETE — replaced by US-089
+> ~~US-035: Redeem Invitation Code~~ → ❌ OBSOLETE — replaced by US-090–US-093
+
 ---
 
-### US-034: Generate Invitation Code
+### US-089: Generate Sharing Token
 
-**As a** user  
-**I want to** generate an invitation code for a friend  
-**So that** they can import our shared meetings when they join the app
+**As a** new user (C)
+**I want to** generate a sharing token
+**So that** I can give it to a friend who already uses Friendsheet and ask them to share our meetings
 
-**Story Points:** 5  
+**Story Points:** 5
 **Priority:** P0
+**Labels:** `sharing`, `onboarding`
+**Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] "Share with friend" option on Person Detail screen
-- [ ] 6-character alphanumeric code generated (e.g. "FR4K9X")
-- [ ] Code stored in Firestore with 48-hour TTL
-- [ ] Code displayed with copy button and share sheet option
-- [ ] Code expires after 48 hours
-- [ ] User can see active/expired codes they generated
+- [ ] Token generation available in: drawer → Sharing section + Home CTA card when <50 meetings
+- [ ] Token: 6-character alphanumeric (e.g. "FR4K9X"), 24-hour TTL, single-use
+- [ ] Token displayed with copy button and expiry time shown
+- [ ] User can see their currently active token (if not yet used or expired)
+- [ ] Expired/used tokens are not shown
+- [ ] Token stored in Firestore: `users/{uid}/sharing_tokens/{tokenId}`
 
 **Tasks:**
-- [ ] **TASK-034.1:** Create InvitationCode model and Firestore collection - 2h
-- [ ] **TASK-034.2:** Implement code generation logic in InvitationService - 2h
-- [ ] **TASK-034.3:** Add Firestore Security Rules for invitations collection - 1h
-- [ ] **TASK-034.4:** Build GenerateInvitationScreen UI - 2h
-- [ ] **TASK-034.5:** Implement share sheet integration - 1h
-- [ ] **TASK-034.6:** Write tests - 1h
-- [ ] **TASK-034.7:** Extend `AccountDeletionService._deleteFirestoreData()` — add deletion of `users/{uid}/invitation_codes` subcollection to the batch delete sequence
+- [ ] **TASK-089.1:** Create `SharingToken` Freezed model — 1h
+- [ ] **TASK-089.2:** Create `SharingTokenRepository` with generate/get/cleanup methods — 1.5h
+- [ ] **TASK-089.3:** Add Firestore Security Rules for `sharing_tokens` subcollection — 0.5h
+- [ ] **TASK-089.4:** Build `GenerateSharingTokenScreen` UI (token display, copy button, expiry) — 2h
+- [ ] **TASK-089.5:** Add drawer "Sharing" section entry point — 0.5h
+- [ ] **TASK-089.6:** Add Home CTA card "Request meetings from a friend" (<50 meetings condition) — 0.5h
+- [ ] **TASK-089.7:** Extend `AccountDeletionService._deleteFirestoreData()` to delete `sharing_tokens` subcollection — 0.5h
+- [ ] **TASK-089.8:** Write tests — 1h
 
 **Architecture Note:**
-`AccountDeletionService` (US-076) deletes all user subcollections on account removal.
-When implementing US-034, extend `_deleteFirestoreData()` to also delete
-`users/{uid}/invitation_codes` — otherwise orphaned codes remain in Firestore
-after account deletion.
-
+Token stored as `users/{C_uid}/sharing_tokens/{tokenId}` with fields:
+`token` (String), `createdAt` (Timestamp), `expiresAt` (Timestamp), `isUsed` (bool).
+Only C can read/write their own tokens (path-based security rule).
 
 ---
 
-### US-035: Redeem Invitation Code
+### US-090: Link Friend Account
 
-**As a** new user who received an invitation code  
-**I want to** enter the code in the app  
-**So that** I receive my shared meeting history instantly
+**As a** user (A)
+**I want to** enter a sharing token in my friend's person profile
+**So that** the app knows which Friendsheet account belongs to that person
 
-**Story Points:** 8  
+**Story Points:** 5
 **Priority:** P0
+**Labels:** `sharing`, `persons`
+**Status:** 📋 Planned
+**Dependencies:** US-089
 
 **Acceptance Criteria:**
-- [ ] "Enter invitation code" option on Home screen or onboarding
-- [ ] Code input field with 6-character validation
-- [ ] System validates code: exists, not expired, not already used
-- [ ] On valid code: all meetings from sender where targetPerson appears are copied to recipient's Firestore
-- [ ] Participants and activities from those meetings are also copied (deduplication by name)
-- [ ] Code marked as used after successful redemption
-- [ ] Success screen shows count of imported meetings
-- [ ] Error messages for: invalid code, expired code, already used
+- [ ] "Share meetings with friend" button visible on Person Detail screen
+- [ ] Button leads to token input field (6-character, alphanumeric validation)
+- [ ] System validates token: exists, not expired, not already used
+- [ ] On valid token: `Person` record for C gets `linkedUserId` field storing C's uid
+- [ ] Token marked as used after successful linking
+- [ ] Error messages for: invalid token, expired token, already used token
+- [ ] Once linked, "Share meetings with friend" button changes to "Send meetings"
 
 **Tasks:**
-- [ ] **TASK-175:** Create RedeemInvitationScreen - 2h
-- [ ] **TASK-176:** Implement code validation in InvitationService - 1h
-- [ ] **TASK-177:** Implement meeting copy logic (batch Firestore write) - 3h
-- [ ] **TASK-178:** Implement person/activity deduplication logic - 2h
-- [ ] **TASK-179:** Build success/error feedback screens - 1h
-- [ ] **TASK-180:** Write tests - 2h
+- [ ] **TASK-090.1:** Add `linkedUserId` field to `Person` Freezed model — 0.5h
+- [ ] **TASK-090.2:** Run build_runner after model change — 0.5h
+- [ ] **TASK-090.3:** Implement token validation in `SharingTokenRepository` — 1h
+- [ ] **TASK-090.4:** Add "Share meetings with friend" UI to `PersonDetailScreen` — 1.5h
+- [ ] **TASK-090.5:** Build token input dialog with validation feedback — 1h
+- [ ] **TASK-090.6:** Update `PersonRepository.updatePerson()` to persist `linkedUserId` — 0.5h
+- [ ] **TASK-090.7:** Write tests — 1h
+
+---
+
+### US-091: Share Meetings
+
+**As a** user (A)
+**I want to** select which meetings to share with a linked friend (C)
+**So that** C receives our meeting history in their Pending Meetings
+
+**Story Points:** 8
+**Priority:** P0
+**Labels:** `sharing`, `meetings`
+**Status:** 📋 Planned
+**Dependencies:** US-090
+
+**Acceptance Criteria:**
+- [ ] "Send meetings" opens a screen listing only meetings where C participated
+- [ ] A can select/deselect individual meetings (select all option available)
+- [ ] For each package A chooses what to include beyond the mandatory fields:
+  - Mandatory (always sent): date, weight, meeting name, sender signature (A's first name + last name, optional nickname)
+  - Optional: other participants (persons), activities
+- [ ] Person data shared: first name + last name only — notes are NEVER shared
+- [ ] GDPR notice shown before confirming: "You are sharing data of people you've added to your contacts"
+- [ ] On confirm: package written to `users/{C_uid}/pending_meetings/` as a batch
+- [ ] Success confirmation shown to A after sending
+
+**Tasks:**
+- [ ] **TASK-091.1:** Build `ShareMeetingsScreen` — meeting list filtered by C's participation, checkboxes — 2h
+- [ ] **TASK-091.2:** Build sharing options panel (include persons / include activities toggles) — 1h
+- [ ] **TASK-091.3:** Build sender signature input (first name, last name, optional nickname) — 0.5h
+- [ ] **TASK-091.4:** Add GDPR notice dialog before confirm — 0.5h
+- [ ] **TASK-091.5:** Implement `MeetingPackageService.sendPackage()` — batch write to recipient's `pending_meetings` — 2h
+- [ ] **TASK-091.6:** Add Firestore Security Rules: sender can write to `users/{recipientUid}/pending_meetings` if they hold a valid `linkedUserId` — 0.5h
+- [ ] **TASK-091.7:** Write tests — 1h
+
+**Privacy Rules:**
+- `Person.notes` is never included in shared data
+- Only `firstName` + `lastName` sent for participants
+- Sender must explicitly acknowledge GDPR notice before first send
+
+---
+
+### US-092: Receive Package & Resolve Meeting Duplicates
+
+**As a** user (C)
+**I want to** review received meetings and handle date conflicts
+**So that** I don't accidentally duplicate meetings I already have
+
+**Story Points:** 8
+**Priority:** P0
+**Labels:** `sharing`, `inbox`, `conflicts`
+**Status:** 📋 Planned
+**Dependencies:** US-091
+
+**Acceptance Criteria:**
+- [ ] Received package appears in Pending Meetings with sender name and date received
+- [ ] System detects potential duplicate meetings: same date as an existing meeting in C's database
+- [ ] Duplicate candidates shown with side-by-side comparison (name, participants, activities)
+- [ ] For each date conflict C can: confirm it's the same meeting (merge) / add as new meeting / skip
+- [ ] C cannot confirm the full package until all date conflicts are resolved
+- [ ] After resolving meeting conflicts, flow continues to US-093 conflict resolution (persons + activities)
+- [ ] If no conflicts: C can confirm import directly
+
+**Tasks:**
+- [ ] **TASK-092.1:** Extend `MeetingInboxProvider` to handle shared packages (distinguish from calendar imports) — 1h
+- [ ] **TASK-092.2:** Build sender info header in Pending Meetings for shared packages — 0.5h
+- [ ] **TASK-092.3:** Implement duplicate meeting detection by date — 1.5h
+- [ ] **TASK-092.4:** Build conflict resolution UI — side-by-side comparison card, merge/add/skip actions — 2.5h
+- [ ] **TASK-092.5:** Block "Confirm all" until date conflicts resolved — 0.5h
+- [ ] **TASK-092.6:** Write tests — 1.5h
+
+---
+
+### US-093: Conflict Resolution — Persons & Activities
+
+**As a** user (C)
+**I want to** resolve name conflicts for persons and activities in the received package
+**So that** imported data integrates cleanly with my existing contacts and activity list
+
+**Story Points:** 5
+**Priority:** P0
+**Labels:** `sharing`, `conflicts`, `persons`, `activities`
+**Status:** 📋 Planned
+**Dependencies:** US-092
+
+**Acceptance Criteria:**
+- [ ] After meeting conflicts resolved (US-092), system checks persons and activities in the package
+- [ ] Activity name conflict (same name, case-insensitive): C must rename the incoming activity OR link it to an existing one
+- [ ] Person name conflict (same first name + last name): C can add with a nickname OR link to existing person
+- [ ] All conflicts must be resolved before package can be confirmed
+- [ ] On final confirm: meetings, persons, and activities written to C's Firestore subcollections
+- [ ] Success screen shows: X meetings added, Y persons added, Z activities added
+
+**Tasks:**
+- [ ] **TASK-093.1:** Implement activity conflict detection (incoming name vs existing `activity_categories`) — 1h
+- [ ] **TASK-093.2:** Build activity conflict UI — rename field or "link to existing" picker — 1h
+- [ ] **TASK-093.3:** Implement person conflict detection (first name + last name match) — 1h
+- [ ] **TASK-093.4:** Build person conflict UI — add nickname or "link to existing" picker — 1h
+- [ ] **TASK-093.5:** Implement final batch import to Firestore (meetings + persons + activities) — 1.5h
+- [ ] **TASK-093.6:** Build success screen with import summary — 0.5h
+- [ ] **TASK-093.7:** Write tests — 1h
 
 
 ## 🎨 FEATURE-022: After Release Fixes
@@ -3675,23 +3788,23 @@ login instead of only on first login.
 **Story Points:** 5
 **Priority:** P1
 **Labels:** `dx`, `claude-code`, `agents`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 18, 2026)
 **Trigger:** After US-INF-005
 **Dependencies:** US-INF-005
 
 **Acceptance Criteria:**
-- [ ] `/discover` — leads strategic discussions, updates BACKLOG.md + architecture.md when user says "gotowe"
-- [ ] `/retro` — reads session logs, asks questions in Polish, proposes agent improvements with explanation on request
-- [ ] `/retro` reactive: identifies what went wrong this US
-- [ ] `/retro` proactive: suggests one system improvement every 3 US (e.g. Skills migration)
-- [ ] `/retro` updates `MULTI_AGENT_ARCHITECTURE.md` when agent scope changes
-- [ ] Both agents tested on real sessions
+- [x] `/discover` — leads strategic discussions, updates BACKLOG.md + architecture.md when user says "gotowe"
+- [x] `/retro` — reads session logs, asks questions in Polish, proposes agent improvements with explanation on request
+- [x] `/retro` reactive: identifies what went wrong this US
+- [x] `/retro` proactive: suggests one system improvement every 3 US (e.g. Skills migration)
+- [x] `/retro` updates `MULTI_AGENT_ARCHITECTURE.md` when agent scope changes
+- [x] Both agents tested on real sessions
 
 **Tasks:**
-- [ ] **TASK-INF-006.1:** Create `discover.md` — 45min
-- [ ] **TASK-INF-006.2:** Create `retro.md` — 45min
-- [ ] **TASK-INF-006.3:** Run first `/discover` session on a real backlog item — 1h
-- [ ] **TASK-INF-006.4:** Run first `/retro` session after completing a US — 30min
+- [x] **TASK-INF-006.1:** Create `discover.md` — 45min
+- [x] **TASK-INF-006.2:** Create `retro.md` — 45min
+- [x] **TASK-INF-006.3:** Run first `/discover` session on a real backlog item — 1h
+- [x] **TASK-INF-006.4:** Run first `/retro` session after completing a US — 30min
 
 ---
 
