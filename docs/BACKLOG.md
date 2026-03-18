@@ -3788,23 +3788,23 @@ login instead of only on first login.
 **Story Points:** 5
 **Priority:** P1
 **Labels:** `dx`, `claude-code`, `agents`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 18, 2026)
 **Trigger:** After US-INF-005
 **Dependencies:** US-INF-005
 
 **Acceptance Criteria:**
-- [ ] `/discover` — leads strategic discussions, updates BACKLOG.md + architecture.md when user says "gotowe"
-- [ ] `/retro` — reads session logs, asks questions in Polish, proposes agent improvements with explanation on request
-- [ ] `/retro` reactive: identifies what went wrong this US
-- [ ] `/retro` proactive: suggests one system improvement every 3 US (e.g. Skills migration)
-- [ ] `/retro` updates `MULTI_AGENT_ARCHITECTURE.md` when agent scope changes
-- [ ] Both agents tested on real sessions
+- [x] `/discover` — leads strategic discussions, updates BACKLOG.md + architecture.md when user says "gotowe"
+- [x] `/retro` — reads session logs, asks questions in Polish, proposes agent improvements with explanation on request
+- [x] `/retro` reactive: identifies what went wrong this US
+- [x] `/retro` proactive: suggests one system improvement every 3 US (e.g. Skills migration)
+- [x] `/retro` updates `MULTI_AGENT_ARCHITECTURE.md` when agent scope changes
+- [x] Both agents tested on real sessions
 
 **Tasks:**
-- [ ] **TASK-INF-006.1:** Create `discover.md` — 45min
-- [ ] **TASK-INF-006.2:** Create `retro.md` — 45min
-- [ ] **TASK-INF-006.3:** Run first `/discover` session on a real backlog item — 1h
-- [ ] **TASK-INF-006.4:** Run first `/retro` session after completing a US — 30min
+- [x] **TASK-INF-006.1:** Create `discover.md` — 45min
+- [x] **TASK-INF-006.2:** Create `retro.md` — 45min
+- [x] **TASK-INF-006.3:** Run first `/discover` session on a real backlog item — 1h
+- [x] **TASK-INF-006.4:** Run first `/retro` session after completing a US — 30min
 
 ---
 
