@@ -1,83 +1,83 @@
 [
     {
         "id": "cat_sport",
-        "name": "Sport",
+        "name": "Sports",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "sport"
     },
     {
         "id": "cat_gory",
-        "name": "Góry",
+        "name": "Mountains",
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "mountain"
     },
     {
         "id": "cat_rowery",
-        "name": "Rowery",
+        "name": "Cycling",
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "bicycle"
     },
     {
         "id": "cat_silownia",
-        "name": "Siłownia",
+        "name": "Gym",
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "gym"
     },
     {
         "id": "cat_narty",
-        "name": "Narty",
+        "name": "Skiing",
         "parentCategoryId": "cat_sport",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "ski"
     },
     {
         "id": "cat_szkola",
-        "name": "Szkoła",
+        "name": "School",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "book"
     },
     {
         "id": "cat_podroze",
-        "name": "Podróże",
+        "name": "Travel",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "plane"
     },
     {
         "id": "cat_kultura",
-        "name": "Kultura",
+        "name": "Culture",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "museum"
     },
     {
         "id": "cat_koncert",
-        "name": "Koncert",
+        "name": "Concert",
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "guitar"
     },
     {
         "id": "cat_teatr",
-        "name": "Teatr",
+        "name": "Theatre",
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "sing"
     },
     {
         "id": "cat_standup",
@@ -85,47 +85,47 @@
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "sing"
     },
     {
         "id": "cat_kino",
-        "name": "Kino",
+        "name": "Cinema",
         "parentCategoryId": "cat_kultura",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "cinema"
     },
     {
         "id": "cat_planszowki",
-        "name": "Planszówki",
+        "name": "Board Games",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "game"
     },
     {
         "id": "cat_zwiedzanie",
-        "name": "Zwiedzanie",
+        "name": "Sightseeing",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "map"
     },
     {
         "id": "cat_impreza",
-        "name": "Impreza",
+        "name": "Party",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "party"
     },
     {
         "id": "cat_parapetowka",
-        "name": "Parapetówka",
+        "name": "Housewarming",
         "parentCategoryId": "cat_impreza",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "house"
     },
     {
         "id": "cat_reunion",
@@ -133,39 +133,39 @@
         "parentCategoryId": "cat_impreza",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "family"
     },
     {
         "id": "cat_spotkanie",
-        "name": "Spotkanie",
+        "name": "Hangout",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "coffee"
     },
     {
         "id": "cat_plotki",
-        "name": "Plotki",
+        "name": "Gossip",
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "phone"
     },
     {
         "id": "cat_clubing",
-        "name": "Clubing",
+        "name": "Clubbing",
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "dance"
     },
     {
         "id": "cat_restauracja",
-        "name": "Restauracja",
+        "name": "Restaurant",
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "meal"
     },
     {
         "id": "cat_escape_room",
@@ -173,38 +173,38 @@
         "parentCategoryId": "cat_spotkanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "map2"
     },
     {
         "id": "cat_swietowanie",
-        "name": "Świętowanie",
+        "name": "Celebration",
         "parentCategoryId": null,
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "party"
     },
     {
         "id": "cat_wesele",
-        "name": "Wesele",
+        "name": "Wedding",
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "ring"
     },
     {
         "id": "cat_swieta",
-        "name": "Święta",
+        "name": "Holidays",
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "holiday"
     },
     {
         "id": "cat_urodziny",
-        "name": "Urodziny",
+        "name": "Birthday",
         "parentCategoryId": "cat_swietowanie",
         "isGlobal": true,
         "isSelectableAsActivity": true,
-        "iconIdentifier": ""
+        "iconIdentifier": "cake"
     }
 ]
