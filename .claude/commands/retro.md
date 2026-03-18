@@ -28,12 +28,12 @@ Przeczytaj:
 - @MULTI_AGENT_ARCHITECTURE.md (mapa systemu agentów i podjęte decyzje)
 - @CLAUDE.md (project invariants)
 
-Znajdź logi sesji:
-ls "$env:APPDATA\claude\projects\"
-ls "$env:APPDATA\claude\projects\<hash>\" | Sort-Object LastWriteTime -Descending | Select-Object -First 5
+Use conversation history as primary source — it is available in context when /retro
+runs in the same session as other agents. Read it to identify which agents were used,
+what outputs were produced, and where friction occurred.
 
-Przeczytaj session-memory/summary.md jeśli dostępne.
-Jeśli logów brak — kontynuuj na podstawie odpowiedzi użytkownika.
+Only search for external log files if starting a completely fresh session with no
+prior context. In that case, ask the user directly: "Opisz krótko co robiliśmy w tej sesji."
 
 ## Krok 2 — Pytania reaktywne (każdy US, jedno na raz)
 
