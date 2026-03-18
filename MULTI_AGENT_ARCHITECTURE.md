@@ -26,6 +26,7 @@ All follow **Model 2.5**: autonomous within task scope, git always requires user
 | Language — `/retro` conversation | Polish; file changes in English |
 | Session log retention | 30 days (default) |
 | Agent format | `.claude/commands/` (migrate to Skills when need for helper files emerges) |
+| Git commands in agent output | Never use `&&`. Run each command separately — PowerShell 5.x (Windows 10 default) does not support `&&` as a statement separator. |
 
 ---
 
@@ -137,7 +138,13 @@ Used for implementing specific User Stories from backlog.
 → Agent improvement proposals with explanation on request
 → Updates MULTI_AGENT_ARCHITECTURE.md if agent scope changes
 
-7. You: review commits → git push → PR → merge
+7. /docs produces full closing sequence:
+   - Step 1: commit docs
+   - Step 2: git push -u origin [branch]
+   - Step 3: gh pr create (or GitHub UI) → merge
+   - Step 4: /docs waits for merge confirmation ("tak")
+   - Step 5: git checkout main → git pull → git branch -d [branch]
+   Note: each command on a separate line — never use && (PowerShell 5.x)
 ```
 
 ### When to skip `/retro`
