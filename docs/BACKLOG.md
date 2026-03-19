@@ -3817,14 +3817,14 @@ login instead of only on first login.
 **Story Points:** 3
 **Priority:** P3
 **Labels:** `dx`, `claude-code`, `agents`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Trigger:** After 3+ US completed with multi-agent system. `/retro` will suggest this proactively.
 
 **Acceptance Criteria:**
-- [ ] Retrospective completed: which agents would benefit from helper files
-- [ ] At least one agent migrated to Skills format as proof of concept
-- [ ] No regression in agent behavior after migration
-- [ ] Decision documented in `MULTI_AGENT_ARCHITECTURE.md`
+- [x] Retrospective completed: which agents would benefit from helper files
+- [x] At least one agent migrated to Skills format as proof of concept
+- [x] No regression in agent behavior after migration
+- [x] Decision documented in `MULTI_AGENT_ARCHITECTURE.md`
 
 ## ⚙️ FEATURE-INF-003: CI/CD Enhancement
 

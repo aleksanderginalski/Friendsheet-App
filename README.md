@@ -171,6 +171,15 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.42.0 — US-INF-009: Skills Migration — Agents Migrated to Skills Format (March 19, 2026)
+- ✅ All 7 agents migrated from `.claude/commands/` to `.claude/skills/name/SKILL.md` structure
+- ✅ Helper files added: `planning/task_template.md` (Task Instruction template), `retro/retro_checklist.md` (retrospective questions)
+- ✅ Decision documented in `MULTI_AGENT_ARCHITECTURE.md` — all agents migrated for consistency, helper files only where concrete value exists
+- ✅ `.claude/commands/` directory removed — no breaking change (both locations create same slash-command interface)
+- ✅ `CLAUDE.md` Agent Directory table updated to new paths
+- ✅ `.gitignore` extended — `current_task.md` excluded from version control
+- ✅ `BACKLOG.md` — US-INF-009 marked ✅ COMPLETED
+
 ### v3.41.0 — US-INF-006: Strategic Agents — /discover, /retro (March 18, 2026)
 - ✅ `/discover` agent validated on real session — rewrote FEATURE-012 as peer-to-peer Meeting Sharing System (US-089–093)
 - ✅ `/retro` agent validated on US-INF-005 session — improvements applied to `planning.md`, `docs.md`, `retro.md`
