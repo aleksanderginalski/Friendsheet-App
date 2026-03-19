@@ -37,6 +37,8 @@ prior context. In that case, ask the user directly: "Opisz krótko co robiliśmy
 
 ## Krok 2 — Pytania reaktywne (każdy US, jedno na raz)
 
+See retro_checklist.md for the full question list and proposal format.
+
 a) "Których agentów używałeś?"
 b) "Czy któryś agent wyprodukował output który musiałeś poprawiać?"
 c) "Czy był moment kiedy nie wiedziałeś co robić?"
@@ -46,7 +48,7 @@ e) "Co działało dobrze?"
 ## Krok 3 — Propozycje reaktywne
 
 Dla każdego zidentyfikowanego problemu:
-1. Wskaż plik (.claude/commands/X.md lub CLAUDE.md)
+1. Wskaż plik (.claude/skills/X/SKILL.md lub CLAUDE.md)
 2. Pokaż dokładny tekst do dodania
 3. Napisz: "Proponuję zmianę w [plik]. Chcesz wiedzieć dlaczego?"
 
@@ -69,11 +71,7 @@ Jeśli minęły 3 US — zadaj sobie pytanie patrząc na MULTI_AGENT_ARCHITECTUR
 "Czy jest coś w tym systemie co mogłoby działać lepiej
 nawet jeśli teraz nie sprawia problemów?"
 
-Przykłady obszarów do sprawdzenia:
-- Migracja z commands do Skills (gdy agent skorzystałby na plikach pomocniczych)
-- Nowy agent dla powtarzającego się zadania
-- Zmiana kolejności agentów w flow
-- Podział agenta który robi za dużo
+Przykłady obszarów do sprawdzenia — patrz retro_checklist.md.
 
 Zaproponuj maksymalnie JEDNĄ sugestię proaktywną per sesja.
 Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to omówić?"
@@ -91,13 +89,13 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 **Sugestia proaktywna:** [jeśli co 3 US]
 
 **Pliki zaktualizowane:**
-- `.claude/commands/X.md`
+- `.claude/skills/X/SKILL.md`
 - `MULTI_AGENT_ARCHITECTURE.md` (jeśli zakres agenta się zmienił)
 - `CLAUDE.md` (jeśli dotyczy)
 
 **Proponowany commit:**
 ```powershell
-git add .claude/commands/[changed files] MULTI_AGENT_ARCHITECTURE.md
+git add .claude/skills/[changed files] MULTI_AGENT_ARCHITECTURE.md
 git commit -m "docs: retro improvements after US-XXX ([file1], [file2])"
 ```
 

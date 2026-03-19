@@ -10,7 +10,7 @@
 ## Overview
 
 8 specialized Claude Code agents for the Friendsheet project.
-All operate as Skills (`.claude/commands/`).
+All operate as Skills (`.claude/skills/`).
 All follow **Model 2.5**: autonomous within task scope, git always requires user approval.
 
 ---
@@ -25,7 +25,7 @@ All follow **Model 2.5**: autonomous within task scope, git always requires user
 | Language — `/qa`, `/docs`, `/retro` output | English |
 | Language — `/retro` conversation | Polish; file changes in English |
 | Session log retention | 30 days (default) |
-| Agent format | `.claude/commands/` (migrate to Skills when need for helper files emerges) |
+| Agent format | `.claude/skills/` — migrated from `commands/` in US-INF-009. Agents with helper files: `/planning` (task_template.md), `/retro` (retro_checklist.md). All others: single SKILL.md. |
 | Git commands in agent output | Never use `&&`. Run each command separately — PowerShell 5.x (Windows 10 default) does not support `&&` as a statement separator. |
 
 ---
@@ -192,17 +192,26 @@ Test after setup: stage a file with a fake key string → verify `git add` is bl
 
 ```
 .claude/
-├── commands/
-│   ├── pm.md           ← /pm
-│   ├── discover.md     ← /discover
-│   ├── planning.md     ← /planning
-│   ├── qa.md           ← /qa
-│   ├── debug.md        ← /debug
-│   ├── docs.md         ← /docs
-│   └── retro.md        ← /retro
-└── settings.json       ← hooks
-CLAUDE.md               ← /dev (already exists)
-MULTI_AGENT_ARCHITECTURE.md ← this document
+├── skills/
+│   ├── pm/
+│   │   └── SKILL.md            ← /pm
+│   ├── discover/
+│   │   └── SKILL.md            ← /discover
+│   ├── planning/
+│   │   ├── SKILL.md            ← /planning
+│   │   └── task_template.md    ← Task Instruction helper
+│   ├── qa/
+│   │   └── SKILL.md            ← /qa
+│   ├── debug/
+│   │   └── SKILL.md            ← /debug
+│   ├── docs/
+│   │   └── SKILL.md            ← /docs
+│   └── retro/
+│       ├── SKILL.md            ← /retro
+│       └── retro_checklist.md  ← Retrospective questions helper
+└── settings.json               ← hooks
+CLAUDE.md                       ← /dev (already exists)
+MULTI_AGENT_ARCHITECTURE.md     ← this document
 ```
 
 ### 3. Session log retention
@@ -831,7 +840,7 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 | `/planning` write access to BACKLOG.md? | Yes. User approves before commit. |
 | `agent: Explore` frontmatter? | Skip for now. Add after first real usage if needed. |
 | Who updates TEST_CASES.md? | `/qa` owns it. `/docs` does not touch it. |
-| Commands vs Skills? | Start with commands. Migrate to Skills when helper files become useful. `/retro` will suggest this proactively when the time comes. |
+| Commands vs Skills? | Migrated to Skills in US-INF-009. All agents now in `.claude/skills/name/SKILL.md`. Helper files added for `/planning` and `/retro`. Decision: migrate all agents for consistency, add helper files only where there is concrete value (templates, checklists). |
 
 ---
 

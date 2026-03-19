@@ -371,14 +371,14 @@ WidgetsBinding.instance.addPostFrameCallback((_) async {
 
 | Agent | File | Language | Purpose |
 |---|---|---|---|
-| /pm | .claude/commands/pm.md | Polish | Session router, git status check |
-| /discover | .claude/commands/discover.md | Polish | Strategic sessions, new Epics |
-| /planning | .claude/commands/planning.md | Polish | US verification + Task instruction |
+| /pm | .claude/skills/pm/SKILL.md | Polish | Session router, git status check |
+| /discover | .claude/skills/discover/SKILL.md | Polish | Strategic sessions, new Epics |
+| /planning | .claude/skills/planning/SKILL.md | Polish | US verification + Task instruction |
 | /dev | CLAUDE.md (this file) | English | Implementation |
-| /qa | .claude/commands/qa.md | English | Tests |
-| /debug | .claude/commands/debug.md | Polish | Problem solving |
-| /docs | .claude/commands/docs.md | English | Documentation update |
-| /retro | .claude/commands/retro.md | Polish | Retrospective |
+| /qa | .claude/skills/qa/SKILL.md | English | Tests |
+| /debug | .claude/skills/debug/SKILL.md | Polish | Problem solving |
+| /docs | .claude/skills/docs/SKILL.md | English | Documentation update |
+| /retro | .claude/skills/retro/SKILL.md | Polish | Retrospective |
 
 Full architecture: see MULTI_AGENT_ARCHITECTURE.md
 

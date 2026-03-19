@@ -46,7 +46,7 @@ Poczekaj na akceptację zanim przejdziesz dalej.
 
 ## Generowanie Task instruction
 
-Po akceptacji wygeneruj instrukcję w języku angielskim:
+Po akceptacji wygeneruj instrukcję w języku angielskim używając szablonu z task_template.md:
 - ## Context
 - ## Read
 - ## Tasks (numerowane)
