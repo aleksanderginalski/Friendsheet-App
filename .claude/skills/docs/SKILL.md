@@ -76,7 +76,11 @@ git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
 
 After all documentation is updated, ask: "Chcesz uruchomić /retro przed pushem? (t/n)"
 
-Then provide the full closing sequence — fill in actual branch name, US number, and files:
+Wait for the user's answer before continuing:
+- If "t" → remind: "Uruchom /retro. Po zakończeniu wróć tu i napisz 'gotowe' żebym pokazał sekwencję zamknięcia."
+- If "n" → provide the full closing sequence below.
+
+Closing sequence — fill in actual branch name, US number, and files:
 
 **Step 1 — Commit docs**
 ```powershell
@@ -90,10 +94,11 @@ git push -u origin [branch-name]
 ```
 
 **Step 3 — Pull Request**
-```powershell
-gh pr create --title "feat: US-XXX [short description]" --body "Closes #XXX"
-```
-Or create the PR manually on GitHub. Then merge it.
+Create PR manually on GitHub:
+- Title: `feat: US-XXX [short description]`
+- Body: `Closes #XXX`
+
+Then merge it.
 
 **Step 4 — Confirm merge**
 Ask the user: "Czy zmergowałeś PR na GitHubie? Napisz 'tak' gdy gotowe."

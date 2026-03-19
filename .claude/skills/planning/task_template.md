@@ -23,3 +23,9 @@
 - Manual verification steps:
   1. [Step 1]
   2. [Step 2]
+
+## Gitignore Check
+For every new file or directory created:
+- Temporary files (current_task.md, *.log) → add to .gitignore
+- API keys / credentials → always gitignored
+- Generated files (*.freezed.dart, *.g.dart) → committed in this project
