@@ -938,6 +938,8 @@ Run after every release or hotfix:
 - [ ] TC-CAL-001 Browse events
 - [ ] TC-INBOX-001 Review and confirm meeting
 - [ ] TC-INBOX-003 Inbox persistence
+- [ ] TC-SHARE-001 Generate sharing token (happy path)
+- [ ] TC-SHARE-003 Home screen CTA card (< 50 meetings)
 
 ---
 
@@ -950,4 +952,49 @@ Run after every release or hotfix:
 ---
 
 *Document maintained alongside BACKLOG.md. Update Status column after each test run.*
-*Scope: M1 + M2 + M3 + M3.5 (through US-062) + M5 Calendar Import and Meeting Inbox + INF Multi-Agent System.*
+*Scope: M1 + M2 + M3 + M3.5 (through US-062) + M5 Calendar Import and Meeting Inbox + INF Multi-Agent System + US-089 Generate Sharing Token.*
+
+---
+
+## TC-SHARE — Sharing Token (US-089)
+
+### TC-SHARE-001 — Generate sharing token (happy path)
+**Priority:** P1
+**Related US:** US-089
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Log in and open Side Drawer | Drawer shows "Import & Share" section with "Share meetings with a friend" tile | ⏭️ | |
+| 2 | Tap "Share meetings with a friend" | NavigatEs to GenerateSharingTokenScreen (AppBar: "Share Token" with white text on green) | ⏭️ | |
+| 3 | Wait for screen to load | 6-character alphanumeric token displayed (e.g. "A3K9BX"), expiry countdown shown ("Expires in 23h 59m") | ⏭️ | |
+| 4 | Tap "Copy token" | SnackBar "Token copied!" appears; token is in clipboard | ⏭️ | |
+| 5 | Return to screen within 24h | Same token shown (idempotent — no duplicate generated) | ⏭️ | |
+
+### TC-SHARE-002 — Generate new token
+**Priority:** P2
+**Related US:** US-089
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | On GenerateSharingTokenScreen with existing token | "Generate new token" button visible at bottom | ⏭️ | |
+| 2 | Tap "Generate new token" | Loading spinner, then new 6-character token shown with fresh 24h expiry | ⏭️ | |
+| 3 | Verify old token is gone | Old token value no longer visible | ⏭️ | |
+
+### TC-SHARE-003 — Home screen CTA card (< 50 meetings)
+**Priority:** P2
+**Related US:** US-089
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Log in with account that has fewer than 50 meetings | Home screen shows "Build your meeting base" card | ⏭️ | |
+| 2 | Verify card contents | Title "Build your meeting base", two green ElevatedButtons: "Import from Calendar" and "Request from a friend" | ⏭️ | |
+| 3 | Tap "Import from Calendar" | Navigates to Google Calendar import flow | ⏭️ | |
+| 4 | Tap "Request from a friend" | Navigates to GenerateSharingTokenScreen | ⏭️ | |
+
+### TC-SHARE-004 — Error state (not authenticated)
+**Priority:** P3
+**Related US:** US-089
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open GenerateSharingTokenScreen while not logged in | "Not authenticated" error + "Retry" button shown | ⏭️ | Covered by automated test |

@@ -2998,25 +2998,25 @@ in Pending Meetings with full conflict resolution for duplicate meetings, person
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `sharing`, `onboarding`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Token generation available in: drawer → Sharing section + Home CTA card when <50 meetings
-- [ ] Token: 6-character alphanumeric (e.g. "FR4K9X"), 24-hour TTL, single-use
-- [ ] Token displayed with copy button and expiry time shown
-- [ ] User can see their currently active token (if not yet used or expired)
-- [ ] Expired/used tokens are not shown
-- [ ] Token stored in Firestore: `users/{uid}/sharing_tokens/{tokenId}`
+- [x] Token generation available in: drawer → Sharing section + Home CTA card when <50 meetings
+- [x] Token: 6-character alphanumeric (e.g. "FR4K9X"), 24-hour TTL, single-use
+- [x] Token displayed with copy button and expiry time shown
+- [x] User can see their currently active token (if not yet used or expired)
+- [x] Expired/used tokens are not shown
+- [x] Token stored in Firestore: `users/{uid}/sharing_tokens/{tokenId}`
 
 **Tasks:**
-- [ ] **TASK-089.1:** Create `SharingToken` Freezed model — 1h
-- [ ] **TASK-089.2:** Create `SharingTokenRepository` with generate/get/cleanup methods — 1.5h
-- [ ] **TASK-089.3:** Add Firestore Security Rules for `sharing_tokens` subcollection — 0.5h
-- [ ] **TASK-089.4:** Build `GenerateSharingTokenScreen` UI (token display, copy button, expiry) — 2h
-- [ ] **TASK-089.5:** Add drawer "Sharing" section entry point — 0.5h
-- [ ] **TASK-089.6:** Add Home CTA card "Request meetings from a friend" (<50 meetings condition) — 0.5h
-- [ ] **TASK-089.7:** Extend `AccountDeletionService._deleteFirestoreData()` to delete `sharing_tokens` subcollection — 0.5h
-- [ ] **TASK-089.8:** Write tests — 1h
+- [x] **TASK-089.1:** Create `SharingToken` Freezed model — 1h
+- [x] **TASK-089.2:** Create `SharingTokenRepository` with generate/get/cleanup methods — 1.5h
+- [x] **TASK-089.3:** Add Firestore Security Rules for `sharing_tokens` subcollection — 0.5h
+- [x] **TASK-089.4:** Build `GenerateSharingTokenScreen` UI (token display, copy button, expiry) — 2h
+- [x] **TASK-089.5:** Add drawer "Import & Share" section entry point — 0.5h
+- [x] **TASK-089.6:** Merge Home CTA into single `BuildMeetingBaseCtaCard` (<50 meetings) — 0.5h
+- [x] **TASK-089.7:** Extend `AccountDeletionService._deleteFirestoreData()` to delete `sharing_tokens` subcollection — 0.5h
+- [x] **TASK-089.8:** Write tests — 1h
 
 **Architecture Note:**
 Token stored as `users/{C_uid}/sharing_tokens/{tokenId}` with fields:

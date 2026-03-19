@@ -52,6 +52,27 @@ in widgets — always use `ChartColors.getGradient(id)` and
 - Always include `Closes #issue_number` in commit message
 - Never push directly — always PR to main
 
+## Completing an Implementation Session
+
+When implementation is done:
+1. Run `flutter analyze` — fix all issues
+2. Run `flutter test` — all must pass
+3. List the Manual Verification steps the user should perform on a real device/emulator
+4. Wait — do NOT suggest /qa until the user confirms manual verification passed
+5. Only after confirmation: "Manual verification done? Run /qa."
+6. Provide a proposed commit for the implementation work:
+   ```powershell
+   git add [list specific changed files]
+   git commit -m "feat: [short description] (Closes #issue_number)"
+   ```
+   Note: never use `&&` — run each command separately (PowerShell 5.x, Windows 10).
+
+## Scope Boundaries
+
+/dev writes implementation code only. It does NOT write tests.
+Tests are the exclusive responsibility of /qa agent.
+/dev runs `flutter analyze` and `flutter test` (existing tests only) before signalling completion — never creates new test files.
+
 ## Flutter Best Practices
 - Run `flutter analyze` before every commit
 - Run `flutter test` before every commit

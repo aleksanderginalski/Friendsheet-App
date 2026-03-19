@@ -91,4 +91,35 @@ void main() {
       expect(find.byType(AddMeetingScreen), findsOneWidget);
     });
   });
+
+  group('MainScreen — drawer Import & Share section', () {
+    Future<void> openDrawer(WidgetTester tester) async {
+      await tester.pumpWidget(buildMainScreen());
+      await tester.pumpAndSettle();
+      // Open the drawer programmatically to avoid drag-gesture flakiness.
+      tester.state<ScaffoldState>(find.byType(Scaffold).first).openDrawer();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('drawer contains Import & Share section header',
+        (tester) async {
+      await openDrawer(tester);
+      expect(find.text('Import & Share'), findsOneWidget);
+    });
+
+    testWidgets('drawer contains Share meetings with a friend tile',
+        (tester) async {
+      await openDrawer(tester);
+      expect(find.text('Share meetings with a friend'), findsOneWidget);
+    });
+
+    testWidgets('drawer contains Import from Calendar tile', (tester) async {
+      await openDrawer(tester);
+      // Text may be 'Import from Calendar' or 'Browse & Import Events'.
+      expect(
+        find.textContaining('Calendar'),
+        findsWidgets,
+      );
+    });
+  });
 }

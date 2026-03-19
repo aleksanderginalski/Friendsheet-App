@@ -65,6 +65,7 @@ class AccountDeletionService {
     await _deleteCollection(userRef.collection('meetings'));
     await _deleteCollection(userRef.collection('persons'));
     await _deleteCollection(userRef.collection('activity_categories'));
+    await _deleteCollection(userRef.collection('sharing_tokens'));
 
     // Delete the user document itself after subcollections are cleared.
     await userRef.delete();

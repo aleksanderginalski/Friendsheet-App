@@ -107,10 +107,11 @@ void main() {
         'deletes auth user, clears local data', () async {
       stubReauthSuccess();
 
-      // Seed data in all three subcollections and the user doc.
+      // Seed data in all subcollections and the user doc.
       await seedSubcollectionDoc(fakeFirestore, 'meetings', 'mtg-1');
       await seedSubcollectionDoc(fakeFirestore, 'persons', 'per-1');
       await seedSubcollectionDoc(fakeFirestore, 'activity_categories', 'cat-1');
+      await seedSubcollectionDoc(fakeFirestore, 'sharing_tokens', 'tok-1');
       await fakeFirestore.collection('users').doc(uid).set({'name': 'Alice'});
 
       await service.deleteAccount(uid);
@@ -136,6 +137,13 @@ void main() {
           .collection('activity_categories')
           .get();
       expect(categories.docs, isEmpty);
+
+      final sharingTokens = await fakeFirestore
+          .collection('users')
+          .doc(uid)
+          .collection('sharing_tokens')
+          .get();
+      expect(sharingTokens.docs, isEmpty);
 
       // User document itself must be deleted.
       final userDoc = await fakeFirestore.collection('users').doc(uid).get();

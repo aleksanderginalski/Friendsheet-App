@@ -11,6 +11,7 @@ import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
 import 'package:friendsheet/presentation/screens/home_screen.dart';
+import 'package:friendsheet/presentation/widgets/build_meeting_base_cta_card.dart';
 import 'package:friendsheet/presentation/widgets/easter_egg_dialog.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -219,6 +220,55 @@ void main() {
       await tester.pumpWidget(buildHomeScreen());
 
       expect(find.text('Statistics'), findsOneWidget);
+    });
+  });
+
+  group('HomeScreen — CTA state (<50 meetings)', () {
+    // Override setUp: emit 1 meeting so shouldShowCta is true.
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = StreamController<List<Meeting>>();
+      when(mockMeetingRepository.getMeetingsByUser(any))
+          .thenAnswer((_) => controller.stream);
+      await homeProvider.initialize('');
+      controller.add([
+        Meeting(
+          id: 'm1',
+          userId: '',
+          name: 'Test',
+          date: DateTime(2026),
+          weight: 3,
+          participantIds: const [],
+          createdAt: DateTime(2026),
+          updatedAt: DateTime(2026),
+        ),
+      ]);
+      await Future.microtask(() {});
+      await controller.close();
+    });
+
+    testWidgets('shows BuildMeetingBaseCtaCard when meeting count < 50',
+        (tester) async {
+      await tester.pumpWidget(buildHomeScreen());
+      await tester.pump();
+
+      expect(find.byType(BuildMeetingBaseCtaCard), findsOneWidget);
+    });
+
+    testWidgets('CTA card shows both action buttons', (tester) async {
+      await tester.pumpWidget(buildHomeScreen());
+      await tester.pump();
+
+      expect(find.text('Import from Calendar'), findsOneWidget);
+      expect(find.text('Request from a friend'), findsOneWidget);
+    });
+
+    testWidgets('CTA card shows title "Build your meeting base"',
+        (tester) async {
+      await tester.pumpWidget(buildHomeScreen());
+      await tester.pump();
+
+      expect(find.text('Build your meeting base'), findsOneWidget);
     });
   });
 

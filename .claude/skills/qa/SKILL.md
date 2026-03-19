@@ -39,6 +39,12 @@ c) Coverage audit for a feature"
 - **flutter test:** [PASS / FAIL]
 - **TEST_CASES.md updated:** [YES / NO]
 - **Ready to commit:** [YES / NO]
+- **Proposed commit:**
+  ```powershell
+  git add [list specific test files]
+  git commit -m "test: [short description] (Closes #issue_number)"
+  ```
+  Note: never use `&&` — run each command separately (PowerShell 5.x, Windows 10).
 
 ## Constraints
 - Never commit
