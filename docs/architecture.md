@@ -55,7 +55,7 @@ erDiagram
     USER ||--o{ ACTIVITY : owns
     USER ||--o{ ACTIVITY_CATEGORY : owns
     USER ||--o{ FRIEND_GROUP : owns
-    USER ||--o{ INVITATION_CODE : generates
+    USER ||--o{ SHARING_TOKEN : generates
     USER ||--o{ DASHBOARD_CONFIG : configures
     MEETING }o--o{ ACTIVITY_CATEGORY : has_categories
     ACTIVITY }o--o| ACTIVITY_CATEGORY : belongs_to
@@ -111,14 +111,12 @@ erDiagram
         datetime createdAt
     }
 
-    INVITATION_CODE {
+    SHARING_TOKEN {
         string id PK
-        string code "6-char alphanumeric"
-        string senderId FK
-        string targetPersonId FK
-        string status "pending | used | expired"
-        datetime expiresAt "TTL: 48h"
+        string token "6-char alphanumeric [A-Z0-9]"
         datetime createdAt
+        datetime expiresAt "TTL: 24h"
+        bool isUsed "default false"
     }
 
     DASHBOARD_CONFIG {
@@ -560,6 +558,7 @@ graph LR
     U --> UM["meetings/ (subcollection)"]
     U --> UP["persons/ (subcollection)"]
     U --> UFG["friend_groups/ (subcollection)"]
+    U --> UST["sharing_tokens/ (subcollection)"]
 
     UAC --> UAC1["{categoryId}<br/>- isGlobal: false<br/>- userId: String<br/>- name<br/>- iconIdentifier<br/>- parentCategoryId?<br/>- isSelectableAsActivity<br/>- copiedFromId?"]
 
@@ -568,6 +567,8 @@ graph LR
     UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- nicknames[]<br/>- createdAt"]
 
     UFG --> UFG1["{groupId}<br/>- name<br/>- iconIdentifier?<br/>- personIds[]<br/>- createdAt"]
+
+    UST --> UST1["{tokenId}<br/>- token (6-char)<br/>- createdAt<br/>- expiresAt (TTL 24h)<br/>- isUsed: bool"]
 ```
 
 **Global vs Private data pattern:**
@@ -628,8 +629,10 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isOwner(userId);
     }
 
-    // Removed: root-level invitation_codes collection no longer exists (replaced by
-    // users/{uid}/sharing_tokens subcollection — see M5 sharing section above)
+    match /users/{userId}/sharing_tokens/{tokenId} {
+      // Path-based userId check — required for list queries (resource.data unavailable)
+      allow read, write: if isAuthenticated() && isOwner(userId);
+    }
 
     match /users/{userId}/pending_meetings/{packageId} {
       // Recipient reads/deletes their own packages; sender writes (linkedUserId validated in service)
@@ -889,4 +892,4 @@ import source requires only a new data-fetching layer.
 
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-062 Friend Groups — FriendGroup model, FriendGroupRepository, FriendGroupsProvider, friend_groups Firestore subcollection + security rules)
+**Last Updated:** March 2026 (US-089 Generate Sharing Token — SharingToken model, SharingTokenRepository, GenerateSharingTokenScreen, sharing_tokens Firestore subcollection + security rules, drawer "Import & Share" section, BuildMeetingBaseCtaCard)

@@ -23,7 +23,7 @@
 
 **M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
 
-**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Extensible architecture supports future import sources (Google Photos planned).
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you. Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (636)
+✅ All tests passing (675)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.43.0 — US-089: Generate Sharing Token (March 19, 2026)
+- ✅ `SharingToken` Freezed model — `token` (6-char [A-Z0-9]), `createdAt`, `expiresAt` (24h TTL), `isUsed` (default false); stored under `users/{uid}/sharing_tokens`
+- ✅ `SharingTokenRepository` — idempotent `generateToken()` (cleanup → check active → generate), `getActiveToken()` (client-side `isUsed` filter avoids composite Firestore index), `deleteToken()`, `markAsUsed()`
+- ✅ `GenerateSharingTokenScreen` — token display (fontSize 36, letterSpacing 8), expiry countdown, copy button, "Generate new token" action; AppBar white text on green (explicit `titleTextStyle` override)
+- ✅ Drawer reorganized: new "Import & Share" section header groups "Share meetings with a friend" + "Import from Calendar"; `Flexible` wrapper on drawer header image fixes overflow on small screens
+- ✅ `BuildMeetingBaseCtaCard` replaces two separate CTA cards — single card with two green ElevatedButtons: "Import from Calendar" + "Request from a friend"
+- ✅ Firestore Security Rules — `sharing_tokens` subcollection (path-based `isOwner(userId)`)
+- ✅ `AccountDeletionService` — extended to delete `sharing_tokens` subcollection on account deletion
+- ✅ Total test count: 636 → 675 tests (+39: model 9, repository 10, widget 7, screen 4, home screen +3, main screen +3, account deletion +1, mock regenerations)
 
 ### v3.42.0 — US-INF-009: Skills Migration — Agents Migrated to Skills Format (March 19, 2026)
 - ✅ All 7 agents migrated from `.claude/commands/` to `.claude/skills/name/SKILL.md` structure
