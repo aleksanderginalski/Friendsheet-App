@@ -91,3 +91,6 @@ scripts/migration/.venv/
 
 # Keystore certificates
 *.pem
+
+# Claude Code current task (temporary file, not committed)
+.claude/current_task.md
