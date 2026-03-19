@@ -5,8 +5,9 @@ import '../../data/models/google_calendar.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
+import '../sharing/generate_sharing_token_screen.dart';
+import '../widgets/build_meeting_base_cta_card.dart';
 import '../widgets/home_loading_screen.dart';
-import '../widgets/onboarding_calendar_cta_card.dart';
 import '../widgets/statistics_section.dart';
 import 'calendar_events_screen.dart';
 
@@ -33,65 +34,72 @@ class HomeScreen extends StatelessWidget {
         if (homeProvider.shouldShowCta) {
           return Scaffold(
             body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: OnboardingCalendarCtaCard(
-                  onImport: () async {
-                    final calendarService = GoogleCalendarService();
-                    final isConnected = await calendarService.isConnected();
-                    if (!context.mounted) return;
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: BuildMeetingBaseCtaCard(
+                    onImport: () async {
+                      final calendarService = GoogleCalendarService();
+                      final isConnected = await calendarService.isConnected();
+                      if (!context.mounted) return;
 
-                    List<GoogleCalendar> calendars;
-                    if (isConnected) {
-                      calendars = await calendarService.fetchCalendars();
-                    } else {
-                      try {
-                        calendars = await calendarService.requestAccess();
-                      } catch (_) {
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Calendar access denied'),
-                          ),
-                        );
-                        return;
+                      List<GoogleCalendar> calendars;
+                      if (isConnected) {
+                        calendars = await calendarService.fetchCalendars();
+                      } else {
+                        try {
+                          calendars = await calendarService.requestAccess();
+                        } catch (_) {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Calendar access denied'),
+                            ),
+                          );
+                          return;
+                        }
                       }
-                    }
 
-                    if (!context.mounted) return;
-                    Navigator.push(
+                      if (!context.mounted) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CalendarEventsScreen(
+                            calendars: calendars,
+                            onReconnect: () async {
+                              try {
+                                final newCalendars =
+                                    await GoogleCalendarService()
+                                        .requestAccess();
+                                if (!context.mounted) return;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CalendarEventsScreen(
+                                      calendars: newCalendars,
+                                    ),
+                                  ),
+                                );
+                              } catch (_) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Calendar access denied'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    onShareToken: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CalendarEventsScreen(
-                          calendars: calendars,
-                          onReconnect: () async {
-                            // Re-run the full requestAccess flow — same path
-                            // as the initial "Import" tap above.
-                            try {
-                              final newCalendars =
-                                  await GoogleCalendarService().requestAccess();
-                              if (!context.mounted) return;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CalendarEventsScreen(
-                                    calendars: newCalendars,
-                                  ),
-                                ),
-                              );
-                            } catch (_) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Calendar access denied'),
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                        builder: (_) => const GenerateSharingTokenScreen(),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),

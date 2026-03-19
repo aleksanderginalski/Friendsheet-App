@@ -118,6 +118,26 @@ class MockPersonRepository extends _i1.Mock implements _i4.PersonRepository {
       ) as _i6.Future<void>);
 
   @override
+  _i6.Future<bool> isDuplicateName(
+    String? userId,
+    String? firstName,
+    String? lastName, {
+    String? excludeId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #isDuplicateName,
+          [
+            userId,
+            firstName,
+            lastName,
+          ],
+          {#excludeId: excludeId},
+        ),
+        returnValue: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
+
+  @override
   _i6.Future<void> deletePerson(
     String? userId,
     String? personId,

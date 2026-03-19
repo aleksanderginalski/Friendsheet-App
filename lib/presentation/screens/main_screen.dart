@@ -28,6 +28,7 @@ import '../providers/export_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
 import '../providers/statistics_provider.dart';
+import '../sharing/generate_sharing_token_screen.dart';
 import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
 import 'calendar_events_screen.dart';
@@ -143,6 +144,16 @@ class _MainScreenState extends State<MainScreen> {
     _calendarSettingsProvider.dispose();
     _meetingInboxProvider.dispose();
     super.dispose();
+  }
+
+  /// Navigates to GenerateSharingTokenScreen using the State's own context.
+  void _openSharingTokenScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const GenerateSharingTokenScreen(),
+      ),
+    );
   }
 
   /// Navigates to CalendarPermissionScreen via the global navigator key.
@@ -282,13 +293,35 @@ class _MainScreenState extends State<MainScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  Image.asset(
-                    'assets/images/drawer_icon.png',
-                    height: 80,
-                    fit: BoxFit.contain,
+                  Flexible(
+                    child: Image.asset(
+                      'assets/images/drawer_icon.png',
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ],
               ),
+            ),
+            // Import & Share section header — tools for building the meeting base
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Text(
+                'Import & Share',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share meetings with a friend'),
+              onTap: () {
+                Navigator.pop(context);
+                _openSharingTokenScreen();
+              },
             ),
             ValueListenableBuilder<bool>(
               valueListenable: GoogleCalendarService().isConnectedNotifier,
@@ -350,6 +383,7 @@ class _MainScreenState extends State<MainScreen> {
                 );
               },
             ),
+            const Divider(),
             // Pending Meetings tile — only shown when inbox has candidates.
             Consumer<MeetingInboxProvider>(
               builder: (context, inboxProvider, _) {

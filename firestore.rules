@@ -40,10 +40,13 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isOwner(userId);
     }
 
-    match /invitation_codes/{codeId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isOwner(request.resource.data.senderId);
-      allow update: if isAuthenticated();
+    // invitation_codes root collection removed — replaced by
+    // users/{uid}/sharing_tokens subcollection (FEATURE-012, US-089)
+
+    match /users/{userId}/sharing_tokens/{tokenId} {
+      // Only the token owner (C) can read and write their own tokens.
+      // Path-based userId check — safe for both get and list queries.
+      allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
     match /users/{userId}/dashboard_config/{configId} {
