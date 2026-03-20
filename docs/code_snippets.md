@@ -1236,6 +1236,158 @@ Rule: `onPressed: null` renders IconButton as visually disabled automatically.
 No need for explicit color or opacity manipulation.
 Wrap-around logic lives in `_navigateCarousel(int direction)` — direction: -1 or +1.
 
+## 27. TokenValidationResult — sealed result type for async validation (US-090)
+
+Use a sealed result class instead of throwing exceptions when an async operation has multiple
+named failure modes that the caller must handle explicitly in the UI.
+
+```dart
+// lib/data/repositories/sharing_token_repository.dart
+
+enum TokenValidationError { notFound, expired, alreadyUsed }
+
+class TokenValidationResult {
+  final bool success;
+  final String? linkedUserId; // non-null on success
+  final TokenValidationError? error; // non-null on failure
+
+  const TokenValidationResult.success(this.linkedUserId)
+      : success = true,
+        error = null;
+
+  const TokenValidationResult.failure(this.error)
+      : success = false,
+        linkedUserId = null;
+}
+
+// Repository method — returns result, never throws:
+Future<TokenValidationResult> validateAndClaimToken(
+  String token,
+  String linkedPersonId,
+) async {
+  final snapshot = await _firestore
+      .collectionGroup('sharing_tokens')
+      .where('token', isEqualTo: token)
+      .limit(1)
+      .get();
+
+  if (snapshot.docs.isEmpty) {
+    return const TokenValidationResult.failure(TokenValidationError.notFound);
+  }
+  final doc = snapshot.docs.first;
+  final data = doc.data();
+
+  final expiresAt = (data['expiresAt'] as Timestamp).toDate();
+  if (DateTime.now().isAfter(expiresAt)) {
+    return const TokenValidationResult.failure(TokenValidationError.expired);
+  }
+  if (data['isUsed'] == true) {
+    return const TokenValidationResult.failure(TokenValidationError.alreadyUsed);
+  }
+
+  await markAsUsed(doc.reference);
+  final ownerUid = doc.reference.parent.parent!.id;
+  return TokenValidationResult.success(ownerUid);
+}
+
+// Provider caller — switches on result, no try/catch needed:
+Future<void> linkFriendAccount(String token) async {
+  _isLinking = true;
+  notifyListeners();
+
+  final result = await _sharingTokenRepository.validateAndClaimToken(token, person.id);
+
+  if (result.success) {
+    final updated = person.copyWith(linkedUserId: result.linkedUserId);
+    await _personRepository.updatePerson(updated);
+  } else {
+    _linkError = switch (result.error!) {
+      TokenValidationError.notFound => 'Token not found.',
+      TokenValidationError.expired => 'Token has expired.',
+      TokenValidationError.alreadyUsed => 'Token has already been used.',
+    };
+  }
+
+  _isLinking = false;
+  notifyListeners();
+}
+```
+
+Rule: return a typed result object — never throw domain errors from repositories.
+The caller (Provider) handles each failure case and maps it to a UI string.
+
+## 28. Collection group query + fieldOverrides index pattern (US-090)
+
+Use `collectionGroup()` when you need to query across all subcollections with the same name,
+regardless of which parent document owns them.
+
+```dart
+// Cross-user token lookup — searches all users' sharing_tokens subcollections:
+final snapshot = await FirebaseFirestore.instance
+    .collectionGroup('sharing_tokens')
+    .where('token', isEqualTo: token)
+    .limit(1)
+    .get();
+
+// Extract owner uid from document path: users/{ownerUid}/sharing_tokens/{tokenId}
+final ownerUid = snapshot.docs.first.reference.parent.parent!.id;
+```
+
+Corresponding `firestore.indexes.json` entry — use `fieldOverrides` with empty `indexes`
+to prevent Firestore from auto-generating unwanted single-field indexes for the queried field:
+
+```json
+{
+  "indexes": [
+    {
+      "collectionGroup": "sharing_tokens",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        { "fieldPath": "token", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "sharing_tokens",
+      "fieldPath": "token",
+      "indexes": [],
+      "queryScope": "COLLECTION_GROUP"
+    }
+  ]
+}
+```
+
+Rule: always pair a collection group index with a `fieldOverrides` entry for the queried field.
+Without `fieldOverrides`, Firestore generates redundant ascending + descending single-field indexes.
+
+## 29. Targeted Firestore update rule — single-field transition guard (US-090)
+
+When a Firestore document must be updated by a non-owner (e.g. collection group write),
+restrict the update to the exact field transition intended and require all other fields unchanged.
+
+```javascript
+// firestore.rules
+
+// WRONG — any authenticated user can overwrite any field:
+match /{path=**}/sharing_tokens/{tokenId} {
+  allow update: if isAuthenticated();
+}
+
+// CORRECT — only isUsed false→true is allowed; all other fields must be unchanged:
+match /{path=**}/sharing_tokens/{tokenId} {
+  allow update: if isAuthenticated()
+                && resource.data.isUsed == false
+                && request.resource.data.isUsed == true
+                && request.resource.data.token == resource.data.token
+                && request.resource.data.createdAt == resource.data.createdAt
+                && request.resource.data.expiresAt == resource.data.expiresAt;
+}
+```
+
+Rule: for any cross-user write, explicitly enumerate which fields may change and assert the
+remaining fields equal their current values. This prevents field-injection attacks through
+the collection group path while allowing the single intended mutation.
 
 ---
 
