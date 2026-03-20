@@ -1028,3 +1028,40 @@ Run after every release or hotfix:
 | UT-LINK-010 | `linkFriendAccount` returns notFound and does not call updatePerson | `error == notFound`, `updatePerson` never called |
 | UT-LINK-011 | `linkFriendAccount` returns serverError when validateAndClaimToken throws | `error == serverError`, `isLinking == false` |
 | 1 | Open GenerateSharingTokenScreen while not logged in | "Not authenticated" error + "Retry" button shown | ⏭️ | Covered by automated test |
+
+---
+
+## TC-SEND: Share Meetings (US-091)
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SEND-001 | `getMeetingsByParticipant` returns meetings for person, newest first | 2 meetings returned in descending date order |
+| UT-SEND-002 | `getMeetingsByParticipant` returns empty list when person has no meetings | `results` is empty |
+| UT-SEND-003 | `getMeetingsByParticipant` does not return meetings from a different user | `results` is empty |
+
+### Automated tests — `test/data/services/meeting_package_service_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SEND-004 | `sendPackage` writes document to recipient's `pending_meetings` with correct fields | doc exists at `users/uid-c/pending_meetings/`, `senderUid == 'uid-a'`, `meetings.length == 1` |
+| UT-SEND-005 | `sendPackage` assigns non-empty auto-generated doc ID | `doc.id` is non-empty string |
+| UT-SEND-006 | `sendPackage` writes to recipient subcollection, not sender | `users/uid-a/pending_meetings` is empty |
+
+### Automated tests — `test/presentation/sharing/share_meetings_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SEND-007 | Initial state has correct defaults | all fields empty/false/null |
+| UT-SEND-008 | `initialize` loads meetings, selects all, pre-fills sender name | `meetings.length == 1`, `selectedMeetingIds == {'m1'}`, `senderFirstName == 'Anna'` |
+| UT-SEND-009 | `initialize` with no meetings leaves selection empty | `meetings` empty, `isAllSelected == false` |
+| UT-SEND-010 | `initialize` sets errorMessage on failure | `errorMessage != null` |
+| UT-SEND-011 | `toggleAll` cycles all→none→all | selection empty then full again |
+| UT-SEND-012 | `toggleMeeting` adds and removes from selection | deselect then re-select in one test |
+| UT-SEND-013 | `canSend` is false when firstName is empty | `canSend == false` |
+| UT-SEND-014 | `canSend` is true when firstName set and meetings selected | `canSend == true` |
+| UT-SEND-015 | `sendPackage` happy path returns true and calls service | `success == true`, service called once |
+| UT-SEND-016 | `sendPackage` excludes targetPersonId from participants when `includePersons=true` | `participants.length == 1`, `firstName == 'Bob'` |
+| UT-SEND-017 | `sendPackage` resolves categoryNames when `includeActivities=true` | `categoryNames == ['Sports']` |
+| UT-SEND-018 | `sendPackage` returns false and sets errorMessage on service failure | `success == false`, `errorMessage != null` |
