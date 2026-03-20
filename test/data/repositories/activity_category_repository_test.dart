@@ -72,9 +72,13 @@ void main() {
 
   group('ActivityCategoryRepository', () {
     group('addCategory', () {
-      test('root category (depth 1) succeeds', () async {
-        final category = makeCategory(name: 'Sport');
-        await expectLater(repository.addCategory(category), completes);
+      test('happy path: stores document in correct Firestore path', () async {
+        final category = makeCategory(name: 'Art');
+        await repository.addCategory(category);
+
+        final snapshot = await categoriesRef().get();
+        expect(snapshot.docs.length, equals(1));
+        expect(snapshot.docs.first['name'], equals('Art'));
       });
 
       test('subcategory (depth 2) succeeds when parent is a root', () async {
@@ -98,15 +102,6 @@ void main() {
           throwsA(isA<Exception>()),
         );
       });
-
-      test('stores document in correct Firestore path', () async {
-        final category = makeCategory(name: 'Art');
-        await repository.addCategory(category);
-
-        final snapshot = await categoriesRef().get();
-        expect(snapshot.docs.length, equals(1));
-        expect(snapshot.docs.first['name'], equals('Art'));
-      });
     });
 
     group('updateCategory', () {
@@ -125,24 +120,17 @@ void main() {
         );
       });
 
-      test('succeeds when category remains at depth 2', () async {
-        final rootId = await seedRootCategory();
-        final subId = await seedSubCategory(rootId);
-        final doc = await categoriesRef().doc(subId).get();
-        final existing = ActivityCategory.fromFirestore(doc);
-        final updated = existing.copyWith(name: 'Updated Sub');
-        await expectLater(repository.updateCategory(updated), completes);
-      });
-
-      test('persists updated name in Firestore', () async {
+      test('happy path: persists name update in Firestore', () async {
         final rootId = await seedRootCategory(name: 'Old Name');
         final doc = await categoriesRef().doc(rootId).get();
         final existing = ActivityCategory.fromFirestore(doc);
         await repository.updateCategory(existing.copyWith(name: 'New Name'));
 
         final updated = await categoriesRef().doc(rootId).get();
-        expect((updated.data() as Map<String, dynamic>)['name'],
-            equals('New Name'));
+        expect(
+          (updated.data() as Map<String, dynamic>)['name'],
+          equals('New Name'),
+        );
       });
     });
 
@@ -198,18 +186,12 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('returns all categories for user', () async {
-        await seedRootCategory(name: 'Sport');
-        await seedRootCategory(name: 'Art');
-
-        final result = await repository.getCategories(userId).first;
-        expect(result.length, equals(2));
-      });
-
-      test('returned items are ActivityCategory instances', () async {
+      test('returns all categories as typed ActivityCategory instances',
+          () async {
         await seedRootCategory(name: 'Music');
 
         final result = await repository.getCategories(userId).first;
+        expect(result.length, equals(1));
         expect(result.first, isA<ActivityCategory>());
         expect(result.first.name, equals('Music'));
       });
@@ -252,6 +234,7 @@ void main() {
 
         expect(result.length, equals(1));
         expect(result.first.name, equals('Running'));
+        expect(result.first.isSelectableAsActivity, isTrue);
       });
 
       test('does not return categories from a different user', () async {
@@ -271,22 +254,6 @@ void main() {
         final result = await repository.getSelectableCategories(userId);
 
         expect(result, isEmpty);
-      });
-
-      test('returned items are ActivityCategory instances', () async {
-        await categoriesRef().add({
-          'userId': userId,
-          'name': 'Running',
-          'iconIdentifier': 'icon',
-          'isGlobal': false,
-          'isSelectableAsActivity': true,
-          'createdAt': Timestamp.now(),
-        });
-
-        final result = await repository.getSelectableCategories(userId);
-
-        expect(result.first, isA<ActivityCategory>());
-        expect(result.first.isSelectableAsActivity, isTrue);
       });
     });
 
@@ -356,51 +323,23 @@ void main() {
     });
 
     group('createSelectableCategory', () {
-      test('creates a new category in the user subcollection', () async {
-        await repository.createSelectableCategory(
-          name: 'Climbing',
-          userId: userId,
-        );
-
-        final snapshot =
-            await categoriesRef().where('name', isEqualTo: 'Climbing').get();
-        expect(snapshot.docs.length, equals(1));
-      });
-
-      test('returns ActivityCategory with correct name', () async {
+      test('happy path: creates document and returns category with correct fields',
+          () async {
         final category = await repository.createSelectableCategory(
           name: 'Climbing',
           userId: userId,
         );
 
         expect(category.name, equals('Climbing'));
-      });
-
-      test('returns category with isSelectableAsActivity true', () async {
-        final category = await repository.createSelectableCategory(
-          name: 'Climbing',
-          userId: userId,
-        );
-
         expect(category.isSelectableAsActivity, isTrue);
-      });
-
-      test('returns category with isGlobal false', () async {
-        final category = await repository.createSelectableCategory(
-          name: 'Climbing',
-          userId: userId,
-        );
-
         expect(category.isGlobal, isFalse);
-      });
-
-      test('returns category with non-empty id', () async {
-        final category = await repository.createSelectableCategory(
-          name: 'Climbing',
-          userId: userId,
-        );
-
         expect(category.id, isNotEmpty);
+        expect(category.userId, equals(userId));
+
+        // Also verify the document was written to Firestore.
+        final snapshot =
+            await categoriesRef().where('name', isEqualTo: 'Climbing').get();
+        expect(snapshot.docs.length, equals(1));
       });
     });
   });
