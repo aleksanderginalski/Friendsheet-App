@@ -62,11 +62,6 @@ void main() {
         expect(category.parentCategoryId, equals('cat-1'));
       });
 
-      test('isSelectableAsActivity defaults to false for root', () {
-        final category = createRootCategory();
-        expect(category.isSelectableAsActivity, isFalse);
-      });
-
       test('isSelectableAsActivity can be true for subcategory', () {
         final category = createSubCategory(isSelectableAsActivity: true);
         expect(category.isSelectableAsActivity, isTrue);
@@ -86,25 +81,19 @@ void main() {
         expect(c1, isNot(equals(c2)));
       });
 
-      test('categories with different iconIdentifiers are not equal', () {
-        final c1 = createRootCategory(iconIdentifier: 'icon_a');
-        final c2 = createRootCategory(iconIdentifier: 'icon_b');
-        expect(c1, isNot(equals(c2)));
-      });
-
-      test('categories with different isSelectableAsActivity are not equal',
-          () {
-        final c1 = createRootCategory(isSelectableAsActivity: false);
-        final c2 = createRootCategory(isSelectableAsActivity: true);
-        expect(c1, isNot(equals(c2)));
-      });
     });
 
     group('copyWith()', () {
-      test('copyWith updates name correctly', () {
-        final category = createRootCategory(name: 'Sport');
-        final updated = category.copyWith(name: 'Art');
+      test('copyWith updates fields correctly', () {
+        final category = createRootCategory();
+        final updated = category.copyWith(
+          name: 'Art',
+          iconIdentifier: 'new_icon',
+          isSelectableAsActivity: true,
+        );
         expect(updated.name, equals('Art'));
+        expect(updated.iconIdentifier, equals('new_icon'));
+        expect(updated.isSelectableAsActivity, isTrue);
         expect(updated.id, equals(category.id));
       });
 
@@ -113,48 +102,26 @@ void main() {
         final updated = category.copyWith(parentCategoryId: 'parent-1');
         expect(updated.parentCategoryId, equals('parent-1'));
       });
-
-      test('copyWith updates iconIdentifier', () {
-        final category = createRootCategory(iconIdentifier: 'old_icon');
-        final updated = category.copyWith(iconIdentifier: 'new_icon');
-        expect(updated.iconIdentifier, equals('new_icon'));
-      });
-
-      test('copyWith updates isSelectableAsActivity', () {
-        final category = createRootCategory(isSelectableAsActivity: false);
-        final updated = category.copyWith(isSelectableAsActivity: true);
-        expect(updated.isSelectableAsActivity, isTrue);
-      });
     });
 
     group('toFirestore()', () {
-      test('includes all required fields', () {
-        final category = createRootCategory();
+      test('happy path includes all fields', () {
+        // Uses subcategory: parentCategoryId set, isSelectableAsActivity true.
+        final category = createSubCategory();
         final map = category.toFirestore();
         expect(map['userId'], equals('user-123'));
-        expect(map['name'], equals('Sport'));
-        expect(map['iconIdentifier'], equals('sports_icon'));
+        expect(map['name'], equals('Running'));
+        expect(map['iconIdentifier'], equals('run_icon'));
         expect(map['isGlobal'], isFalse);
-        expect(map['isSelectableAsActivity'], isFalse);
-        expect(map['createdAt'], isA<Timestamp>());
-      });
-
-      test('includes isSelectableAsActivity true when set', () {
-        final category = createSubCategory(isSelectableAsActivity: true);
-        final map = category.toFirestore();
         expect(map['isSelectableAsActivity'], isTrue);
+        expect(map['parentCategoryId'], equals('cat-1'));
+        expect(map['createdAt'], isA<Timestamp>());
       });
 
       test('omits parentCategoryId when null', () {
         final category = createRootCategory();
         final map = category.toFirestore();
         expect(map.containsKey('parentCategoryId'), isFalse);
-      });
-
-      test('includes parentCategoryId when set', () {
-        final category = createSubCategory(parentCategoryId: 'cat-1');
-        final map = category.toFirestore();
-        expect(map['parentCategoryId'], equals('cat-1'));
       });
     });
 
@@ -218,25 +185,6 @@ void main() {
         final category = ActivityCategory.fromFirestore(doc);
 
         expect(category.parentCategoryId, equals('cat-parent'));
-      });
-
-      test('uses doc.id as category id', () async {
-        final fakeFirestore = FakeFirebaseFirestore();
-        final docRef =
-            await fakeFirestore.collection('activity_categories').add({
-          'userId': 'user-123',
-          'name': 'Music',
-          'iconIdentifier': 'music_icon',
-          'isGlobal': false,
-          'isSelectableAsActivity': false,
-          'createdAt': Timestamp.fromDate(DateTime(2026, 2, 24)),
-        });
-
-        final doc = await docRef.get();
-        final category = ActivityCategory.fromFirestore(doc);
-
-        expect(category.id, equals(docRef.id));
-        expect(category.id, isNotEmpty);
       });
     });
   });

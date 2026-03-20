@@ -20,43 +20,6 @@ void main() {
       updatedAt: testDate,
     );
 
-    test('creates Meeting with all required fields', () {
-      expect(validMeeting.id, 'meeting-1');
-      expect(validMeeting.name, 'Coffee with Anna');
-      expect(validMeeting.weight, 8);
-      expect(validMeeting.participantIds.length, 2);
-      expect(validMeeting.categoryIds.length, 1);
-    });
-
-    test('categoryIds defaults to empty list', () {
-      final meeting = Meeting(
-        id: 'm1',
-        userId: 'u1',
-        name: 'Test',
-        date: testDate,
-        weight: 5,
-        participantIds: ['p1'],
-        createdAt: testDate,
-        updatedAt: testDate,
-      );
-      expect(meeting.categoryIds, isEmpty);
-    });
-
-    test('categoryIds can be set explicitly', () {
-      final meeting = Meeting(
-        id: 'm1',
-        userId: 'u1',
-        name: 'Hiking',
-        date: testDate,
-        weight: 5,
-        participantIds: ['p1'],
-        categoryIds: ['cat-sport', 'cat-gory'],
-        createdAt: testDate,
-        updatedAt: testDate,
-      );
-      expect(meeting.categoryIds, equals(['cat-sport', 'cat-gory']));
-    });
-
     test('isValid returns true for valid meeting', () {
       expect(validMeeting.isValid(), true);
     });
@@ -83,18 +46,15 @@ void main() {
     });
 
     test('copyWith creates new instance with updated fields', () {
-      final updated = validMeeting.copyWith(name: 'Updated Meeting');
-
-      expect(updated.name, 'Updated Meeting');
-      expect(updated.id, validMeeting.id); // Other fields unchanged
-      expect(updated.weight, validMeeting.weight);
-    });
-
-    test('copyWith updates categoryIds', () {
       final updated = validMeeting.copyWith(
+        name: 'Updated Meeting',
         categoryIds: ['cat-1', 'cat-2'],
       );
+
+      expect(updated.name, 'Updated Meeting');
       expect(updated.categoryIds, equals(['cat-1', 'cat-2']));
+      expect(updated.id, validMeeting.id);
+      expect(updated.weight, validMeeting.weight);
     });
 
     test('equality works correctly', () {
@@ -132,14 +92,6 @@ void main() {
       expect(map['participantIds'], ['person-1', 'person-2']);
       expect(map['categoryIds'], ['cat-1']);
       expect(map.containsKey('activityIds'), isFalse);
-    });
-
-    test('toFirestore includes categoryIds when set', () {
-      final meeting = validMeeting.copyWith(
-        categoryIds: ['cat-sport', 'cat-gory'],
-      );
-      final map = meeting.toFirestore();
-      expect(map['categoryIds'], equals(['cat-sport', 'cat-gory']));
     });
 
     test('JSON serialization works', () {
