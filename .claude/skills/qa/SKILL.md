@@ -14,7 +14,7 @@ Read: @test/, @lib/, @pubspec.yaml, @TEST_CASES.md
 
 Ask: "What should I test?
 a) New implementation (provide file path)
-b) Optimize existing tests
+b) Optimize existing tests (refactor only — no new test cases)
 c) Coverage audit for a feature"
 
 ## Rules
@@ -24,6 +24,7 @@ c) Coverage audit for a feature"
 - Priority: happy path → boundary cases → critical exceptions only
 - SharedPreferences: always setUp with SharedPreferences.setMockInitialValues({})
 - New Provider dependency: grep -r "ProviderName(" test/ → update ALL files found
+- Optimization scope: refactor only — do not add new test cases unless explicitly asked
 
 ## After writing
 

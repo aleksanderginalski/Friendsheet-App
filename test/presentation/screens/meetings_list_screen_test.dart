@@ -1,8 +1,6 @@
 // test/presentation/screens/meetings_list_screen_test.dart
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
@@ -12,13 +10,13 @@ import 'package:friendsheet/presentation/screens/meetings_list_screen.dart';
 import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
 import 'package:friendsheet/presentation/widgets/meeting_card.dart';
 
+import '../../helpers/firebase_test_helpers.dart';
+
 void main() {
   setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
     // Firebase Core mock is required because MeetingsListProvider creates
     // AuthService(), which accesses FirebaseAuth.instance at field initialisation.
-    setupFirebaseCoreMocks();
-    await Firebase.initializeApp();
+    await setupTestFirebase();
   });
 
   // Helper: creates a Meeting fixture with a controlled date and optional name.

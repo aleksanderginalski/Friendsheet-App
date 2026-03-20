@@ -1,14 +1,12 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/presentation/sharing/generate_sharing_token_screen.dart';
 
+import '../../helpers/firebase_test_helpers.dart';
+
 void main() {
   setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    setupFirebaseCoreMocks();
-    await Firebase.initializeApp();
+    await setupTestFirebase();
   });
 
   Widget buildScreen() {
