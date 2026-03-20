@@ -171,6 +171,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.46.0 — US-092: Receive Package & Resolve Meeting Duplicates (March 20, 2026)
+- ✅ `PendingMeetingPackageRepository` — reads/deletes packages from `users/{uid}/pending_meetings/`
+- ✅ `SharedPackageInboxProvider` — detects date conflicts (year+month+day, time ignored) against existing meetings using one-time snapshot; stores `ConflictResolution` per meeting index; `canProceed()` gates Continue button until all conflicts resolved
+- ✅ `PackageConflictScreen` — per-package review screen: non-conflicting meetings shown as check tiles; conflicting meetings shown as orange-bordered cards with side-by-side Received/Yours comparison and Merge / Add as new / Skip buttons (`FilledButton` when selected, `OutlinedButton` otherwise)
+- ✅ `MeetingInboxScreen` extended — "Shared by friends" section above calendar candidates; empty-state and success-screen guards account for packages; `_openConflictScreen()` injects provider at call-site via `ChangeNotifierProvider.value`
+- ✅ `MainScreen` — `SharedPackageInboxProvider` added to lifecycle; drawer tile uses `Consumer2<MeetingInboxProvider, SharedPackageInboxProvider>` showing combined pending count
+- ✅ 26 automated tests: `PendingMeetingPackageRepository` (3), `SharedPackageInboxProvider` (14), `PackageConflictScreen` widget tests (9)
+
 ### v3.45.0 — US-091: Share Meetings (March 20, 2026)
 - ✅ `PendingMeetingPackage` Freezed model — top-level document for `users/{C_uid}/pending_meetings/{packageId}`, with nested `SharedMeeting` and `SharedPerson` types; Firestore serialization via custom `toFirestore()` / `fromFirestore()` with `Timestamp` conversion
 - ✅ `MeetingPackageService.sendPackage()` — batch write to recipient's `pending_meetings` subcollection; auto-generated doc ID written back into the package via `copyWith`
