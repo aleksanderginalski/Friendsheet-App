@@ -142,6 +142,47 @@ void main() {
     });
   });
 
+  group('validateAndClaimToken', () {
+    test('returns notFound when no token matches the value', () async {
+      final result = await repository.validateAndClaimToken('ZZZZZZ');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.error, TokenValidationError.notFound);
+    });
+
+    test('returns expired when token expiresAt is in the past', () async {
+      await seedToken(
+        token: 'EXPIRD',
+        expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+      );
+
+      final result = await repository.validateAndClaimToken('EXPIRD');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.error, TokenValidationError.expired);
+    });
+
+    test('returns alreadyUsed when token isUsed is true', () async {
+      await seedToken(token: 'USEDDD', isUsed: true);
+
+      final result = await repository.validateAndClaimToken('USEDDD');
+
+      expect(result.isSuccess, isFalse);
+      expect(result.error, TokenValidationError.alreadyUsed);
+    });
+
+    test('returns success with ownerUid and tokenId for a valid token',
+        () async {
+      final tokenId = await seedToken(token: 'VALID1');
+
+      final result = await repository.validateAndClaimToken('VALID1');
+
+      expect(result.isSuccess, isTrue);
+      expect(result.ownerUid, userId);
+      expect(result.tokenId, tokenId);
+    });
+  });
+
   group('cleanup (via generateToken)', () {
     test('deletes expired and used tokens before generating a new one',
         () async {
