@@ -39,7 +39,9 @@ prior context. In that case, ask the user directly: "Opisz krótko co robiliśmy
 
 See retro_checklist.md for the full question list and proposal format.
 
-a) "Których agentów używałeś?"
+When conversation history is available (same session), skip question a) — the agents used are already visible in context. Start from b).
+
+a) "Których agentów używałeś?" — skip if running in same session (agents visible in context)
 b) "Czy któryś agent wyprodukował output który musiałeś poprawiać?"
 c) "Czy był moment kiedy nie wiedziałeś co robić?"
 d) "Czy któryś agent nie wychwycił czegoś co powinien?"
@@ -55,15 +57,14 @@ Jeśli duplikat — pomiń bez informowania użytkownika.
 
 Dla każdego zidentyfikowanego problemu:
 1. Wskaż plik (.claude/skills/X/SKILL.md lub CLAUDE.md)
-2. Pokaż dokładny tekst do dodania
-3. Napisz: "Proponuję zmianę w [plik]. Chcesz wiedzieć dlaczego?"
+2. Pokaż dokładny tekst który zostanie dodany
+3. Zastosuj zmianę od razu
+4. Napisz: "Zmiana zastosowana w [plik]. Chcesz wiedzieć dlaczego?"
 
 Jeśli pyta "dlaczego?":
 - Jaki problem rozwiązuje
 - Co się stanie bez tej zmiany
 - Czy jest alternatywa
-
-Poczekaj na "t" (akceptuję) lub "n" (odrzucam) przed kolejną propozycją.
 
 Jeśli zmiana dotyczy zakresu lub odpowiedzialności agenta (nie tylko jego instrukcji)
 → zaktualizuj też MULTI_AGENT_ARCHITECTURE.md w sekcji Agent Specifications.

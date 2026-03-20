@@ -79,6 +79,19 @@ The only third-party services that process your data are:
 - **Google Firebase** — used for authentication and data storage
 - **Google Calendar API** — used only when you explicitly connect your calendar and initiate an import
 
+### 5.1 Sharing meetings with friends
+
+When you choose to share meetings with a linked friend using the "Send meetings" feature, the following data is sent to your friend's account:
+
+- Meeting name, date, and weight
+- Your sender signature (first name, last name, optional nickname)
+- Optionally: first name and last name of other meeting participants (if you choose to include them)
+- Optionally: activity names associated with the meetings (if you choose to include them)
+
+**What is never shared:** notes, nicknames of participants, or any other contact details beyond first and last name.
+
+You will be shown a privacy notice and asked to confirm before any data is sent. Sharing is always an explicit, opt-in action.
+
 ---
 
 ## 6. Data Retention and Deletion

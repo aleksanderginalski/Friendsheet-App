@@ -3066,28 +3066,28 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 8
 **Priority:** P0
 **Labels:** `sharing`, `meetings`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-090
 
 **Acceptance Criteria:**
-- [ ] "Send meetings" opens a screen listing only meetings where C participated
-- [ ] A can select/deselect individual meetings (select all option available)
-- [ ] For each package A chooses what to include beyond the mandatory fields:
+- [x] "Send meetings" opens a screen listing only meetings where C participated
+- [x] A can select/deselect individual meetings (select all option available)
+- [x] For each package A chooses what to include beyond the mandatory fields:
   - Mandatory (always sent): date, weight, meeting name, sender signature (A's first name + last name, optional nickname)
   - Optional: other participants (persons), activities
-- [ ] Person data shared: first name + last name only — notes are NEVER shared
-- [ ] GDPR notice shown before confirming: "You are sharing data of people you've added to your contacts"
-- [ ] On confirm: package written to `users/{C_uid}/pending_meetings/` as a batch
-- [ ] Success confirmation shown to A after sending
+- [x] Person data shared: first name + last name only — notes are NEVER shared
+- [x] GDPR notice shown before confirming: "You are sharing data of people you've added to your contacts"
+- [x] On confirm: package written to `users/{C_uid}/pending_meetings/` as a batch
+- [x] Success confirmation shown to A after sending
 
 **Tasks:**
-- [ ] **TASK-091.1:** Build `ShareMeetingsScreen` — meeting list filtered by C's participation, checkboxes — 2h
-- [ ] **TASK-091.2:** Build sharing options panel (include persons / include activities toggles) — 1h
-- [ ] **TASK-091.3:** Build sender signature input (first name, last name, optional nickname) — 0.5h
-- [ ] **TASK-091.4:** Add GDPR notice dialog before confirm — 0.5h
-- [ ] **TASK-091.5:** Implement `MeetingPackageService.sendPackage()` — batch write to recipient's `pending_meetings` — 2h
-- [ ] **TASK-091.6:** Add Firestore Security Rules: sender can write to `users/{recipientUid}/pending_meetings` if they hold a valid `linkedUserId` — 0.5h
-- [ ] **TASK-091.7:** Write tests — 1h
+- [x] **TASK-091.1:** Build `ShareMeetingsScreen` — meeting list filtered by C's participation, checkboxes — 2h
+- [x] **TASK-091.2:** Build sharing options panel (include persons / include activities toggles) — 1h
+- [x] **TASK-091.3:** Build sender signature input (first name, last name, optional nickname) — 0.5h
+- [x] **TASK-091.4:** Add GDPR notice dialog before confirm — 0.5h
+- [x] **TASK-091.5:** Implement `MeetingPackageService.sendPackage()` — batch write to recipient's `pending_meetings` — 2h
+- [x] **TASK-091.6:** Add Firestore Security Rules: sender can write to `users/{recipientUid}/pending_meetings` if they hold a valid `linkedUserId` — 0.5h
+- [x] **TASK-091.7:** Write tests — 1h
 
 **Privacy Rules:**
 - `Person.notes` is never included in shared data

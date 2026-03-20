@@ -92,6 +92,50 @@ void main() {
       expect(id1, isNot(equals(id2)));
     });
 
+    group('getMeetingsByParticipant', () {
+      test('returns meetings where person is participant, newest first',
+          () async {
+        final older = makeMeeting(
+          userId: 'user-1',
+          name: 'Older',
+          participantIds: ['person-1'],
+        ).copyWith(date: DateTime(2025, 1, 1));
+        final newer = makeMeeting(
+          userId: 'user-1',
+          name: 'Newer',
+          participantIds: ['person-1'],
+        ).copyWith(date: DateTime(2026, 1, 1));
+
+        await repository.saveMeeting(older);
+        await repository.saveMeeting(newer);
+
+        final results =
+            await repository.getMeetingsByParticipant('user-1', 'person-1');
+
+        expect(results.length, equals(2));
+        expect(results.first.name, equals('Newer'));
+        expect(results.last.name, equals('Older'));
+      });
+
+      test('returns empty list when person has no meetings', () async {
+        await repository.saveMeeting(
+            makeMeeting(userId: 'user-1', participantIds: ['person-2']));
+
+        final results =
+            await repository.getMeetingsByParticipant('user-1', 'person-1');
+        expect(results, isEmpty);
+      });
+
+      test('does not return meetings belonging to a different user', () async {
+        await repository.saveMeeting(
+            makeMeeting(userId: 'user-2', participantIds: ['person-1']));
+
+        final results =
+            await repository.getMeetingsByParticipant('user-1', 'person-1');
+        expect(results, isEmpty);
+      });
+    });
+
     group('getMeetingsCountForPerson', () {
       test('returns correct count when person is a participant', () async {
         await repository.saveMeeting(
