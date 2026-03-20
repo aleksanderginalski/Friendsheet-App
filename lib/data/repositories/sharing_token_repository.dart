@@ -107,8 +107,7 @@ class SharingTokenRepository {
           TokenValidationError.alreadyUsed);
     }
 
-    return TokenValidationResult.success(
-        ownerUid: ownerUid, tokenId: doc.id);
+    return TokenValidationResult.success(ownerUid: ownerUid, tokenId: doc.id);
   }
 
   /// Marks a token as used. Called by US-090 after successful account linking.

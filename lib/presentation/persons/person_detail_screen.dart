@@ -291,8 +291,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           'Invalid token. Check the code and try again.',
         TokenValidationError.expired =>
           'This token has expired. Ask your friend to generate a new one.',
-        TokenValidationError.alreadyUsed =>
-          'This token has already been used.',
+        TokenValidationError.alreadyUsed => 'This token has already been used.',
         TokenValidationError.serverError =>
           'Something went wrong. Check your connection and try again.',
       };
