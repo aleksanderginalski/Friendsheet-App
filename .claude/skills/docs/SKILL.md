@@ -30,8 +30,8 @@ git diff main..HEAD --stat
 git log main..HEAD --oneline
 
 ## Always update
-- BACKLOG.md — tasks complete, US status → ✅ COMPLETED
-- README.md — version history, feature status
+- `docs/BACKLOG.md` — tasks complete, US status → ✅ COMPLETED
+- `README.md` (root of project, NOT docs/) — version history, feature status
 
 ## Update if affected
 - architecture.md — new layers, services, data flows
