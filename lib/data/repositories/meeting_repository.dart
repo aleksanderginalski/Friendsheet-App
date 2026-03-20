@@ -61,9 +61,8 @@ class MeetingRepository {
     final snapshot = await _meetingsRef(userId)
         .where('participantIds', arrayContains: personId)
         .get();
-    final meetings = snapshot.docs
-        .map((doc) => Meeting.fromFirestore(doc))
-        .toList();
+    final meetings =
+        snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList();
     meetings.sort((a, b) => b.date.compareTo(a.date));
     return meetings;
   }

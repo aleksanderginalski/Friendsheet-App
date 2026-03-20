@@ -106,15 +106,13 @@ SharedMeeting _sharedMeetingFromMap(Map<String, dynamic> m) {
     name: m['name'] as String,
     date: (m['date'] as Timestamp).toDate(),
     weight: (m['weight'] as num).toInt(),
-    participants: ((m['participants'] as List<dynamic>?) ?? [])
-        .map((e) {
-          final p = e as Map<String, dynamic>;
-          return SharedPerson(
-            firstName: p['firstName'] as String,
-            lastName: p['lastName'] as String?,
-          );
-        })
-        .toList(),
+    participants: ((m['participants'] as List<dynamic>?) ?? []).map((e) {
+      final p = e as Map<String, dynamic>;
+      return SharedPerson(
+        firstName: p['firstName'] as String,
+        lastName: p['lastName'] as String?,
+      );
+    }).toList(),
     categoryNames: ((m['categoryNames'] as List<dynamic>?) ?? [])
         .map((e) => e as String)
         .toList(),

@@ -202,7 +202,8 @@ class _SenderSignatureCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Your signature', style: Theme.of(context).textTheme.titleSmall),
+            Text('Your signature',
+                style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             TextField(
               controller: firstNameController,

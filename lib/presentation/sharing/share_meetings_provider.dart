@@ -83,8 +83,7 @@ class ShareMeetingsProvider extends ChangeNotifier {
       final meetings = await _meetingRepository.getMeetingsByParticipant(
           userId, targetPersonId);
       final persons = await _personRepository.getPersonsByUser(userId);
-      final categories =
-          await _categoryRepository.getCategories(userId).first;
+      final categories = await _categoryRepository.getCategories(userId).first;
 
       _meetings = meetings;
       _personsById = {for (final p in persons) p.id: p};
@@ -163,9 +162,8 @@ class ShareMeetingsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final selected = _meetings
-          .where((m) => _selectedMeetingIds.contains(m.id))
-          .toList();
+      final selected =
+          _meetings.where((m) => _selectedMeetingIds.contains(m.id)).toList();
 
       final sharedMeetings = selected.map((meeting) {
         final participants = _includePersons
@@ -204,9 +202,8 @@ class ShareMeetingsProvider extends ChangeNotifier {
         senderUid: _authService.currentUserId!,
         senderFirstName: _senderFirstName.trim(),
         senderLastName: _senderLastName.trim(),
-        senderNickname: _senderNickname.trim().isEmpty
-            ? null
-            : _senderNickname.trim(),
+        senderNickname:
+            _senderNickname.trim().isEmpty ? null : _senderNickname.trim(),
         sentAt: DateTime.now(),
         meetings: sharedMeetings,
       );
