@@ -63,6 +63,13 @@ service cloud.firestore {
                     && resource.data.isUsed == false;
     }
 
+    match /users/{userId}/pending_meetings/{packageId} {
+      // Recipient reads and deletes their own packages.
+      allow read, delete: if isAuthenticated() && isOwner(userId);
+      // Any authenticated user may create a package (linkedUserId validated in service layer).
+      allow create: if isAuthenticated();
+    }
+
     match /users/{userId}/dashboard_config/{configId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
     }

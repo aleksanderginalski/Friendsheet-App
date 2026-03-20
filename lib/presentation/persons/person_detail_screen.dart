@@ -3,8 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/person.dart';
+import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
+import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/sharing_token_repository.dart';
+import '../../data/services/auth_service.dart';
+import '../../data/services/meeting_package_service.dart';
 import '../activities/activity_icons.dart';
+import '../sharing/share_meetings_provider.dart';
+import '../sharing/share_meetings_screen.dart';
 import 'friend_groups_provider.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
@@ -64,6 +71,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         provider: provider,
         person: person,
         onLinkTap: () => _showLinkDialog(provider),
+        onSendTap: () => _openShareMeetingsScreen(person),
       ),
     );
   }
@@ -234,6 +242,30 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  // Opens ShareMeetingsScreen for the linked person.
+  // Method lives on State so context is always alive after async operations.
+  void _openShareMeetingsScreen(Person person) {
+    final provider = ShareMeetingsProvider(
+      meetingRepository: MeetingRepository(),
+      personRepository: PersonRepository(),
+      categoryRepository: ActivityCategoryRepository(),
+      authService: AuthService(),
+      meetingPackageService: MeetingPackageService(),
+      targetPersonId: person.id,
+      recipientUid: person.linkedUserId!,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: ShareMeetingsScreen(person: person),
+        ),
+      ),
+    );
+  }
+
   // Opens the token input dialog and handles linking result.
   // Method lives on State so context is always alive (not from a closure).
   Future<void> _showLinkDialog(PersonDetailProvider provider) async {
@@ -306,11 +338,13 @@ class _PersonDetailBody extends StatelessWidget {
   final PersonDetailProvider provider;
   final Person person;
   final VoidCallback onLinkTap;
+  final VoidCallback onSendTap;
 
   const _PersonDetailBody({
     required this.provider,
     required this.person,
     required this.onLinkTap,
+    required this.onSendTap,
   });
 
   @override
@@ -348,6 +382,7 @@ class _PersonDetailBody extends StatelessWidget {
           provider: provider,
           person: person,
           onLinkTap: onLinkTap,
+          onSendTap: onSendTap,
         ),
       ],
     );
@@ -405,16 +440,18 @@ class _GroupsSection extends StatelessWidget {
 }
 
 // Sharing section — "Share meetings with friend" when unlinked, "Send meetings" when linked.
-// onLinkTap callback comes from _PersonDetailScreenState to avoid stale context.
+// Callbacks come from _PersonDetailScreenState to avoid stale context.
 class _SharingSection extends StatelessWidget {
   final PersonDetailProvider provider;
   final Person person;
   final VoidCallback onLinkTap;
+  final VoidCallback onSendTap;
 
   const _SharingSection({
     required this.provider,
     required this.person,
     required this.onLinkTap,
+    required this.onSendTap,
   });
 
   @override
@@ -424,10 +461,9 @@ class _SharingSection extends StatelessWidget {
     return ListTile(
       leading: Icon(isLinked ? Icons.send : Icons.share),
       title: Text(isLinked ? 'Send meetings' : 'Share meetings with friend'),
-      // Send meetings (US-091) not yet implemented — tile disabled when linked.
       subtitle: isLinked ? const Text('Account linked') : null,
-      enabled: !isLinked && !provider.isLinking,
-      onTap: isLinked ? null : onLinkTap,
+      enabled: isLinked ? true : !provider.isLinking,
+      onTap: isLinked ? onSendTap : onLinkTap,
     );
   }
 }

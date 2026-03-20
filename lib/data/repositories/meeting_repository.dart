@@ -53,6 +53,21 @@ class MeetingRepository {
     await cacheInvalidator?.invalidateMeetingsCache();
   }
 
+  /// Returns all meetings for [userId] where [personId] is a participant,
+  /// ordered by date descending.
+  /// Sorting is done client-side to avoid requiring a composite Firestore index.
+  Future<List<Meeting>> getMeetingsByParticipant(
+      String userId, String personId) async {
+    final snapshot = await _meetingsRef(userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+    final meetings = snapshot.docs
+        .map((doc) => Meeting.fromFirestore(doc))
+        .toList();
+    meetings.sort((a, b) => b.date.compareTo(a.date));
+    return meetings;
+  }
+
   /// Returns the number of meetings for a given user that include the given person.
   Future<int> getMeetingsCountForPerson(String userId, String personId) async {
     final snapshot = await _meetingsRef(userId)
