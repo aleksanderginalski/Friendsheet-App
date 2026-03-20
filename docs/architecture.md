@@ -973,6 +973,59 @@ allow update: if isAuthenticated()
 
 ---
 
+### M5 — Share Meetings Architecture (US-091)
+
+**Purpose:** Allows user A to select meetings where linked friend C participated and send them as a package to C's `pending_meetings` Firestore subcollection.
+
+**New files:**
+- `lib/data/models/pending_meeting_package.dart` — three Freezed types: `PendingMeetingPackage`, `SharedMeeting`, `SharedPerson`
+- `lib/data/services/meeting_package_service.dart` — writes package to `users/{C_uid}/pending_meetings/`
+- `lib/presentation/sharing/share_meetings_provider.dart` — loading, selection, send orchestration
+- `lib/presentation/sharing/share_meetings_screen.dart` — UI: sender signature, meeting list, options, GDPR dialog
+
+**Data model written to Firestore:**
+
+```
+users/{C_uid}/pending_meetings/{packageId}
+  senderUid: String
+  senderFirstName: String
+  senderLastName: String
+  senderNickname: String?         — optional
+  sentAt: Timestamp
+  meetings: [
+    {
+      name: String,
+      date: Timestamp,
+      weight: int,
+      participants: [{firstName, lastName}],   — empty if includePersons=false
+      categoryNames: [String]                  — empty if includeActivities=false
+    }
+  ]
+```
+
+**Privacy constraint — SharedPerson:**
+
+Only `firstName` and `lastName` are sent. Nicknames, notes, and any other Person fields are never included. The target person (C = `targetPersonId`) is excluded from the participants list to avoid sending C's own data back to C.
+
+**getMeetingsByParticipant — no composite index:**
+
+`MeetingRepository.getMeetingsByParticipant()` uses `arrayContains` on `participantIds` without `orderBy` to avoid requiring a composite Firestore index. Sorting is done client-side after the query returns.
+
+**Provider injection at call-site (ShareMeetingsProvider):**
+
+`ShareMeetingsProvider` is created in `_PersonDetailScreenState._openShareMeetingsScreen()` and passed into the new route via `ChangeNotifierProvider.value`. This follows the Provider Scope Rule — the pushed route receives its own `BuildContext` that does not inherit providers from the parent route.
+
+**Firestore Security Rule:**
+
+```javascript
+match /users/{userId}/pending_meetings/{packageId} {
+  allow read, delete: if isAuthenticated() && isOwner(userId);
+  allow create: if isAuthenticated(); // linkedUserId validated in service layer
+}
+```
+
+---
+
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-090 Link Friend Account — Person.linkedUserId, SharingTokenRepository collection group query + targeted update, collection group security rules, fieldOverrides index pattern, TokenValidationResult sealed result type)
+**Last Updated:** March 2026 (US-091 Share Meetings — PendingMeetingPackage model, MeetingPackageService, ShareMeetingsProvider/Screen, getMeetingsByParticipant client-side sort, pending_meetings Firestore security rule)

@@ -171,6 +171,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 ## 📖 Version History
 
+### v3.45.0 — US-091: Share Meetings (March 20, 2026)
+- ✅ `PendingMeetingPackage` Freezed model — top-level document for `users/{C_uid}/pending_meetings/{packageId}`, with nested `SharedMeeting` and `SharedPerson` types; Firestore serialization via custom `toFirestore()` / `fromFirestore()` with `Timestamp` conversion
+- ✅ `MeetingPackageService.sendPackage()` — batch write to recipient's `pending_meetings` subcollection; auto-generated doc ID written back into the package via `copyWith`
+- ✅ `MeetingRepository.getMeetingsByParticipant()` — filters meetings by `arrayContains` on `participantIds`, sorts client-side (no composite index required)
+- ✅ `ShareMeetingsProvider` — loads meetings/persons/categories, tracks selection (select all / per-meeting toggle), include toggles (participants, activities), sender signature fields, `canSend` guard, `sendPackage()` orchestration
+- ✅ `ShareMeetingsScreen` — sender signature card, meeting checkboxes, options toggles, GDPR `AlertDialog` before every send, success snackbar
+- ✅ `PersonDetailScreen._SharingSection` — "Send meetings" button activated for linked accounts; `_openShareMeetingsScreen()` method on State injects `ShareMeetingsProvider` at call-site
+- ✅ Firestore Security Rules — `pending_meetings` subcollection: recipient reads/deletes own packages, any authenticated user may create (linkedUserId validated in service layer)
+- ✅ 18 automated tests: `getMeetingsByParticipant` (3), `MeetingPackageService` (3), `ShareMeetingsProvider` (12)
+
 ### v3.44.0 — US-090: Link Friend Account (March 20, 2026)
 - ✅ `Person` Freezed model extended with `linkedUserId: String?` — persists linked Friendsheet uid of a friend
 - ✅ `SharingTokenRepository` — added `TokenValidationError` enum, `TokenValidationResult` sealed result type, `validateAndClaimToken()` collection group query, `markAsUsed()` targeted update
