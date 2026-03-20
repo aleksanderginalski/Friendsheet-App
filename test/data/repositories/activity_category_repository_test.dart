@@ -323,7 +323,8 @@ void main() {
     });
 
     group('createSelectableCategory', () {
-      test('happy path: creates document and returns category with correct fields',
+      test(
+          'happy path: creates document and returns category with correct fields',
           () async {
         final category = await repository.createSelectableCategory(
           name: 'Climbing',

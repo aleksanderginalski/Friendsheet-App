@@ -110,7 +110,8 @@ void main() {
 
         expect(provider.meetingsByYear[2026], hasLength(2));
         expect(provider.meetingsByYear[2025], hasLength(1));
-        expect(provider.meetingsByYear[2026], containsAll([meeting2026a, meeting2026b]));
+        expect(provider.meetingsByYear[2026],
+            containsAll([meeting2026a, meeting2026b]));
         expect(provider.meetingsByYear[2025], contains(meeting2025));
         expect(provider.meetingsByYear.keys.toList(), equals([2026, 2025]));
       });

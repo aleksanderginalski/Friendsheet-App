@@ -333,7 +333,6 @@ void main() {
         expect(bob.weightSum, equals(5));
         expect(result.first.personId, equals('p-a')); // sorted desc
       });
-
     });
 
     group('computeInteractionDistribution()', () {
@@ -369,7 +368,6 @@ void main() {
         expect(bob.currentYearWeight, equals(5));
         expect(result.first.personId, equals('p-a')); // sorted desc
       });
-
     });
 
     // ─── Phase 4: Hive persistent cache (US-073) ────────────────────────────

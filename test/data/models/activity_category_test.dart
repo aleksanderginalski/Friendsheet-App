@@ -80,7 +80,6 @@ void main() {
         final c2 = createRootCategory(name: 'Art');
         expect(c1, isNot(equals(c2)));
       });
-
     });
 
     group('copyWith()', () {

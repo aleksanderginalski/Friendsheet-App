@@ -168,7 +168,8 @@ void main() {
     });
 
     group('hasSearchResults', () {
-      test('returns true when query is empty or matches any category', () async {
+      test('returns true when query is empty or matches any category',
+          () async {
         when(mockRepository.getAllCategories('u1'))
             .thenAnswer((_) async => flatList);
 

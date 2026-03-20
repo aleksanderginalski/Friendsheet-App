@@ -143,7 +143,8 @@ void main() {
     });
 
     group('selectYear()', () {
-      test('updates selectedYear, loads data, and notifies listeners', () async {
+      test('updates selectedYear, loads data, and notifies listeners',
+          () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026, 2025]);

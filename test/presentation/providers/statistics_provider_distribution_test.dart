@@ -190,9 +190,11 @@ void main() {
             .thenAnswer((_) async => [2026]);
         // ignore: argument_type_not_assignable
         when(mockRepository.computePersonsForActivity(any, any)).thenReturn([
-          const PersonActivityEntry(personId: 'p-1', name: 'Alice', weightSum: 10),
+          const PersonActivityEntry(
+              personId: 'p-1', name: 'Alice', weightSum: 10),
           const PersonActivityEntry(personId: 'p-2', name: 'Bob', weightSum: 5),
-          const PersonActivityEntry(personId: 'p-3', name: 'Charlie', weightSum: 3),
+          const PersonActivityEntry(
+              personId: 'p-3', name: 'Charlie', weightSum: 3),
         ]);
         // ignore: argument_type_not_assignable
         when(mockRepository.computeActivityBreakdown(any)).thenReturn([
@@ -224,7 +226,8 @@ void main() {
             .thenAnswer((_) async => [2026]);
         // ignore: argument_type_not_assignable
         when(mockRepository.computePersonsForActivity(any, any)).thenReturn([
-          const PersonActivityEntry(personId: 'p-1', name: 'Alice', weightSum: 10),
+          const PersonActivityEntry(
+              personId: 'p-1', name: 'Alice', weightSum: 10),
           const PersonActivityEntry(personId: 'p-2', name: 'Bob', weightSum: 5),
         ]);
         // ignore: argument_type_not_assignable
