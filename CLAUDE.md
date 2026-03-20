@@ -71,7 +71,13 @@ When implementation is done:
 
 /dev writes implementation code only. It does NOT write tests.
 Tests are the exclusive responsibility of /qa agent.
-/dev runs `flutter analyze` and `flutter test` (existing tests only) before signalling completion — never creates new test files.
+/dev runs `flutter analyze` and `flutter test` (existing tests only) before signalling completion — never creates new test files or adds new test cases.
+
+Exception: when adding a new dependency to an existing Provider, /dev MUST update
+the `setUp()` in all existing test files that instantiate that Provider (required by
+the Testing Patterns section). When this happens:
+- List all modified test files explicitly in the implementation report
+- Include those files in the proposed commit (not left to /qa)
 
 ## Flutter Best Practices
 - Run `flutter analyze` before every commit
@@ -149,6 +155,45 @@ navigation call-site (in the parent screen), not inside the target screen itself
 Use addPostFrameCallback in initState to call initialize() on the provider.
 
 See: PersonDetailScreen + PersonsListScreen as reference implementation.
+
+## Firestore Security Rules — Cross-User Writes
+
+When implementing a method where user A writes to user C's document
+(e.g. marking a token as used after linking), you MUST proactively write
+a targeted security rule — the default `isOwner(userId)` rule will block it.
+
+Use `affectedKeys().hasOnly([...])` to limit what the non-owner can change:
+```javascript
+// Allow any authenticated user to flip isUsed false→true only:
+allow update: if isAuthenticated()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isUsed'])
+              && request.resource.data.isUsed == true
+              && resource.data.isUsed == false;
+```
+
+Deploy rules before manual verification: `firebase deploy --only firestore:rules`
+
+## Firestore Collection Group Query — Required fieldOverrides
+
+When implementing a `collectionGroup('name').where('field', ...)` query,
+you must also add an entry to `firestore.indexes.json` at the same time:
+
+```json
+{
+  "fieldOverrides": [{
+    "collectionGroup": "name",
+    "fieldPath": "field",
+    "indexes": [
+      {"queryScope": "COLLECTION", "order": "ASCENDING"},
+      {"queryScope": "COLLECTION_GROUP", "order": "ASCENDING"}
+    ]
+  }]
+}
+```
+
+Without this entry the query will throw a runtime error (Firestore does not
+auto-generate collection group indexes). Deploy together with code:
+`firebase deploy --only firestore:indexes`
 
 ## Firestore Security Rules — List Queries on Subcollections
 
