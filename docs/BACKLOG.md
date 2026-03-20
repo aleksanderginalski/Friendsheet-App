@@ -2,7 +2,7 @@
 
 **Project:** Friendsheet  
 **Version:** 2.1  
-**Last Updated:** March 18, 2026  
+**Last Updated:** March 20, 2026  
 **Product Owner:** Aleksander Ginalski  
 
 ---
@@ -3105,25 +3105,25 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 8
 **Priority:** P0
 **Labels:** `sharing`, `inbox`, `conflicts`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-091
 
 **Acceptance Criteria:**
-- [ ] Received package appears in Pending Meetings with sender name and date received
-- [ ] System detects potential duplicate meetings: same date as an existing meeting in C's database
-- [ ] Duplicate candidates shown with side-by-side comparison (name, participants, activities)
-- [ ] For each date conflict C can: confirm it's the same meeting (merge) / add as new meeting / skip
-- [ ] C cannot confirm the full package until all date conflicts are resolved
-- [ ] After resolving meeting conflicts, flow continues to US-093 conflict resolution (persons + activities)
-- [ ] If no conflicts: C can confirm import directly
+- [x] Received package appears in Pending Meetings with sender name and date received
+- [x] System detects potential duplicate meetings: same date as an existing meeting in C's database
+- [x] Duplicate candidates shown with side-by-side comparison (name, participants, activities)
+- [x] For each date conflict C can: confirm it's the same meeting (merge) / add as new meeting / skip
+- [x] C cannot confirm the full package until all date conflicts are resolved
+- [x] After resolving meeting conflicts, flow continues to US-093 conflict resolution (persons + activities)
+- [x] If no conflicts: C can confirm import directly
 
 **Tasks:**
-- [ ] **TASK-092.1:** Extend `MeetingInboxProvider` to handle shared packages (distinguish from calendar imports) — 1h
-- [ ] **TASK-092.2:** Build sender info header in Pending Meetings for shared packages — 0.5h
-- [ ] **TASK-092.3:** Implement duplicate meeting detection by date — 1.5h
-- [ ] **TASK-092.4:** Build conflict resolution UI — side-by-side comparison card, merge/add/skip actions — 2.5h
-- [ ] **TASK-092.5:** Block "Confirm all" until date conflicts resolved — 0.5h
-- [ ] **TASK-092.6:** Write tests — 1.5h
+- [x] **TASK-092.1:** Extend `MeetingInboxProvider` to handle shared packages (distinguish from calendar imports) — 1h
+- [x] **TASK-092.2:** Build sender info header in Pending Meetings for shared packages — 0.5h
+- [x] **TASK-092.3:** Implement duplicate meeting detection by date — 1.5h
+- [x] **TASK-092.4:** Build conflict resolution UI — side-by-side comparison card, merge/add/skip actions — 2.5h
+- [x] **TASK-092.5:** Block "Confirm all" until date conflicts resolved — 0.5h
+- [x] **TASK-092.6:** Write tests — 1.5h
 
 ---
 

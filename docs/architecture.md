@@ -1026,6 +1026,41 @@ match /users/{userId}/pending_meetings/{packageId} {
 
 ---
 
+### M5 — Receive Package & Resolve Duplicates Architecture (US-092)
+
+**Purpose:** Allows user C to view received `PendingMeetingPackage` documents from `pending_meetings/`, detect date conflicts with their existing meetings, resolve each conflict individually, and proceed to US-093 for final import.
+
+**New files:**
+- `lib/data/repositories/pending_meeting_package_repository.dart` — `fetchPackages(userId)` and `deletePackage(userId, packageId)` against `users/{uid}/pending_meetings/`
+- `lib/presentation/providers/shared_package_inbox_provider.dart` — conflict detection, resolution state, `canProceed` gate
+- `lib/presentation/import/package_conflict_screen.dart` — per-package review screen with side-by-side conflict cards
+
+**Modified files:**
+- `lib/presentation/import/meeting_inbox_screen.dart` — added shared packages section above calendar candidates; empty-state and success-screen guards updated
+- `lib/presentation/screens/main_screen.dart` — `SharedPackageInboxProvider` created and initialized; drawer tile uses `Consumer2` for combined count
+
+**Conflict detection:**
+
+Date comparison is date-only (year + month + day). Time-of-day is ignored. Detection runs once during `initialize()` using a one-time snapshot (`getMeetingsByUser(userId).first`). Result stored in `_conflicts: Map<String, Map<int, Meeting>>` keyed by `packageId → meetingIndex`.
+
+**ConflictResolution enum:**
+
+```dart
+enum ConflictResolution { merge, addAsNew, skip }
+```
+
+Resolution state stored in `_resolutions: Map<String, Map<int, ConflictResolution>>`. The `canProceed(packageId)` method gates the Continue button: returns `true` only when every conflict index has a resolution.
+
+**dismissPackage — local-only:**
+
+`dismissPackage(packageId)` removes the package from local state only. It does NOT delete the Firestore document. US-093 handles final import and `deletePackage()` call.
+
+**Provider lifecycle:**
+
+`SharedPackageInboxProvider` is owned by `MainScreen` (same lifecycle as `MeetingInboxProvider`). Passed into `MeetingInboxScreen` and `PackageConflictScreen` routes via `ChangeNotifierProvider.value` at the call-site — follows the Provider Scope Rule.
+
+---
+
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-091 Share Meetings — PendingMeetingPackage model, MeetingPackageService, ShareMeetingsProvider/Screen, getMeetingsByParticipant client-side sort, pending_meetings Firestore security rule)
+**Last Updated:** March 2026 (US-092 Receive Package & Resolve Duplicates — PendingMeetingPackageRepository, SharedPackageInboxProvider, PackageConflictScreen, MeetingInboxScreen extension, MainScreen Consumer2 drawer tile)
