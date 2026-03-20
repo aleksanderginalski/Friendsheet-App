@@ -100,11 +100,49 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 - `MULTI_AGENT_ARCHITECTURE.md` (jeśli zakres agenta się zmienił)
 - `CLAUDE.md` (jeśli dotyczy)
 
-**Proponowany commit:**
+---
+
+## Sekwencja zamknięcia
+
+Po raporcie zawsze podaj pełną sekwencję zamknięcia. Uzupełnij rzeczywistą nazwą brancha, numerem US i plikami.
+
+**Step 1 — Commit retro**
 ```powershell
-git add .claude/skills/[changed files] MULTI_AGENT_ARCHITECTURE.md
+git add [list changed retro files explicitly]
 git commit -m "docs: retro improvements after US-XXX ([file1], [file2])"
 ```
+
+**Step 2 — Push**
+```powershell
+git push -u origin [branch-name]
+```
+
+**Step 3 — Pull Request**
+Create PR on GitHub:
+- Title: `feat: US-XXX [short description]`
+- Description (paste into GitHub PR body):
+```
+## US-XXX: [title]
+
+**As a** [role] **I want to** [goal] **so that** [benefit]
+
+### Changes
+- [bullet: key implementation change 1]
+- [bullet: key implementation change 2]
+
+Closes #XXX
+```
+
+Then merge it.
+
+**Step 4 — Cleanup** (run after merging PR)
+```powershell
+git checkout main
+git pull
+git branch -d [branch-name]
+```
+
+Note: Never use `&&` — run each command separately (PowerShell 5.x, Windows 10).
 
 ## Ograniczenia
 - Nigdy nie commituj

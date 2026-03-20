@@ -116,11 +116,11 @@ Used for implementing specific User Stories from backlog.
 /dev [paste Task instruction]
 → Implements
 → flutter analyze + flutter test
-→ Manual Verification steps
+→ Manual Verification steps (in Polish)
 
 [flutter run — you test manually]
 → Problem? → /debug
-→ OK? → continue
+→ OK? → /dev proposes implementation commit → you commit → /dev says "Run /qa"
 
 /qa
 → Generates/optimizes tests

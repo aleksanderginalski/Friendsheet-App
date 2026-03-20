@@ -1065,3 +1065,48 @@ Run after every release or hotfix:
 | UT-SEND-016 | `sendPackage` excludes targetPersonId from participants when `includePersons=true` | `participants.length == 1`, `firstName == 'Bob'` |
 | UT-SEND-017 | `sendPackage` resolves categoryNames when `includeActivities=true` | `categoryNames == ['Sports']` |
 | UT-SEND-018 | `sendPackage` returns false and sets errorMessage on service failure | `success == false`, `errorMessage != null` |
+
+---
+
+## TC-RECV: Receive Package & Resolve Duplicates (US-092)
+
+### Automated tests — `test/data/repositories/pending_meeting_package_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-RECV-001 | `fetchPackages` returns empty list when subcollection is empty | `result` is empty |
+| UT-RECV-002 | `fetchPackages` returns package with correct fields from Firestore | `id`, `senderFirstName`, `meetings.length` match seeded data |
+| UT-RECV-003 | `deletePackage` removes the document from Firestore | subcollection is empty after delete |
+
+### Automated tests — `test/presentation/providers/shared_package_inbox_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-RECV-004 | Initial state has correct defaults | `packages` empty, `isLoading == false`, `hasPackages == false` |
+| UT-RECV-005 | `initialize` with empty userId returns early without fetching | repo never called, `isLoading == false` |
+| UT-RECV-006 | `initialize` with no packages results in empty state | `packages` empty, `hasPackages == false` |
+| UT-RECV-007 | `initialize` loads packages when they exist | `packages.length == 1`, `hasPackages == true` |
+| UT-RECV-008 | Detects conflict when shared date matches existing meeting date | `conflictsFor('pkg1').length == 1`, conflict ID matches |
+| UT-RECV-009 | Ignores time-of-day when comparing dates | same calendar day at different times → conflict detected |
+| UT-RECV-010 | No conflict when dates differ by one day | `conflictsFor('pkg1')` is empty |
+| UT-RECV-011 | `canProceed` is true when package has no conflicts | `canProceed('pkg1') == true` |
+| UT-RECV-012 | `canProceed` is false while conflict is unresolved | `canProceed('pkg1') == false` |
+| UT-RECV-013 | `canProceed` is true after all conflicts are resolved | `canProceed('pkg1') == true` after `resolveConflict` |
+| UT-RECV-014 | `resolveConflict` stores the chosen resolution | `resolutionFor('pkg1', 0) == ConflictResolution.addAsNew` |
+| UT-RECV-015 | `resolveConflict` overrides a previous resolution | second call wins — `resolutionFor('pkg1', 0) == skip` |
+| UT-RECV-016 | `dismissPackage` removes the package from the list | `packages` empty, `hasPackages == false` |
+| UT-RECV-017 | `dismissPackage` clears conflicts and resolutions | `conflictsFor` empty, `resolutionFor` returns null |
+
+### Automated tests — `test/presentation/import/package_conflict_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-RECV-018 | Renders "Review Package" title and sender name | both texts found |
+| UT-RECV-019 | Non-conflicting meeting shows check icon and meeting name | `Icons.check_circle_outline` visible, meeting name shown |
+| UT-RECV-020 | Continue button is enabled when no conflicts | `button.onPressed != null` |
+| UT-RECV-021 | Tapping Continue dismisses package | `provider.hasPackages == false` |
+| UT-RECV-022 | Conflicting meeting shows "Received" and "Yours" headers | both column headers found |
+| UT-RECV-023 | Conflict card shows "Date conflict" warning text | text containing "Date conflict" found |
+| UT-RECV-024 | All three resolution buttons visible (Merge / Add as new / Skip) | all three button texts found |
+| UT-RECV-025 | Continue button disabled before any resolution chosen | `button.onPressed == null` |
+| UT-RECV-026 | Continue enabled after resolution; selected button is FilledButton | `onPressed != null`, `FilledButton` present |
