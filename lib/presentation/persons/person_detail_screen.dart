@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/person.dart';
+import '../../data/repositories/sharing_token_repository.dart';
 import '../activities/activity_icons.dart';
 import 'friend_groups_provider.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
 
-/// Displays full details of a single person and supports edit and delete.
+/// Displays full details of a single person and supports edit, delete, and account linking.
 class PersonDetailScreen extends StatefulWidget {
   final Person person;
 
@@ -58,7 +60,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
           ),
         ],
       ),
-      body: _PersonDetailBody(provider: provider, person: person),
+      body: _PersonDetailBody(
+        provider: provider,
+        person: person,
+        onLinkTap: () => _showLinkDialog(provider),
+      ),
     );
   }
 
@@ -227,15 +233,85 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       );
     }
   }
+
+  // Opens the token input dialog and handles linking result.
+  // Method lives on State so context is always alive (not from a closure).
+  Future<void> _showLinkDialog(PersonDetailProvider provider) async {
+    final tokenController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter sharing token'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Ask your friend to generate a token in Friendsheet and enter it below.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: tokenController,
+              decoration:
+                  const InputDecoration(labelText: 'Token (6 characters)'),
+              maxLength: 6,
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [_UpperCaseTextFormatter()],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Link'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final result = await provider.linkFriendAccount(tokenController.text);
+    if (!mounted) return;
+
+    if (result.isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account linked successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      final message = switch (result.error!) {
+        TokenValidationError.notFound =>
+          'Invalid token. Check the code and try again.',
+        TokenValidationError.expired =>
+          'This token has expired. Ask your friend to generate a new one.',
+        TokenValidationError.alreadyUsed =>
+          'This token has already been used.',
+        TokenValidationError.serverError =>
+          'Something went wrong. Check your connection and try again.',
+      };
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
 }
 
 class _PersonDetailBody extends StatelessWidget {
   final PersonDetailProvider provider;
   final Person person;
+  final VoidCallback onLinkTap;
 
   const _PersonDetailBody({
     required this.provider,
     required this.person,
+    required this.onLinkTap,
   });
 
   @override
@@ -269,6 +345,11 @@ class _PersonDetailBody extends StatelessWidget {
         ),
         NicknamesSection(provider: provider, person: person),
         _GroupsSection(person: person),
+        _SharingSection(
+          provider: provider,
+          person: person,
+          onLinkTap: onLinkTap,
+        ),
       ],
     );
   }
@@ -321,5 +402,42 @@ class _GroupsSection extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Sharing section — "Share meetings with friend" when unlinked, "Send meetings" when linked.
+// onLinkTap callback comes from _PersonDetailScreenState to avoid stale context.
+class _SharingSection extends StatelessWidget {
+  final PersonDetailProvider provider;
+  final Person person;
+  final VoidCallback onLinkTap;
+
+  const _SharingSection({
+    required this.provider,
+    required this.person,
+    required this.onLinkTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isLinked = person.linkedUserId != null;
+
+    return ListTile(
+      leading: Icon(isLinked ? Icons.send : Icons.share),
+      title: Text(isLinked ? 'Send meetings' : 'Share meetings with friend'),
+      // Send meetings (US-091) not yet implemented — tile disabled when linked.
+      subtitle: isLinked ? const Text('Account linked') : null,
+      enabled: !isLinked && !provider.isLinking,
+      onTap: isLinked ? null : onLinkTap,
+    );
+  }
+}
+
+// Forces all typed characters to uppercase for the token input field.
+class _UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
   }
 }

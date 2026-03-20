@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/data/repositories/sharing_token_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/persons/person_detail_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -9,11 +10,12 @@ import 'package:mockito/mockito.dart';
 
 import 'person_detail_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, MeetingRepository, AuthService])
+@GenerateMocks([PersonRepository, MeetingRepository, AuthService, SharingTokenRepository])
 void main() {
   late MockPersonRepository mockPersonRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
+  late MockSharingTokenRepository mockSharingTokenRepository;
   late PersonDetailProvider provider;
 
   final testPerson = Person(
@@ -28,11 +30,13 @@ void main() {
     mockPersonRepository = MockPersonRepository();
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
+    mockSharingTokenRepository = MockSharingTokenRepository();
     when(mockAuthService.currentUserId).thenReturn('u1');
     provider = PersonDetailProvider(
       personRepository: mockPersonRepository,
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,
+      sharingTokenRepository: mockSharingTokenRepository,
     );
   });
 

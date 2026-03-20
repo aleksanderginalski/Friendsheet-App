@@ -1,27 +1,19 @@
 {
-    "indexes":  [
-                    {
-                        "collectionGroup":  "meetings",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "date",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "persons",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "firstName",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    }
-                ],
+    "indexes":  [],
     "fieldOverrides":  [
-
+                           {
+                               "collectionGroup":  "sharing_tokens",
+                               "fieldPath":  "token",
+                               "indexes":  [
+                                               {
+                                                   "queryScope":  "COLLECTION",
+                                                   "order":  "ASCENDING"
+                                               },
+                                               {
+                                                   "queryScope":  "COLLECTION_GROUP",
+                                                   "order":  "ASCENDING"
+                                               }
+                                           ]
+                           }
                        ]
 }

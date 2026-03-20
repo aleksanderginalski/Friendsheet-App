@@ -22,6 +22,7 @@ _$PersonImpl _$$PersonImplFromJson(Map<String, dynamic> json) => $checkedCreate(
               (v) =>
                   (v as List<dynamic>?)?.map((e) => e as String).toList() ??
                   const []),
+          linkedUserId: $checkedConvert('linkedUserId', (v) => v as String?),
         );
         return val;
       },
@@ -35,4 +36,5 @@ Map<String, dynamic> _$$PersonImplToJson(_$PersonImpl instance) =>
       'lastName': instance.lastName,
       'createdAt': instance.createdAt.toIso8601String(),
       'nicknames': instance.nicknames,
+      'linkedUserId': instance.linkedUserId,
     };

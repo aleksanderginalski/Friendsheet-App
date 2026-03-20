@@ -15,6 +15,7 @@ class Person with _$Person {
     String? lastName,
     required DateTime createdAt,
     @Default([]) List<String> nicknames,
+    String? linkedUserId,
   }) = _Person;
 
   /// Returns full display name, e.g. "Anna" or "Anna Smith"
@@ -37,6 +38,7 @@ class Person with _$Person {
               ?.map((e) => e as String)
               .toList() ??
           [],
+      linkedUserId: data['linkedUserId'] as String?,
     );
   }
 
@@ -49,6 +51,7 @@ class Person with _$Person {
       if (lastName != null) 'lastName': lastName,
       'createdAt': Timestamp.fromDate(createdAt),
       'nicknames': nicknames,
+      if (linkedUserId != null) 'linkedUserId': linkedUserId,
     };
   }
 

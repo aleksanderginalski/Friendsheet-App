@@ -5,6 +5,7 @@ import '../../data/models/friend_group.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/repositories/sharing_token_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../persons/add_edit_group_dialog.dart';
 import '../persons/assign_persons_bottom_sheet.dart';
@@ -186,6 +187,7 @@ class _PersonsListBody extends StatelessWidget {
                 personRepository: PersonRepository(),
                 meetingRepository: MeetingRepository(),
                 authService: AuthService(),
+                sharingTokenRepository: SharingTokenRepository(),
               ),
             ),
             ChangeNotifierProvider.value(
