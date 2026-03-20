@@ -43,10 +43,24 @@ service cloud.firestore {
     // invitation_codes root collection removed — replaced by
     // users/{uid}/sharing_tokens subcollection (FEATURE-012, US-089)
 
+    // Collection group rule — allows any authenticated user to read a token by value.
+    // Required for cross-user token validation in US-090 (A validates C's token).
+    // Tokens contain no PII; they are random 6-char strings with 24h TTL.
+    match /{path=**}/sharing_tokens/{tokenId} {
+      allow read: if isAuthenticated();
+    }
+
     match /users/{userId}/sharing_tokens/{tokenId} {
-      // Only the token owner (C) can read and write their own tokens.
-      // Path-based userId check — safe for both get and list queries.
-      allow read, write: if isAuthenticated() && isOwner(userId);
+      // Token owner (C) can create and delete their own tokens.
+      allow create, delete: if isAuthenticated() && isOwner(userId);
+      // Token owner can update freely.
+      allow update: if isAuthenticated() && isOwner(userId);
+      // Any authenticated user (A) may mark a token as used after linking.
+      // Only isUsed may change, only false → true, no other fields touched.
+      allow update: if isAuthenticated()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isUsed'])
+                    && request.resource.data.isUsed == true
+                    && resource.data.isUsed == false;
     }
 
     match /users/{userId}/dashboard_config/{configId} {

@@ -23,7 +23,7 @@
 
 **M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
 
-**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you. Extensible architecture supports future import sources (Google Photos planned).
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
@@ -170,6 +170,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.44.0 — US-090: Link Friend Account (March 20, 2026)
+- ✅ `Person` Freezed model extended with `linkedUserId: String?` — persists linked Friendsheet uid of a friend
+- ✅ `SharingTokenRepository` — added `TokenValidationError` enum, `TokenValidationResult` sealed result type, `validateAndClaimToken()` collection group query, `markAsUsed()` targeted update
+- ✅ `PersonDetailProvider` — added `SharingTokenRepository` dependency, `isLinking` loading state, `linkFriendAccount()` orchestration method
+- ✅ `PersonDetailScreen` — new `_SharingSection` widget (conditional "Share meetings with friend" / "Send meetings" CTA), `_showLinkDialog()` with uppercase-enforcing `_UpperCaseTextFormatter`, inline validation error display
+- ✅ `PersonsListScreen` — `SharingTokenRepository()` injected into `PersonDetailProvider` at navigation call-site
+- ✅ Firestore Security Rules — collection group `allow read` for `sharing_tokens` (cross-user token lookup by validator); targeted `allow update` restricted to `isUsed: false → true` transition only
+- ✅ `firestore.indexes.json` — `fieldOverrides` exemption for `sharing_tokens.token` collection group index (bypasses default ascending/descending index generation)
+- ✅ Tests added for token validation flows (valid, expired, already used, not found)
 
 ### v3.43.1 — Test Suite Optimization (March 20, 2026)
 - ✅ Test suite reduced from 689 → 538 tests (−151) without coverage loss

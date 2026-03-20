@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/person.dart';
 
@@ -148,7 +150,58 @@ void main() {
         final map = person.toFirestore();
         expect(map['nicknames'], ['Ania', 'Anka']);
       });
+
+      test('includes linkedUserId when set', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+          linkedUserId: 'uid-friend-42',
+        );
+        final map = person.toFirestore();
+        expect(map['linkedUserId'], 'uid-friend-42');
+      });
+
+      test('omits linkedUserId key when null', () {
+        final map = personWithoutLastName.toFirestore();
+        expect(map.containsKey('linkedUserId'), false);
+      });
     });
 
+    group('linkedUserId (fromFirestore)', () {
+      late FakeFirebaseFirestore fakeFirestore;
+
+      setUp(() {
+        fakeFirestore = FakeFirebaseFirestore();
+      });
+
+      test('reads linkedUserId when present in document', () async {
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+          'linkedUserId': 'uid-friend-42',
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.linkedUserId, 'uid-friend-42');
+      });
+
+      test('linkedUserId is null when field absent from document', () async {
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.linkedUserId, isNull);
+      });
+    });
   });
 }

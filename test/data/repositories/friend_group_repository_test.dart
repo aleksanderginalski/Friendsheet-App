@@ -80,7 +80,8 @@ void main() {
     group('updateGroup', () {
       test('persists updated name and iconIdentifier in Firestore', () async {
         final id = await seedGroup(name: 'Old Name', iconIdentifier: 'sport');
-        final updated = makeGroup(id: id, name: 'New Name', iconIdentifier: 'music');
+        final updated =
+            makeGroup(id: id, name: 'New Name', iconIdentifier: 'music');
         await repository.updateGroup(userId, updated);
 
         final doc = await groupsRef().doc(id).get();

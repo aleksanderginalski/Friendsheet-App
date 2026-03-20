@@ -4,6 +4,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/sharing_token.dart';
 
+enum TokenValidationError { notFound, expired, alreadyUsed, serverError }
+
+/// Result of a token validation attempt.
+/// On success: [ownerUid] and [tokenId] are set.
+/// On failure: [error] is set.
+class TokenValidationResult {
+  final String? ownerUid;
+  final String? tokenId;
+  final TokenValidationError? error;
+
+  const TokenValidationResult.success({
+    required this.ownerUid,
+    required this.tokenId,
+  }) : error = null;
+
+  const TokenValidationResult.failure(this.error)
+      : ownerUid = null,
+        tokenId = null;
+
+  bool get isSuccess => error == null;
+}
+
 /// Manages sharing tokens for peer-to-peer meeting sharing (FEATURE-012).
 /// Tokens are stored in `users/{uid}/sharing_tokens/{tokenId}`.
 /// Each token is 6-char alphanumeric, expires after 24h, and is single-use.
@@ -56,6 +78,36 @@ class SharingTokenRepository {
   /// Deletes a specific token document by id.
   Future<void> deleteToken(String userId, String tokenId) async {
     await _tokensRef(userId).doc(tokenId).delete();
+  }
+
+  /// Validates a token by value across all users (collection group query).
+  /// Returns the owner's uid and token doc id on success, or an error on failure.
+  /// Does NOT mark the token as used — call markAsUsed() after saving the Person.
+  Future<TokenValidationResult> validateAndClaimToken(String tokenValue) async {
+    final snapshot = await _firestore
+        .collectionGroup('sharing_tokens')
+        .where('token', isEqualTo: tokenValue)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return const TokenValidationResult.failure(TokenValidationError.notFound);
+    }
+
+    final doc = snapshot.docs.first;
+    final token = SharingToken.fromFirestore(doc);
+    // Extract owner uid from path: users/{uid}/sharing_tokens/{tokenId}
+    final ownerUid = doc.reference.parent.parent!.id;
+
+    if (DateTime.now().isAfter(token.expiresAt)) {
+      return const TokenValidationResult.failure(TokenValidationError.expired);
+    }
+    if (token.isUsed) {
+      return const TokenValidationResult.failure(
+          TokenValidationError.alreadyUsed);
+    }
+
+    return TokenValidationResult.success(ownerUid: ownerUid, tokenId: doc.id);
   }
 
   /// Marks a token as used. Called by US-090 after successful account linking.

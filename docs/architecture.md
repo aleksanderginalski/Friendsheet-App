@@ -87,6 +87,7 @@ erDiagram
         string firstName
         string lastName
         array nicknames
+        string linkedUserId "nullable, Friendsheet uid of linked friend account (US-090)"
         datetime createdAt
     }
     
@@ -634,6 +635,20 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
+    // Collection group rule — allows any authenticated user to look up a token
+    // by value across all users' sharing_tokens subcollections (US-090 validation).
+    // Targeted update: only the isUsed false→true transition is allowed;
+    // all other fields must remain unchanged to prevent tampering.
+    match /{path=**}/sharing_tokens/{tokenId} {
+      allow read: if isAuthenticated();
+      allow update: if isAuthenticated()
+                    && resource.data.isUsed == false
+                    && request.resource.data.isUsed == true
+                    && request.resource.data.token == resource.data.token
+                    && request.resource.data.createdAt == resource.data.createdAt
+                    && request.resource.data.expiresAt == resource.data.expiresAt;
+    }
+
     match /users/{userId}/pending_meetings/{packageId} {
       // Recipient reads/deletes their own packages; sender writes (linkedUserId validated in service)
       allow read, delete: if isAuthenticated() && isOwner(userId);
@@ -890,6 +905,74 @@ import source requires only a new data-fetching layer.
 
 ---
 
+---
+
+### M5 — Link Friend Account Architecture (US-090)
+
+**Purpose:** Allows user A to link a Person record to another Friendsheet user (C) by entering C's sharing token. Once linked, `Person.linkedUserId` stores C's uid, enabling future meeting sharing flows (US-091+).
+
+**Person model extension:**
+
+`Person.linkedUserId: String?` — nullable field added in US-090. Null until A successfully enters and validates C's token. After linking, contains C's Firebase uid. Persisted to `users/{A_uid}/persons/{personId}` via `PersonRepository.updatePerson()`.
+
+**Token validation flow:**
+
+```
+User A enters 6-char token in PersonDetailScreen dialog
+    → SharingTokenRepository.validateAndClaimToken(token, linkedPersonId)
+    → Collection group query: collectionGroup('sharing_tokens').where('token', ==, value)
+    → Validate: document exists, expiresAt > now, isUsed == false
+    → On valid: call markAsUsed(docRef) — targeted update (isUsed false→true only)
+    → Call PersonRepository.updatePerson() with linkedUserId = tokenDoc owner uid
+    → Return TokenValidationResult (success | TokenValidationError enum value)
+```
+
+**Collection group query pattern:**
+
+`SharingTokenRepository.validateAndClaimToken()` uses `FirebaseFirestore.instance.collectionGroup('sharing_tokens')` to search across all users' token subcollections by token string. This avoids storing tokens in a root collection while enabling cross-user lookup. Requires a collection group index in `firestore.indexes.json`.
+
+**fieldOverrides pattern for collection group index:**
+
+When a field used in a collection group index appears in documents that also have other indexed fields, Firestore may auto-generate unwanted ascending/descending indexes. Use `fieldOverrides` with `queryScope: COLLECTION_GROUP` and empty `indexes: []` to suppress default behavior:
+
+```json
+{
+  "collectionGroup": "sharing_tokens",
+  "fieldOverrides": [
+    {
+      "fieldPath": "token",
+      "indexes": [],
+      "queryScope": "COLLECTION_GROUP"
+    }
+  ]
+}
+```
+
+This exempts the `token` field from default index generation while the explicit collection group index (defined in the `indexes` array) remains active.
+
+**Targeted Firestore update rule (isUsed false→true only):**
+
+The collection group rule for `sharing_tokens` restricts updates to the single `isUsed` flag transition. All other fields must match their current values — this prevents a malicious caller from modifying `token`, `expiresAt`, or other fields through the collection group path:
+
+```javascript
+// WRONG — allows any authenticated user to overwrite any field:
+allow update: if isAuthenticated();
+
+// CORRECT — only the isUsed false→true transition is permitted:
+allow update: if isAuthenticated()
+              && resource.data.isUsed == false
+              && request.resource.data.isUsed == true
+              && request.resource.data.token == resource.data.token
+              && request.resource.data.createdAt == resource.data.createdAt
+              && request.resource.data.expiresAt == resource.data.expiresAt;
+```
+
+**TokenValidationResult sealed result type:**
+
+`SharingTokenRepository.validateAndClaimToken()` returns a `TokenValidationResult` — a sealed result class rather than throwing exceptions. The caller (`PersonDetailProvider.linkFriendAccount()`) switches on the result to display the appropriate error message in the UI without try/catch at the provider layer.
+
+---
+
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-089 Generate Sharing Token — SharingToken model, SharingTokenRepository, GenerateSharingTokenScreen, sharing_tokens Firestore subcollection + security rules, drawer "Import & Share" section, BuildMeetingBaseCtaCard)
+**Last Updated:** March 2026 (US-090 Link Friend Account — Person.linkedUserId, SharingTokenRepository collection group query + targeted update, collection group security rules, fieldOverrides index pattern, TokenValidationResult sealed result type)

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/data/repositories/sharing_token_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/presentation/persons/person_detail_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -9,11 +10,13 @@ import 'package:mockito/mockito.dart';
 
 import 'person_detail_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, MeetingRepository, AuthService])
+@GenerateMocks(
+    [PersonRepository, MeetingRepository, AuthService, SharingTokenRepository])
 void main() {
   late MockPersonRepository mockPersonRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
+  late MockSharingTokenRepository mockSharingTokenRepository;
   late PersonDetailProvider provider;
 
   final testPerson = Person(
@@ -28,11 +31,13 @@ void main() {
     mockPersonRepository = MockPersonRepository();
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
+    mockSharingTokenRepository = MockSharingTokenRepository();
     when(mockAuthService.currentUserId).thenReturn('u1');
     provider = PersonDetailProvider(
       personRepository: mockPersonRepository,
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,
+      sharingTokenRepository: mockSharingTokenRepository,
     );
   });
 
@@ -96,6 +101,65 @@ void main() {
 
       expect(result, isTrue);
       verify(mockPersonRepository.deletePerson('u1', 'p1')).called(1);
+    });
+
+    group('linkFriendAccount', () {
+      setUp(() async {
+        when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+            .thenAnswer((_) async => 0);
+        await provider.initialize(testPerson);
+      });
+
+      test('returns success, calls updatePerson and markAsUsed on valid token',
+          () async {
+        const validResult = TokenValidationResult.success(
+          ownerUid: 'uid-friend-42',
+          tokenId: 'token-doc-1',
+        );
+        when(mockSharingTokenRepository.validateAndClaimToken('ABCDEF'))
+            .thenAnswer((_) async => validResult);
+        when(mockPersonRepository.updatePerson(any))
+            .thenAnswer((_) => Future<void>.value());
+        when(mockSharingTokenRepository.markAsUsed(
+                'uid-friend-42', 'token-doc-1'))
+            .thenAnswer((_) => Future<void>.value());
+
+        // Input with lowercase and whitespace — provider must trim+uppercase.
+        final result = await provider.linkFriendAccount(' abcdef ');
+
+        expect(result.isSuccess, isTrue);
+        expect(result.ownerUid, 'uid-friend-42');
+        expect(provider.person!.linkedUserId, 'uid-friend-42');
+        expect(provider.isLinking, isFalse);
+        verify(mockPersonRepository.updatePerson(any)).called(1);
+        verify(mockSharingTokenRepository.markAsUsed(
+                'uid-friend-42', 'token-doc-1'))
+            .called(1);
+      });
+
+      test('returns notFound and does not call updatePerson', () async {
+        const failResult =
+            TokenValidationResult.failure(TokenValidationError.notFound);
+        when(mockSharingTokenRepository.validateAndClaimToken('ZZZZZZ'))
+            .thenAnswer((_) async => failResult);
+
+        final result = await provider.linkFriendAccount('ZZZZZZ');
+
+        expect(result.isSuccess, isFalse);
+        expect(result.error, TokenValidationError.notFound);
+        verifyNever(mockPersonRepository.updatePerson(any));
+      });
+
+      test('returns serverError when validateAndClaimToken throws', () async {
+        when(mockSharingTokenRepository.validateAndClaimToken(any))
+            .thenThrow(Exception('network error'));
+
+        final result = await provider.linkFriendAccount('ABCDEF');
+
+        expect(result.isSuccess, isFalse);
+        expect(result.error, TokenValidationError.serverError);
+        expect(provider.isLinking, isFalse);
+      });
     });
   });
 }

@@ -3034,26 +3034,26 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `sharing`, `persons`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-089
 
 **Acceptance Criteria:**
-- [ ] "Share meetings with friend" button visible on Person Detail screen
-- [ ] Button leads to token input field (6-character, alphanumeric validation)
-- [ ] System validates token: exists, not expired, not already used
-- [ ] On valid token: `Person` record for C gets `linkedUserId` field storing C's uid
-- [ ] Token marked as used after successful linking
-- [ ] Error messages for: invalid token, expired token, already used token
-- [ ] Once linked, "Share meetings with friend" button changes to "Send meetings"
+- [x] "Share meetings with friend" button visible on Person Detail screen
+- [x] Button leads to token input field (6-character, alphanumeric validation)
+- [x] System validates token: exists, not expired, not already used
+- [x] On valid token: `Person` record for C gets `linkedUserId` field storing C's uid
+- [x] Token marked as used after successful linking
+- [x] Error messages for: invalid token, expired token, already used token
+- [x] Once linked, "Share meetings with friend" button changes to "Send meetings"
 
 **Tasks:**
-- [ ] **TASK-090.1:** Add `linkedUserId` field to `Person` Freezed model — 0.5h
-- [ ] **TASK-090.2:** Run build_runner after model change — 0.5h
-- [ ] **TASK-090.3:** Implement token validation in `SharingTokenRepository` — 1h
-- [ ] **TASK-090.4:** Add "Share meetings with friend" UI to `PersonDetailScreen` — 1.5h
-- [ ] **TASK-090.5:** Build token input dialog with validation feedback — 1h
-- [ ] **TASK-090.6:** Update `PersonRepository.updatePerson()` to persist `linkedUserId` — 0.5h
-- [ ] **TASK-090.7:** Write tests — 1h
+- [x] **TASK-090.1:** Add `linkedUserId` field to `Person` Freezed model — 0.5h
+- [x] **TASK-090.2:** Run build_runner after model change — 0.5h
+- [x] **TASK-090.3:** Implement token validation in `SharingTokenRepository` — 1h
+- [x] **TASK-090.4:** Add "Share meetings with friend" UI to `PersonDetailScreen` — 1.5h
+- [x] **TASK-090.5:** Build token input dialog with validation feedback — 1h
+- [x] **TASK-090.6:** Update `PersonRepository.updatePerson()` to persist `linkedUserId` — 0.5h
+- [x] **TASK-090.7:** Write tests — 1h
 
 ---
 

@@ -3,33 +3,40 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/repositories/sharing_token_repository.dart';
 import '../../data/services/auth_service.dart';
 
 // PersonDetailProvider manages state for PersonDetailScreen.
-// Responsibilities: hold person data, fetch meeting count, update, delete.
+// Responsibilities: hold person data, fetch meeting count, update, delete, link account.
 class PersonDetailProvider extends ChangeNotifier {
   final PersonRepository _personRepository;
   final MeetingRepository _meetingRepository;
   final AuthService _authService;
+  final SharingTokenRepository _sharingTokenRepository;
 
   PersonDetailProvider({
     required PersonRepository personRepository,
     required MeetingRepository meetingRepository,
     required AuthService authService,
+    SharingTokenRepository? sharingTokenRepository,
   })  : _personRepository = personRepository,
         _meetingRepository = meetingRepository,
-        _authService = authService;
+        _authService = authService,
+        _sharingTokenRepository =
+            sharingTokenRepository ?? SharingTokenRepository();
 
   Person? _person;
   int _meetingCount = 0;
   bool _isLoading = false;
   bool _isDeleting = false;
+  bool _isLinking = false;
   String? _errorMessage;
 
   Person? get person => _person;
   int get meetingCount => _meetingCount;
   bool get isLoading => _isLoading;
   bool get isDeleting => _isDeleting;
+  bool get isLinking => _isLinking;
   String? get errorMessage => _errorMessage;
 
   // Stores the person and fetches the meeting count for them.
@@ -115,6 +122,37 @@ class PersonDetailProvider extends ChangeNotifier {
       _isDeleting = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // Validates a sharing token and links the friend's account to this Person.
+  // On success: saves linkedUserId to Firestore and marks the token as used.
+  // Returns TokenValidationResult so the screen can show the correct error message.
+  Future<TokenValidationResult> linkFriendAccount(String tokenValue) async {
+    _isLinking = true;
+    notifyListeners();
+
+    try {
+      final result = await _sharingTokenRepository
+          .validateAndClaimToken(tokenValue.trim().toUpperCase());
+      if (!result.isSuccess) return result;
+
+      final updated = _person!.copyWith(linkedUserId: result.ownerUid);
+      await _personRepository.updatePerson(updated);
+
+      // Mark as used only after Person is successfully saved
+      await _sharingTokenRepository.markAsUsed(
+          result.ownerUid!, result.tokenId!);
+
+      _person = updated;
+      notifyListeners();
+      return result;
+    } catch (_) {
+      return const TokenValidationResult.failure(
+          TokenValidationError.serverError);
+    } finally {
+      _isLinking = false;
+      notifyListeners();
     }
   }
 }

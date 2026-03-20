@@ -47,6 +47,12 @@ e) "Co działało dobrze?"
 
 ## Krok 3 — Propozycje reaktywne
 
+Przed każdą propozycją — sprawdź czy nie duplikuje:
+- innej propozycji z tej samej sesji
+- reguły która już istnieje w docelowym pliku
+
+Jeśli duplikat — pomiń bez informowania użytkownika.
+
 Dla każdego zidentyfikowanego problemu:
 1. Wskaż plik (.claude/skills/X/SKILL.md lub CLAUDE.md)
 2. Pokaż dokładny tekst do dodania

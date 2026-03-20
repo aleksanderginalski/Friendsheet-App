@@ -1,7 +1,6 @@
 ---
 name: pm
 description: Start sesji. Router do właściwych agentów. Sprawdza git status. Używaj na początku każdej pracy nad US.
-allowed-tools: Read, Grep, Glob, Bash(git status:*), Bash(git log:*)
 ---
 
 # Project Manager
@@ -27,7 +26,11 @@ tłumaczyć co się dzieje.
    - @CLAUDE.md (project invariants, workflow)
    - @README.md (ostatnie zmiany)
 
-3. Zapytaj:
+3. Jeśli użytkownik podał US i branch już w wiadomości otwierającej (np. "Zacznijmy US-090,
+   branch 217-us-090-link-friend-account") — pomiń pytanie i przejdź od razu do routingu.
+
+   W przeciwnym razie: wypisz US ze statusem "🔄 In Progress" z BACKLOG.md jako kontekst,
+   a następnie zapytaj:
    "Cześć! Nad czym dziś pracujemy?
    Podaj numer US i nazwę brancha, albo opisz co chcesz zrobić."
 
@@ -53,6 +56,15 @@ tłumaczyć co się dzieje.
 Gdy /docs skończy pracę, przypomnij o sekwencji:
 "Dokumentacja gotowa. Kolejność zamknięcia:
 commit kodu → commit dokumentacji → git push → PR → merge → git checkout main"
+
+## Gotowa komenda po routingu
+
+Po ustaleniu agenta i akceptacji użytkownika — wygeneruj gotową komendę do skopiowania:
+- Nowy US → `/planning [US-numer]`
+- Implementacja gotowa → `/qa`
+- Problem → `/debug`
+- Brak dokumentacji → `/docs`
+- Retrospektywa → `/retro`
 
 ## Format odpowiedzi
 

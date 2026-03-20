@@ -997,4 +997,34 @@ Run after every release or hotfix:
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|--------|-------|
+
+---
+
+## TC-LINK: Friend Account Linking (US-090)
+
+### Automated tests — `test/data/models/person_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-LINK-001 | `toFirestore()` includes linkedUserId when set | map contains `linkedUserId` key with correct value |
+| UT-LINK-002 | `toFirestore()` omits linkedUserId key when null | map does NOT contain `linkedUserId` key |
+| UT-LINK-003 | `fromFirestore()` reads linkedUserId when present in document | `person.linkedUserId == 'uid-friend-42'` |
+| UT-LINK-004 | `fromFirestore()` linkedUserId is null when field absent from document | `person.linkedUserId == null` |
+
+### Automated tests — `test/data/repositories/sharing_token_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-LINK-005 | `validateAndClaimToken` returns notFound when no token matches | `result.error == TokenValidationError.notFound` |
+| UT-LINK-006 | `validateAndClaimToken` returns expired when token expiresAt is in the past | `result.error == TokenValidationError.expired` |
+| UT-LINK-007 | `validateAndClaimToken` returns alreadyUsed when token isUsed is true | `result.error == TokenValidationError.alreadyUsed` |
+| UT-LINK-008 | `validateAndClaimToken` returns success with ownerUid and tokenId for a valid token | `result.isSuccess == true`, `ownerUid` and `tokenId` set correctly |
+
+### Automated tests — `test/presentation/persons/person_detail_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-LINK-009 | `linkFriendAccount` returns success, calls updatePerson and markAsUsed on valid token | result success, `person.linkedUserId` updated, both repo methods called once |
+| UT-LINK-010 | `linkFriendAccount` returns notFound and does not call updatePerson | `error == notFound`, `updatePerson` never called |
+| UT-LINK-011 | `linkFriendAccount` returns serverError when validateAndClaimToken throws | `error == serverError`, `isLinking == false` |
 | 1 | Open GenerateSharingTokenScreen while not logged in | "Not authenticated" error + "Retry" button shown | ⏭️ | Covered by automated test |

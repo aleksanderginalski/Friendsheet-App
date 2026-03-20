@@ -70,9 +70,12 @@ void main() {
 
       test('returns all persons for given user, excluding other users',
           () async {
-        await repository.addPerson(makePerson(userId: 'user-1', firstName: 'Anna'));
-        await repository.addPerson(makePerson(userId: 'user-1', firstName: 'Bob'));
-        await repository.addPerson(makePerson(userId: 'user-2', firstName: 'Other'));
+        await repository
+            .addPerson(makePerson(userId: 'user-1', firstName: 'Anna'));
+        await repository
+            .addPerson(makePerson(userId: 'user-1', firstName: 'Bob'));
+        await repository
+            .addPerson(makePerson(userId: 'user-2', firstName: 'Other'));
 
         final result = await repository.getPersonsByUser('user-1');
         expect(result.length, equals(2));
