@@ -55,56 +55,38 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('returns group after add', () async {
-        await repository.addGroup(userId, makeGroup(name: 'Climbers'));
-        final result = await repository.getGroupsByUser(userId);
-        expect(result.length, equals(1));
-        expect(result.first.name, equals('Climbers'));
-      });
-
-      test('returns multiple groups', () async {
+      test('returns all groups for user', () async {
         await repository.addGroup(userId, makeGroup(name: 'A'));
         await repository.addGroup(userId, makeGroup(name: 'B'));
         final result = await repository.getGroupsByUser(userId);
         expect(result.length, equals(2));
+        expect(result.any((g) => g.name == 'A'), isTrue);
       });
     });
 
     group('addGroup', () {
-      test('stores document in correct Firestore path', () async {
-        await repository.addGroup(userId, makeGroup(name: 'Runners'));
+      test('happy path: stores name and iconIdentifier in Firestore', () async {
+        await repository.addGroup(
+          userId,
+          makeGroup(name: 'Runners', iconIdentifier: 'coffee'),
+        );
         final snapshot = await groupsRef().get();
         expect(snapshot.docs.length, equals(1));
         expect(snapshot.docs.first['name'], equals('Runners'));
-      });
-
-      test('stores iconIdentifier in document', () async {
-        await repository.addGroup(
-            userId, makeGroup(name: 'G', iconIdentifier: 'coffee'));
-        final snapshot = await groupsRef().get();
         expect(snapshot.docs.first['iconIdentifier'], equals('coffee'));
       });
     });
 
     group('updateGroup', () {
-      test('persists updated name in Firestore', () async {
-        final id = await seedGroup(name: 'Old Name');
-        final updated = makeGroup(id: id, name: 'New Name');
+      test('persists updated name and iconIdentifier in Firestore', () async {
+        final id = await seedGroup(name: 'Old Name', iconIdentifier: 'sport');
+        final updated = makeGroup(id: id, name: 'New Name', iconIdentifier: 'music');
         await repository.updateGroup(userId, updated);
 
         final doc = await groupsRef().doc(id).get();
-        expect(
-            (doc.data() as Map<String, dynamic>)['name'], equals('New Name'));
-      });
-
-      test('persists updated iconIdentifier in Firestore', () async {
-        final id = await seedGroup(iconIdentifier: 'sport');
-        final updated = makeGroup(id: id, iconIdentifier: 'music');
-        await repository.updateGroup(userId, updated);
-
-        final doc = await groupsRef().doc(id).get();
-        expect((doc.data() as Map<String, dynamic>)['iconIdentifier'],
-            equals('music'));
+        final data = doc.data() as Map<String, dynamic>;
+        expect(data['name'], equals('New Name'));
+        expect(data['iconIdentifier'], equals('music'));
       });
     });
 

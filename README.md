@@ -107,7 +107,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (675)
+✅ All tests passing (538)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -170,6 +170,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.43.1 — Test Suite Optimization (March 20, 2026)
+- ✅ Test suite reduced from 689 → 538 tests (−151) without coverage loss
+- ✅ `statistics_repository_test.dart` split into 3 focused files: `_cache_test`, `_queries_test`, `_distribution_test`
+- ✅ `statistics_provider_test.dart` split into 4 focused files: `_test`, `_year_test`, `_visibility_test`, `_distribution_test`
+- ✅ Shared helpers extracted: `test/helpers/test_factories.dart`, `test/helpers/firebase_test_helpers.dart`
+- ✅ Model tests consolidated: Freezed defaults removed, happy-path checks all fields at once
+- ✅ Repository tests consolidated: toggle behavior (add/remove/persist) in single test, duplicate coverage removed
+- ✅ Provider tests consolidated: implementation detail assertions (verify() call counts, isSaving transitions) removed
+- ✅ QA agent rules updated: explicit anti-patterns documented in `/qa` SKILL.md
 
 ### v3.43.0 — US-089: Generate Sharing Token (March 19, 2026)
 - ✅ `SharingToken` Freezed model — `token` (6-char [A-Z0-9]), `createdAt`, `expiresAt` (24h TTL), `isUsed` (default false); stored under `users/{uid}/sharing_tokens`

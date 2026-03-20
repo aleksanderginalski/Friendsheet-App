@@ -47,27 +47,15 @@ void main() {
 
   group('PersonRepository', () {
     group('addPerson', () {
-      test('returns person with generated ID', () async {
-        final person = makePerson();
+      test(
+          'happy path: returns saved person with correct fields and stores in Firestore',
+          () async {
+        final person = makePerson(firstName: 'Maria', lastName: 'Nowak');
         final saved = await repository.addPerson(person);
+
         expect(saved.id, isNotEmpty);
-      });
-
-      test('returned person has correct firstName', () async {
-        final person = makePerson(firstName: 'Maria');
-        final saved = await repository.addPerson(person);
         expect(saved.firstName, equals('Maria'));
-      });
-
-      test('returned person has correct lastName', () async {
-        final person = makePerson(lastName: 'Nowak');
-        final saved = await repository.addPerson(person);
         expect(saved.lastName, equals('Nowak'));
-      });
-
-      test('stores document in persons subcollection', () async {
-        final person = makePerson();
-        final saved = await repository.addPerson(person);
 
         final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.exists, isTrue);
@@ -80,21 +68,15 @@ void main() {
         expect(result, isEmpty);
       });
 
-      test('returns only persons belonging to given user', () async {
-        await repository.addPerson(makePerson(userId: 'user-1'));
-        await repository.addPerson(makePerson(userId: 'user-2'));
-
-        final result = await repository.getPersonsByUser('user-1');
-        expect(result.length, equals(1));
-        expect(result.first.userId, equals('user-1'));
-      });
-
-      test('returns all persons for given user', () async {
-        await repository.addPerson(makePerson(firstName: 'Anna'));
-        await repository.addPerson(makePerson(firstName: 'Bob'));
+      test('returns all persons for given user, excluding other users',
+          () async {
+        await repository.addPerson(makePerson(userId: 'user-1', firstName: 'Anna'));
+        await repository.addPerson(makePerson(userId: 'user-1', firstName: 'Bob'));
+        await repository.addPerson(makePerson(userId: 'user-2', firstName: 'Other'));
 
         final result = await repository.getPersonsByUser('user-1');
         expect(result.length, equals(2));
+        expect(result.every((p) => p.userId == 'user-1'), isTrue);
       });
 
       test('returns persons sorted alphabetically by firstName', () async {
@@ -108,24 +90,16 @@ void main() {
     });
 
     group('updatePerson', () {
-      test('updates firstName in Firestore document', () async {
-        final saved = await repository.addPerson(makePerson(firstName: 'Anna'));
-        final updated = saved.copyWith(firstName: 'Maria');
+      test('persists updated firstName and lastName in Firestore', () async {
+        final saved = await repository.addPerson(
+          makePerson(firstName: 'Anna', lastName: 'Kowalska'),
+        );
+        final updated = saved.copyWith(firstName: 'Maria', lastName: 'Nowak');
 
         await repository.updatePerson(updated);
 
         final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.data()?['firstName'], equals('Maria'));
-      });
-
-      test('updates lastName in Firestore document', () async {
-        final saved =
-            await repository.addPerson(makePerson(lastName: 'Kowalska'));
-        final updated = saved.copyWith(lastName: 'Nowak');
-
-        await repository.updatePerson(updated);
-
-        final doc = await personsRef('user-1').doc(saved.id).get();
         expect(doc.data()?['lastName'], equals('Nowak'));
       });
     });

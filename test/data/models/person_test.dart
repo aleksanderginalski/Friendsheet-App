@@ -42,11 +42,7 @@ void main() {
     });
 
     group('isValid()', () {
-      test('returns true for valid person with lastName', () {
-        expect(personWithLastName.isValid(), true);
-      });
-
-      test('returns true for valid person without lastName', () {
+      test('returns true for valid person', () {
         expect(personWithoutLastName.isValid(), true);
       });
 
@@ -112,41 +108,33 @@ void main() {
     });
 
     group('JSON serialization', () {
-      test('toJson and fromJson round-trip with lastName', () {
-        final json = personWithLastName.toJson();
-        final restored = Person.fromJson(json);
-        expect(restored, equals(personWithLastName));
-      });
-
-      test('toJson and fromJson round-trip without lastName', () {
-        final json = personWithoutLastName.toJson();
-        final restored = Person.fromJson(json);
-        expect(restored, equals(personWithoutLastName));
+      test('round-trip preserves all fields', () {
+        final person = Person(
+          id: 'person-1',
+          userId: 'user-123',
+          firstName: 'Anna',
+          lastName: 'Smith',
+          createdAt: testDate,
+          nicknames: ['Ania'],
+        );
+        final restored = Person.fromJson(person.toJson());
+        expect(restored, equals(person));
       });
     });
 
     group('toFirestore()', () {
+      test('happy path includes all fields', () {
+        final map = personWithLastName.toFirestore();
+        expect(map['userId'], 'user-123');
+        expect(map['firstName'], 'Anna');
+        expect(map['lastName'], 'Smith');
+        expect(map.containsKey('createdAt'), true);
+        expect(map['nicknames'], <String>[]);
+      });
+
       test('does not include lastName key when null', () {
         final map = personWithoutLastName.toFirestore();
         expect(map.containsKey('lastName'), false);
-      });
-
-      test('includes lastName when provided', () {
-        final map = personWithLastName.toFirestore();
-        expect(map['lastName'], 'Smith');
-      });
-
-      test('includes all required fields', () {
-        final map = personWithLastName.toFirestore();
-        expect(map.containsKey('userId'), true);
-        expect(map.containsKey('firstName'), true);
-        expect(map.containsKey('createdAt'), true);
-      });
-
-      test('includes nicknames key with empty list by default', () {
-        final map = personWithLastName.toFirestore();
-        expect(map.containsKey('nicknames'), true);
-        expect(map['nicknames'], <String>[]);
       });
 
       test('includes nicknames when present', () {
@@ -162,28 +150,5 @@ void main() {
       });
     });
 
-    group('nicknames', () {
-      test('defaults to empty list when not provided', () {
-        final person = Person(
-          id: 'p1',
-          userId: 'u1',
-          firstName: 'Anna',
-          createdAt: testDate,
-        );
-        expect(person.nicknames, isEmpty);
-      });
-
-      test('JSON round-trip preserves nicknames', () {
-        final person = Person(
-          id: 'p1',
-          userId: 'u1',
-          firstName: 'Anna',
-          createdAt: testDate,
-          nicknames: ['Ania', 'Anka'],
-        );
-        final restored = Person.fromJson(person.toJson());
-        expect(restored.nicknames, ['Ania', 'Anka']);
-      });
-    });
   });
 }

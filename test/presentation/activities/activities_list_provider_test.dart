@@ -62,7 +62,7 @@ void main() {
   });
 
   group('ActivitiesListProvider', () {
-    test('initialize loads and exposes only root categories', () async {
+    test('initialize loads root categories sorted alphabetically', () async {
       when(mockRepository.getAllCategories('u1'))
           .thenAnswer((_) async => flatList);
 
@@ -75,19 +75,14 @@ void main() {
         provider.rootCategories.every((c) => c.parentCategoryId == null),
         isTrue,
       );
+      expect(
+        provider.rootCategories.map((c) => c.name).toList(),
+        equals(['Food', 'Sports']),
+      );
     });
 
-    test('rootCategories are sorted alphabetically', () async {
-      when(mockRepository.getAllCategories('u1'))
-          .thenAnswer((_) async => flatList);
-
-      await provider.initialize('u1');
-
-      final names = provider.rootCategories.map((c) => c.name).toList();
-      expect(names, equals(['Food', 'Sports']));
-    });
-
-    test('childrenOf returns correct subset for given parentId', () async {
+    test('childrenOf returns children for known parentId, empty for unknown',
+        () async {
       when(mockRepository.getAllCategories('u1'))
           .thenAnswer((_) async => flatList);
 
@@ -96,14 +91,6 @@ void main() {
       final children = provider.childrenOf('root-a');
       expect(children.length, equals(2));
       expect(children.every((c) => c.parentCategoryId == 'root-a'), isTrue);
-    });
-
-    test('childrenOf returns empty list for unknown parentId', () async {
-      when(mockRepository.getAllCategories('u1'))
-          .thenAnswer((_) async => flatList);
-
-      await provider.initialize('u1');
-
       expect(provider.childrenOf('nonexistent'), isEmpty);
     });
 
@@ -181,33 +168,23 @@ void main() {
     });
 
     group('hasSearchResults', () {
-      test('returns true when query is empty', () async {
+      test('returns true when query is empty or matches any category', () async {
         when(mockRepository.getAllCategories('u1'))
             .thenAnswer((_) async => flatList);
 
         await provider.initialize('u1');
 
+        // Empty query.
         expect(provider.hasSearchResults, isTrue);
-      });
 
-      test('returns true when query matches at least one child category',
-          () async {
-        when(mockRepository.getAllCategories('u1'))
-            .thenAnswer((_) async => flatList);
-
-        await provider.initialize('u1');
+        // Matches child (exact and partial).
         provider.setSearchQuery('Tennis');
-
         expect(provider.hasSearchResults, isTrue);
-      });
+        provider.setSearchQuery('ball'); // matches Basketball
+        expect(provider.hasSearchResults, isTrue);
 
-      test('returns true with partial match on child category name', () async {
-        when(mockRepository.getAllCategories('u1'))
-            .thenAnswer((_) async => flatList);
-
-        await provider.initialize('u1');
-        provider.setSearchQuery('ball'); // matches 'Basketball'
-
+        // Matches root category name.
+        provider.setSearchQuery('Sports');
         expect(provider.hasSearchResults, isTrue);
       });
 
@@ -219,18 +196,6 @@ void main() {
         provider.setSearchQuery('zzznomatch');
 
         expect(provider.hasSearchResults, isFalse);
-      });
-
-      test('returns true when query matches a root category name', () async {
-        // After fix: 'Sports' is a root name — filteredCategories returns
-        // [Sports], so hasSearchResults is true.
-        when(mockRepository.getAllCategories('u1'))
-            .thenAnswer((_) async => flatList);
-
-        await provider.initialize('u1');
-        provider.setSearchQuery('Sports');
-
-        expect(provider.hasSearchResults, isTrue);
       });
     });
 
@@ -248,31 +213,15 @@ void main() {
         expect(provider.activityNameExists('Cinema'), isFalse);
       });
 
-      test('returns true when exact name matches', () async {
+      test('returns true case-insensitively and after trimming', () async {
         when(mockRepository.getAllCategories('u1'))
             .thenAnswer((_) async => flatList);
 
         await provider.initialize('u1');
 
         expect(provider.activityNameExists('Tennis'), isTrue);
-      });
-
-      test('returns true when name matches case-insensitively', () async {
-        when(mockRepository.getAllCategories('u1'))
-            .thenAnswer((_) async => flatList);
-
-        await provider.initialize('u1');
-
         expect(provider.activityNameExists('tennis'), isTrue);
         expect(provider.activityNameExists('SPORTS'), isTrue);
-      });
-
-      test('returns true when name matches after trimming', () async {
-        when(mockRepository.getAllCategories('u1'))
-            .thenAnswer((_) async => flatList);
-
-        await provider.initialize('u1');
-
         expect(provider.activityNameExists(' Tennis '), isTrue);
       });
 

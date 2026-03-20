@@ -74,7 +74,7 @@ void main() {
       authService: mockAuthService,
     );
 
-    // Default stubs used by addNewPerson
+    // Default stubs used by addNewPerson and addCategory
     when(mockAuthService.currentUserId).thenReturn('user1');
     when(mockPersonRepository.addPerson(any)).thenAnswer((_) async => person1);
     when(mockCategoryRepository.getSelectableCategories(any))
@@ -87,74 +87,53 @@ void main() {
     )).thenAnswer((_) async => newCategory);
   });
 
-  group('AddMeetingProvider - weight', () {
-    test('default weight is 3', () {
+  group('AddMeetingProvider - initial state', () {
+    test('all defaults', () {
+      expect(provider.name, isEmpty);
+      expect(provider.nameError, isNull);
       expect(provider.weight, equals(3));
-    });
-
-    test('canDecrement is true at default value', () {
       expect(provider.canDecrement, isTrue);
-    });
-
-    test('canIncrement is true at default value', () {
       expect(provider.canIncrement, isTrue);
+      expect(provider.selectedPersons, isEmpty);
+      expect(provider.availablePersons, isEmpty);
+      expect(provider.isLoadingPersons, isFalse);
+      expect(provider.participantsError, isNull);
+      expect(provider.selectedCategories, isEmpty);
+      expect(provider.selectedCategoryIds, isEmpty);
+      expect(provider.activitiesError, isNull);
+      expect(provider.isSaving, isFalse);
+      expect(provider.isEditMode, isFalse);
+      expect(provider.savedMeeting, isNull);
     });
+  });
 
-    test('incrementWeight moves to next Fibonacci value', () {
+  group('AddMeetingProvider - weight stepper', () {
+    test('cycles through Fibonacci values and respects boundaries', () {
+      expect(provider.weight, equals(3));
       provider.incrementWeight();
       expect(provider.weight, equals(5));
-    });
-
-    test('decrementWeight moves to previous Fibonacci value', () {
       provider.decrementWeight();
-      expect(provider.weight, equals(2));
-    });
-
-    test('canDecrement is false at minimum value 1', () {
+      expect(provider.weight, equals(3));
+      // Reach minimum
       for (int i = 0; i < 10; i++) {
         provider.decrementWeight();
       }
       expect(provider.weight, equals(1));
       expect(provider.canDecrement, isFalse);
-    });
-
-    test('canIncrement is false at maximum value 21', () {
+      provider.decrementWeight(); // no-op at minimum
+      expect(provider.weight, equals(1));
+      // Reach maximum
       for (int i = 0; i < 10; i++) {
         provider.incrementWeight();
       }
       expect(provider.weight, equals(21));
       expect(provider.canIncrement, isFalse);
-    });
-
-    test('weight does not change below minimum', () {
-      for (int i = 0; i < 10; i++) {
-        provider.decrementWeight();
-      }
-      provider.decrementWeight();
-      expect(provider.weight, equals(1));
-    });
-
-    test('weight does not change above maximum', () {
-      for (int i = 0; i < 10; i++) {
-        provider.incrementWeight();
-      }
-      provider.incrementWeight();
+      provider.incrementWeight(); // no-op at maximum
       expect(provider.weight, equals(21));
-    });
-
-    test('reset restores default weight 3', () {
-      provider.incrementWeight();
-      provider.incrementWeight();
-      provider.reset();
-      expect(provider.weight, equals(3));
     });
   });
 
   group('AddMeetingProvider - participants', () {
-    test('selectedPersons is empty by default', () {
-      expect(provider.selectedPersons, isEmpty);
-    });
-
     test('addNewPerson saves to Firestore and adds to selected list', () async {
       when(mockPersonRepository.addPerson(any))
           .thenAnswer((_) async => person1);
@@ -163,15 +142,6 @@ void main() {
 
       expect(provider.selectedPersons, contains(person1));
       expect(provider.availablePersons, contains(person1));
-      verify(mockPersonRepository.addPerson(any)).called(1);
-    });
-
-    test('addNewPerson with no lastName passes null to repository', () async {
-      when(mockPersonRepository.addPerson(any))
-          .thenAnswer((_) async => person1);
-
-      await provider.addNewPerson(firstName: 'Anna');
-
       verify(mockPersonRepository.addPerson(any)).called(1);
     });
 
@@ -187,7 +157,7 @@ void main() {
       expect(provider.selectedPersons, isEmpty);
     });
 
-    test('searchPersons returns matching persons', () async {
+    test('searchPersons returns matching persons excluding selected', () async {
       when(mockPersonRepository.addPerson(any))
           .thenAnswer((_) async => person1);
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
@@ -218,47 +188,26 @@ void main() {
       expect(provider.searchPersons(''), isEmpty);
     });
 
-    test('validateParticipants returns false when no participants', () {
+    // selectPerson clears participantsError, enabling combined validation test.
+    test('validateParticipants fails without persons, passes with one',
+        () async {
       expect(provider.validateParticipants(), isFalse);
       expect(provider.participantsError, isNotNull);
-    });
 
-    test('validateParticipants returns true when at least one participant',
-        () async {
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
       expect(provider.validateParticipants(), isTrue);
       expect(provider.participantsError, isNull);
     });
-
-    test('reset clears selectedPersons and availablePersons', () async {
-      await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
-      provider.reset();
-      expect(provider.selectedPersons, isEmpty);
-      expect(provider.availablePersons, isEmpty);
-    });
   });
 
   group('AddMeetingProvider - categories', () {
-    test('selectedCategories is empty by default', () {
-      expect(provider.selectedCategories, isEmpty);
-    });
-
-    test('selectedCategoryIds is empty by default', () {
-      expect(provider.selectedCategoryIds, isEmpty);
-    });
-
-    test('addCategory adds category to selectedCategories', () async {
-      await provider.addCategory(category1, 'user1');
-
-      expect(provider.selectedCategories, contains(category1));
-    });
-
-    test('addCategory merges ancestor IDs into selectedCategoryIds', () async {
+    test('addCategory adds chip and propagates ancestor IDs', () async {
       when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
           .thenAnswer((_) async => ['cat1', 'cat-sport']);
 
       await provider.addCategory(category1, 'user1');
 
+      expect(provider.selectedCategories, contains(category1));
       expect(provider.selectedCategoryIds, containsAll(['cat1', 'cat-sport']));
     });
 
@@ -269,22 +218,19 @@ void main() {
       expect(provider.selectedCategories.length, equals(1));
     });
 
-    test('removeCategory removes category from selectedCategories', () async {
-      await provider.addCategory(category1, 'user1');
-      provider.removeCategory(category1);
-
-      expect(provider.selectedCategories, isEmpty);
-    });
-
-    test('removeCategory removes leaf ID from selectedCategoryIds', () async {
+    // removeCategory removes the leaf ID but leaves ancestor IDs in place —
+    // other selected categories may still depend on the ancestor.
+    test('removeCategory removes chip and leaf ID, preserves ancestor ID',
+        () async {
       when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
           .thenAnswer((_) async => ['cat1', 'cat-sport']);
 
       await provider.addCategory(category1, 'user1');
       provider.removeCategory(category1);
 
-      // Leaf ID removed, ancestor left in place
+      expect(provider.selectedCategories, isEmpty);
       expect(provider.selectedCategoryIds, isNot(contains('cat1')));
+      expect(provider.selectedCategoryIds, contains('cat-sport'));
     });
 
     test('searchCategories returns matching categories', () async {
@@ -301,6 +247,8 @@ void main() {
       expect(results, isEmpty);
     });
 
+    // validateActivities does not clear the error on success — kept separate
+    // so the positive test starts from a clean provider (no prior error set).
     test('validateActivities returns false when no categories', () {
       expect(provider.validateActivities(), isFalse);
       expect(provider.activitiesError, isNotNull);
@@ -313,30 +261,11 @@ void main() {
       expect(provider.activitiesError, isNull);
     });
 
-    test('reset clears selectedCategories and selectedCategoryIds', () async {
-      await provider.addCategory(category1, 'user1');
-      provider.reset();
-
-      expect(provider.selectedCategories, isEmpty);
-      expect(provider.selectedCategoryIds, isEmpty);
-    });
-
-    test('addNewActivity adds category to selectedCategories', () async {
+    test('addNewActivity adds chip, ID, and calls repository', () async {
       await provider.addNewActivity('Climbing', 'user1');
 
       expect(provider.selectedCategories, contains(newCategory));
-    });
-
-    test('addNewActivity adds category id to selectedCategoryIds', () async {
-      await provider.addNewActivity('Climbing', 'user1');
-
       expect(provider.selectedCategoryIds, contains('new-cat'));
-    });
-
-    test('addNewActivity calls createSelectableCategory with correct args',
-        () async {
-      await provider.addNewActivity('Climbing', 'user1');
-
       verify(mockCategoryRepository.createSelectableCategory(
         name: 'Climbing',
         userId: 'user1',
@@ -401,33 +330,25 @@ void main() {
       await provider.addCategory(category1, 'user1');
     }
 
-    test('saveMeeting returns false when name is empty', () async {
+    test('saveMeeting returns false when validation fails', () async {
+      // Missing name
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
       await provider.addCategory(category1, 'user1');
-
-      final result = await provider.saveMeeting();
-
-      expect(result, isFalse);
+      expect(await provider.saveMeeting(), isFalse);
       expect(provider.nameError, isNotNull);
-    });
 
-    test('saveMeeting returns false when no participants', () async {
-      provider.setName('Coffee with Anna');
+      // Missing participants
+      provider.reset();
+      provider.setName('Test');
       await provider.addCategory(category1, 'user1');
-
-      final result = await provider.saveMeeting();
-
-      expect(result, isFalse);
+      expect(await provider.saveMeeting(), isFalse);
       expect(provider.participantsError, isNotNull);
-    });
 
-    test('saveMeeting returns false when no categories', () async {
-      provider.setName('Coffee with Anna');
+      // Missing categories
+      provider.reset();
+      provider.setName('Test');
       await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
-
-      final result = await provider.saveMeeting();
-
-      expect(result, isFalse);
+      expect(await provider.saveMeeting(), isFalse);
       expect(provider.activitiesError, isNotNull);
     });
 
@@ -440,7 +361,8 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('saveMeeting returns true on success', () async {
+    test('saveMeeting happy path: returns true with correct meeting data',
+        () async {
       await setupValidForm();
       when(mockMeetingRepository.saveMeeting(any))
           .thenAnswer((_) async => 'meeting-id-123');
@@ -448,32 +370,9 @@ void main() {
       final result = await provider.saveMeeting();
 
       expect(result, isTrue);
-    });
-
-    test('saveMeeting calls repository with correct userId', () async {
-      await setupValidForm();
-      when(mockMeetingRepository.saveMeeting(any))
-          .thenAnswer((_) async => 'meeting-id-123');
-
-      await provider.saveMeeting();
-
       final captured =
           verify(mockMeetingRepository.saveMeeting(captureAny)).captured.first;
       expect(captured.userId, equals('user1'));
-    });
-
-    test('saveMeeting includes categoryIds in saved meeting', () async {
-      await setupValidForm();
-      when(mockCategoryRepository.getAncestorIds('cat1', 'user1'))
-          .thenAnswer((_) async => ['cat1', 'cat-sport']);
-      await provider.addCategory(category1, 'user1');
-      when(mockMeetingRepository.saveMeeting(any))
-          .thenAnswer((_) async => 'meeting-id-123');
-
-      await provider.saveMeeting();
-
-      final captured =
-          verify(mockMeetingRepository.saveMeeting(captureAny)).captured.first;
       expect(captured.categoryIds, containsAll(['cat1', 'cat-sport']));
     });
 
@@ -487,24 +386,39 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('isSaving is false after successful save', () async {
+    test('isSaving is false after both successful and failed save', () async {
       await setupValidForm();
       when(mockMeetingRepository.saveMeeting(any))
           .thenAnswer((_) async => 'meeting-id-123');
-
       await provider.saveMeeting();
-
       expect(provider.isSaving, isFalse);
-    });
 
-    test('isSaving is false after failed save', () async {
+      // Verify isSaving is also false after a failed save
+      provider.reset();
       await setupValidForm();
       when(mockMeetingRepository.saveMeeting(any))
           .thenThrow(Exception('Firestore error'));
-
       await provider.saveMeeting();
-
       expect(provider.isSaving, isFalse);
+    });
+  });
+
+  group('AddMeetingProvider - reset', () {
+    test('restores all defaults', () async {
+      provider.setName('Test');
+      await provider.addNewPerson(firstName: 'Anna', lastName: 'Kowalska');
+      await provider.addCategory(category1, 'user1');
+      provider.incrementWeight();
+      provider.incrementWeight();
+
+      provider.reset();
+
+      expect(provider.name, isEmpty);
+      expect(provider.weight, equals(3));
+      expect(provider.selectedPersons, isEmpty);
+      expect(provider.availablePersons, isEmpty);
+      expect(provider.selectedCategories, isEmpty);
+      expect(provider.selectedCategoryIds, isEmpty);
     });
   });
 }

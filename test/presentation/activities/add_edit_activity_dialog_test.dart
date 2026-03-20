@@ -1,6 +1,4 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
@@ -9,13 +7,13 @@ import 'package:friendsheet/presentation/activities/activities_list_provider.dar
 import 'package:friendsheet/presentation/activities/add_edit_activity_dialog.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/firebase_test_helpers.dart';
+
 void main() {
   setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
     // Firebase Core mock required: AuthService() accesses FirebaseAuth.instance
     // at field init time when the singleton is created.
-    setupFirebaseCoreMocks();
-    await Firebase.initializeApp();
+    await setupTestFirebase();
   });
 
   final existingCategory = ActivityCategory(

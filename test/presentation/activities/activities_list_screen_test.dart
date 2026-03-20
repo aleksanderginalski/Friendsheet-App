@@ -1,6 +1,4 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
@@ -10,13 +8,13 @@ import 'package:friendsheet/presentation/activities/activities_list_screen.dart'
 import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../helpers/firebase_test_helpers.dart';
+
 void main() {
   setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
     // Firebase Core mock required: ActivitiesListScreen.initState creates
     // AuthService(), which accesses FirebaseAuth.instance at field init.
-    setupFirebaseCoreMocks();
-    await Firebase.initializeApp();
+    await setupTestFirebase();
   });
 
   final rootA = ActivityCategory(

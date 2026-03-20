@@ -1,7 +1,5 @@
 // test/presentation/screens/main_screen_test.dart
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
@@ -12,6 +10,7 @@ import 'package:friendsheet/presentation/screens/meetings_list_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+import '../../helpers/firebase_test_helpers.dart';
 import 'main_screen_test.mocks.dart';
 
 @GenerateMocks([AuthService])
@@ -19,11 +18,9 @@ void main() {
   late MockAuthService mockAuthService;
 
   setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
     // Firebase Core mock required because MeetingsListScreen (inside the
     // IndexedStack) creates MeetingRepository and AuthService on first build.
-    setupFirebaseCoreMocks();
-    await Firebase.initializeApp();
+    await setupTestFirebase();
   });
 
   setUp(() {

@@ -14,7 +14,7 @@ Read: @test/, @lib/, @pubspec.yaml, @TEST_CASES.md
 
 Ask: "What should I test?
 a) New implementation (provide file path)
-b) Optimize existing tests
+b) Optimize existing tests (refactor only — no new test cases)
 c) Coverage audit for a feature"
 
 ## Rules
@@ -24,6 +24,12 @@ c) Coverage audit for a feature"
 - Priority: happy path → boundary cases → critical exceptions only
 - SharedPreferences: always setUp with SharedPreferences.setMockInitialValues({})
 - New Provider dependency: grep -r "ProviderName(" test/ → update ALL files found
+- Optimization scope: refactor only — do not add new test cases unless explicitly asked
+- Do NOT test Freezed defaults (nullable fields, empty list defaults — already guaranteed by Freezed)
+- Do NOT test implementation details (verify() call counts, isSaving true→false transitions)
+- Happy path: one test checks ALL output fields at once
+- Toggle behavior (add/remove/persist): one test covers the full cycle
+- Initial state: one test checks ALL default values at once
 
 ## After writing
 
@@ -38,6 +44,7 @@ c) Coverage audit for a feature"
 - **Tests written:** [paths]
 - **flutter test:** [PASS / FAIL]
 - **TEST_CASES.md updated:** [YES / NO]
+- **Optimization potential:** [If an existing test file was modified, note which files have further consolidation potential — run option b) separately if desired. Otherwise: N/A]
 - **Ready to commit:** [YES / NO]
 - **Proposed commit:**
   ```powershell

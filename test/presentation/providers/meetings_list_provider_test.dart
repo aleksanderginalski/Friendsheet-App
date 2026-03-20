@@ -51,47 +51,27 @@ void main() {
 
   group('MeetingsListProvider', () {
     group('initial state', () {
-      test('isLoading is false', () {
+      test('all defaults', () {
         expect(provider.isLoading, isFalse);
-      });
-
-      test('error is null', () {
         expect(provider.error, isNull);
-      });
-
-      test('meetingsByYear is empty', () {
         expect(provider.meetingsByYear, isEmpty);
-      });
-
-      test('meetingsByYearAndMonth is empty', () {
         expect(provider.meetingsByYearAndMonth, isEmpty);
       });
     });
 
     group('initialize()', () {
-      test('sets isLoading true before stream emits', () {
+      test('isLoading true before stream emits, false after', () async {
         final controller = StreamController<List<Meeting>>();
         addTearDown(controller.close);
         when(mockMeetingRepository.getMeetingsByUser(any))
             .thenAnswer((_) => controller.stream);
 
         provider.initialize('user-1');
-
         // isLoading must be true immediately — stream has not emitted yet.
         expect(provider.isLoading, isTrue);
-      });
 
-      test('sets isLoading false after stream emits data', () async {
-        final controller = StreamController<List<Meeting>>();
-        addTearDown(controller.close);
-        when(mockMeetingRepository.getMeetingsByUser(any))
-            .thenAnswer((_) => controller.stream);
-
-        provider.initialize('user-1');
         controller.add([]);
-        // Yield to the event loop so the stream listener runs.
         await Future.delayed(Duration.zero);
-
         expect(provider.isLoading, isFalse);
       });
 
@@ -114,56 +94,31 @@ void main() {
     });
 
     group('meetingsByYear', () {
-      // Fixtures: two meetings in 2026 and one in 2025.
-      late Meeting meeting2026a;
-      late Meeting meeting2026b;
-      late Meeting meeting2025;
-
-      setUp(() {
-        meeting2026a = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
-        meeting2026b = makeMeeting(id: 'm2', date: DateTime(2026, 1, 10));
-        meeting2025 = makeMeeting(id: 'm3', date: DateTime(2025, 12, 25));
-      });
-
-      // Emits the three fixtures and waits for the listener to run.
-      Future<void> emitMeetings(
-          StreamController<List<Meeting>> controller) async {
-        controller.add([meeting2026a, meeting2026b, meeting2025]);
-        await Future.delayed(Duration.zero);
-      }
-
-      test('groups meetings by year correctly', () async {
+      test('groups meetings by year, sorted descending', () async {
         final controller = StreamController<List<Meeting>>();
         addTearDown(controller.close);
         when(mockMeetingRepository.getMeetingsByUser(any))
             .thenAnswer((_) => controller.stream);
 
+        final meeting2026a = makeMeeting(id: 'm1', date: DateTime(2026, 2, 15));
+        final meeting2026b = makeMeeting(id: 'm2', date: DateTime(2026, 1, 10));
+        final meeting2025 = makeMeeting(id: 'm3', date: DateTime(2025, 12, 25));
+
         provider.initialize('user-1');
-        await emitMeetings(controller);
+        controller.add([meeting2026a, meeting2026b, meeting2025]);
+        await Future.delayed(Duration.zero);
 
         expect(provider.meetingsByYear[2026], hasLength(2));
         expect(provider.meetingsByYear[2025], hasLength(1));
-        expect(provider.meetingsByYear[2026], contains(meeting2026a));
-        expect(provider.meetingsByYear[2026], contains(meeting2026b));
+        expect(provider.meetingsByYear[2026], containsAll([meeting2026a, meeting2026b]));
         expect(provider.meetingsByYear[2025], contains(meeting2025));
-      });
-
-      test('returns years sorted descending', () async {
-        final controller = StreamController<List<Meeting>>();
-        addTearDown(controller.close);
-        when(mockMeetingRepository.getMeetingsByUser(any))
-            .thenAnswer((_) => controller.stream);
-
-        provider.initialize('user-1');
-        await emitMeetings(controller);
-
-        final years = provider.meetingsByYear.keys.toList();
-        expect(years, equals([2026, 2025]));
+        expect(provider.meetingsByYear.keys.toList(), equals([2026, 2025]));
       });
     });
 
     group('meetingsByYearAndMonth', () {
-      test('groups meetings by month within a year', () async {
+      test('groups meetings by month within a year, months sorted descending',
+          () async {
         final controller = StreamController<List<Meeting>>();
         addTearDown(controller.close);
         when(mockMeetingRepository.getMeetingsByUser(any))
@@ -181,24 +136,7 @@ void main() {
         expect(byYearAndMonth[2026]?[3], hasLength(2));
         expect(byYearAndMonth[2026]?[1], hasLength(1));
         expect(byYearAndMonth[2026]?[3], containsAll([m1, m2]));
-      });
-
-      test('returns months sorted descending within a year', () async {
-        final controller = StreamController<List<Meeting>>();
-        addTearDown(controller.close);
-        when(mockMeetingRepository.getMeetingsByUser(any))
-            .thenAnswer((_) => controller.stream);
-
-        provider.initialize('user-1');
-        controller.add([
-          makeMeeting(id: 'm1', date: DateTime(2026, 1, 1)),
-          makeMeeting(id: 'm2', date: DateTime(2026, 5, 1)),
-          makeMeeting(id: 'm3', date: DateTime(2026, 3, 1)),
-        ]);
-        await Future.delayed(Duration.zero);
-
-        final months = provider.meetingsByYearAndMonth[2026]!.keys.toList();
-        expect(months, equals([5, 3, 1]));
+        expect(byYearAndMonth[2026]!.keys.toList(), equals([3, 1]));
       });
 
       test('filters by searchQuery and still produces two-level map', () async {
@@ -221,25 +159,15 @@ void main() {
 
         expect(filtered[2026]?[3], hasLength(1));
         expect(filtered[2026]?[3]?.first.name, equals('Coffee'));
-      });
 
-      test('returns empty map when search matches nothing', () async {
-        final controller = StreamController<List<Meeting>>();
-        addTearDown(controller.close);
-        when(mockMeetingRepository.getMeetingsByUser(any))
-            .thenAnswer((_) => controller.stream);
-
-        provider.initialize('user-1');
-        controller.add([makeMeeting(id: 'm1', date: DateTime(2026, 3, 1))]);
-        await Future.delayed(Duration.zero);
-
+        // Non-matching query → empty map.
         provider.setSearchQuery('xyz');
         expect(provider.meetingsByYearAndMonth, isEmpty);
       });
     });
 
     group('default expanded months', () {
-      test('current month is expanded after data loads', () async {
+      test('current month expanded; arbitrary past month is not', () async {
         final controller = StreamController<List<Meeting>>();
         addTearDown(controller.close);
         when(mockMeetingRepository.getMeetingsByUser(any))
@@ -252,6 +180,7 @@ void main() {
         final now = DateTime.now();
         final key = '${now.year}-${now.month.toString().padLeft(2, '0')}';
         expect(provider.isMonthExpanded(key), isTrue);
+        expect(provider.isMonthExpanded('2020-01'), isFalse);
       });
 
       test('most recent past month with data is also expanded', () async {
@@ -268,33 +197,13 @@ void main() {
 
         expect(provider.isMonthExpanded('2020-06'), isTrue);
       });
-
-      test('only current month expanded when no past meetings exist', () async {
-        final controller = StreamController<List<Meeting>>();
-        addTearDown(controller.close);
-        when(mockMeetingRepository.getMeetingsByUser(any))
-            .thenAnswer((_) => controller.stream);
-
-        provider.initialize('user-1');
-        controller.add([]);
-        await Future.delayed(Duration.zero);
-
-        // A random past month must NOT be expanded.
-        expect(provider.isMonthExpanded('2020-01'), isFalse);
-      });
     });
 
     group('toggleMonth()', () {
-      test('expands a collapsed month', () {
+      test('expands a collapsed month, then collapses it', () {
         expect(provider.isMonthExpanded('2026-03'), isFalse);
         provider.toggleMonth(2026, 3);
         expect(provider.isMonthExpanded('2026-03'), isTrue);
-      });
-
-      test('collapses an expanded month', () {
-        provider.toggleMonth(2026, 3);
-        expect(provider.isMonthExpanded('2026-03'), isTrue);
-
         provider.toggleMonth(2026, 3);
         expect(provider.isMonthExpanded('2026-03'), isFalse);
       });
@@ -307,20 +216,16 @@ void main() {
     });
 
     group('toggleYear()', () {
-      test('expands a collapsed year', () {
-        // Year 2020 is not in the expanded set before initialize() is called.
-        expect(provider.isYearExpanded(2020), isFalse);
-
-        provider.toggleYear(2020);
-
-        expect(provider.isYearExpanded(2020), isTrue);
-      });
-
-      test('collapses an expanded year', () async {
+      test('expands a collapsed year, then collapses it', () async {
         final controller = StreamController<List<Meeting>>();
         addTearDown(controller.close);
         when(mockMeetingRepository.getMeetingsByUser(any))
             .thenAnswer((_) => controller.stream);
+
+        // Year 2020 is not expanded before initialize().
+        expect(provider.isYearExpanded(2020), isFalse);
+        provider.toggleYear(2020);
+        expect(provider.isYearExpanded(2020), isTrue);
 
         provider.initialize('user-1');
         controller.add([]);
@@ -329,37 +234,26 @@ void main() {
         // Current year is expanded by default after initialize().
         final currentYear = DateTime.now().year;
         expect(provider.isYearExpanded(currentYear), isTrue);
-
         provider.toggleYear(currentYear);
-
         expect(provider.isYearExpanded(currentYear), isFalse);
       });
     });
 
     group('isSearchActive', () {
-      test('returns false when query is empty', () {
+      test('returns false for empty, short, or whitespace-only query', () {
         provider.setSearchQuery('');
         expect(provider.isSearchActive, isFalse);
-      });
-
-      test('returns false when query has fewer than 3 characters', () {
         provider.setSearchQuery('ab');
         expect(provider.isSearchActive, isFalse);
+        provider.setSearchQuery('  a '); // 1 char after trim
+        expect(provider.isSearchActive, isFalse);
       });
 
-      test('returns true when query has exactly 3 characters', () {
+      test('returns true when 3 or more characters after trim', () {
         provider.setSearchQuery('abc');
         expect(provider.isSearchActive, isTrue);
-      });
-
-      test('returns true when query has more than 3 characters', () {
         provider.setSearchQuery('abcd');
         expect(provider.isSearchActive, isTrue);
-      });
-
-      test('trims whitespace before checking length', () {
-        provider.setSearchQuery('  a ');
-        expect(provider.isSearchActive, isFalse);
       });
     });
 
