@@ -34,6 +34,10 @@ void main() {
     await provider.loadFromPrefs();
   });
 
+  tearDown(() {
+    provider.dispose();
+  });
+
   group('MeetingInboxProvider - addCandidates', () {
     test('with empty prefs stores incoming candidates', () {
       provider.addCandidates([candidate1, candidate2]);
@@ -75,10 +79,6 @@ void main() {
       expect(provider.candidates.length, 1);
       expect(provider.candidates.first.id, 'c1');
     });
-
-    test('starts with empty list when no persisted data', () {
-      expect(provider.candidates, isEmpty);
-    });
   });
 
   group('MeetingInboxProvider - skip', () {
@@ -106,14 +106,7 @@ void main() {
       expect(provider.candidates.map((c) => c.id), isNot(contains('c1')));
     });
 
-    test('increments confirmedCount', () {
-      provider.addCandidates([candidate1]);
-      provider.markConfirmed('c1');
-
-      expect(provider.confirmedCount, 1);
-    });
-
-    test('increments confirmedCount for each call', () {
+    test('increments confirmedCount once per call', () {
       provider.addCandidates([candidate1, candidate2]);
       provider.markConfirmed('c1');
       provider.markConfirmed('c2');

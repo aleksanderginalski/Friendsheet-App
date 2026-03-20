@@ -16,66 +16,50 @@ void main() {
 
   group('FriendGroup model', () {
     group('copyWith', () {
-      test('replaces name and preserves other fields', () {
-        final updated = baseGroup.copyWith(name: 'Climbing Crew');
-        expect(updated.name, 'Climbing Crew');
-        expect(updated.id, 'group-1');
-        expect(updated.iconIdentifier, 'hiking');
-        expect(updated.personIds, ['p1', 'p2']);
-      });
+      test('updates specified fields and preserves others', () {
+        final byName = baseGroup.copyWith(name: 'Climbing Crew');
+        expect(byName.name, 'Climbing Crew');
+        expect(byName.id, 'group-1');
+        expect(byName.iconIdentifier, 'hiking');
+        expect(byName.personIds, ['p1', 'p2']);
 
-      test('replaces personIds list', () {
-        final updated = baseGroup.copyWith(personIds: ['p3']);
-        expect(updated.personIds, ['p3']);
-        expect(updated.name, 'Hiking Crew');
-      });
+        final byPersonIds = baseGroup.copyWith(personIds: ['p3']);
+        expect(byPersonIds.personIds, ['p3']);
+        expect(byPersonIds.name, 'Hiking Crew');
 
-      test('clears iconIdentifier to null', () {
-        final updated = baseGroup.copyWith(iconIdentifier: null);
-        expect(updated.iconIdentifier, isNull);
+        // Nullable field can be cleared to null.
+        final withoutIcon = baseGroup.copyWith(iconIdentifier: null);
+        expect(withoutIcon.iconIdentifier, isNull);
       });
     });
 
     group('equality', () {
-      test('two instances with same fields are equal', () {
-        final a = FriendGroup(
+      test('equal when same fields, not equal when id differs', () {
+        final other = FriendGroup(
           id: 'group-1',
           name: 'Hiking Crew',
           iconIdentifier: 'hiking',
           personIds: ['p1', 'p2'],
           createdAt: testDate,
         );
-        final b = FriendGroup(
-          id: 'group-1',
-          name: 'Hiking Crew',
-          iconIdentifier: 'hiking',
-          personIds: ['p1', 'p2'],
-          createdAt: testDate,
-        );
-        expect(a, equals(b));
-      });
-
-      test('different id produces not-equal instances', () {
-        final other = baseGroup.copyWith(id: 'group-99');
-        expect(baseGroup, isNot(equals(other)));
+        expect(baseGroup, equals(other));
+        expect(baseGroup, isNot(equals(baseGroup.copyWith(id: 'group-99'))));
       });
     });
 
     group('toJson / fromJson round-trip', () {
-      test('preserves all fields including iconIdentifier', () {
-        final json = baseGroup.toJson();
-        final restored = FriendGroup.fromJson(json);
-        expect(restored, equals(baseGroup));
-      });
+      test('preserves all fields including null iconIdentifier', () {
+        // With icon.
+        expect(FriendGroup.fromJson(baseGroup.toJson()), equals(baseGroup));
 
-      test('round-trip with null iconIdentifier', () {
-        final group = FriendGroup(
+        // With null icon and empty personIds.
+        final noIcon = FriendGroup(
           id: 'g2',
           name: 'No Icon Group',
           personIds: [],
           createdAt: testDate,
         );
-        final restored = FriendGroup.fromJson(group.toJson());
+        final restored = FriendGroup.fromJson(noIcon.toJson());
         expect(restored.iconIdentifier, isNull);
         expect(restored.personIds, isEmpty);
       });
@@ -98,75 +82,43 @@ void main() {
         return ref.get();
       }
 
-      test('maps name and iconIdentifier correctly', () async {
-        final doc = await seedDoc({
+      test('happy path: deserializes all fields correctly', () async {
+        final ref = fakeFirestore
+            .collection('users')
+            .doc('u1')
+            .collection('friend_groups')
+            .doc('fixed-id');
+        await ref.set({
           'name': 'Friends',
           'iconIdentifier': 'coffee',
           'personIds': ['p1'],
           'createdAt': Timestamp.fromDate(testDate),
         });
+        final doc = await ref.get();
         final group = FriendGroup.fromFirestore(doc);
+
+        expect(group.id, 'fixed-id');
         expect(group.name, 'Friends');
         expect(group.iconIdentifier, 'coffee');
+        expect(group.personIds, ['p1']);
+        expect(group.createdAt, testDate);
       });
 
-      test('defaults personIds to empty list when field absent', () async {
+      test('defaults personIds to empty and accepts null iconIdentifier',
+          () async {
         final doc = await seedDoc({
           'name': 'Empty Group',
           'iconIdentifier': null,
         });
         final group = FriendGroup.fromFirestore(doc);
         expect(group.personIds, isEmpty);
-      });
-
-      test('maps null iconIdentifier correctly', () async {
-        final doc = await seedDoc({
-          'name': 'No Icon',
-          'iconIdentifier': null,
-          'personIds': [],
-        });
-        final group = FriendGroup.fromFirestore(doc);
         expect(group.iconIdentifier, isNull);
-      });
-
-      test('uses document ID as group id', () async {
-        final ref = fakeFirestore
-            .collection('users')
-            .doc('u1')
-            .collection('friend_groups')
-            .doc('fixed-id');
-        await ref.set({'name': 'Fixed', 'personIds': []});
-        final doc = await ref.get();
-        final group = FriendGroup.fromFirestore(doc);
-        expect(group.id, 'fixed-id');
-      });
-
-      test('maps createdAt from Timestamp', () async {
-        final doc = await seedDoc({
-          'name': 'Dated',
-          'personIds': [],
-          'createdAt': Timestamp.fromDate(testDate),
-        });
-        final group = FriendGroup.fromFirestore(doc);
-        expect(group.createdAt, testDate);
       });
 
       test('leaves createdAt null when field absent', () async {
         final doc = await seedDoc({'name': 'Undated', 'personIds': []});
         final group = FriendGroup.fromFirestore(doc);
         expect(group.createdAt, isNull);
-      });
-    });
-
-    group('nullable iconIdentifier', () {
-      test('accepts null iconIdentifier', () {
-        const group = FriendGroup(id: 'g', name: 'G');
-        expect(group.iconIdentifier, isNull);
-      });
-
-      test('accepts non-null iconIdentifier', () {
-        const group = FriendGroup(id: 'g', name: 'G', iconIdentifier: 'sport');
-        expect(group.iconIdentifier, 'sport');
       });
     });
   });

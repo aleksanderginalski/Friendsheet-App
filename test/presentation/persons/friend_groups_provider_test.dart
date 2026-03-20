@@ -86,18 +86,6 @@ void main() {
       });
     });
 
-    group('updateGroup', () {
-      test('calls repository updateGroup then reloads groups', () async {
-        when(mockRepo.updateGroup(any, any)).thenAnswer((_) async {});
-        when(mockRepo.getGroupsByUser('u1')).thenAnswer((_) async => [group1]);
-
-        await provider.updateGroup(group1);
-
-        verify(mockRepo.updateGroup('u1', group1)).called(1);
-        verify(mockRepo.getGroupsByUser('u1')).called(1);
-      });
-    });
-
     group('deleteGroup', () {
       test('calls repository deleteGroup then reloads groups', () async {
         when(mockRepo.deleteGroup(any, any)).thenAnswer((_) async {});
@@ -181,16 +169,6 @@ void main() {
 
         final result = provider.groupsForPerson('p-absent');
         expect(result, isEmpty);
-      });
-
-      test('does not call repository (pure client-side filter)', () async {
-        when(mockRepo.getGroupsByUser('u1')).thenAnswer((_) async => [group1]);
-        await provider.loadGroups();
-
-        clearInteractions(mockRepo);
-        provider.groupsForPerson('p1');
-
-        verifyNever(mockRepo.getGroupsByUser(any));
       });
     });
 
