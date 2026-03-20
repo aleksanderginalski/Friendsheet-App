@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../data/models/google_calendar.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
+import '../../data/repositories/pending_meeting_package_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/account_deletion_service.dart';
@@ -27,6 +28,7 @@ import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
+import '../providers/shared_package_inbox_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../sharing/generate_sharing_token_screen.dart';
 import '../widgets/easter_egg_dialog.dart';
@@ -59,6 +61,7 @@ class _MainScreenState extends State<MainScreen> {
   late final StatisticsProvider _statisticsProvider;
   late final CalendarSettingsProvider _calendarSettingsProvider;
   late final MeetingInboxProvider _meetingInboxProvider;
+  late final SharedPackageInboxProvider _sharedPackageInboxProvider;
 
   @override
   void initState() {
@@ -95,6 +98,10 @@ class _MainScreenState extends State<MainScreen> {
       calendarService: GoogleCalendarService(),
     );
     _meetingInboxProvider = MeetingInboxProvider();
+    _sharedPackageInboxProvider = SharedPackageInboxProvider(
+      packageRepository: PendingMeetingPackageRepository(),
+      meetingRepository: MeetingRepository(),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Ensure calendar token is loaded before drawer renders.
       await GoogleCalendarService().ensureInitialized();
@@ -103,6 +110,7 @@ class _MainScreenState extends State<MainScreen> {
       if (userId != null) {
         _homeProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);
+        _sharedPackageInboxProvider.initialize(userId);
       }
       _friendGroupsProvider.loadGroups();
       _statisticsProvider.initialize();
@@ -143,6 +151,7 @@ class _MainScreenState extends State<MainScreen> {
     _statisticsProvider.dispose();
     _calendarSettingsProvider.dispose();
     _meetingInboxProvider.dispose();
+    _sharedPackageInboxProvider.dispose();
     super.dispose();
   }
 
@@ -191,8 +200,11 @@ class _MainScreenState extends State<MainScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider.value(
-          value: _meetingInboxProvider,
+        builder: (_) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: _meetingInboxProvider),
+            ChangeNotifierProvider.value(value: _sharedPackageInboxProvider),
+          ],
           child: const MeetingInboxScreen(),
         ),
       ),
@@ -249,6 +261,7 @@ class _MainScreenState extends State<MainScreen> {
         ChangeNotifierProvider.value(value: _statisticsProvider),
         ChangeNotifierProvider.value(value: _calendarSettingsProvider),
         ChangeNotifierProvider.value(value: _meetingInboxProvider),
+        ChangeNotifierProvider.value(value: _sharedPackageInboxProvider),
       ],
       child: _buildScaffold(context),
     );
@@ -384,14 +397,15 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
             const Divider(),
-            // Pending Meetings tile — only shown when inbox has candidates.
-            Consumer<MeetingInboxProvider>(
-              builder: (context, inboxProvider, _) {
-                final count = inboxProvider.candidates.length;
-                if (count == 0) return const SizedBox.shrink();
+            // Pending Meetings tile — shown when calendar candidates or shared packages exist.
+            Consumer2<MeetingInboxProvider, SharedPackageInboxProvider>(
+              builder: (context, inboxProvider, packageProvider, _) {
+                final totalCount = inboxProvider.candidates.length +
+                    packageProvider.packages.length;
+                if (totalCount == 0) return const SizedBox.shrink();
                 return ListTile(
                   leading: const Icon(Icons.inbox),
-                  title: Text('Pending Meetings ($count)'),
+                  title: Text('Pending Meetings ($totalCount)'),
                   onTap: () {
                     Navigator.pop(context); // close drawer
                     _openPendingMeetings();
