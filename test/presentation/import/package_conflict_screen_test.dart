@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/pending_meeting_package.dart';
+import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/pending_meeting_package_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/import/package_conflict_screen.dart';
 import 'package:friendsheet/presentation/providers/shared_package_inbox_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -12,7 +15,12 @@ import 'package:provider/provider.dart';
 
 import 'package_conflict_screen_test.mocks.dart';
 
-@GenerateMocks([PendingMeetingPackageRepository, MeetingRepository])
+@GenerateMocks([
+  PendingMeetingPackageRepository,
+  MeetingRepository,
+  PersonRepository,
+  ActivityCategoryRepository,
+])
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +28,8 @@ void main() {
 
   late MockPendingMeetingPackageRepository mockPackageRepo;
   late MockMeetingRepository mockMeetingRepo;
+  late MockPersonRepository mockPersonRepo;
+  late MockActivityCategoryRepository mockCategoryRepo;
 
   Meeting makeMeeting({String id = 'm1', DateTime? date}) => Meeting(
         id: id,
@@ -59,10 +69,14 @@ void main() {
     when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
     when(mockMeetingRepo.getMeetingsByUser('u1'))
         .thenAnswer((_) => Stream.value(existingMeetings));
+    when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+    when(mockCategoryRepo.getAllCategories(any)).thenAnswer((_) async => []);
 
     final provider = SharedPackageInboxProvider(
       packageRepository: mockPackageRepo,
       meetingRepository: mockMeetingRepo,
+      personRepository: mockPersonRepo,
+      categoryRepository: mockCategoryRepo,
     );
     await provider.initialize('u1');
     return provider;
@@ -75,7 +89,7 @@ void main() {
     return ChangeNotifierProvider.value(
       value: provider,
       child: MaterialApp(
-        home: PackageConflictScreen(package: pkg),
+        home: PackageConflictScreen(package: pkg, userId: 'u1'),
       ),
     );
   }
@@ -83,6 +97,8 @@ void main() {
   setUp(() {
     mockPackageRepo = MockPendingMeetingPackageRepository();
     mockMeetingRepo = MockMeetingRepository();
+    mockPersonRepo = MockPersonRepository();
+    mockCategoryRepo = MockActivityCategoryRepository();
   });
 
   group('no-conflict scenario', () {
@@ -119,18 +135,29 @@ void main() {
       expect(button.onPressed, isNotNull);
     });
 
-    testWidgets('tapping Continue dismisses package and pops screen',
+    testWidgets(
+        'tapping Continue imports directly and shows success (no conflicts)',
         (tester) async {
       final pkg = makePackage();
       final provider = await makeProvider(pkg: pkg);
 
-      final navigatorKey = GlobalKey<NavigatorState>();
+      // Stub import methods called when no conflicts exist.
+      when(mockPersonRepo.addPerson(any)).thenAnswer((_) async => Person(
+            id: 'p-sender',
+            userId: 'u1',
+            firstName: 'Ania',
+            lastName: 'Kowalska',
+            createdAt: DateTime(2026),
+            nicknames: const [],
+          ));
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+      when(mockPackageRepo.deletePackage(any, any)).thenAnswer((_) async {});
+
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: provider,
           child: MaterialApp(
-            navigatorKey: navigatorKey,
-            home: PackageConflictScreen(package: pkg),
+            home: PackageConflictScreen(package: pkg, userId: 'u1'),
           ),
         ),
       );
@@ -138,7 +165,7 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(provider.hasPackages, isFalse);
+      expect(find.text('Import complete!'), findsOneWidget);
     });
   });
 

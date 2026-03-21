@@ -100,7 +100,9 @@ class _MainScreenState extends State<MainScreen> {
     _meetingInboxProvider = MeetingInboxProvider();
     _sharedPackageInboxProvider = SharedPackageInboxProvider(
       packageRepository: PendingMeetingPackageRepository(),
-      meetingRepository: MeetingRepository(),
+      meetingRepository: meetingRepository,
+      personRepository: personRepository,
+      categoryRepository: activityCategoryRepository,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Ensure calendar token is loaded before drawer renders.
@@ -200,6 +202,7 @@ class _MainScreenState extends State<MainScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
+        settings: const RouteSettings(name: '/meeting_inbox'),
         builder: (_) => MultiProvider(
           providers: [
             ChangeNotifierProvider.value(value: _meetingInboxProvider),

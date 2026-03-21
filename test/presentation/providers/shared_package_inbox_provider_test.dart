@@ -1,15 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/pending_meeting_package.dart';
+import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/pending_meeting_package_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/providers/shared_package_inbox_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'shared_package_inbox_provider_test.mocks.dart';
 
-@GenerateMocks([PendingMeetingPackageRepository, MeetingRepository])
+@GenerateMocks([
+  PendingMeetingPackageRepository,
+  MeetingRepository,
+  PersonRepository,
+  ActivityCategoryRepository,
+])
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +24,8 @@ void main() {
 
   late MockPendingMeetingPackageRepository mockPackageRepo;
   late MockMeetingRepository mockMeetingRepo;
+  late MockPersonRepository mockPersonRepo;
+  late MockActivityCategoryRepository mockCategoryRepo;
   late SharedPackageInboxProvider provider;
 
   Meeting makeMeeting({String id = 'm1', DateTime? date}) => Meeting(
@@ -49,12 +58,21 @@ void main() {
         ],
       );
 
+  void stubEmptyPersonsAndCategories() {
+    when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+    when(mockCategoryRepo.getAllCategories(any)).thenAnswer((_) async => []);
+  }
+
   setUp(() {
     mockPackageRepo = MockPendingMeetingPackageRepository();
     mockMeetingRepo = MockMeetingRepository();
+    mockPersonRepo = MockPersonRepository();
+    mockCategoryRepo = MockActivityCategoryRepository();
     provider = SharedPackageInboxProvider(
       packageRepository: mockPackageRepo,
       meetingRepository: mockMeetingRepo,
+      personRepository: mockPersonRepo,
+      categoryRepository: mockCategoryRepo,
     );
   });
 
@@ -83,6 +101,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => []);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -96,6 +115,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -113,6 +133,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -128,6 +149,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -141,6 +163,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -154,6 +177,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -168,6 +192,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
 
@@ -182,6 +207,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
       provider.resolveConflict('pkg1', 0, ConflictResolution.merge);
@@ -214,6 +240,7 @@ void main() {
       when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
       when(mockMeetingRepo.getMeetingsByUser('u1'))
           .thenAnswer((_) => Stream.value([existing]));
+      stubEmptyPersonsAndCategories();
 
       await provider.initialize('u1');
       provider.resolveConflict('pkg1', 0, ConflictResolution.merge);
