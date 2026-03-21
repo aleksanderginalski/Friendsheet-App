@@ -3136,25 +3136,25 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `sharing`, `conflicts`, `persons`, `activities`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-092
 
 **Acceptance Criteria:**
-- [ ] After meeting conflicts resolved (US-092), system checks persons and activities in the package
-- [ ] Activity name conflict (same name, case-insensitive): C must rename the incoming activity OR link it to an existing one
-- [ ] Person name conflict (same first name + last name): C can add with a nickname OR link to existing person
-- [ ] All conflicts must be resolved before package can be confirmed
-- [ ] On final confirm: meetings, persons, and activities written to C's Firestore subcollections
-- [ ] Success screen shows: X meetings added, Y persons added, Z activities added
+- [x] After meeting conflicts resolved (US-092), system checks persons and activities in the package
+- [x] Activity name conflict (same name, case-insensitive): C must rename the incoming activity OR link it to an existing one
+- [x] Person name conflict (same first name + last name): C can add with a nickname OR link to existing person
+- [x] All conflicts must be resolved before package can be confirmed
+- [x] On final confirm: meetings, persons, and activities written to C's Firestore subcollections
+- [x] Success screen shows: X meetings added, Y persons added, Z activities added
 
 **Tasks:**
-- [ ] **TASK-093.1:** Implement activity conflict detection (incoming name vs existing `activity_categories`) — 1h
-- [ ] **TASK-093.2:** Build activity conflict UI — rename field or "link to existing" picker — 1h
-- [ ] **TASK-093.3:** Implement person conflict detection (first name + last name match) — 1h
-- [ ] **TASK-093.4:** Build person conflict UI — add nickname or "link to existing" picker — 1h
-- [ ] **TASK-093.5:** Implement final batch import to Firestore (meetings + persons + activities) — 1.5h
-- [ ] **TASK-093.6:** Build success screen with import summary — 0.5h
-- [ ] **TASK-093.7:** Write tests — 1h
+- [x] **TASK-093.1:** Implement activity conflict detection (incoming name vs existing `activity_categories`) — 1h
+- [x] **TASK-093.2:** Build activity conflict UI — rename field or "link to existing" picker — 1h
+- [x] **TASK-093.3:** Implement person conflict detection (first name + last name match) — 1h
+- [x] **TASK-093.4:** Build person conflict UI — SwitchListTile with strikethrough when opted out — 1h
+- [x] **TASK-093.5:** Implement final batch import to Firestore (meetings + persons + activities) — 1.5h
+- [x] **TASK-093.6:** Build success screen with import summary — 0.5h
+- [x] **TASK-093.7:** Write tests — 1h
 
 ---
 

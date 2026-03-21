@@ -23,7 +23,7 @@
 
 **M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
 
-**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Extensible architecture supports future import sources (Google Photos planned).
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Receive shared meeting packages in Pending Meetings with full conflict resolution — date duplicates (US-092), activity name conflicts, and person name conflicts (US-093). Sender is automatically added as a participant in all imported meetings. Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
@@ -170,6 +170,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 *This project documents a full SDLC journey — from backlog and architecture through implementation, testing and Google Play release.*
 
 ## 📖 Version History
+
+### v3.47.0 — US-093: Conflict Resolution — Persons & Activities (March 21, 2026)
+- ✅ `PackageActivitiesScreen` — step 2a of import flow: activity name conflicts shown as orange-bordered cards with Rename/Link options; non-conflicting activities shown as `CheckboxListTile` (uncheck to opt out)
+- ✅ `PackagePersonsScreen` — step 2b of import flow: person name conflicts shown as orange-bordered cards with Nickname/Link options; non-conflicting persons shown as `SwitchListTile` with strikethrough text when opted out
+- ✅ `PackageImporter` — stateless batch import helper: filters meetings by resolution, creates or links activity categories, creates or links persons, saves meetings with resolved `participantIds` and `categoryIds`
+- ✅ `SharedPackageInboxProvider` extended — activity/person conflict detection; `canProceedActivities()` / `canProceedPersons()` gates per screen; opt-out and resolution state maps; sender always added to unique persons
+- ✅ `PackageConflictScreen` — converted to `StatefulWidget`; skips activity/person screens when no conflicts exist; imports directly from meeting review when neither conflict type present; sender included as participant in all imported meetings
+- ✅ `ShareImportSuccessScreen` — `popUntil(ModalRoute.withName('/meeting_inbox'))` for depth-independent navigation back to inbox
+- ✅ Named route `/meeting_inbox` added to `MainScreen._openPendingMeetings` push
+- ✅ 27 automated tests: `SharedPackageInboxProvider` (16 new), `PackageImporter` (11), `PackageConflictScreen` updated (1 new)
 
 ### v3.46.0 — US-092: Receive Package & Resolve Meeting Duplicates (March 20, 2026)
 - ✅ `PendingMeetingPackageRepository` — reads/deletes packages from `users/{uid}/pending_meetings/`
