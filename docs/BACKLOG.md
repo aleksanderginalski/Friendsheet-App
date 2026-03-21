@@ -3136,26 +3136,82 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `sharing`, `conflicts`, `persons`, `activities`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-092
 
 **Acceptance Criteria:**
-- [ ] After meeting conflicts resolved (US-092), system checks persons and activities in the package
-- [ ] Activity name conflict (same name, case-insensitive): C must rename the incoming activity OR link it to an existing one
-- [ ] Person name conflict (same first name + last name): C can add with a nickname OR link to existing person
-- [ ] All conflicts must be resolved before package can be confirmed
-- [ ] On final confirm: meetings, persons, and activities written to C's Firestore subcollections
-- [ ] Success screen shows: X meetings added, Y persons added, Z activities added
+- [x] After meeting conflicts resolved (US-092), system checks persons and activities in the package
+- [x] Activity name conflict (same name, case-insensitive): C must rename the incoming activity OR link it to an existing one
+- [x] Person name conflict (same first name + last name): C can add with a nickname OR link to existing person
+- [x] All conflicts must be resolved before package can be confirmed
+- [x] On final confirm: meetings, persons, and activities written to C's Firestore subcollections
+- [x] Success screen shows: X meetings added, Y persons added, Z activities added
 
 **Tasks:**
-- [ ] **TASK-093.1:** Implement activity conflict detection (incoming name vs existing `activity_categories`) — 1h
-- [ ] **TASK-093.2:** Build activity conflict UI — rename field or "link to existing" picker — 1h
-- [ ] **TASK-093.3:** Implement person conflict detection (first name + last name match) — 1h
-- [ ] **TASK-093.4:** Build person conflict UI — add nickname or "link to existing" picker — 1h
-- [ ] **TASK-093.5:** Implement final batch import to Firestore (meetings + persons + activities) — 1.5h
-- [ ] **TASK-093.6:** Build success screen with import summary — 0.5h
-- [ ] **TASK-093.7:** Write tests — 1h
+- [x] **TASK-093.1:** Implement activity conflict detection (incoming name vs existing `activity_categories`) — 1h
+- [x] **TASK-093.2:** Build activity conflict UI — rename field or "link to existing" picker — 1h
+- [x] **TASK-093.3:** Implement person conflict detection (first name + last name match) — 1h
+- [x] **TASK-093.4:** Build person conflict UI — SwitchListTile with strikethrough when opted out — 1h
+- [x] **TASK-093.5:** Implement final batch import to Firestore (meetings + persons + activities) — 1.5h
+- [x] **TASK-093.6:** Build success screen with import summary — 0.5h
+- [x] **TASK-093.7:** Write tests — 1h
 
+---
+
+### US-094: Fuzzy Activity Matching During Package Import
+
+**As a** user (C)
+**I want to** be warned when an incoming activity name is similar (but not identical) to one I already have
+**So that** I can avoid creating near-duplicate categories like "Piwo" and "Piwko"
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `sharing`, `conflicts`, `activities`, `fuzzy`
+**Status:** 📋 Planned
+**Dependencies:** US-093
+
+**Acceptance Criteria:**
+- [ ] During package import conflict detection, activities with similar (but not identical) names are flagged as "potential matches"
+- [ ] Similarity algorithm: normalized Levenshtein distance ≤ 0.4 (configurable threshold)
+- [ ] UI shows "potential match" suggestion alongside the rename/link options
+- [ ] User can: treat as new activity (ignore suggestion) / link to the suggested match
+- [ ] Exact case-insensitive matches remain a hard conflict (as in US-093)
+
+**Tasks:**
+- [ ] **TASK-094.1:** Implement Levenshtein distance utility function — 0.5h
+- [ ] **TASK-094.2:** Integrate fuzzy detection into activity conflict detection in provider — 1h
+- [ ] **TASK-094.3:** Update activity conflict UI to show fuzzy suggestions — 1h
+- [ ] **TASK-094.4:** Write tests — 0.5h
+
+---
+
+### US-095: Merge Activity Categories
+
+**As a** user
+**I want to** merge one activity category into another
+**So that** I can clean up near-duplicates (e.g. "Piwko" → "Piwo") without losing any meeting history
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `activities`, `data-integrity`
+**Status:** 📋 Planned
+**Dependencies:** none
+
+**Acceptance Criteria:**
+- [ ] From the Activities screen, user can select a category and choose "Merge into…"
+- [ ] A picker shows all other selectable categories as merge targets
+- [ ] On confirm: all meetings that reference the source category get the target category added (if not already present)
+- [ ] Source category is deleted after all meetings are updated
+- [ ] Operation is atomic (WriteBatch)
+- [ ] No meeting history is lost — only the category ID reference changes
+
+**Tasks:**
+- [ ] **TASK-095.1:** Add `mergeCategory(sourceId, targetId, userId)` to `ActivityCategoryRepository` — 1h
+- [ ] **TASK-095.2:** Add `replaceCategoryInMeetings(sourceId, targetId, userId)` to `MeetingRepository` — 1h
+- [ ] **TASK-095.3:** Build "Merge into…" UI in Activities screen (long-press or action menu) — 1h
+- [ ] **TASK-095.4:** Write tests — 0.5h
+
+---
 
 ## 🎨 FEATURE-022: After Release Fixes
 

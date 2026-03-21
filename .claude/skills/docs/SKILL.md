@@ -32,6 +32,11 @@ git log main..HEAD --oneline
 ## Always update
 - `docs/BACKLOG.md` — tasks complete, US status → ✅ COMPLETED
 - `README.md` (root of project, NOT docs/) — version history, feature status
+  - Add a new entry at the TOP of the `## 📖 Version History` section:
+    `### vX.Y.Z — US-XXX: [title] (Month DD, YYYY)`
+  - Increment the patch version (Z) by 1 from the previous entry
+  - List every new file, modified file, and test count as bullet points
+  - This is MANDATORY — do not skip even if other sections are unchanged
 
 ## Update if affected
 - architecture.md — new layers, services, data flows

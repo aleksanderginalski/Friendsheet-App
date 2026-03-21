@@ -1110,3 +1110,45 @@ Run after every release or hotfix:
 | UT-RECV-024 | All three resolution buttons visible (Merge / Add as new / Skip) | all three button texts found |
 | UT-RECV-025 | Continue button disabled before any resolution chosen | `button.onPressed == null` |
 | UT-RECV-026 | Continue enabled after resolution; selected button is FilledButton | `onPressed != null`, `FilledButton` present |
+| UT-RECV-027 | Tapping Continue imports directly and shows success (no conflicts) | `find.text('Import complete!')` found |
+
+---
+
+## TC-CONF: Conflict Resolution UX — Activities & Persons (US-093)
+
+### Automated tests — `test/presentation/providers/shared_package_inbox_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-CONF-001 | `dismissPackage` clears activity and person state | `activityResolutionFor`, `personResolutionFor`, opt-outs all cleared |
+| UT-CONF-002 | Sender is always included in `uniquePersonsFor` regardless of participants | sender found in returned map |
+| UT-CONF-003 | `activityConflictsFor` detects conflict when category name matches (case-insensitive) | map has 1 entry, existing category returned |
+| UT-CONF-004 | `activityConflictsFor` no conflict when name does not match | map is empty |
+| UT-CONF-005 | `personConflictsFor` detects conflict when firstName + lastName match | map has 1 entry |
+| UT-CONF-006 | `personConflictsFor` no conflict when names differ | map is empty |
+| UT-CONF-007 | `canProceedActivities` is true when no activity conflicts | `true` |
+| UT-CONF-008 | `canProceedActivities` is false while activity conflict unresolved | `false` |
+| UT-CONF-009 | `canProceedActivities` is true after activity conflict resolved | `true` after `resolveActivityConflict` |
+| UT-CONF-010 | `canProceedPersons` is true when no person conflicts | `true` |
+| UT-CONF-011 | `canProceedPersons` is false while person conflict unresolved | `false` |
+| UT-CONF-012 | `canProceedPersons` is true after person conflict resolved | `true` after `resolvePersonConflict` |
+| UT-CONF-013 | `resolveActivityConflict` stores and returns the chosen resolution | `renamedName == 'Hike'` |
+| UT-CONF-014 | `resolveActivityConflict` overrides a previous resolution | second call wins — `linkedCategoryId == 'cat-x'` |
+| UT-CONF-015 | `resolvePersonConflict` stores and returns the chosen resolution | `nickname == 'JK'` |
+| UT-CONF-016 | `resolvePersonConflict` overrides a previous resolution | second call wins — `linkedPersonId == 'p-x'` |
+
+### Automated tests — `test/presentation/providers/package_importer_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-CONF-017 | Happy path: imports meeting, sender added, returns correct summary | `meetingsAdded==1`, `personsAdded==1`, `activitiesAdded==0` |
+| UT-CONF-018 | Sender is always included in meeting `participantIds` | captured meeting contains sender's person ID |
+| UT-CONF-019 | `skip` resolution excludes meeting from import | `saveMeeting` never called, `meetingsAdded==0` |
+| UT-CONF-020 | `merge` resolution excludes meeting from import | `saveMeeting` never called, `meetingsAdded==0` |
+| UT-CONF-021 | `addAsNew` resolution imports meeting despite conflict | `saveMeeting` called once, `meetingsAdded==1` |
+| UT-CONF-022 | Creates new category when no activity resolution given | `createSelectableCategory` called once, `activitiesAdded==1` |
+| UT-CONF-023 | Links to existing category when `ActivityResolution.link` given | `createSelectableCategory` never called, meeting has linked `categoryId` |
+| UT-CONF-024 | Skips activity when opted out | `createSelectableCategory` never called, `activitiesAdded==0` |
+| UT-CONF-025 | Links to existing person when `PersonResolution.link` given | `addPerson` never called, meeting has linked `participantId` |
+| UT-CONF-026 | Creates person with nickname when `PersonResolution.nickname` given | captured person has nickname, `personsAdded==1` |
+| UT-CONF-027 | Skips person when opted out | `addPerson` never called, `personsAdded==0` |

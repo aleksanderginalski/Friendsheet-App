@@ -1061,6 +1061,53 @@ Resolution state stored in `_resolutions: Map<String, Map<int, ConflictResolutio
 
 ---
 
+### M5 — Conflict Resolution: Persons & Activities Architecture (US-093)
+
+**Purpose:** After meeting date conflicts are resolved in `PackageConflictScreen`, the import flow continues through optional activity and person review screens, then performs a final batch import to Firestore.
+
+**New files:**
+- `lib/presentation/import/package_activities_screen.dart` — step 2a: resolve activity name conflicts (rename or link) and opt out of individual activities via `CheckboxListTile`
+- `lib/presentation/import/package_persons_screen.dart` — step 2b: resolve person name conflicts (nickname or link) and opt out of persons via `SwitchListTile` with strikethrough
+- `lib/presentation/import/package_conflict_screen_tiles.dart` — part file for `PackageConflictScreen` tile widgets (300-line limit split)
+- `lib/presentation/providers/package_importer.dart` — stateless `PackageImporter` class; performs batch Firestore writes for meetings, persons, and activity categories
+- `lib/presentation/providers/package_import_types.dart` — `ActivityResolution`, `PersonResolution`, `ImportSummary` value types
+
+**Modified files:**
+- `lib/presentation/providers/shared_package_inbox_provider.dart` — activity/person conflict detection, `canProceedActivities`, `canProceedPersons`, opt-out and resolution state maps; sender always added to `_uniquePersons`
+- `lib/presentation/import/package_conflict_screen.dart` — converted to `StatefulWidget`; `_onContinue` skips screens with no conflicts; imports directly if neither conflicts exist
+- `lib/presentation/import/share_import_success_screen.dart` — `_onDone` uses `popUntil(ModalRoute.withName('/meeting_inbox'))` to handle variable navigation depth
+- `lib/presentation/screens/main_screen.dart` — `_openPendingMeetings` route now includes `RouteSettings(name: '/meeting_inbox')` for named-route pop
+
+**Navigation flow:**
+
+```
+PackageConflictScreen
+  → has activity conflicts?  YES → PackageActivitiesScreen
+                                     → has person conflicts? YES → PackagePersonsScreen → import → SuccessScreen
+                                                            NO  → import → SuccessScreen
+  → has activity conflicts?  NO
+  → has person conflicts?    YES → PackagePersonsScreen → import → SuccessScreen
+  → neither                  NO  → import → SuccessScreen (direct, no extra screens)
+```
+
+**Named route pattern:**
+
+`MeetingInboxScreen` is pushed with `RouteSettings(name: '/meeting_inbox')`. `ShareImportSuccessScreen._onDone` calls `popUntil(ModalRoute.withName('/meeting_inbox'))` — works regardless of import depth (1, 2, or 3 screens deep).
+
+**PackageImporter:**
+
+Stateless helper injected with `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`. Accepts all resolution and opt-out maps from the provider and performs:
+1. Filter meeting indices (skip merge/skip resolutions)
+2. Build `categoryName → categoryId` map (create new or link existing)
+3. Build `personKey → personId` map — sender always included unconditionally
+4. Save each meeting with resolved `participantIds` (includes sender) and `categoryIds`
+
+**Sender-as-participant rule:**
+
+The sender is always added to `_uniquePersons` during `_detectPersonActivityConflicts` in the provider, and always added to `personsToImport` in `PackageImporter._buildPersonMap`. Their person ID is injected into every imported meeting's `participantIds` using Set deduplication.
+
+---
+
 **End of Document - Architecture Documentation**
 
-**Last Updated:** March 2026 (US-092 Receive Package & Resolve Duplicates — PendingMeetingPackageRepository, SharedPackageInboxProvider, PackageConflictScreen, MeetingInboxScreen extension, MainScreen Consumer2 drawer tile)
+**Last Updated:** March 2026 (US-093 Conflict Resolution Persons & Activities — PackageActivitiesScreen, PackagePersonsScreen, PackageImporter, package_import_types, share_import_success_screen popUntil, named route /meeting_inbox)

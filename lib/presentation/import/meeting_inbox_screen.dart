@@ -7,6 +7,7 @@ import '../../data/models/pending_meeting_package.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/services/auth_service.dart';
 import '../providers/inbox_item_edit_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
 import '../providers/shared_package_inbox_provider.dart';
@@ -172,12 +173,13 @@ class MeetingInboxScreen extends StatelessWidget {
     PendingMeetingPackage pkg,
     SharedPackageInboxProvider packageProvider,
   ) {
+    final userId = AuthService().currentUserId ?? '';
     Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
         builder: (_) => ChangeNotifierProvider.value(
           value: packageProvider,
-          child: PackageConflictScreen(package: pkg),
+          child: PackageConflictScreen(package: pkg, userId: userId),
         ),
       ),
     );

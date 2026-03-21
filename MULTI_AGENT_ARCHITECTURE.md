@@ -547,6 +547,8 @@ c) Coverage audit for a feature"
 - **flutter test:** [PASS / FAIL]
 - **TEST_CASES.md updated:** [YES / NO]
 - **Ready to commit:** [YES / NO]
+- **Proposed commit:** run `git status` first — include lib/ files reformatted by `dart format .` alongside test files
+- **Next step:** Run /docs
 
 ## Constraints
 - Never commit
