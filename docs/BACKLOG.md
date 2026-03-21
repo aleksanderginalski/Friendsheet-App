@@ -3213,6 +3213,63 @@ Only C can read/write their own tokens (path-based security rule).
 
 ---
 
+### US-096: Add Sender as Contact and Meeting Participant on Import
+
+**As a** user (C)
+**I want to** have the sender (A) automatically added to my contacts and to the imported meetings
+**So that** the meeting history accurately reflects who was present, including the person who shared it
+
+**Story Points:** 3
+**Priority:** P0
+**Labels:** `sharing`, `persons`, `bug`
+**Status:** 📋 Planned
+**Dependencies:** US-091, US-093
+
+**Acceptance Criteria:**
+- [ ] After C imports a shared package, sender A is added as a `Person` in C's contacts using sender signature data (firstName, lastName, optional nickname)
+- [ ] Sender A is added as a participant to all imported meetings from that package
+- [ ] If a Person with the same firstName + lastName already exists in C's contacts → treated as a person conflict, resolved in Step 1 of conflict resolution (US-097)
+- [ ] If A is linked to an existing person: that person is used as the participant reference in imported meetings
+- [ ] If the package has no sender signature data → import proceeds without adding sender (backwards compatibility edge case)
+
+**Tasks:**
+- [ ] **TASK-096.1:** Extract sender data from `PendingMeetingPackage` and inject into persons conflict list — 1h
+- [ ] **TASK-096.2:** On import confirm: persist sender as `Person` (or link to existing) and add as participant to imported meetings — 1h
+- [ ] **TASK-096.3:** Write tests — 0.5h
+
+---
+
+### US-097: Split Conflict Resolution into Two Steps (Persons → Activities)
+
+**As a** user (C)
+**I want to** resolve person conflicts and activity conflicts in two separate screens
+**So that** each step is focused and easier to understand
+
+**Story Points:** 3
+**Priority:** P0
+**Labels:** `sharing`, `conflicts`, `ux`
+**Status:** 📋 Planned
+**Dependencies:** US-093, US-096
+
+**Acceptance Criteria:**
+- [ ] After meeting date conflicts are resolved (US-092), conflict resolution proceeds in two sequential steps:
+  - **Step 1 — Persons:** resolve all incoming person conflicts (including sender A from US-096)
+  - **Step 2 — Activities:** resolve all incoming activity conflicts (including fuzzy matches from US-094)
+- [ ] Step 1 must be fully resolved before the user can proceed to Step 2
+- [ ] If no person conflicts exist → Step 1 is skipped automatically
+- [ ] If no activity conflicts exist → Step 2 is skipped automatically
+- [ ] Navigation: "Dalej" button after Step 1 leads to Step 2; "Potwierdź" on Step 2 triggers final import
+- [ ] Progress indicator is visible (e.g. "Krok 1 z 2" / "Krok 2 z 2")
+
+**Tasks:**
+- [ ] **TASK-097.1:** Extract person conflict logic from `ConflictResolutionScreen` into a dedicated `PersonConflictScreen` — 1.5h
+- [ ] **TASK-097.2:** Extract activity conflict logic into a dedicated `ActivityConflictScreen` — 1.5h
+- [ ] **TASK-097.3:** Implement step navigation with automatic skipping of empty steps — 0.5h
+- [ ] **TASK-097.4:** Add progress indicator (step counter) — 0.5h
+- [ ] **TASK-097.5:** Write tests — 1h
+
+---
+
 ## 🎨 FEATURE-022: After Release Fixes
 
 ### US-079: Alphabetical Sorting in Person Filter Dialogs
