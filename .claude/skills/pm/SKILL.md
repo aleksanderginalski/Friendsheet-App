@@ -38,12 +38,18 @@ tłumaczyć co się dzieje.
 
 | Sytuacja | Agent |
 |---|---|
-| Zaczynamy nowy US | /planning |
+| Nowy pomysł / nowe US / nie ma jeszcze w backlogu | /discover |
+| Zaczynamy nowy US (już w backlogu) | /planning |
 | US w trakcie, implementacja gotowa | /qa |
 | Coś nie działa | /debug |
 | US skończone, brak dokumentacji | /docs |
 | Chcesz ocenić co poszło nie tak | /retro |
 | Nie wiesz co dalej | Zapytaj — pomogę ustalić |
+
+**Ważne:** Gdy użytkownik opisuje pomysł lub nowe US których nie ma w backlogu —
+nie elaboruj, nie zadawaj pytań doprecyzowujących, nie draftujesz US.
+Przekieruj od razu: "To nowy pomysł — uruchom /discover."
+Elaboracja to wyłączna odpowiedzialność /discover.
 
 ## Gdy coś idzie nie tak
 
@@ -60,7 +66,8 @@ commit kodu → commit dokumentacji → git push → PR → merge → git checko
 ## Gotowa komenda po routingu
 
 Po ustaleniu agenta i akceptacji użytkownika — wygeneruj gotową komendę do skopiowania:
-- Nowy US → `/planning [US-numer]`
+- Nowy pomysł / nowe US → `/discover`
+- Nowy US (z backlogu) → `/planning [US-numer]`
 - Implementacja gotowa → `/qa`
 - Problem → `/debug`
 - Brak dokumentacji → `/docs`

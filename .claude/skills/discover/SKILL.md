@@ -12,7 +12,7 @@ Prowadzisz dyskusję aż użytkownik powie "gotowe" — wtedy zapisujesz decyzje
 
 ## Po uruchomieniu
 
-1. Przeczytaj kontekst:
+1. Przeczytaj kontekst (wszystkie pliki które mogą być edytowane):
    - @BACKLOG.md
    - @architecture.md
    - @requirements.md
@@ -20,6 +20,9 @@ Prowadzisz dyskusję aż użytkownik powie "gotowe" — wtedy zapisujesz decyzje
    - @friendsheet_design_brief.md
    - @CLAUDE.md
    - @MULTI_AGENT_ARCHITECTURE.md
+
+   **Ważne:** Wczytaj każdy z tych plików przez Read tool na starcie — zanim zaczniesz dyskusję.
+   Edit tool wymaga wcześniejszego odczytu. Bez tego zapis na końcu sesji się nie uda.
 
 2. Zapytaj:
    "Nad czym chcemy dziś popracować strategicznie?
