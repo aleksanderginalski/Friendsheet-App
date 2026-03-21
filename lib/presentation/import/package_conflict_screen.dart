@@ -81,16 +81,14 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
 
   Widget _buildContinueButton(
       BuildContext context, SharedPackageInboxProvider provider) {
-    final canProceed =
-        provider.canProceed(widget.package.id) && !_isImporting;
+    final canProceed = provider.canProceed(widget.package.id) && !_isImporting;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed:
-                canProceed ? () => _onContinue(context, provider) : null,
+            onPressed: canProceed ? () => _onContinue(context, provider) : null,
             child: _isImporting
                 ? const SizedBox(
                     height: 20,
@@ -143,8 +141,7 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
       setState(() => _isImporting = true);
       final nav = Navigator.of(context);
       try {
-        final summary =
-            await provider.importPackage(packageId, widget.userId);
+        final summary = await provider.importPackage(packageId, widget.userId);
         if (!mounted) return;
         nav.pushReplacement(
           MaterialPageRoute<void>(

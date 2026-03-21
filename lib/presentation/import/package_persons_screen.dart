@@ -58,8 +58,7 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
             child: ListView(
               children: [
                 for (final entry in persons.entries)
-                  _buildPersonTile(
-                      provider, packageId, entry.key, entry.value,
+                  _buildPersonTile(provider, packageId, entry.key, entry.value,
                       personConflicts),
                 if (persons.isEmpty)
                   const Padding(
@@ -177,8 +176,7 @@ class _PersonOptInTile extends StatelessWidget {
             : const TextStyle(decoration: TextDecoration.lineThrough),
       ),
       value: isIncluded,
-      onChanged: (val) =>
-          provider.setPersonOptOut(packageId, personKey, !val),
+      onChanged: (val) => provider.setPersonOptOut(packageId, personKey, !val),
     );
   }
 }
@@ -216,15 +214,15 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
   void _submitNickname() {
     final nick = _controller.text.trim();
     if (nick.isEmpty) return;
-    widget.provider.resolvePersonConflict(widget.packageId, widget.personKey,
-        PersonResolution.nickname(nick));
+    widget.provider.resolvePersonConflict(
+        widget.packageId, widget.personKey, PersonResolution.nickname(nick));
     setState(() => _showField = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final resolution = widget.provider
-        .personResolutionFor(widget.packageId, widget.personKey);
+    final resolution =
+        widget.provider.personResolutionFor(widget.packageId, widget.personKey);
     final isNickname = resolution?.isNickname ?? false;
     final isLink = resolution != null && !resolution.isNickname;
 

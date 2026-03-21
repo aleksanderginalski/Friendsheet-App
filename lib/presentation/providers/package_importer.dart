@@ -40,14 +40,23 @@ class PackageImporter {
         _indicesToImport(package, meetingConflicts, meetingResolutions);
 
     final (categoryNameToId, activitiesAdded) = await _buildCategoryMap(
-      package, indicesToImport, activityResolutions, activityOptOut, userId,
+      package,
+      indicesToImport,
+      activityResolutions,
+      activityOptOut,
+      userId,
     );
     final (personKeyToId, personsAdded) = await _buildPersonMap(
-      package, indicesToImport, personResolutions, personOptOut, userId,
+      package,
+      indicesToImport,
+      personResolutions,
+      personOptOut,
+      userId,
     );
 
     // Sender is always added to every imported meeting as a participant.
-    final senderKey = _personKey(package.senderFirstName, package.senderLastName);
+    final senderKey =
+        _personKey(package.senderFirstName, package.senderLastName);
     final senderPersonId = personKeyToId[senderKey];
 
     var meetingsAdded = 0;
@@ -144,11 +153,12 @@ class PackageImporter {
   ) async {
     final personsToImport = <String, SharedPerson>{};
     // Sender is always imported as a participant.
-    personsToImport[_personKey(package.senderFirstName, package.senderLastName)] =
+    personsToImport[
+            _personKey(package.senderFirstName, package.senderLastName)] =
         SharedPerson(
-          firstName: package.senderFirstName,
-          lastName: package.senderLastName,
-        );
+      firstName: package.senderFirstName,
+      lastName: package.senderLastName,
+    );
     for (final i in indicesToImport) {
       for (final sp in package.meetings[i].participants) {
         personsToImport.putIfAbsent(
@@ -165,8 +175,7 @@ class PackageImporter {
         ids[entry.key] = res.linkedPersonId!;
       } else {
         final sp = entry.value;
-        final nicknames =
-            res?.nickname != null ? [res!.nickname!] : <String>[];
+        final nicknames = res?.nickname != null ? [res!.nickname!] : <String>[];
         final person = await personRepo.addPerson(Person(
           id: '',
           userId: userId,

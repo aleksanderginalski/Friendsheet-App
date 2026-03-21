@@ -117,7 +117,8 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: canContinue ? () => _onContinue(context, provider) : null,
+            onPressed:
+                canContinue ? () => _onContinue(context, provider) : null,
             child: _isImporting
                 ? const SizedBox(
                     height: 20,
@@ -134,7 +135,8 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
   Future<void> _onContinue(
       BuildContext context, SharedPackageInboxProvider provider) async {
     final packageId = widget.package.id;
-    final hasPersonConflicts = provider.personConflictsFor(packageId).isNotEmpty;
+    final hasPersonConflicts =
+        provider.personConflictsFor(packageId).isNotEmpty;
 
     if (hasPersonConflicts) {
       Navigator.push(
@@ -154,8 +156,7 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
       setState(() => _isImporting = true);
       final nav = Navigator.of(context);
       try {
-        final summary =
-            await provider.importPackage(packageId, widget.userId);
+        final summary = await provider.importPackage(packageId, widget.userId);
         if (!mounted) return;
         nav.pushReplacement(
           MaterialPageRoute<void>(

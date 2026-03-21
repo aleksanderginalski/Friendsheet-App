@@ -289,8 +289,7 @@ class SharedPackageInboxProvider extends ChangeNotifier {
 
   /// Imports meetings, persons, and activities from the package to Firestore,
   /// then deletes the package document and clears local state.
-  Future<ImportSummary> importPackage(
-      String packageId, String userId) async {
+  Future<ImportSummary> importPackage(String packageId, String userId) async {
     final pkg = _packages.firstWhere((p) => p.id == packageId);
     final summary = await PackageImporter(
       meetingRepo: _meetingRepo,
