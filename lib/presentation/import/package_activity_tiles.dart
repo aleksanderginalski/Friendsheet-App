@@ -49,8 +49,8 @@ class _ActivityConflictTileState extends State<_ActivityConflictTile> {
       ),
     );
     if (result != null) {
-      widget.provider.resolveActivityConflict(
-          widget.packageId, widget.lowerName, ActivityResolution.link(result.id));
+      widget.provider.resolveActivityConflict(widget.packageId,
+          widget.lowerName, ActivityResolution.link(result.id));
     }
   }
 
@@ -80,14 +80,13 @@ class _ActivityConflictTileState extends State<_ActivityConflictTile> {
               _btn('Create as New',
                   selected: res != null &&
                       res.isRename &&
-                      res.renamedName == widget.originalName,
-                  onPressed: () {
-                    widget.provider.resolveActivityConflict(
-                        widget.packageId,
-                        widget.lowerName,
-                        ActivityResolution.rename(widget.originalName));
-                    setState(() => _showRenameField = false);
-                  }),
+                      res.renamedName == widget.originalName, onPressed: () {
+                widget.provider.resolveActivityConflict(
+                    widget.packageId,
+                    widget.lowerName,
+                    ActivityResolution.rename(widget.originalName));
+                setState(() => _showRenameField = false);
+              }),
               _btn('Rename',
                   selected: res != null &&
                       res.isRename &&
@@ -97,25 +96,21 @@ class _ActivityConflictTileState extends State<_ActivityConflictTile> {
                   selected: res?.isLink == true &&
                       res?.linkedCategoryId == widget.existingCategory.id,
                   onPressed: () {
-                    widget.provider.resolveActivityConflict(
-                        widget.packageId,
-                        widget.lowerName,
-                        ActivityResolution.link(widget.existingCategory.id));
-                    setState(() => _showRenameField = false);
-                  }),
+                widget.provider.resolveActivityConflict(
+                    widget.packageId,
+                    widget.lowerName,
+                    ActivityResolution.link(widget.existingCategory.id));
+                setState(() => _showRenameField = false);
+              }),
               _btn('Link with Existing',
                   selected: res?.isLink == true &&
                       res?.linkedCategoryId != widget.existingCategory.id,
                   onPressed: () => _pickExisting(context)),
-              _btn('Skip',
-                  selected: res?.isSkip ?? false,
-                  onPressed: () {
-                    widget.provider.resolveActivityConflict(
-                        widget.packageId,
-                        widget.lowerName,
-                        const ActivityResolution.skip());
-                    setState(() => _showRenameField = false);
-                  }),
+              _btn('Skip', selected: res?.isSkip ?? false, onPressed: () {
+                widget.provider.resolveActivityConflict(widget.packageId,
+                    widget.lowerName, const ActivityResolution.skip());
+                setState(() => _showRenameField = false);
+              }),
             ]),
             if (_showRenameField) ...[
               const SizedBox(height: 8),
@@ -215,8 +210,8 @@ class _ActivityFuzzyTileState extends State<_ActivityFuzzyTile> {
       ),
     );
     if (result != null) {
-      widget.provider.resolveActivityConflict(
-          widget.packageId, widget.lowerName, ActivityResolution.link(result.id));
+      widget.provider.resolveActivityConflict(widget.packageId,
+          widget.lowerName, ActivityResolution.link(result.id));
     }
   }
 
@@ -247,10 +242,10 @@ class _ActivityFuzzyTileState extends State<_ActivityFuzzyTile> {
               _btn('Create as New',
                   selected: isDefault || (res.isRename && !_showRenameField),
                   onPressed: () {
-                    widget.provider.clearActivityResolution(
-                        widget.packageId, widget.lowerName);
-                    setState(() => _showRenameField = false);
-                  }),
+                widget.provider.clearActivityResolution(
+                    widget.packageId, widget.lowerName);
+                setState(() => _showRenameField = false);
+              }),
               _btn('Rename',
                   selected: _showRenameField,
                   onPressed: () => setState(() => _showRenameField = true)),
@@ -258,25 +253,21 @@ class _ActivityFuzzyTileState extends State<_ActivityFuzzyTile> {
                   selected: res?.isLink == true &&
                       res?.linkedCategoryId == widget.suggestedCategory.id,
                   onPressed: () {
-                    widget.provider.resolveActivityConflict(
-                        widget.packageId,
-                        widget.lowerName,
-                        ActivityResolution.link(widget.suggestedCategory.id));
-                    setState(() => _showRenameField = false);
-                  }),
+                widget.provider.resolveActivityConflict(
+                    widget.packageId,
+                    widget.lowerName,
+                    ActivityResolution.link(widget.suggestedCategory.id));
+                setState(() => _showRenameField = false);
+              }),
               _btn('Link with Existing',
                   selected: res?.isLink == true &&
                       res?.linkedCategoryId != widget.suggestedCategory.id,
                   onPressed: () => _pickExisting(context)),
-              _btn('Skip',
-                  selected: res?.isSkip ?? false,
-                  onPressed: () {
-                    widget.provider.resolveActivityConflict(
-                        widget.packageId,
-                        widget.lowerName,
-                        const ActivityResolution.skip());
-                    setState(() => _showRenameField = false);
-                  }),
+              _btn('Skip', selected: res?.isSkip ?? false, onPressed: () {
+                widget.provider.resolveActivityConflict(widget.packageId,
+                    widget.lowerName, const ActivityResolution.skip());
+                setState(() => _showRenameField = false);
+              }),
             ]),
             if (_showRenameField) ...[
               const SizedBox(height: 8),

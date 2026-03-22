@@ -64,7 +64,8 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
             child: ListView(
               children: [
                 for (final name in activityNames)
-                  _buildTile(provider, packageId, name, conflicts, fuzzyMatches),
+                  _buildTile(
+                      provider, packageId, name, conflicts, fuzzyMatches),
                 if (activityNames.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(24),

@@ -17,8 +17,12 @@ int _levenshtein(String s, String t) {
   final n = t.length;
   // dp[i][j] = edit distance between s[0..i-1] and t[0..j-1]
   final dp = List.generate(m + 1, (i) => List.filled(n + 1, 0));
-  for (var i = 0; i <= m; i++) { dp[i][0] = i; }
-  for (var j = 0; j <= n; j++) { dp[0][j] = j; }
+  for (var i = 0; i <= m; i++) {
+    dp[i][0] = i;
+  }
+  for (var j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
   for (var i = 1; i <= m; i++) {
     for (var j = 1; j <= n; j++) {
       if (s[i - 1] == t[j - 1]) {
