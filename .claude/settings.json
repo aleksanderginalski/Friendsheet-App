@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(.claude/skills/**)",
+      "Edit(CLAUDE.md)",
+      "Edit(MULTI_AGENT_ARCHITECTURE.md)"
+    ]
+  }
+}

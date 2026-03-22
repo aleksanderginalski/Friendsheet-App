@@ -237,7 +237,7 @@ void main() {
         meetingConflicts: {},
         meetingResolutions: {},
         activityResolutions: {
-          'hiking': ActivityResolution.link('cat-existing')
+          'hiking': const ActivityResolution.link('cat-existing')
         },
         activityOptOut: {},
         personResolutions: {},
@@ -274,6 +274,35 @@ void main() {
           name: anyNamed('name'), userId: anyNamed('userId')));
       expect(summary.activitiesAdded, 0);
     });
+
+    test(
+        'skips activity and excludes from categoryIds when ActivityResolution.skip given',
+        () async {
+      final pkg = makePackage(categoryNames: ['Hiking']);
+      when(mockPersonRepo.addPerson(any)).thenAnswer((_) async => makePerson());
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+
+      final summary = await importer.run(
+        package: pkg,
+        meetingConflicts: {},
+        meetingResolutions: {},
+        activityResolutions: {
+          'hiking': const ActivityResolution.skip(),
+        },
+        activityOptOut: {},
+        personResolutions: {},
+        personOptOut: {},
+        userId: 'u1',
+      );
+
+      verifyNever(mockCategoryRepo.createSelectableCategory(
+          name: anyNamed('name'), userId: anyNamed('userId')));
+      expect(summary.activitiesAdded, 0);
+      final meeting = verify(mockMeetingRepo.saveMeeting(captureAny))
+          .captured
+          .single as Meeting;
+      expect(meeting.categoryIds, isEmpty);
+    });
   });
 
   group('person import', () {
@@ -288,7 +317,7 @@ void main() {
         activityResolutions: {},
         activityOptOut: {},
         personResolutions: {
-          'ania kowalska': PersonResolution.link('p-existing')
+          'ania kowalska': const PersonResolution.link('p-existing')
         },
         personOptOut: {},
         userId: 'u1',
@@ -315,7 +344,9 @@ void main() {
         meetingResolutions: {},
         activityResolutions: {},
         activityOptOut: {},
-        personResolutions: {'ania kowalska': PersonResolution.nickname('Anka')},
+        personResolutions: {
+          'ania kowalska': const PersonResolution.nickname('Anka')
+        },
         personOptOut: {},
         userId: 'u1',
       );
@@ -344,6 +375,61 @@ void main() {
 
       verifyNever(mockPersonRepo.addPerson(any));
       expect(summary.personsAdded, 0);
+    });
+
+    test(
+        'skips person and excludes from participantIds when PersonResolution.skip given',
+        () async {
+      final pkg = makePackage();
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+
+      final summary = await importer.run(
+        package: pkg,
+        meetingConflicts: {},
+        meetingResolutions: {},
+        activityResolutions: {},
+        activityOptOut: {},
+        personResolutions: {
+          'ania kowalska': const PersonResolution.skip(),
+        },
+        personOptOut: {},
+        userId: 'u1',
+      );
+
+      verifyNever(mockPersonRepo.addPerson(any));
+      expect(summary.personsAdded, 0);
+      final meeting = verify(mockMeetingRepo.saveMeeting(captureAny))
+          .captured
+          .single as Meeting;
+      expect(meeting.participantIds, isEmpty);
+    });
+
+    test(
+        'creates person with no nickname when PersonResolution.createNew given',
+        () async {
+      final pkg = makePackage();
+      when(mockPersonRepo.addPerson(any))
+          .thenAnswer((_) async => makePerson(id: 'p-new'));
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+
+      final summary = await importer.run(
+        package: pkg,
+        meetingConflicts: {},
+        meetingResolutions: {},
+        activityResolutions: {},
+        activityOptOut: {},
+        personResolutions: {
+          'ania kowalska': const PersonResolution.createNew(),
+        },
+        personOptOut: {},
+        userId: 'u1',
+      );
+
+      final captured = verify(mockPersonRepo.addPerson(captureAny))
+          .captured
+          .single as Person;
+      expect(captured.nicknames, isEmpty);
+      expect(summary.personsAdded, 1);
     });
   });
 }

@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import '../../data/models/pending_meeting_package.dart';
 import '../../data/models/person.dart';
 import '../providers/shared_package_inbox_provider.dart';
+import 'person_picker_screen.dart';
 import 'share_import_success_screen.dart';
 
-/// Step 2b of package import: resolves person name conflicts and lets the user
-/// opt out of individual persons. Only shown when person conflicts exist.
+/// Step 2b of package import: reviews all persons in the package and lets the
+/// user resolve conflicts, link to existing contacts, or skip individuals.
 class PackagePersonsScreen extends StatefulWidget {
   final PendingMeetingPackage package;
   final String userId;
@@ -36,7 +37,7 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
     final provider = context.watch<SharedPackageInboxProvider>();
     final packageId = widget.package.id;
     final persons = provider.uniquePersonsFor(packageId);
-    final personConflicts = provider.personConflictsFor(packageId);
+    final conflicts = provider.personConflictsFor(packageId);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,15 +59,13 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
             child: ListView(
               children: [
                 for (final entry in persons.entries)
-                  _buildPersonTile(provider, packageId, entry.key, entry.value,
-                      personConflicts),
+                  _buildTile(
+                      provider, packageId, entry.key, entry.value, conflicts),
                 if (persons.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Text(
-                      'No persons to import.',
-                      textAlign: TextAlign.center,
-                    ),
+                    child: Text('No persons to import.',
+                        textAlign: TextAlign.center),
                   ),
               ],
             ),
@@ -77,7 +76,7 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
     );
   }
 
-  Widget _buildPersonTile(
+  Widget _buildTile(
     SharedPackageInboxProvider provider,
     String packageId,
     String personKey,
@@ -87,19 +86,17 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
     final existing = conflicts[personKey];
     if (existing != null) {
       return _PersonConflictTile(
+          packageId: packageId,
+          personKey: personKey,
+          sharedPerson: sharedPerson,
+          existingPerson: existing,
+          provider: provider);
+    }
+    return _PersonOptInTile(
         packageId: packageId,
         personKey: personKey,
         sharedPerson: sharedPerson,
-        existingPerson: existing,
-        provider: provider,
-      );
-    }
-    return _PersonOptInTile(
-      packageId: packageId,
-      personKey: personKey,
-      sharedPerson: sharedPerson,
-      provider: provider,
-    );
+        provider: provider);
   }
 
   Widget _buildConfirmButton(
@@ -147,41 +144,8 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
   }
 }
 
-// Switch tile for a person with no name conflict.
-// Toggle off to skip importing this person; name shown with strikethrough when off.
-class _PersonOptInTile extends StatelessWidget {
-  final String packageId;
-  final String personKey;
-  final SharedPerson sharedPerson;
-  final SharedPackageInboxProvider provider;
-
-  const _PersonOptInTile({
-    required this.packageId,
-    required this.personKey,
-    required this.sharedPerson,
-    required this.provider,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final name = sharedPerson.lastName != null
-        ? '${sharedPerson.firstName} ${sharedPerson.lastName}'
-        : sharedPerson.firstName;
-    final isIncluded = !provider.isPersonOptedOut(packageId, personKey);
-    return SwitchListTile(
-      title: Text(
-        name,
-        style: isIncluded
-            ? null
-            : const TextStyle(decoration: TextDecoration.lineThrough),
-      ),
-      value: isIncluded,
-      onChanged: (val) => provider.setPersonOptOut(packageId, personKey, !val),
-    );
-  }
-}
-
-// Card for a person whose first+last name matches an existing contact.
+// Card for a person whose name exactly matches an existing contact.
+// User MUST choose an option — blocks Confirm until resolved.
 class _PersonConflictTile extends StatefulWidget {
   final String packageId;
   final String personKey;
@@ -203,7 +167,7 @@ class _PersonConflictTile extends StatefulWidget {
 
 class _PersonConflictTileState extends State<_PersonConflictTile> {
   final _controller = TextEditingController();
-  bool _showField = false;
+  bool _showNicknameField = false;
 
   @override
   void dispose() {
@@ -216,16 +180,27 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
     if (nick.isEmpty) return;
     widget.provider.resolvePersonConflict(
         widget.packageId, widget.personKey, PersonResolution.nickname(nick));
-    setState(() => _showField = false);
+    setState(() => _showNicknameField = false);
+  }
+
+  Future<void> _pickExisting(BuildContext context) async {
+    final result = await Navigator.push<Person?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            PersonPickerScreen(persons: widget.provider.existingPersons),
+      ),
+    );
+    if (result != null) {
+      widget.provider.resolvePersonConflict(
+          widget.packageId, widget.personKey, PersonResolution.link(result.id));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final resolution =
+    final res =
         widget.provider.personResolutionFor(widget.packageId, widget.personKey);
-    final isNickname = resolution?.isNickname ?? false;
-    final isLink = resolution != null && !resolution.isNickname;
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(
@@ -238,64 +213,62 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '⚠️ Name conflict with existing contact: '
-              '${widget.existingPerson.fullName}',
+              '⚠️ Conflict: "${widget.sharedPerson.firstName}" matches '
+              '"${widget.existingPerson.fullName}"',
               style: const TextStyle(
                   color: Colors.orange, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                _actionButton(
-                  label: 'Add with nickname',
-                  selected: isNickname,
-                  onPressed: () => setState(() => _showField = true),
-                ),
-                _actionButton(
-                  label: 'Link to existing: ${widget.existingPerson.fullName}',
-                  selected: isLink,
+            Wrap(spacing: 8, runSpacing: 4, children: [
+              _btn('Create as New', selected: res?.isCreateNew ?? false,
                   onPressed: () {
-                    widget.provider.resolvePersonConflict(
-                      widget.packageId,
-                      widget.personKey,
-                      PersonResolution.link(widget.existingPerson.id),
-                    );
-                    setState(() => _showField = false);
-                  },
-                ),
-              ],
-            ),
-            if (_showField) ...[
+                widget.provider.resolvePersonConflict(widget.packageId,
+                    widget.personKey, const PersonResolution.createNew());
+                setState(() => _showNicknameField = false);
+              }),
+              _btn('Add with Nickname',
+                  selected: res?.isNickname ?? false,
+                  onPressed: () => setState(() => _showNicknameField = true)),
+              _btn('Link to: ${widget.existingPerson.fullName}',
+                  selected: res?.isLink == true &&
+                      res?.linkedPersonId == widget.existingPerson.id,
+                  onPressed: () {
+                widget.provider.resolvePersonConflict(
+                    widget.packageId,
+                    widget.personKey,
+                    PersonResolution.link(widget.existingPerson.id));
+                setState(() => _showNicknameField = false);
+              }),
+              _btn('Link with Existing',
+                  selected: res?.isLink == true &&
+                      res?.linkedPersonId != widget.existingPerson.id,
+                  onPressed: () => _pickExisting(context)),
+              _btn('Skip', selected: res?.isSkip ?? false, onPressed: () {
+                widget.provider.resolvePersonConflict(widget.packageId,
+                    widget.personKey, const PersonResolution.skip());
+                setState(() => _showNicknameField = false);
+              }),
+            ]),
+            if (_showNicknameField) ...[
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
+              Row(children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
                         hintText: 'Nickname to distinguish them',
-                        isDense: true,
-                      ),
-                      onSubmitted: (_) => _submitNickname(),
-                    ),
+                        isDense: true),
+                    onSubmitted: (_) => _submitNickname(),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.check),
-                    onPressed: _submitNickname,
-                  ),
-                ],
-              ),
+                ),
+                IconButton(
+                    icon: const Icon(Icons.check), onPressed: _submitNickname),
+              ]),
             ],
-            if (resolution != null) ...[
+            if (res != null) ...[
               const SizedBox(height: 4),
-              Text(
-                isNickname
-                    ? '→ Adding as new with nickname: ${resolution.nickname}'
-                    : '→ Linked to: ${widget.existingPerson.fullName}',
-                style: const TextStyle(fontSize: 12, color: Colors.green),
-              ),
+              Text(_statusText(res),
+                  style: const TextStyle(fontSize: 12, color: Colors.green)),
             ],
           ],
         ),
@@ -303,14 +276,93 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
     );
   }
 
-  Widget _actionButton({
-    required String label,
-    required bool selected,
-    required VoidCallback onPressed,
-  }) {
-    if (selected) {
-      return FilledButton(onPressed: onPressed, child: Text(label));
+  String _statusText(PersonResolution res) {
+    if (res.isSkip) return '→ Skipped';
+    if (res.isLink) {
+      final name = res.linkedPersonId == widget.existingPerson.id
+          ? widget.existingPerson.fullName
+          : 'selected person';
+      return '→ Linked to: $name';
     }
+    if (res.isNickname) return '→ Adding as new with nickname: ${res.nickname}';
+    return '→ Creating as new person';
+  }
+
+  Widget _btn(String label,
+      {required bool selected, required VoidCallback onPressed}) {
+    if (selected) return FilledButton(onPressed: onPressed, child: Text(label));
     return OutlinedButton(onPressed: onPressed, child: Text(label));
+  }
+}
+
+// Tile for a person with no name conflict.
+// Default is to add as new; user may link to existing or skip.
+class _PersonOptInTile extends StatelessWidget {
+  final String packageId;
+  final String personKey;
+  final SharedPerson sharedPerson;
+  final SharedPackageInboxProvider provider;
+
+  const _PersonOptInTile({
+    required this.packageId,
+    required this.personKey,
+    required this.sharedPerson,
+    required this.provider,
+  });
+
+  Future<void> _pickExisting(BuildContext context) async {
+    final result = await Navigator.push<Person?>(
+      context,
+      MaterialPageRoute(
+          builder: (_) =>
+              PersonPickerScreen(persons: provider.existingPersons)),
+    );
+    if (result != null) {
+      provider.resolvePersonConflict(
+          packageId, personKey, PersonResolution.link(result.id));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = sharedPerson.lastName != null
+        ? '${sharedPerson.firstName} ${sharedPerson.lastName}'
+        : sharedPerson.firstName;
+    final res = provider.personResolutionFor(packageId, personKey);
+    final isOptedOut = provider.isPersonOptedOut(packageId, personKey);
+    final isDefault = res == null && !isOptedOut;
+    return ListTile(
+      title: Text(name),
+      subtitle: Wrap(spacing: 8, runSpacing: 4, children: [
+        _btn('Add new',
+            selected: isDefault,
+            onPressed: () =>
+                provider.clearPersonResolution(packageId, personKey)),
+        _btn('Link with Existing',
+            selected: res?.isLink ?? false,
+            onPressed: () => _pickExisting(context)),
+        _btn('Skip',
+            selected: res?.isSkip ?? isOptedOut,
+            onPressed: () => provider.resolvePersonConflict(
+                packageId, personKey, const PersonResolution.skip())),
+      ]),
+    );
+  }
+
+  Widget _btn(String label,
+      {required bool selected, required VoidCallback onPressed}) {
+    const style = ButtonStyle(
+      padding: WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
+      minimumSize: WidgetStatePropertyAll(Size.zero),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      textStyle: WidgetStatePropertyAll(TextStyle(fontSize: 12)),
+    );
+    if (selected) {
+      return FilledButton.tonal(
+          onPressed: onPressed, style: style, child: Text(label));
+    }
+    return OutlinedButton(
+        onPressed: onPressed, style: style, child: Text(label));
   }
 }

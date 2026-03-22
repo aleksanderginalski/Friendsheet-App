@@ -136,12 +136,12 @@ void main() {
     });
 
     testWidgets(
-        'tapping Continue imports directly and shows success (no conflicts)',
+        'tapping Continue navigates to persons screen, then confirm imports',
         (tester) async {
       final pkg = makePackage();
       final provider = await makeProvider(pkg: pkg);
 
-      // Stub import methods called when no conflicts exist.
+      // Stub import methods called during the final import.
       when(mockPersonRepo.addPerson(any)).thenAnswer((_) async => Person(
             id: 'p-sender',
             userId: 'u1',
@@ -162,7 +162,13 @@ void main() {
         ),
       );
 
+      // Continue routes through PersonsScreen (sender is always in uniquePersons).
       await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      // Now on PersonsScreen — confirm button enabled (no person conflicts).
+      expect(find.text('Review Persons'), findsOneWidget);
+      await tester.tap(find.text('Confirm'));
       await tester.pumpAndSettle();
 
       expect(find.text('Import complete!'), findsOneWidget);
