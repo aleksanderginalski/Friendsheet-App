@@ -3910,6 +3910,67 @@ login instead of only on first login.
 - [x] No regression in agent behavior after migration
 - [x] Decision documented in `MULTI_AGENT_ARCHITECTURE.md`
 
+### US-INF-010: Agent Session Observability — Activity Timeline & Token Tracking
+
+**As a** Developer
+**I want to** see which agents were active during a US session and how many tokens were consumed
+**So that** I can identify unused agents, optimize the multi-agent workflow, and make data-driven decisions about agent configuration
+
+**Story Points:** 5
+**Priority:** P2
+**Status:** 📋 Planned
+**Feature:** FEATURE-INF-002: Multi-Agent System
+**Trigger:** After US-INF-009 (Skills Migration)
+
+**Acceptance Criteria:**
+- [ ] Claude Code hooks configured: `PreToolUse` detects Skill tool invocations and logs agent name + timestamp
+- [ ] `Stop` hook captures session end and total token/cost data (parsed from transcript file)
+- [ ] Each session log saved as JSONL file in `tools/observability/logs/`
+- [ ] Python script generates per-session HTML report with: agent timeline (with bar proportional to time), estimated tokens per agent, total tokens and cost
+- [ ] Report launched via `python tools/observability/report.py --us US-XXX --sp N [--notes "..."]`
+- [ ] `--us`, `--sp`, `--notes` parameters written into session log for future comparison (US-INF-011)
+- [ ] Report correctly shows sessions from real US work (validated against at least one completed US)
+- [ ] No impact on normal Claude Code operation when hooks are active
+
+**Technical Notes:**
+- Token per agent = approximated via time proportion: `agent_tokens = total_tokens × (agent_duration / session_duration)`
+- Hook implementation via `settings.json` (PreToolUse + Stop events)
+- Report generator: Python 3, no external dependencies beyond stdlib
+- Output: HTML file in `tools/observability/reports/`
+- Session log format must include: session_id, us_number, story_points, notes, agents[], total_tokens, total_cost — required by US-INF-011
+
+---
+
+### US-INF-011: Agent Observability — Cross-Session Comparison Dashboard
+
+**As a** Developer
+**I want to** compare agent activity and token usage across multiple US sessions over time
+**So that** I can spot trends, measure the impact of workflow changes, and make data-driven decisions about agent optimization
+
+**Story Points:** 5
+**Priority:** P2
+**Status:** 📋 Planned
+**Feature:** FEATURE-INF-002: Multi-Agent System
+**Trigger:** After US-INF-010 (single-session report must be working with `--us` and `--sp` parameters)
+**Dependencies:** US-INF-010
+
+**Acceptance Criteria:**
+- [ ] Running `python tools/observability/dashboard.py` generates a multi-session HTML dashboard
+- [ ] Dashboard shows SP vs tokens histogram: each US is one data point (X = story points, Y = total tokens)
+- [ ] Dashboard shows side-by-side timeline comparison for any two selected sessions (US-X vs US-Y)
+- [ ] Design Changes column visible per session: re-planning count (auto) + manual notes (from `--notes`)
+- [ ] Dashboard reads all JSONL logs from `tools/observability/logs/` — no manual data entry
+- [ ] Works correctly after at least 3 sessions logged via US-INF-010
+
+**Technical Notes:**
+- Re-planning count = number of `/planning` invocations in a single session (auto-derived from JSONL log)
+- Dev iterations = number of `/dev` invocations in a single session (auto-derived)
+- Dashboard: Python 3, stdlib only (no matplotlib, no pandas) — use inline SVG for histogram
+- Input: all `*.jsonl` files in `tools/observability/logs/`
+- Output: `tools/observability/reports/dashboard.html`
+
+---
+
 ## ⚙️ FEATURE-INF-003: CI/CD Enhancement
 
 **Description:** Professional CI/CD pipeline on GitHub Actions — automated test runs and coverage reports on every PR. Serves as portfolio showcase demonstrating production-grade project setup.

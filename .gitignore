@@ -94,3 +94,8 @@ scripts/migration/.venv/
 
 # Claude Code current task (temporary file, not committed)
 .claude/current_task.md
+
+# Observability — runtime data (logs and generated reports)
+tools/observability/logs/
+tools/observability/reports/
+tools/observability/__pycache__/
