@@ -1152,3 +1152,47 @@ Run after every release or hotfix:
 | UT-CONF-025 | Links to existing person when `PersonResolution.link` given | `addPerson` never called, meeting has linked `participantId` |
 | UT-CONF-026 | Creates person with nickname when `PersonResolution.nickname` given | captured person has nickname, `personsAdded==1` |
 | UT-CONF-027 | Skips person when opted out | `addPerson` never called, `personsAdded==0` |
+---
+
+## TC-FUZZY: Fuzzy Activity Matching During Package Import (US-094)
+
+### Automated tests — `test/core/utils/string_similarity_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-FUZZY-001 | Identical strings return 0.0 | `normalizedLevenshtein('sport', 'sport') == 0.0` |
+| UT-FUZZY-002 | Two empty strings return 0.0 | `normalizedLevenshtein('', '') == 0.0` |
+| UT-FUZZY-003 | Empty vs non-empty returns 1.0 | both directions return `1.0` |
+| UT-FUZZY-004 | Completely different strings of equal length return 1.0 | `normalizedLevenshtein('abc', 'xyz') == 1.0` |
+| UT-FUZZY-005 | Comparison is case-insensitive | `normalizedLevenshtein('Sport', 'sport') == 0.0` |
+| UT-FUZZY-006 | One-character insertion is well below fuzzy threshold | result `< 0.4` and `> 0.0` |
+| UT-FUZZY-007 | One-character deletion is well below fuzzy threshold | result `< 0.4` and `> 0.0` |
+| UT-FUZZY-008 | Unrelated names exceed fuzzy threshold | result `>= 0.4` |
+| UT-FUZZY-009 | Result is symmetric | `f(a,b) == f(b,a)` |
+
+### Automated tests — `test/presentation/providers/shared_package_inbox_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-FUZZY-010 | `fuzzyActivityMatchFor` detects match when distance below threshold | returns matching category |
+| UT-FUZZY-011 | No fuzzy match when exact conflict already exists | `fuzzyActivityMatchFor` returns null |
+| UT-FUZZY-012 | No fuzzy match when distance above threshold | returns null for unrelated names |
+| UT-FUZZY-013 | Picks closest match when multiple categories are candidates | returns the closer category |
+| UT-FUZZY-014 | `existingCategories` getter reflects fetched categories after initialize | returns expected list |
+| UT-FUZZY-015 | `existingPersons` getter reflects fetched persons after initialize | returns expected list |
+| UT-FUZZY-016 | `clearActivityResolution` removes resolution and optOut | both cleared, `activityResolutionFor` returns null |
+| UT-FUZZY-017 | `clearPersonResolution` removes resolution and optOut | both cleared, `personResolutionFor` returns null |
+
+### Automated tests — `test/presentation/providers/package_importer_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-FUZZY-018 | `ActivityResolution.skip` skips activity and excludes from `categoryIds` | `createSelectableCategory` never called, `meeting.categoryIds` empty |
+| UT-FUZZY-019 | `PersonResolution.skip` skips person and excludes from `participantIds` | `addPerson` never called, `meeting.participantIds` empty |
+| UT-FUZZY-020 | `PersonResolution.createNew` creates person with no nickname | captured person has empty `nicknames`, `personsAdded==1` |
+
+### Automated tests — `test/presentation/import/package_conflict_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-FUZZY-021 | Tapping Continue routes through PersonsScreen before import success | "Review Persons" shown, tapping Confirm shows "Import complete!" |

@@ -59,8 +59,8 @@ class _PackagePersonsScreenState extends State<PackagePersonsScreen> {
             child: ListView(
               children: [
                 for (final entry in persons.entries)
-                  _buildTile(provider, packageId, entry.key, entry.value,
-                      conflicts),
+                  _buildTile(
+                      provider, packageId, entry.key, entry.value, conflicts),
                 if (persons.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(24),
@@ -178,8 +178,8 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
   void _submitNickname() {
     final nick = _controller.text.trim();
     if (nick.isEmpty) return;
-    widget.provider.resolvePersonConflict(widget.packageId, widget.personKey,
-        PersonResolution.nickname(nick));
+    widget.provider.resolvePersonConflict(
+        widget.packageId, widget.personKey, PersonResolution.nickname(nick));
     setState(() => _showNicknameField = false);
   }
 
@@ -192,15 +192,15 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
       ),
     );
     if (result != null) {
-      widget.provider.resolvePersonConflict(widget.packageId, widget.personKey,
-          PersonResolution.link(result.id));
+      widget.provider.resolvePersonConflict(
+          widget.packageId, widget.personKey, PersonResolution.link(result.id));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final res = widget.provider
-        .personResolutionFor(widget.packageId, widget.personKey);
+    final res =
+        widget.provider.personResolutionFor(widget.packageId, widget.personKey);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(
@@ -220,15 +220,12 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
             ),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 4, children: [
-              _btn('Create as New',
-                  selected: res?.isCreateNew ?? false,
+              _btn('Create as New', selected: res?.isCreateNew ?? false,
                   onPressed: () {
-                    widget.provider.resolvePersonConflict(
-                        widget.packageId,
-                        widget.personKey,
-                        const PersonResolution.createNew());
-                    setState(() => _showNicknameField = false);
-                  }),
+                widget.provider.resolvePersonConflict(widget.packageId,
+                    widget.personKey, const PersonResolution.createNew());
+                setState(() => _showNicknameField = false);
+              }),
               _btn('Add with Nickname',
                   selected: res?.isNickname ?? false,
                   onPressed: () => setState(() => _showNicknameField = true)),
@@ -236,23 +233,21 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
                   selected: res?.isLink == true &&
                       res?.linkedPersonId == widget.existingPerson.id,
                   onPressed: () {
-                    widget.provider.resolvePersonConflict(
-                        widget.packageId,
-                        widget.personKey,
-                        PersonResolution.link(widget.existingPerson.id));
-                    setState(() => _showNicknameField = false);
-                  }),
+                widget.provider.resolvePersonConflict(
+                    widget.packageId,
+                    widget.personKey,
+                    PersonResolution.link(widget.existingPerson.id));
+                setState(() => _showNicknameField = false);
+              }),
               _btn('Link with Existing',
                   selected: res?.isLink == true &&
                       res?.linkedPersonId != widget.existingPerson.id,
                   onPressed: () => _pickExisting(context)),
-              _btn('Skip',
-                  selected: res?.isSkip ?? false,
-                  onPressed: () {
-                    widget.provider.resolvePersonConflict(widget.packageId,
-                        widget.personKey, const PersonResolution.skip());
-                    setState(() => _showNicknameField = false);
-                  }),
+              _btn('Skip', selected: res?.isSkip ?? false, onPressed: () {
+                widget.provider.resolvePersonConflict(widget.packageId,
+                    widget.personKey, const PersonResolution.skip());
+                setState(() => _showNicknameField = false);
+              }),
             ]),
             if (_showNicknameField) ...[
               const SizedBox(height: 8),
@@ -341,7 +336,8 @@ class _PersonOptInTile extends StatelessWidget {
       subtitle: Wrap(spacing: 8, runSpacing: 4, children: [
         _btn('Add new',
             selected: isDefault,
-            onPressed: () => provider.clearPersonResolution(packageId, personKey)),
+            onPressed: () =>
+                provider.clearPersonResolution(packageId, personKey)),
         _btn('Link with Existing',
             selected: res?.isLink ?? false,
             onPressed: () => _pickExisting(context)),

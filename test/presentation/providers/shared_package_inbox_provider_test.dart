@@ -533,4 +533,138 @@ void main() {
           'p-x');
     });
   });
+
+  group('fuzzy activity matching', () {
+    test('detects fuzzy match when distance is below threshold', () async {
+      // 'sport' incoming, 'sports' existing: 1 insert / max(5,6) ≈ 0.167
+      final pkg = makePackage(categoryNames: ['sport']);
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+      when(mockCategoryRepo.getAllCategories(any))
+          .thenAnswer((_) async => [makeCategory(name: 'sports')]);
+
+      await provider.initialize('u1');
+
+      expect(provider.activityFuzzyMatchesFor('pkg1'), hasLength(1));
+      expect(provider.activityFuzzyMatchesFor('pkg1')['sport']?.name, 'sports');
+    });
+
+    test('no fuzzy match when exact conflict already exists for that name',
+        () async {
+      // 'hiking' exactly matches 'Hiking' — should not also appear as fuzzy
+      final pkg = makePackage(categoryNames: ['hiking']);
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+      when(mockCategoryRepo.getAllCategories(any))
+          .thenAnswer((_) async => [makeCategory(name: 'Hiking')]);
+
+      await provider.initialize('u1');
+
+      expect(provider.activityConflictsFor('pkg1'), hasLength(1));
+      expect(provider.activityFuzzyMatchesFor('pkg1'), isEmpty);
+    });
+
+    test('no fuzzy match when distance equals or exceeds threshold', () async {
+      // 'hiking' vs 'swimming': many edits — above 0.4 threshold
+      final pkg = makePackage(categoryNames: ['hiking']);
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+      when(mockCategoryRepo.getAllCategories(any))
+          .thenAnswer((_) async => [makeCategory(name: 'swimming')]);
+
+      await provider.initialize('u1');
+
+      expect(provider.activityFuzzyMatchesFor('pkg1'), isEmpty);
+    });
+
+    test('picks the closest match when multiple categories are similar',
+        () async {
+      // 'sport' should match 'sports' (dist≈0.17) over 'sportsman' (dist≈0.44)
+      final pkg = makePackage(categoryNames: ['sport']);
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+      when(mockCategoryRepo.getAllCategories(any)).thenAnswer((_) async => [
+            makeCategory(id: 'c1', name: 'sportsman'),
+            makeCategory(id: 'c2', name: 'sports'),
+          ]);
+
+      await provider.initialize('u1');
+
+      expect(provider.activityFuzzyMatchesFor('pkg1')['sport']?.id, 'c2');
+    });
+  });
+
+  group('existingCategories and existingPersons getters', () {
+    test('after initialize, existingCategories reflects fetched data',
+        () async {
+      final pkg = makePackage();
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => []);
+      when(mockCategoryRepo.getAllCategories(any)).thenAnswer((_) async => [
+            makeCategory(id: 'c1', name: 'Hiking'),
+            makeCategory(id: 'c2', name: 'Running'),
+          ]);
+
+      await provider.initialize('u1');
+
+      expect(provider.existingCategories, hasLength(2));
+      expect(provider.existingCategories.map((c) => c.name),
+          containsAll(['Hiking', 'Running']));
+    });
+
+    test('after initialize, existingPersons reflects fetched data', () async {
+      final pkg = makePackage();
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockPersonRepo.getPersonsByUser(any)).thenAnswer((_) async => [
+            makeExistingPerson(
+                id: 'p1', firstName: 'Jan', lastName: 'Kowalski'),
+            makeExistingPerson(id: 'p2', firstName: 'Anna', lastName: 'Nowak'),
+          ]);
+      when(mockCategoryRepo.getAllCategories(any)).thenAnswer((_) async => []);
+
+      await provider.initialize('u1');
+
+      expect(provider.existingPersons, hasLength(2));
+    });
+  });
+
+  group('clearActivityResolution', () {
+    test('removes resolution and optOut, restoring default add-new behavior',
+        () {
+      provider.resolveActivityConflict(
+          'pkg1', 'hiking', const ActivityResolution.link('cat1'));
+      provider.setActivityOptOut('pkg1', 'hiking', true);
+
+      provider.clearActivityResolution('pkg1', 'hiking');
+
+      expect(provider.activityResolutionFor('pkg1', 'hiking'), isNull);
+      expect(provider.isActivityOptedOut('pkg1', 'hiking'), isFalse);
+    });
+  });
+
+  group('clearPersonResolution', () {
+    test('removes resolution and optOut, restoring default add-new behavior',
+        () {
+      provider.resolvePersonConflict(
+          'pkg1', 'jan kowalski', const PersonResolution.link('p1'));
+      provider.setPersonOptOut('pkg1', 'jan kowalski', true);
+
+      provider.clearPersonResolution('pkg1', 'jan kowalski');
+
+      expect(provider.personResolutionFor('pkg1', 'jan kowalski'), isNull);
+      expect(provider.isPersonOptedOut('pkg1', 'jan kowalski'), isFalse);
+    });
+  });
 }

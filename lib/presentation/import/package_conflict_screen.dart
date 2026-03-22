@@ -105,8 +105,7 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
   Future<void> _onContinue(
       BuildContext context, SharedPackageInboxProvider provider) async {
     final packageId = widget.package.id;
-    final hasActivities =
-        provider.uniqueActivityNamesFor(packageId).isNotEmpty;
+    final hasActivities = provider.uniqueActivityNamesFor(packageId).isNotEmpty;
     final hasPersons = provider.uniquePersonsFor(packageId).isNotEmpty;
 
     if (hasActivities) {
