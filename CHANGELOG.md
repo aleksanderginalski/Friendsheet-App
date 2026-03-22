@@ -4,6 +4,16 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.50.0 — US-INF-010: Agent Session Observability (March 22, 2026)
+- ✅ `.claude/settings.json` — added `PreToolUse` hook (matcher: Skill) → `log_agent.py`; `Stop` hook → `log_stop.py`; both use Python 3.12 installed via `uv`
+- ✅ `tools/observability/log_agent.py` (NEW) — PreToolUse hook script: reads stdin JSON, appends `agent_start` JSONL entry to `logs/{session_id}.jsonl`; silent on any error
+- ✅ `tools/observability/log_stop.py` (NEW) — Stop hook script: reads stdin JSON, parses transcript file for token usage, appends `session_end` JSONL entry; silent on any error
+- ✅ `tools/observability/report.py` (NEW) — CLI report generator (`--us`, `--sp`, `--notes`, `--session`); builds per-agent timeline from JSONL log; estimates tokens via time-proportion; generates self-contained HTML with inline SVG bar chart; opens in default browser
+- ✅ `tools/observability/report.bat` (NEW) — Windows wrapper for report.py using uv-managed Python path
+- ✅ `.gitignore` — added `tools/observability/logs/`, `tools/observability/reports/`, `tools/observability/__pycache__/`
+- ✅ `docs/BACKLOG.md` — US-INF-010 marked COMPLETED; US-INF-011 (cross-session dashboard) added as follow-up
+- ✅ 650 Flutter tests passing (no regressions — tooling-only change)
+
 ### v3.49.0 — US-095: Merge Activity Categories (March 22, 2026)
 - ✅ `lib/data/repositories/meeting_repository.dart` — new `replaceCategoryInMeetings(userId, sourceId, targetId)`: queries all meetings containing `sourceId` via `arrayContains`, atomically replaces with `targetId` using WriteBatch (deduplicates if target already present)
 - ✅ `lib/presentation/activities/activities_list_provider.dart` — new `MeetingRepository` dependency; `mergeCandidates(sourceId)` returns all categories except source sorted alphabetically; `mergeCategory(userId, sourceId, targetId)` orchestrates replaceCategoryInMeetings → deleteCategory → initialize
