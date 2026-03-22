@@ -39,6 +39,7 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
     final packageId = widget.package.id;
     final activityNames = provider.uniqueActivityNamesFor(packageId);
     final activityConflicts = provider.activityConflictsFor(packageId);
+    final activityFuzzyMatches = provider.activityFuzzyMatchesFor(packageId);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +62,7 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
               children: [
                 for (final name in activityNames)
                   _buildActivityTile(
-                      provider, packageId, name, activityConflicts),
+                      provider, packageId, name, activityConflicts, activityFuzzyMatches),
                 if (activityNames.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(24),
@@ -84,6 +85,7 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
     String packageId,
     String name,
     Map<String, ActivityCategory> conflicts,
+    Map<String, ActivityCategory> fuzzyMatches,
   ) {
     final lower = name.toLowerCase();
     final existing = conflicts[lower];
@@ -93,6 +95,16 @@ class _PackageActivitiesScreenState extends State<PackageActivitiesScreen> {
         lowerName: lower,
         originalName: name,
         existingCategory: existing,
+        provider: provider,
+      );
+    }
+    final fuzzyMatch = fuzzyMatches[lower];
+    if (fuzzyMatch != null) {
+      return _ActivityFuzzyTile(
+        packageId: packageId,
+        lowerName: lower,
+        originalName: name,
+        suggestedCategory: fuzzyMatch,
         provider: provider,
       );
     }
@@ -193,6 +205,94 @@ class _ActivityOptInTile extends StatelessWidget {
       onChanged: (checked) =>
           provider.setActivityOptOut(packageId, lowerName, !(checked ?? true)),
     );
+  }
+}
+
+// Card for an activity whose name is similar (but not identical) to an existing
+// category. Shown as a soft suggestion — does not block the Continue button.
+class _ActivityFuzzyTile extends StatelessWidget {
+  final String packageId;
+  final String lowerName;
+  final String originalName;
+  final ActivityCategory suggestedCategory;
+  final SharedPackageInboxProvider provider;
+
+  const _ActivityFuzzyTile({
+    required this.packageId,
+    required this.lowerName,
+    required this.originalName,
+    required this.suggestedCategory,
+    required this.provider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final resolution = provider.activityResolutionFor(packageId, lowerName);
+    final isLinked = resolution != null && !resolution.isRename;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: Colors.blue.shade300, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Potential match: "$originalName" \u2248 "${suggestedCategory.name}"',
+              style: TextStyle(
+                  color: Colors.blue.shade700, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                _btn(
+                  label: 'Create as new',
+                  selected: resolution == null || resolution.isRename,
+                  onPressed: () => provider.resolveActivityConflict(
+                    packageId,
+                    lowerName,
+                    ActivityResolution.rename(originalName),
+                  ),
+                ),
+                _btn(
+                  label: 'Link to: ${suggestedCategory.name}',
+                  selected: isLinked,
+                  onPressed: () => provider.resolveActivityConflict(
+                    packageId,
+                    lowerName,
+                    ActivityResolution.link(suggestedCategory.id),
+                  ),
+                ),
+              ],
+            ),
+            if (resolution != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                isLinked
+                    ? '-> Linked to: ${suggestedCategory.name}'
+                    : '-> Will be created as new activity',
+                style: const TextStyle(fontSize: 12, color: Colors.green),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _btn({
+    required String label,
+    required bool selected,
+    required VoidCallback onPressed,
+  }) {
+    if (selected) return FilledButton(onPressed: onPressed, child: Text(label));
+    return OutlinedButton(onPressed: onPressed, child: Text(label));
   }
 }
 

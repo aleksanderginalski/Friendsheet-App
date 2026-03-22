@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/constants/app_constants.dart';
+import '../../core/utils/string_similarity.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/models/meeting.dart';
 import '../../data/models/pending_meeting_package.dart';
@@ -55,6 +57,10 @@ class SharedPackageInboxProvider extends ChangeNotifier {
   // packageId → set of personKeys opted OUT (non-conflicts only)
   final Map<String, Set<String>> _personOptOut = {};
 
+  // packageId → lowercase categoryName → best fuzzy-matching existing category
+  // Only populated for names that have NO hard (exact) conflict.
+  final Map<String, Map<String, ActivityCategory>> _activityFuzzyMatches = {};
+
   // packageId → unique activity names (original casing) across all meetings
   final Map<String, List<String>> _uniqueActivityNames = {};
 
@@ -91,6 +97,9 @@ class SharedPackageInboxProvider extends ChangeNotifier {
 
   Map<String, ActivityCategory> activityConflictsFor(String packageId) =>
       Map.unmodifiable(_activityConflicts[packageId] ?? {});
+
+  Map<String, ActivityCategory> activityFuzzyMatchesFor(String packageId) =>
+      Map.unmodifiable(_activityFuzzyMatches[packageId] ?? {});
 
   Map<String, Person> personConflictsFor(String packageId) =>
       Map.unmodifiable(_personConflicts[packageId] ?? {});
@@ -183,6 +192,7 @@ class SharedPackageInboxProvider extends ChangeNotifier {
     _conflicts.remove(packageId);
     _resolutions.remove(packageId);
     _activityConflicts.remove(packageId);
+    _activityFuzzyMatches.remove(packageId);
     _activityResolutions.remove(packageId);
     _activityOptOut.remove(packageId);
     _personConflicts.remove(packageId);
@@ -272,6 +282,28 @@ class SharedPackageInboxProvider extends ChangeNotifier {
             _activityConflicts[pkg.id]![lower] = cat;
             break;
           }
+        }
+      }
+
+      // Fuzzy detection: names with no exact conflict but similar to an existing category.
+      for (final name in names) {
+        final lower = name.toLowerCase();
+        if (_activityConflicts[pkg.id]?.containsKey(lower) ?? false) continue;
+
+        ActivityCategory? bestMatch;
+        var bestDist = AppConstants.fuzzyActivityMatchThreshold;
+
+        for (final cat in existingCategories) {
+          final dist = normalizedLevenshtein(lower, cat.name);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestMatch = cat;
+          }
+        }
+
+        if (bestMatch != null) {
+          _activityFuzzyMatches[pkg.id] ??= {};
+          _activityFuzzyMatches[pkg.id]![lower] = bestMatch;
         }
       }
 

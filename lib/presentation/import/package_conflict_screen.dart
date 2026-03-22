@@ -106,7 +106,8 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
       BuildContext context, SharedPackageInboxProvider provider) async {
     final packageId = widget.package.id;
     final hasActivityConflicts =
-        provider.activityConflictsFor(packageId).isNotEmpty;
+        provider.activityConflictsFor(packageId).isNotEmpty ||
+        provider.activityFuzzyMatchesFor(packageId).isNotEmpty;
     final hasPersonConflicts =
         provider.personConflictsFor(packageId).isNotEmpty;
 

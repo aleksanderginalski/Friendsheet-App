@@ -237,7 +237,7 @@ void main() {
         meetingConflicts: {},
         meetingResolutions: {},
         activityResolutions: {
-          'hiking': ActivityResolution.link('cat-existing')
+          'hiking': const ActivityResolution.link('cat-existing')
         },
         activityOptOut: {},
         personResolutions: {},
@@ -288,7 +288,7 @@ void main() {
         activityResolutions: {},
         activityOptOut: {},
         personResolutions: {
-          'ania kowalska': PersonResolution.link('p-existing')
+          'ania kowalska': const PersonResolution.link('p-existing')
         },
         personOptOut: {},
         userId: 'u1',
@@ -315,7 +315,7 @@ void main() {
         meetingResolutions: {},
         activityResolutions: {},
         activityOptOut: {},
-        personResolutions: {'ania kowalska': PersonResolution.nickname('Anka')},
+        personResolutions: {'ania kowalska': const PersonResolution.nickname('Anka')},
         personOptOut: {},
         userId: 'u1',
       );

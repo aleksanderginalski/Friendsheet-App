@@ -292,9 +292,9 @@ void main() {
 
     test('clears activity and person state for the dismissed package', () {
       provider.resolveActivityConflict(
-          'pkg1', 'hiking', ActivityResolution.link('c1'));
+          'pkg1', 'hiking', const ActivityResolution.link('c1'));
       provider.resolvePersonConflict(
-          'pkg1', 'jan', PersonResolution.link('p1'));
+          'pkg1', 'jan', const PersonResolution.link('p1'));
       provider.setActivityOptOut('pkg1', 'hiking', true);
       provider.setPersonOptOut('pkg1', 'jan', true);
 
@@ -435,7 +435,7 @@ void main() {
 
       await provider.initialize('u1');
       provider.resolveActivityConflict(
-          'pkg1', 'hiking', ActivityResolution.link('cat1'));
+          'pkg1', 'hiking', const ActivityResolution.link('cat1'));
 
       expect(provider.canProceedActivities('pkg1'), isTrue);
     });
@@ -487,7 +487,7 @@ void main() {
 
       await provider.initialize('u1');
       provider.resolvePersonConflict(
-          'pkg1', 'jan kowalski', PersonResolution.link('p1'));
+          'pkg1', 'jan kowalski', const PersonResolution.link('p1'));
 
       expect(provider.canProceedPersons('pkg1'), isTrue);
     });
@@ -496,7 +496,7 @@ void main() {
   group('resolveActivityConflict', () {
     test('stores and returns the chosen resolution', () {
       provider.resolveActivityConflict(
-          'pkg1', 'hiking', ActivityResolution.rename('Hike'));
+          'pkg1', 'hiking', const ActivityResolution.rename('Hike'));
 
       expect(provider.activityResolutionFor('pkg1', 'hiking')?.renamedName,
           'Hike');
@@ -504,9 +504,9 @@ void main() {
 
     test('overrides a previous resolution', () {
       provider.resolveActivityConflict(
-          'pkg1', 'hiking', ActivityResolution.rename('Hike'));
+          'pkg1', 'hiking', const ActivityResolution.rename('Hike'));
       provider.resolveActivityConflict(
-          'pkg1', 'hiking', ActivityResolution.link('cat-x'));
+          'pkg1', 'hiking', const ActivityResolution.link('cat-x'));
 
       expect(provider.activityResolutionFor('pkg1', 'hiking')?.linkedCategoryId,
           'cat-x');
@@ -516,7 +516,7 @@ void main() {
   group('resolvePersonConflict', () {
     test('stores and returns the chosen resolution', () {
       provider.resolvePersonConflict(
-          'pkg1', 'jan kowalski', PersonResolution.nickname('JK'));
+          'pkg1', 'jan kowalski', const PersonResolution.nickname('JK'));
 
       expect(
           provider.personResolutionFor('pkg1', 'jan kowalski')?.nickname, 'JK');
@@ -524,9 +524,9 @@ void main() {
 
     test('overrides a previous resolution', () {
       provider.resolvePersonConflict(
-          'pkg1', 'jan kowalski', PersonResolution.nickname('JK'));
+          'pkg1', 'jan kowalski', const PersonResolution.nickname('JK'));
       provider.resolvePersonConflict(
-          'pkg1', 'jan kowalski', PersonResolution.link('p-x'));
+          'pkg1', 'jan kowalski', const PersonResolution.link('p-x'));
 
       expect(
           provider.personResolutionFor('pkg1', 'jan kowalski')?.linkedPersonId,
