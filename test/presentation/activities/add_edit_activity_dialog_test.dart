@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/presentation/activities/activities_list_provider.dart';
 import 'package:friendsheet/presentation/activities/add_edit_activity_dialog.dart';
 import 'package:provider/provider.dart';
@@ -113,6 +114,9 @@ class _StubActivitiesListProvider extends ActivitiesListProvider {
   _StubActivitiesListProvider({required this.nameExistsResult})
       : super(
           repository: ActivityCategoryRepository(
+            firestore: FakeFirebaseFirestore(),
+          ),
+          meetingRepository: MeetingRepository(
             firestore: FakeFirebaseFirestore(),
           ),
         );

@@ -3194,21 +3194,22 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `activities`, `data-integrity`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Dependencies:** none
 
 **Acceptance Criteria:**
 - [ ] From the Activities screen, user can select a category and choose "Merge into…"
-- [ ] A picker shows all other selectable categories as merge targets
+- [ ] "Merge into…" option is only shown for categories with NO children (leaf check)
+- [ ] A picker shows all other categories as merge targets (including parents with children)
 - [ ] On confirm: all meetings that reference the source category get the target category added (if not already present)
 - [ ] Source category is deleted after all meetings are updated
-- [ ] Operation is atomic (WriteBatch)
+- [ ] Operation uses WriteBatch for atomic update of all meetings
 - [ ] No meeting history is lost — only the category ID reference changes
 
 **Tasks:**
-- [ ] **TASK-095.1:** Add `mergeCategory(sourceId, targetId, userId)` to `ActivityCategoryRepository` — 1h
-- [ ] **TASK-095.2:** Add `replaceCategoryInMeetings(sourceId, targetId, userId)` to `MeetingRepository` — 1h
-- [ ] **TASK-095.3:** Build "Merge into…" UI in Activities screen (long-press or action menu) — 1h
+- [ ] **TASK-095.1:** Add `replaceCategoryInMeetings(userId, sourceId, targetId)` to `MeetingRepository` — 1h
+- [ ] **TASK-095.2:** Add `MeetingRepository` dependency + `mergeCategory` + `mergeCandidates` to `ActivitiesListProvider` — 0.5h
+- [ ] **TASK-095.3:** New `MergeCategoryPickerScreen` + wire "Merge into…" UI in Activities screen — 1h
 - [ ] **TASK-095.4:** Write tests — 0.5h
 
 ---
@@ -3237,36 +3238,6 @@ Only C can read/write their own tokens (path-based security rule).
 - [ ] **TASK-096.2:** On import confirm: persist sender as `Person` (or link to existing) and add as participant to imported meetings — 1h
 - [ ] **TASK-096.3:** Write tests — 0.5h
 
----
-
-### US-097: Split Conflict Resolution into Two Steps (Persons → Activities)
-
-**As a** user (C)
-**I want to** resolve person conflicts and activity conflicts in two separate screens
-**So that** each step is focused and easier to understand
-
-**Story Points:** 3
-**Priority:** P0
-**Labels:** `sharing`, `conflicts`, `ux`
-**Status:** 📋 Planned
-**Dependencies:** US-093, US-096
-
-**Acceptance Criteria:**
-- [ ] After meeting date conflicts are resolved (US-092), conflict resolution proceeds in two sequential steps:
-  - **Step 1 — Persons:** resolve all incoming person conflicts (including sender A from US-096)
-  - **Step 2 — Activities:** resolve all incoming activity conflicts (including fuzzy matches from US-094)
-- [ ] Step 1 must be fully resolved before the user can proceed to Step 2
-- [ ] If no person conflicts exist → Step 1 is skipped automatically
-- [ ] If no activity conflicts exist → Step 2 is skipped automatically
-- [ ] Navigation: "Dalej" button after Step 1 leads to Step 2; "Potwierdź" on Step 2 triggers final import
-- [ ] Progress indicator is visible (e.g. "Krok 1 z 2" / "Krok 2 z 2")
-
-**Tasks:**
-- [ ] **TASK-097.1:** Extract person conflict logic from `ConflictResolutionScreen` into a dedicated `PersonConflictScreen` — 1.5h
-- [ ] **TASK-097.2:** Extract activity conflict logic into a dedicated `ActivityConflictScreen` — 1.5h
-- [ ] **TASK-097.3:** Implement step navigation with automatic skipping of empty steps — 0.5h
-- [ ] **TASK-097.4:** Add progress indicator (step counter) — 0.5h
-- [ ] **TASK-097.5:** Write tests — 1h
 
 ---
 

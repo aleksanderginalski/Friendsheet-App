@@ -72,9 +72,6 @@ class _MainScreenState extends State<MainScreen> {
       authService: AuthService(),
     )..initialize();
     _friendGroupsProvider = FriendGroupsProvider();
-    _activitiesListProvider = ActivitiesListProvider(
-      repository: ActivityCategoryRepository(),
-    );
     final activityCategoryRepository = ActivityCategoryRepository();
     final meetingRepository = MeetingRepository();
     final personRepository = PersonRepository(
@@ -88,6 +85,10 @@ class _MainScreenState extends State<MainScreen> {
     meetingRepository.cacheInvalidator = statisticsRepository;
     personRepository.cacheInvalidator = statisticsRepository;
     activityCategoryRepository.cacheInvalidator = statisticsRepository;
+    _activitiesListProvider = ActivitiesListProvider(
+      repository: activityCategoryRepository,
+      meetingRepository: meetingRepository,
+    );
     _statisticsProvider = StatisticsProvider(
       repository: statisticsRepository,
       authService: AuthService(),

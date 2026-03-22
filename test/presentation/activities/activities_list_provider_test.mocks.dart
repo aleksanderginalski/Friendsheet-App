@@ -6,10 +6,13 @@
 import 'dart:async' as _i5;
 
 import 'package:friendsheet/data/models/activity_category.dart' as _i2;
+import 'package:friendsheet/data/models/meeting.dart' as _i7;
 import 'package:friendsheet/data/repositories/activity_category_repository.dart'
     as _i3;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i4;
+import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -204,4 +207,143 @@ class MockActivityCategoryRepository extends _i1.Mock
         returnValue: _i5.Future<List<_i2.ActivityCategory>>.value(
             <_i2.ActivityCategory>[]),
       ) as _i5.Future<List<_i2.ActivityCategory>>);
+}
+
+/// A class which mocks [MeetingRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockMeetingRepository extends _i1.Mock implements _i6.MeetingRepository {
+  MockMeetingRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  set cacheInvalidator(_i4.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<String> saveMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #saveMeeting,
+          [meeting],
+        ),
+        returnValue: _i5.Future<String>.value(_i8.dummyValue<String>(
+          this,
+          Invocation.method(
+            #saveMeeting,
+            [meeting],
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Stream<List<_i7.Meeting>> getMeetingsByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsByUser,
+          [userId],
+        ),
+        returnValue: _i5.Stream<List<_i7.Meeting>>.empty(),
+      ) as _i5.Stream<List<_i7.Meeting>>);
+
+  @override
+  _i5.Future<void> updateMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
+        Invocation.method(
+          #updateMeeting,
+          [meeting],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deleteMeeting(
+    String? userId,
+    String? meetingId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteMeeting,
+          [
+            userId,
+            meetingId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<_i7.Meeting>> getMeetingsByParticipant(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsByParticipant,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<List<_i7.Meeting>>.value(<_i7.Meeting>[]),
+      ) as _i5.Future<List<_i7.Meeting>>);
+
+  @override
+  _i5.Future<int> getMeetingsCountForPerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsCountForPerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<int>.value(0),
+      ) as _i5.Future<int>);
+
+  @override
+  _i5.Future<void> replaceCategoryInMeetings(
+    String? userId,
+    String? sourceId,
+    String? targetId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #replaceCategoryInMeetings,
+          [
+            userId,
+            sourceId,
+            targetId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> removePersonFromMeetings(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromMeetings,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

@@ -1,15 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/presentation/activities/activities_list_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'activities_list_provider_test.mocks.dart';
 
-@GenerateMocks([ActivityCategoryRepository])
+@GenerateMocks([ActivityCategoryRepository, MeetingRepository])
 void main() {
   late MockActivityCategoryRepository mockRepository;
+  late MockMeetingRepository mockMeetingRepository;
   late ActivitiesListProvider provider;
 
   // Flat list: two root categories and two children.
@@ -58,7 +60,11 @@ void main() {
 
   setUp(() {
     mockRepository = MockActivityCategoryRepository();
-    provider = ActivitiesListProvider(repository: mockRepository);
+    mockMeetingRepository = MockMeetingRepository();
+    provider = ActivitiesListProvider(
+      repository: mockRepository,
+      meetingRepository: mockMeetingRepository,
+    );
   });
 
   group('ActivitiesListProvider', () {
@@ -252,6 +258,47 @@ void main() {
           provider.activityNameExists('Tennis', excludeId: 'child-a2'),
           isTrue,
         );
+      });
+    });
+
+    group('mergeCandidates', () {
+      test('excludes source and returns remainder sorted alphabetically',
+          () async {
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.initialize('u1');
+
+        // Exclude rootA ('Sports') → remaining: Food, Tennis, Basketball
+        final candidates = provider.mergeCandidates('root-a');
+
+        expect(candidates.map((c) => c.id), isNot(contains('root-a')));
+        expect(candidates.length, equals(flatList.length - 1));
+        expect(
+          candidates.map((c) => c.name).toList(),
+          equals(['Basketball', 'Food', 'Tennis']),
+        );
+      });
+    });
+
+    group('mergeCategory', () {
+      test('calls replaceCategoryInMeetings and deleteCategory then refreshes',
+          () async {
+        when(mockMeetingRepository.replaceCategoryInMeetings(
+                'u1', 'child-a1', 'root-b'))
+            .thenAnswer((_) async {});
+        when(mockRepository.deleteCategory('u1', 'child-a1'))
+            .thenAnswer((_) async {});
+        when(mockRepository.getAllCategories('u1'))
+            .thenAnswer((_) async => flatList);
+
+        await provider.mergeCategory('u1', 'child-a1', 'root-b');
+
+        verify(mockMeetingRepository.replaceCategoryInMeetings(
+                'u1', 'child-a1', 'root-b'))
+            .called(1);
+        verify(mockRepository.deleteCategory('u1', 'child-a1')).called(1);
+        verify(mockRepository.getAllCategories('u1')).called(greaterThan(0));
       });
     });
 
