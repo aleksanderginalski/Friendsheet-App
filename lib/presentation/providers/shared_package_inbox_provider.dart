@@ -67,6 +67,10 @@ class SharedPackageInboxProvider extends ChangeNotifier {
   // packageId → personKey → SharedPerson across all meetings
   final Map<String, Map<String, SharedPerson>> _uniquePersons = {};
 
+  // All existing categories/persons for user — used by picker screens.
+  List<ActivityCategory> _existingCategories = [];
+  List<Person> _existingPersons = [];
+
   bool _isLoading = false;
 
   SharedPackageInboxProvider({
@@ -82,6 +86,9 @@ class SharedPackageInboxProvider extends ChangeNotifier {
   List<PendingMeetingPackage> get packages => List.unmodifiable(_packages);
   bool get isLoading => _isLoading;
   bool get hasPackages => _packages.isNotEmpty;
+  List<ActivityCategory> get existingCategories =>
+      List.unmodifiable(_existingCategories);
+  List<Person> get existingPersons => List.unmodifiable(_existingPersons);
 
   Map<int, Meeting> conflictsFor(String packageId) =>
       Map.unmodifiable(_conflicts[packageId] ?? {});
@@ -185,6 +192,22 @@ class SharedPackageInboxProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clears any resolution and opt-out state for an activity, restoring it to
+  /// the default "create new" behavior.
+  void clearActivityResolution(String packageId, String lower) {
+    _activityResolutions[packageId]?.remove(lower);
+    _activityOptOut[packageId]?.remove(lower);
+    notifyListeners();
+  }
+
+  /// Clears any resolution and opt-out state for a person, restoring them to
+  /// the default "add new" behavior.
+  void clearPersonResolution(String packageId, String personKey) {
+    _personResolutions[packageId]?.remove(personKey);
+    _personOptOut[packageId]?.remove(personKey);
+    notifyListeners();
+  }
+
   /// Removes the package from local state and clears all associated conflict
   /// and resolution state. Called by [importPackage] after successful import.
   void dismissPackage(String packageId) {
@@ -235,6 +258,8 @@ class SharedPackageInboxProvider extends ChangeNotifier {
 
     final existingPersons = await _personRepo.getPersonsByUser(userId);
     final existingCategories = await _categoryRepo.getAllCategories(userId);
+    _existingPersons = existingPersons;
+    _existingCategories = existingCategories;
     _detectPersonActivityConflicts(existingPersons, existingCategories);
 
     _isLoading = false;

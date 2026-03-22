@@ -105,13 +105,11 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
   Future<void> _onContinue(
       BuildContext context, SharedPackageInboxProvider provider) async {
     final packageId = widget.package.id;
-    final hasActivityConflicts =
-        provider.activityConflictsFor(packageId).isNotEmpty ||
-        provider.activityFuzzyMatchesFor(packageId).isNotEmpty;
-    final hasPersonConflicts =
-        provider.personConflictsFor(packageId).isNotEmpty;
+    final hasActivities =
+        provider.uniqueActivityNamesFor(packageId).isNotEmpty;
+    final hasPersons = provider.uniquePersonsFor(packageId).isNotEmpty;
 
-    if (hasActivityConflicts) {
+    if (hasActivities) {
       Navigator.push(
         context,
         MaterialPageRoute<void>(
@@ -124,7 +122,7 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
           ),
         ),
       );
-    } else if (hasPersonConflicts) {
+    } else if (hasPersons) {
       Navigator.push(
         context,
         MaterialPageRoute<void>(
@@ -138,7 +136,7 @@ class _PackageConflictScreenState extends State<PackageConflictScreen> {
         ),
       );
     } else {
-      // No conflicts at all — import directly without review screens.
+      // No activities or persons — import directly.
       setState(() => _isImporting = true);
       final nav = Navigator.of(context);
       try {

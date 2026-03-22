@@ -126,9 +126,9 @@ class PackageImporter {
     var added = 0;
     for (final name in namesToImport) {
       final lower = name.toLowerCase();
-      if (optOut.contains(lower)) continue;
       final res = resolutions[lower];
-      if (res != null && !res.isRename) {
+      if (optOut.contains(lower) || (res?.isSkip ?? false)) continue;
+      if (res != null && res.isLink) {
         ids[lower] = res.linkedCategoryId!;
       } else {
         final finalName = res?.renamedName ?? name;
@@ -169,9 +169,9 @@ class PackageImporter {
     final ids = <String, String>{};
     var added = 0;
     for (final entry in personsToImport.entries) {
-      if (optOut.contains(entry.key)) continue;
       final res = resolutions[entry.key];
-      if (res != null && !res.isNickname) {
+      if (optOut.contains(entry.key) || (res?.isSkip ?? false)) continue;
+      if (res != null && res.isLink) {
         ids[entry.key] = res.linkedPersonId!;
       } else {
         final sp = entry.value;
