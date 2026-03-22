@@ -3,7 +3,11 @@
     "allow": [
       "Edit(.claude/skills/**)",
       "Edit(CLAUDE.md)",
-      "Edit(MULTI_AGENT_ARCHITECTURE.md)"
+      "Edit(MULTI_AGENT_ARCHITECTURE.md)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Write(.claude/current_task.md)"
     ]
   }
 }

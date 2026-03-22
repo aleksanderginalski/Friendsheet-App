@@ -3194,23 +3194,23 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `activities`, `data-integrity`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 **Dependencies:** none
 
 **Acceptance Criteria:**
-- [ ] From the Activities screen, user can select a category and choose "Merge into…"
-- [ ] "Merge into…" option is only shown for categories with NO children (leaf check)
-- [ ] A picker shows all other categories as merge targets (including parents with children)
-- [ ] On confirm: all meetings that reference the source category get the target category added (if not already present)
-- [ ] Source category is deleted after all meetings are updated
-- [ ] Operation uses WriteBatch for atomic update of all meetings
-- [ ] No meeting history is lost — only the category ID reference changes
+- [x] From the Activities screen, user can select a category and choose "Merge into…"
+- [x] "Merge into…" option is only shown for categories with NO children (leaf check)
+- [x] A picker shows all other categories as merge targets (including parents with children)
+- [x] On confirm: all meetings that reference the source category get the target category added (if not already present)
+- [x] Source category is deleted after all meetings are updated
+- [x] Operation uses WriteBatch for atomic update of all meetings
+- [x] No meeting history is lost — only the category ID reference changes
 
 **Tasks:**
-- [ ] **TASK-095.1:** Add `replaceCategoryInMeetings(userId, sourceId, targetId)` to `MeetingRepository` — 1h
-- [ ] **TASK-095.2:** Add `MeetingRepository` dependency + `mergeCategory` + `mergeCandidates` to `ActivitiesListProvider` — 0.5h
-- [ ] **TASK-095.3:** New `MergeCategoryPickerScreen` + wire "Merge into…" UI in Activities screen — 1h
-- [ ] **TASK-095.4:** Write tests — 0.5h
+- [x] **TASK-095.1:** Add `replaceCategoryInMeetings(userId, sourceId, targetId)` to `MeetingRepository` — 1h
+- [x] **TASK-095.2:** Add `MeetingRepository` dependency + `mergeCategory` + `mergeCandidates` to `ActivitiesListProvider` — 0.5h
+- [x] **TASK-095.3:** New `MergeCategoryPickerScreen` + wire "Merge into…" UI in Activities screen — 1h
+- [x] **TASK-095.4:** Write tests — 0.5h
 
 ---
 

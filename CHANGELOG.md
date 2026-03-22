@@ -4,6 +4,14 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.49.0 — US-095: Merge Activity Categories (March 22, 2026)
+- ✅ `lib/data/repositories/meeting_repository.dart` — new `replaceCategoryInMeetings(userId, sourceId, targetId)`: queries all meetings containing `sourceId` via `arrayContains`, atomically replaces with `targetId` using WriteBatch (deduplicates if target already present)
+- ✅ `lib/presentation/activities/activities_list_provider.dart` — new `MeetingRepository` dependency; `mergeCandidates(sourceId)` returns all categories except source sorted alphabetically; `mergeCategory(userId, sourceId, targetId)` orchestrates replaceCategoryInMeetings → deleteCategory → initialize
+- ✅ `lib/presentation/activities/merge_category_picker_screen.dart` (NEW) — full-screen picker with hierarchical view (roots + indented children with tree connector lines, icons) and search mode (flat filtered list with parent name as subtitle)
+- ✅ `lib/presentation/activities/activities_list_screen.dart` — "Merge into…" option added to bottom sheet for categories with no children (leaf check via `childrenOf(id).isEmpty`); `_openMergePicker` method on State (stale context rule); confirm dialog with source → target names; SnackBar on success/failure
+- ✅ `lib/presentation/screens/main_screen.dart` — `ActivitiesListProvider` now uses shared `activityCategoryRepository` and `meetingRepository` instances (with cache invalidation wired)
+- ✅ 10 automated tests: `MeetingRepository.replaceCategoryInMeetings` (4), `ActivitiesListProvider.mergeCandidates`/`mergeCategory` (2), `MergeCategoryPickerScreen` widget tests (4); total 650 tests passing
+
 ### v3.48.0 — US-094: Fuzzy Activity Matching During Package Import (March 22, 2026)
 - ✅ `lib/core/utils/string_similarity.dart` — `normalizedLevenshtein()` utility: case-insensitive normalized Levenshtein distance (0.0 = identical, 1.0 = completely different); threshold constant `kFuzzyThreshold = 0.4` in `app_constants.dart`
 - ✅ `SharedPackageInboxProvider` extended — `fuzzyActivityMatchFor()` detects near-duplicate activity names (distance ≤ 0.4, skipped when exact conflict exists); `existingCategories` / `existingPersons` getters; `clearActivityResolution()` / `clearPersonResolution()` methods

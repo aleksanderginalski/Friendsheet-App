@@ -23,7 +23,7 @@
 
 **M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
 
-**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Receive shared meeting packages in Pending Meetings with full conflict resolution — date duplicates (US-092), activity name conflicts and person name conflicts (US-093), fuzzy near-duplicate activity detection with normalized Levenshtein distance (US-094). Sender is automatically added as a participant in all imported meetings. Extensible architecture supports future import sources (Google Photos planned).
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Receive shared meeting packages in Pending Meetings with full conflict resolution — date duplicates (US-092), activity name conflicts and person name conflicts (US-093), fuzzy near-duplicate activity detection with normalized Levenshtein distance (US-094). Sender is automatically added as a participant in all imported meetings. Merge duplicate activity categories to clean up history without data loss (US-095). Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (538)
+✅ All tests passing (650)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,17 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.48.0 — US-094: Fuzzy Activity Matching During Package Import (March 22, 2026)
-- ✅ `lib/core/utils/string_similarity.dart` — `normalizedLevenshtein()` utility: case-insensitive normalized Levenshtein distance (0.0 = identical, 1.0 = completely different); threshold constant `kFuzzyThreshold = 0.4` in `app_constants.dart`
-- ✅ `SharedPackageInboxProvider` extended — `fuzzyActivityMatchFor()` detects near-duplicate activity names (distance ≤ 0.4, skipped when exact conflict exists); `existingCategories` / `existingPersons` getters; `clearActivityResolution()` / `clearPersonResolution()` methods
-- ✅ `PackageImporter` fixed — `_buildCategoryMap` and `_buildPersonMap` correctly handle `ActivityResolution.skip()` and `PersonResolution.skip()` / `createNew()` resolution types introduced in US-093
-- ✅ `lib/presentation/import/activity_picker_screen.dart` (NEW) — full-screen live-search picker returning selected `ActivityCategory` via `Navigator.pop`
-- ✅ `lib/presentation/import/person_picker_screen.dart` (NEW) — full-screen live-search picker returning selected `Person` via `Navigator.pop`
-- ✅ `lib/presentation/import/package_activity_tiles.dart` (NEW, `part of`) — three tile variants: `_ActivityConflictTile` (orange, blocks Continue), `_ActivityFuzzyTile` (blue, optional — Create as New / Rename / Link with similar / Link with Existing / Skip), `_ActivityOptInTile` (plain list tile)
-- ✅ `PackageActivitiesScreen` rewritten — delegates all tile rendering to `package_activity_tiles.dart`; status text shows resolved linked category name (not literal "selected category")
-- ✅ `PackagePersonsScreen` rewritten — `_PersonConflictTile` supports `createNew()` / `nickname()` / `link()` / `skip()`; `_PersonOptInTile` with compact button style
-- ✅ `PackageConflictScreen` updated — always routes through activities/persons screens when content exists; sender always appears in persons review
-- ✅ 20 automated tests: `normalizedLevenshtein` (9), `SharedPackageInboxProvider` fuzzy/getters/clear (8), `PackageImporter` skip+createNew (3); `PackageConflictScreen` updated (1)
+### Latest: v3.49.0 — US-095: Merge Activity Categories (March 22, 2026)
+- ✅ `lib/data/repositories/meeting_repository.dart` — new `replaceCategoryInMeetings(userId, sourceId, targetId)`: queries all meetings containing `sourceId` via `arrayContains`, atomically replaces with `targetId` using WriteBatch (deduplicates if target already present)
+- ✅ `lib/presentation/activities/activities_list_provider.dart` — new `MeetingRepository` dependency; `mergeCandidates(sourceId)` returns all categories except source sorted alphabetically; `mergeCategory(userId, sourceId, targetId)` orchestrates replaceCategoryInMeetings → deleteCategory → initialize
+- ✅ `lib/presentation/activities/merge_category_picker_screen.dart` (NEW) — full-screen picker with hierarchical view (roots + indented children with tree connector lines, icons) and search mode (flat filtered list with parent name as subtitle)
+- ✅ `lib/presentation/activities/activities_list_screen.dart` — "Merge into…" option added to bottom sheet for categories with no children (leaf check via `childrenOf(id).isEmpty`); `_openMergePicker` method on State (stale context rule); confirm dialog with source → target names; SnackBar on success/failure
+- ✅ `lib/presentation/screens/main_screen.dart` — `ActivitiesListProvider` now uses shared `activityCategoryRepository` and `meetingRepository` instances (with cache invalidation wired)
+- ✅ 10 automated tests: `MeetingRepository.replaceCategoryInMeetings` (4), `ActivitiesListProvider.mergeCandidates`/`mergeCategory` (2), `MergeCategoryPickerScreen` widget tests (4); total 650 tests passing
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
