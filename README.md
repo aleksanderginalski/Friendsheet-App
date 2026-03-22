@@ -174,13 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.49.0 — US-095: Merge Activity Categories (March 22, 2026)
-- ✅ `lib/data/repositories/meeting_repository.dart` — new `replaceCategoryInMeetings(userId, sourceId, targetId)`: queries all meetings containing `sourceId` via `arrayContains`, atomically replaces with `targetId` using WriteBatch (deduplicates if target already present)
-- ✅ `lib/presentation/activities/activities_list_provider.dart` — new `MeetingRepository` dependency; `mergeCandidates(sourceId)` returns all categories except source sorted alphabetically; `mergeCategory(userId, sourceId, targetId)` orchestrates replaceCategoryInMeetings → deleteCategory → initialize
-- ✅ `lib/presentation/activities/merge_category_picker_screen.dart` (NEW) — full-screen picker with hierarchical view (roots + indented children with tree connector lines, icons) and search mode (flat filtered list with parent name as subtitle)
-- ✅ `lib/presentation/activities/activities_list_screen.dart` — "Merge into…" option added to bottom sheet for categories with no children (leaf check via `childrenOf(id).isEmpty`); `_openMergePicker` method on State (stale context rule); confirm dialog with source → target names; SnackBar on success/failure
-- ✅ `lib/presentation/screens/main_screen.dart` — `ActivitiesListProvider` now uses shared `activityCategoryRepository` and `meetingRepository` instances (with cache invalidation wired)
-- ✅ 10 automated tests: `MeetingRepository.replaceCategoryInMeetings` (4), `ActivitiesListProvider.mergeCandidates`/`mergeCategory` (2), `MergeCategoryPickerScreen` widget tests (4); total 650 tests passing
+### Latest: v3.50.0 — US-INF-010: Agent Session Observability (March 22, 2026)
+- ✅ `.claude/settings.json` — PreToolUse + Stop hooks log every skill invocation and session end to JSONL
+- ✅ `tools/observability/log_agent.py` (NEW) — hook script: appends `agent_start` entry on every skill call
+- ✅ `tools/observability/log_stop.py` (NEW) — hook script: appends `session_end` entry with token count parsed from transcript
+- ✅ `tools/observability/report.py` (NEW) — generates self-contained HTML report with SVG timeline, per-agent token estimates, cost; `--us`, `--sp`, `--notes` params for US-INF-011 cross-session dashboard
+- ✅ `tools/observability/report.bat` (NEW) — Windows launcher wrapper
+- ✅ 650 Flutter tests passing (tooling-only change, no regressions)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

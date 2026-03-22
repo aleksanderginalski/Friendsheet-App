@@ -3918,19 +3918,19 @@ login instead of only on first login.
 
 **Story Points:** 5
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 22, 2026)
 **Feature:** FEATURE-INF-002: Multi-Agent System
 **Trigger:** After US-INF-009 (Skills Migration)
 
 **Acceptance Criteria:**
-- [ ] Claude Code hooks configured: `PreToolUse` detects Skill tool invocations and logs agent name + timestamp
-- [ ] `Stop` hook captures session end and total token/cost data (parsed from transcript file)
-- [ ] Each session log saved as JSONL file in `tools/observability/logs/`
-- [ ] Python script generates per-session HTML report with: agent timeline (with bar proportional to time), estimated tokens per agent, total tokens and cost
-- [ ] Report launched via `python tools/observability/report.py --us US-XXX --sp N [--notes "..."]`
-- [ ] `--us`, `--sp`, `--notes` parameters written into session log for future comparison (US-INF-011)
-- [ ] Report correctly shows sessions from real US work (validated against at least one completed US)
-- [ ] No impact on normal Claude Code operation when hooks are active
+- [x] Claude Code hooks configured: `PreToolUse` detects Skill tool invocations and logs agent name + timestamp
+- [x] `Stop` hook captures session end and total token/cost data (parsed from transcript file)
+- [x] Each session log saved as JSONL file in `tools/observability/logs/`
+- [x] Python script generates per-session HTML report with: agent timeline (with bar proportional to time), estimated tokens per agent, total tokens and cost
+- [x] Report launched via `tools\observability\report.bat --us US-XXX --sp N [--notes "..."]`
+- [x] `--us`, `--sp`, `--notes` parameters written into session log for future comparison (US-INF-011)
+- [x] Report correctly shows sessions from real US work (validated against at least one completed US)
+- [x] No impact on normal Claude Code operation when hooks are active
 
 **Technical Notes:**
 - Token per agent = approximated via time proportion: `agent_tokens = total_tokens × (agent_duration / session_duration)`

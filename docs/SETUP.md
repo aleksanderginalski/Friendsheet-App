@@ -31,6 +31,11 @@ Before you begin, ensure you have the following installed:
 5. **Google Account**
    - Required for Firebase Console access
 
+6. **Python 3.12** (for observability tooling — `tools/observability/`)
+   - Install via [uv](https://docs.astral.sh/uv/): `uv python install 3.12`
+   - Verify: `uv python find 3.12`
+   - After installing, update the Python path in `.claude/settings.json` hooks and `tools/observability/report.bat` to match your system path
+
 ---
 
 ## 🚀 Step-by-Step Setup
