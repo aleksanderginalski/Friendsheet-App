@@ -166,5 +166,72 @@ void main() {
         expect(count, equals(0));
       });
     });
+
+    group('replaceCategoryInMeetings', () {
+      test('replaces sourceId with targetId and removes sourceId', () async {
+        final id = await repository.saveMeeting(
+          makeMeeting(userId: 'user-1')
+              .copyWith(categoryIds: ['cat-source', 'cat-other']),
+        );
+
+        await repository.replaceCategoryInMeetings(
+            'user-1', 'cat-source', 'cat-target');
+
+        final doc = await meetingsRef('user-1').doc(id).get();
+        final ids = List<String>.from(doc.data()!['categoryIds'] as List);
+        expect(ids, containsAll(['cat-other', 'cat-target']));
+        expect(ids, isNot(contains('cat-source')));
+      });
+
+      test('does not duplicate targetId when already present in meeting',
+          () async {
+        final id = await repository.saveMeeting(
+          makeMeeting(userId: 'user-1')
+              .copyWith(categoryIds: ['cat-source', 'cat-target']),
+        );
+
+        await repository.replaceCategoryInMeetings(
+            'user-1', 'cat-source', 'cat-target');
+
+        final doc = await meetingsRef('user-1').doc(id).get();
+        final ids = List<String>.from(doc.data()!['categoryIds'] as List);
+        expect(ids.where((e) => e == 'cat-target').length, equals(1));
+        expect(ids, isNot(contains('cat-source')));
+      });
+
+      test('no-op when no meetings contain sourceId', () async {
+        final id = await repository.saveMeeting(
+          makeMeeting(userId: 'user-1').copyWith(categoryIds: ['cat-other']),
+        );
+
+        await repository.replaceCategoryInMeetings(
+            'user-1', 'cat-source', 'cat-target');
+
+        final doc = await meetingsRef('user-1').doc(id).get();
+        final ids = List<String>.from(doc.data()!['categoryIds'] as List);
+        expect(ids, equals(['cat-other']));
+      });
+
+      test('updates all meetings that contain sourceId', () async {
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'M1')
+              .copyWith(categoryIds: ['cat-source']),
+        );
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'M2')
+              .copyWith(categoryIds: ['cat-source', 'cat-other']),
+        );
+
+        await repository.replaceCategoryInMeetings(
+            'user-1', 'cat-source', 'cat-target');
+
+        final snapshot = await meetingsRef('user-1').get();
+        for (final doc in snapshot.docs) {
+          final ids = List<String>.from(doc.data()['categoryIds'] as List);
+          expect(ids, isNot(contains('cat-source')));
+          expect(ids, contains('cat-target'));
+        }
+      });
+    });
   });
 }

@@ -1196,3 +1196,32 @@ Run after every release or hotfix:
 | ID | Test name | Expected |
 |----|-----------|---------|
 | UT-FUZZY-021 | Tapping Continue routes through PersonsScreen before import success | "Review Persons" shown, tapping Confirm shows "Import complete!" |
+
+---
+
+## TC-MERGE: Merge Activity Categories (US-095)
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-MERGE-001 | replaces sourceId with targetId and removes sourceId | `categoryIds` contains `cat-target` and `cat-other`, not `cat-source` |
+| UT-MERGE-002 | does not duplicate targetId when already present in meeting | `cat-target` appears exactly once, `cat-source` removed |
+| UT-MERGE-003 | no-op when no meetings contain sourceId | `categoryIds` unchanged |
+| UT-MERGE-004 | updates all meetings that contain sourceId | all affected meetings have `cat-target`, none have `cat-source` |
+
+### Automated tests — `test/presentation/activities/activities_list_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-MERGE-005 | mergeCandidates excludes source and returns remainder sorted alphabetically | source id absent, remaining sorted A→Z |
+| UT-MERGE-006 | mergeCategory calls replaceCategoryInMeetings and deleteCategory then refreshes | both repository methods called once, getAllCategories called |
+
+### Automated tests — `test/presentation/activities/merge_category_picker_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-MERGE-007 | shows source name in app bar title | title text `Merge "Piwko" into…` visible |
+| UT-MERGE-008 | hierarchy view shows root and child category names | Sport, Bieg, Piwo all visible without search |
+| UT-MERGE-009 | search hides non-matching categories | only 'Piwo' ListTile visible after typing 'Piwo' |
+| UT-MERGE-010 | search shows parent name as subtitle for child category | searching 'Bieg' shows ListTile with 'Bieg' title and 'Sport' subtitle |

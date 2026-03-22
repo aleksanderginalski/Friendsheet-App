@@ -8,6 +8,7 @@ import '../widgets/shared_search_bar.dart';
 import 'activities_list_provider.dart';
 import 'activity_icons.dart';
 import 'add_edit_activity_dialog.dart';
+import 'merge_category_picker_screen.dart';
 
 /// Displays all activity categories in a two-level tree.
 /// Level-1 categories are collapsible sections; level-2 categories are leaf tiles.
@@ -96,6 +97,70 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
     );
   }
 
+  Future<void> _openMergePicker(
+      BuildContext context, ActivityCategory source) async {
+    final provider = context.read<ActivitiesListProvider>();
+    final candidates = provider.mergeCandidates(source.id);
+
+    final target = await Navigator.push<ActivityCategory>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MergeCategoryPickerScreen(
+          source: source,
+          candidates: candidates,
+        ),
+      ),
+    );
+
+    if (target == null || !context.mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Merge categories?'),
+        content: Text(
+          'Merge "${source.name}" into "${target.name}"?\n\n'
+          'All meetings will be updated. "${source.name}" will be deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('MERGE'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final userId = AuthService().currentUserId!;
+    try {
+      await context
+          .read<ActivitiesListProvider>()
+          .mergeCategory(userId, source.id, target.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Merged "${source.name}" into "${target.name}"'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Merge failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _confirmDelete(
       BuildContext context, ActivityCategory category) async {
     final confirmed = await showDialog<bool>(
@@ -171,6 +236,7 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
                       _openAddChildDialog(context, parentId),
                   onEdit: (cat) => _openEditDialog(context, cat),
                   onDelete: (cat) => _confirmDelete(context, cat),
+                  onMerge: (cat) => _openMergePicker(context, cat),
                 ),
               ),
             ],
@@ -187,6 +253,7 @@ class _ActivitiesBody extends StatelessWidget {
   final ValueChanged<String> onAddChild;
   final ValueChanged<ActivityCategory> onEdit;
   final ValueChanged<ActivityCategory> onDelete;
+  final ValueChanged<ActivityCategory> onMerge;
 
   const _ActivitiesBody({
     required this.provider,
@@ -194,6 +261,7 @@ class _ActivitiesBody extends StatelessWidget {
     required this.onAddChild,
     required this.onEdit,
     required this.onDelete,
+    required this.onMerge,
   });
 
   @override
@@ -248,6 +316,7 @@ class _ActivitiesBody extends StatelessWidget {
           onAddChild: onAddChild,
           onEdit: onEdit,
           onDelete: onDelete,
+          onMerge: onMerge,
         );
       },
     );
@@ -263,6 +332,7 @@ class _RootCategoryTile extends StatelessWidget {
   final ValueChanged<String> onAddChild;
   final ValueChanged<ActivityCategory> onEdit;
   final ValueChanged<ActivityCategory> onDelete;
+  final ValueChanged<ActivityCategory> onMerge;
 
   const _RootCategoryTile({
     required this.category,
@@ -270,9 +340,11 @@ class _RootCategoryTile extends StatelessWidget {
     required this.onAddChild,
     required this.onEdit,
     required this.onDelete,
+    required this.onMerge,
   });
 
   Future<void> _showOptions(BuildContext context) async {
+    final hasNoChildren = provider.childrenOf(category.id).isEmpty;
     await showModalBottomSheet<void>(
       context: context,
       builder: (_) => SafeArea(
@@ -295,6 +367,15 @@ class _RootCategoryTile extends StatelessWidget {
                 onDelete(category);
               },
             ),
+            if (hasNoChildren)
+              ListTile(
+                leading: const Icon(Icons.merge_type),
+                title: const Text('Merge into\u2026'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  onMerge(category);
+                },
+              ),
           ],
         ),
       ),
@@ -349,6 +430,7 @@ class _RootCategoryTile extends StatelessWidget {
             isLast: isLast,
             onEdit: onEdit,
             onDelete: onDelete,
+            onMerge: onMerge,
           );
         }).toList(),
       ),
@@ -364,12 +446,14 @@ class _ActivityLeafTile extends StatelessWidget {
   final bool isLast;
   final ValueChanged<ActivityCategory> onEdit;
   final ValueChanged<ActivityCategory> onDelete;
+  final ValueChanged<ActivityCategory> onMerge;
 
   const _ActivityLeafTile({
     required this.category,
     required this.isLast,
     required this.onEdit,
     required this.onDelete,
+    required this.onMerge,
   });
 
   Future<void> _showOptions(BuildContext context) async {
@@ -393,6 +477,14 @@ class _ActivityLeafTile extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).pop();
                 onDelete(category);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.merge_type),
+              title: const Text('Merge into\u2026'),
+              onTap: () {
+                Navigator.of(context).pop();
+                onMerge(category);
               },
             ),
           ],

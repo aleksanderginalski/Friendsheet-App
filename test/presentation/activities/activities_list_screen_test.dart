@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/presentation/activities/activities_list_provider.dart';
 import 'package:friendsheet/presentation/activities/activities_list_screen.dart';
 import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
@@ -110,6 +111,9 @@ class _StubActivitiesListProvider extends ActivitiesListProvider {
         _resultsExist = hasSearchResults ?? query.isEmpty,
         super(
           repository: ActivityCategoryRepository(
+            firestore: FakeFirebaseFirestore(),
+          ),
+          meetingRepository: MeetingRepository(
             firestore: FakeFirebaseFirestore(),
           ),
         );

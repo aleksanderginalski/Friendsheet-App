@@ -2,15 +2,20 @@ import 'package:flutter/foundation.dart';
 
 import '../../data/models/activity_category.dart';
 import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 
 // Manages state for ActivitiesListScreen.
 // Responsibilities: fetch all user categories, tree expansion state,
 // search filtering, and CRUD operations delegated to the repository.
 class ActivitiesListProvider extends ChangeNotifier {
   final ActivityCategoryRepository _repository;
+  final MeetingRepository _meetingRepository;
 
-  ActivitiesListProvider({required ActivityCategoryRepository repository})
-      : _repository = repository;
+  ActivitiesListProvider({
+    required ActivityCategoryRepository repository,
+    required MeetingRepository meetingRepository,
+  })  : _repository = repository,
+        _meetingRepository = meetingRepository;
 
   List<ActivityCategory> _allCategories = [];
   String _searchQuery = '';
@@ -159,6 +164,22 @@ class ActivitiesListProvider extends ChangeNotifier {
   // Deletes the given category and all its direct children, then refreshes the list.
   Future<void> deleteCategory(String userId, String categoryId) async {
     await _repository.deleteWithChildren(userId, categoryId);
+    await initialize(userId);
+  }
+
+  // Returns all categories except [sourceId], sorted alphabetically.
+  // Used to populate the merge target picker.
+  List<ActivityCategory> mergeCandidates(String sourceId) =>
+      _allCategories.where((c) => c.id != sourceId).toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+
+  // Replaces all meeting references from [sourceId] to [targetId],
+  // then deletes the source category. Refreshes the list on success.
+  Future<void> mergeCategory(
+      String userId, String sourceId, String targetId) async {
+    await _meetingRepository.replaceCategoryInMeetings(
+        userId, sourceId, targetId);
+    await _repository.deleteCategory(userId, sourceId);
     await initialize(userId);
   }
 

@@ -85,7 +85,7 @@ git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
 After all documentation is updated, ask: "Chcesz uruchomić /retro przed pushem? (t/n)"
 
 Wait for the user's answer before continuing:
-- If "t" → say: "Uruchom /retro — po zakończeniu /retro pokaże pełną sekwencję zamknięcia."
+- If "t" → say: "Wpisz /retro teraz. Po zakończeniu /retro pokaże pełną sekwencję zamknięcia."
 - If "n" → provide the full closing sequence below.
 
 Closing sequence — fill in actual branch name, US number, and files:

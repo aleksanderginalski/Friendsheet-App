@@ -154,6 +154,25 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
       ) as _i6.Future<int>);
 
   @override
+  _i6.Future<void> replaceCategoryInMeetings(
+    String? userId,
+    String? sourceId,
+    String? targetId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #replaceCategoryInMeetings,
+          [
+            userId,
+            sourceId,
+            targetId,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
   _i6.Future<void> removePersonFromMeetings(
     String? userId,
     String? personId,
