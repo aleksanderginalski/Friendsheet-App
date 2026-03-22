@@ -2,7 +2,7 @@
 
 **Project:** Friendsheet  
 **Version:** 2.1  
-**Last Updated:** March 20, 2026  
+**Last Updated:** March 22, 2026  
 **Product Owner:** Aleksander Ginalski  
 
 ---
@@ -3167,21 +3167,21 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `sharing`, `conflicts`, `activities`, `fuzzy`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-093
 
 **Acceptance Criteria:**
-- [ ] During package import conflict detection, activities with similar (but not identical) names are flagged as "potential matches"
-- [ ] Similarity algorithm: normalized Levenshtein distance ≤ 0.4 (configurable threshold)
-- [ ] UI shows "potential match" suggestion alongside the rename/link options
-- [ ] User can: treat as new activity (ignore suggestion) / link to the suggested match
-- [ ] Exact case-insensitive matches remain a hard conflict (as in US-093)
+- [x] During package import conflict detection, activities with similar (but not identical) names are flagged as "potential matches"
+- [x] Similarity algorithm: normalized Levenshtein distance ≤ 0.4 (configurable threshold)
+- [x] UI shows "potential match" suggestion alongside the rename/link options
+- [x] User can: treat as new activity (ignore suggestion) / link to the suggested match
+- [x] Exact case-insensitive matches remain a hard conflict (as in US-093)
 
 **Tasks:**
-- [ ] **TASK-094.1:** Implement Levenshtein distance utility function — 0.5h
-- [ ] **TASK-094.2:** Integrate fuzzy detection into activity conflict detection in provider — 1h
-- [ ] **TASK-094.3:** Update activity conflict UI to show fuzzy suggestions — 1h
-- [ ] **TASK-094.4:** Write tests — 0.5h
+- [x] **TASK-094.1:** Implement Levenshtein distance utility function — 0.5h
+- [x] **TASK-094.2:** Integrate fuzzy detection into activity conflict detection in provider — 1h
+- [x] **TASK-094.3:** Update activity conflict UI to show fuzzy suggestions — 1h
+- [x] **TASK-094.4:** Write tests — 0.5h
 
 ---
 
