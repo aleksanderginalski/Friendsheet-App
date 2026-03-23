@@ -177,7 +177,8 @@ class PackageImporter {
       } else {
         final sp = entry.value;
         final resolvedNickname = res?.nickname ?? sp.nickname;
-        final nicknames = resolvedNickname != null ? [resolvedNickname] : <String>[];
+        final nicknames =
+            resolvedNickname != null ? [resolvedNickname] : <String>[];
         final person = await personRepo.addPerson(Person(
           id: '',
           userId: userId,

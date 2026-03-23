@@ -54,12 +54,14 @@ void main() {
   PendingMeetingPackage makePackage({
     List<SharedPerson> participants = const [],
     List<String> categoryNames = const [],
+    String? senderNickname,
   }) =>
       PendingMeetingPackage(
         id: 'pkg1',
         senderUid: 'sender-uid',
         senderFirstName: 'Ania',
         senderLastName: 'Kowalska',
+        senderNickname: senderNickname,
         sentAt: DateTime(2026, 3, 20),
         meetings: [
           SharedMeeting(
@@ -402,6 +404,58 @@ void main() {
           .captured
           .single as Meeting;
       expect(meeting.participantIds, isEmpty);
+    });
+
+    test('saves sender nickname from package when no resolution given',
+        () async {
+      final pkg = makePackage(senderNickname: 'Anka');
+      when(mockPersonRepo.addPerson(any))
+          .thenAnswer((_) async => makePerson(id: 'p-new'));
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+
+      await importer.run(
+        package: pkg,
+        meetingConflicts: {},
+        meetingResolutions: {},
+        activityResolutions: {},
+        activityOptOut: {},
+        personResolutions: {},
+        personOptOut: {},
+        userId: 'u1',
+      );
+
+      final captured = verify(mockPersonRepo.addPerson(captureAny))
+          .captured
+          .single as Person;
+      expect(captured.nicknames, contains('Anka'));
+    });
+
+    test(
+        'explicit PersonResolution.nickname overrides sender suggested nickname',
+        () async {
+      final pkg = makePackage(senderNickname: 'Anka');
+      when(mockPersonRepo.addPerson(any))
+          .thenAnswer((_) async => makePerson(id: 'p-new'));
+      when(mockMeetingRepo.saveMeeting(any)).thenAnswer((_) async => 'm-new');
+
+      await importer.run(
+        package: pkg,
+        meetingConflicts: {},
+        meetingResolutions: {},
+        activityResolutions: {},
+        activityOptOut: {},
+        personResolutions: {
+          'ania kowalska': const PersonResolution.nickname('Aneczka'),
+        },
+        personOptOut: {},
+        userId: 'u1',
+      );
+
+      final captured = verify(mockPersonRepo.addPerson(captureAny))
+          .captured
+          .single as Person;
+      expect(captured.nicknames, contains('Aneczka'));
+      expect(captured.nicknames, isNot(contains('Anka')));
     });
 
     test(
