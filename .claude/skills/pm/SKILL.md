@@ -63,6 +63,13 @@ Gdy /docs skończy pracę, przypomnij o sekwencji:
 "Dokumentacja gotowa. Kolejność zamknięcia:
 commit kodu → commit dokumentacji → git push → PR → merge → git checkout main"
 
+Przypomnij też o otagowaniu sesji observability:
+"Pamiętaj o raporcie sesji:
+```powershell
+tools\observability\report.bat --us US-XXX --sp N
+```
+Zastąp US-XXX numerem US i N liczbą Story Points."
+
 ## Gotowa komenda po routingu
 
 Po ustaleniu agenta i akceptacji użytkownika — wygeneruj gotową komendę do skopiowania:

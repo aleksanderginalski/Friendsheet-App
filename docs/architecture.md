@@ -77,6 +77,7 @@ erDiagram
         int weight
         array participantIds
         array categoryIds
+        string notes "nullable, free-text memories (US-100, max 2000 chars)"
         datetime createdAt
         datetime updatedAt
     }
@@ -88,6 +89,7 @@ erDiagram
         string lastName
         array nicknames
         string linkedUserId "nullable, Friendsheet uid of linked friend account (US-090)"
+        date birthDate "nullable, used for Buddy birthday reminders (US-103)"
         datetime createdAt
     }
     
@@ -158,9 +160,11 @@ graph TB
         B7[Meeting Sharing Service - M5]
         B8[Google Calendar Service - M6]
         B8b[Google Photos Service - M6]
-        B9[AI Context Builder - M8]
+        B9[Context Builder Service - M7]
+        B10[OpenAI Service - M7]
+        B11[Relationship Score Service - M7]
     end
-    
+
     subgraph "Data Layer"
         C1[Auth Repository]
         C2[Meeting Repository]
@@ -170,6 +174,7 @@ graph TB
         C6[Friend Group Repository - US-062]
         C7[Sharing Token Repository - M5]
         C8[Dashboard Config Repository - M7]
+        C9[AI Key Repository - M7]
     end
     
     subgraph "Cache Layer"
@@ -182,7 +187,7 @@ graph TB
         D2[Firestore]
         D3[Google Calendar API - M6]
         D3b[Google Photos API - M6]
-        D4[LLM API - M8]
+        D4[OpenAI API - M7]
     end
     
     style A1 fill:#E3F2FD
@@ -531,15 +536,31 @@ Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no d
 
 ---
 
-### M8 — AI Assistant
+### M7 (continued) — AI Assistant (Buddy)
 
-**Status:** Architecture pending spike (US-040).
+**Status:** Architecture defined (discovery session March 2026).
 
-**Options under evaluation:**
-- Claude API / OpenAI API — cloud-based, per-token cost, high quality
-- Gemini Nano on-device — zero marginal cost, limited capability, no privacy concerns
+**Provider:** OpenAI GPT-4o — BYOK (user's own API key, no cost to developer).
 
-**Privacy principle:** Raw Firestore data never sent to LLM. Only aggregated statistics summary sent as context. User must explicitly consent before first use.
+**Privacy principle:** Real names pseudonymized on-device (Friend_A, Friend_B...) before every API call. Full meeting list with details sent as context — not raw Firestore data, but structured and anonymized. User must explicitly consent before first use.
+
+**Write isolation principle:** Buddy never holds direct references to repositories. All reads flow through `ContextBuilderService`. All writes flow through `BuddyWriteService` which exposes exactly one method: `saveNotes(meetingId, notes)`. This prevents bulk data destruction regardless of user prompt content.
+
+**Data flow:**
+```
+AIChatScreen
+    ├── READ  → ContextBuilderService → repositories (read-only)
+    └── WRITE → BuddyWriteService.saveNotes() → MeetingRepository (notes field only)
+```
+
+**Key services:**
+- `ContextBuilderService` — pseudonymization, per-person filtering, prompt serialization
+- `OpenAIService` — HTTP client for `/v1/chat/completions`, hardcoded system prompt (Buddy character)
+- `BuddyWriteService` — single write surface: saveNotes only
+- `RelationshipScoreService` — local scoring algorithm, no API calls (US-107)
+- `AIKeyRepository` — Flutter Secure Storage wrapper for OpenAI key
+
+**Gemini Nano (on-device):** deferred to future epic.
 
 ---
 

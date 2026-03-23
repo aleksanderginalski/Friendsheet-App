@@ -1,7 +1,7 @@
 # Friendsheet — Wireframes & UI Documentation
 
 **Responsible Role:** UX/UI Designer  
-**Version:** 2.1 (US-062 — Friend Groups added to Friends tab and PersonDetailScreen)  
+**Version:** 2.2 (US-099 — PersonMeetingsScreen added; US-098 — swipe-to-delete package in MeetingInboxScreen)
 **Last Updated:** March 2026
 
 ---
@@ -93,25 +93,44 @@
 ├─────────────────────────────────────┤
 │                                     │
 │  ┌───────────────────────────────┐  │
+│  │  🤖 Hey! You recently had     │  │  ← BuddyWidget (expanded, default)
+│  │  "Game Night with friends" —  │  │    shows last meeting without notes
+│  │  want to save your memories?  │  │    (within last 2 months)
+│  │                               │  │
+│  │  [Let's do it!]           [X] │  │  ← X collapses to icon
+│  └───────────────────────────────┘  │
+│                                     │
+│  ┌───────────────────────────────┐  │
 │  │  📅 Import your past meetings │  │  ← CalendarOnboardingCta
 │  │  Connect Google Calendar to   │  │    visible when < 50 meetings
 │  │  get started quickly          │  │    AND not dismissed
 │  │                               │  │
-│  │  [Import from Calendar]  [X]  │  │  ← dismiss button removes CTA
+│  │  [Import from Calendar]  [X]  │  │
 │  └───────────────────────────────┘  │
 │                                     │
-│  <   Statistics             🎛  >  │  ← section header
+│  <   Statistics             🎛  >  │
 │  ┌───────────────────────────────┐  │
-│  │                               │  │
-│  │     [Statistics Card]         │  │  ← PageView carousel (swipeable)
-│  │                               │  │
+│  │     [Statistics Card]         │  │
 │  └───────────────────────────────┘  │
-│              ● ○ ○                  │  ← page indicator dots
+│              ● ○ ○                  │
 │                                     │
-└─────────────────────────────────────┘
+│  🤖                                 │  ← Buddy icon (bottom-left, always
+└─────────────────────────────────────┘    visible when widget is closed)
 │  🏠    │  📅    │  👥    │  🏷️    │
 └─────────────────────────────────────┘
 ```
+
+### BuddyWidget
+Widget priority order (highest wins):
+1. **Birthday reminder** — friend with `birthDate` within next 7 days → "🎂 [Name]'s birthday is in X days — want Buddy to write something special?"
+2. **Missing notes** — last meeting without notes within last 2 months → "Hey! You recently had [meeting name] — want to save your memories?"
+3. **Long time no see** — any friend not seen in 3+ months → "You haven't seen [Name] in a while — maybe time to catch up?"
+4. **Default** — "Hey! Can I help you with anything?"
+
+- Expanded by default on app launch
+- Closed by `[X]` button → Buddy icon persists in bottom-left corner of HomeScreen (always visible when widget closed)
+- Tapping Buddy icon: reopens widget if message available; otherwise opens `AIChatScreen` in free-query mode
+- Tapping the action button: opens `AIChatScreen` in the relevant mode (meeting-notes / wishes / free)
 
 ### CalendarOnboardingCta
 - Visible when: `totalMeetings < 50` AND not dismissed
@@ -424,7 +443,7 @@ Persons are displayed in named groups (friend groups) with an "Ungrouped" sectio
 
 ---
 
-## Screen 7: PersonDetailScreen — US-062
+## Screen 7: PersonDetailScreen — US-062, US-099
 
 ```
 ┌─────────────────────────────────────┐
@@ -434,7 +453,7 @@ Persons are displayed in named groups (friend groups) with an "Ungrouped" sectio
 │         AB                          │
 │      Anna Bogucka                   │
 │                                     │
-│  Meetings together: 7               │
+│  Meetings together: 7  🔍           │  ← 🔍 tappable — opens PersonMeetingsScreen
 │                                     │
 │  ─────────────────────────────────  │
 │  Nicknames                          │
@@ -458,6 +477,39 @@ Persons are displayed in named groups (friend groups) with an "Ungrouped" sectio
 - Nicknames section: add via text field, remove via `✕` chip
 - Groups section: each checkbox is a live toggle — checking adds to group, unchecking removes
 - Groups section visible only if at least one group exists for the user
+- `🔍` next to meeting count → navigates to `PersonMeetingsScreen` (US-099)
+
+---
+
+## Screen 7b: PersonMeetingsScreen — US-099
+
+```
+┌─────────────────────────────────────┐
+│  ← Meetings with Anna               │
+├─────────────────────────────────────┤
+│                                     │
+│  2026                               │
+│    March                            │
+│  ┌───────────────────────────────┐  │
+│  │  🗓 Coffee break   Mar 10     │  │  ← MeetingCard (same as MeetingsListScreen)
+│  │  👥 2 participants            │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│  2025                               │
+│    December                         │
+│  ┌───────────────────────────────┐  │
+│  │  🗓 Board games    Dec 21     │  │
+│  └───────────────────────────────┘  │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Lists only meetings where this person is a participant
+- Grouped by year and month — same layout as `MeetingsListScreen`
+- Tap meeting card → `MeetingDetailScreen` → `EditMeetingScreen` (same flow as main meetings list)
+- Empty state shown if person has no meetings
+- Back navigation returns to `PersonDetailScreen`
 
 ---
 
@@ -689,6 +741,9 @@ Persons are displayed in named groups (friend groups) with an "Ungrouped" sectio
 - Drawer shows `"Pending Meetings (N)"` badge when inbox is non-empty
 - Tap card → `InboxItemEditScreen`
 - When inbox empty → `ImportSuccessScreen`
+- Shared packages (peer-to-peer): swipe left on package tile → "Delete" action (US-098)
+  - Confirmation dialog shown before deletion
+  - Package removed from `users/{uid}/pending_meetings/` without any data import
 
 ---
 
@@ -787,6 +842,9 @@ LoginScreen
           │
           ├── Tab 2: PersonsListScreen
           │     ├── Person tap → PersonDetailScreen (with FriendGroupsProvider injected)
+          │     │     └── [🔍 meeting count] → PersonMeetingsScreen
+          │     │           ├── MeetingCard tap → MeetingDetailScreen → EditMeetingScreen
+          │     │           └── ← back → PersonDetailScreen
           │     ├── [+] → bottom sheet (Add Person / Add Group)
           │     └── Group [👤+] → AssignPersonsBottomSheet
           │
@@ -818,5 +876,111 @@ LoginScreen
 
 ---
 
-*This document reflects the implemented state of Friendsheet as of US-062.*  
+---
+
+## Screen 15: AIChatScreen — US-087
+
+```
+┌─────────────────────────────────────┐
+│  ←  Buddy                       ⋮  │  ← back button, Buddy name in header
+├─────────────────────────────────────┤
+│                                     │
+│         ┌──────────────────────┐   │
+│         │ Hey! I see you had   │   │  ← Buddy message bubble (left-aligned)
+│         │ "Game Night" last    │   │
+│         │ Saturday. Tell me    │   │
+│         │ about it!            │   │
+│         └──────────────────────┘   │
+│                                     │
+│  ┌─────────────────────────────┐   │  ← User message bubble (right-aligned)
+│  │ Bania z chłopakami, granie  │   │
+│  │ w piłkę, prezentacja proj.  │   │
+│  └─────────────────────────────┘   │
+│                                     │
+│         ┌──────────────────────┐   │
+│         │ Got it! Saved to     │   │
+│         │ "Game Night". 🎉     │   │
+│         │ Anything else to add?│   │
+│         └──────────────────────┘   │
+│                                     │
+├─────────────────────────────────────┤
+│  [Type a message...]         [Send] │
+└─────────────────────────────────────┘
+```
+
+**Modes:**
+
+| Mode | Entry point | Context sent to AI |
+|------|------------|-------------------|
+| Meeting notes | BuddyWidget tap (specific meeting) | That meeting's details |
+| Friend wishes | User mentions a person name | Meetings with that person only (last 12 months) |
+| Free query | BuddyWidget icon tap / default | Full meeting history (last 12 months) |
+
+**Empty state (free query, no prior messages):**
+- Shows 3 example prompts: "Who did I see most this year?", "Write birthday wishes for [Name]", "Who should I catch up with?"
+
+**Guard logic (on screen open):**
+- No API key → navigate to `AISettingsScreen`
+- No consent → navigate to `AIConsentScreen`
+
+---
+
+## Screen 16: AIConsentScreen — US-085
+
+```
+┌─────────────────────────────────────┐
+│  ←  Before we start                 │
+├─────────────────────────────────────┤
+│                                     │
+│      🤖  Meet Buddy                 │
+│                                     │
+│  Buddy uses OpenAI to answer your   │
+│  questions about your social life.  │
+│                                     │
+│  What IS sent to OpenAI:            │
+│  • Anonymized meeting summaries     │
+│    (Friend_A, Friend_B — not real   │
+│    names)                           │
+│  • Activity names and dates         │
+│  • Your meeting notes (anonymized)  │
+│                                     │
+│  What is NOT sent:                  │
+│  • Real names of your friends       │
+│  • Raw Firestore data               │
+│  • Your API key (stays on device)   │
+│                                     │
+│  [Privacy Policy]                   │
+│                                     │
+│  ┌─────────────────────────────┐   │
+│  │     I understand, let's go  │   │  ← active tap required
+│  └─────────────────────────────┘   │
+└─────────────────────────────────────┘
+```
+
+---
+
+## Screen 17: AISettingsScreen — US-088
+
+```
+┌─────────────────────────────────────┐
+│  ←  AI Assistant Settings           │
+├─────────────────────────────────────┤
+│                                     │
+│  OpenAI API Key                     │
+│  ┌─────────────────────────────┐   │
+│  │  sk-...••••••••••••••abcd  │   │  ← masked, shows last 4 chars
+│  └─────────────────────────────┘   │
+│  [Change Key]        [Delete Key]   │
+│                                     │
+│  Your key is stored securely on     │
+│  this device and never shared.      │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Navigation:** Accessible from Settings tab and from guard redirect in `AIChatScreen`.
+
+---
+
+*This document reflects the implemented state of Friendsheet as of US-099. Screens 15–17 planned for M7.*
 *Update when new screens or significant UI changes are shipped.*
