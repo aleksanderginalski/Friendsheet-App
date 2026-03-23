@@ -4,6 +4,14 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.51.0 — US-096: Add Sender as Contact and Meeting Participant on Import (March 23, 2026)
+- ✅ `lib/data/models/pending_meeting_package.dart` — `SharedPerson` gains optional `nickname` field; `_sharedMeetingToMap` and `_sharedMeetingFromMap` updated to serialize/deserialize it (backwards-compatible: field omitted when null)
+- ✅ `lib/data/models/pending_meeting_package.freezed.dart` + `.g.dart` — regenerated after model change
+- ✅ `lib/presentation/providers/shared_package_inbox_provider.dart` — `_detectPersonActivityConflicts`: sender's `SharedPerson` now carries `senderNickname` so it is visible in the persons resolution UI
+- ✅ `lib/presentation/providers/package_importer.dart` — sender's `SharedPerson` in `_buildPersonMap` carries `senderNickname`; `resolvedNickname = res?.nickname ?? sp.nickname` so sender's suggested nickname is saved automatically unless overridden by explicit `PersonResolution.nickname`
+- ✅ `lib/presentation/import/package_persons_screen.dart` — `_PersonOptInTile`: shows "Suggested nickname: X" when `sharedPerson.nickname != null`; `_PersonConflictTile`: shows same hint + pre-fills nickname `TextEditingController` in `initState`
+- ✅ 7 new automated tests: `shared_package_inbox_provider_test.dart` (+1), `package_importer_test.dart` (+2), `package_persons_screen_test.dart` (NEW, +4); total 657 tests passing
+
 ### v3.50.0 — US-INF-010: Agent Session Observability (March 22, 2026)
 - ✅ `.claude/settings.json` — added `PreToolUse` hook (matcher: Skill) → `log_agent.py`; `Stop` hook → `log_stop.py`; both use Python 3.12 installed via `uv`
 - ✅ `tools/observability/log_agent.py` (NEW) — PreToolUse hook script: reads stdin JSON, appends `agent_start` JSONL entry to `logs/{session_id}.jsonl`; silent on any error
