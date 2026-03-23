@@ -7,7 +7,9 @@
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
-      "Write(.claude/current_task.md)"
+      "Write(.claude/current_task.md)",
+      "Bash(touch .claude/*)",
+      "Bash(echo * > .claude/*)"
     ]
   },
   "hooks": {

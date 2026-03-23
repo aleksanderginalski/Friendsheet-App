@@ -44,6 +44,17 @@ Opisz w prostym języku co użytkownik zobaczy i zrobi po wdrożeniu.
 Bez terminologii technicznej.
 Poczekaj na akceptację zanim przejdziesz dalej.
 
+## Zmiana scope podczas planowania
+
+Jeśli użytkownik zmieni lub doprecyzuje zakres US podczas sesji planowania
+(nowe AC, zmienione wymagania, nowe taski) — zaktualizuj BACKLOG.md natychmiast,
+zanim wygenerujesz Task instruction. Nie czekaj na /docs.
+
+Zakres aktualizacji:
+- Zmień lub dodaj Acceptance Criteria
+- Dodaj/zaktualizuj Tasks (TASK-XXX.N)
+- Jeśli status był 📋 Planned → zmień na 🔄 In Progress
+
 ## Generowanie Task instruction
 
 Po akceptacji wygeneruj instrukcję w języku angielskim używając szablonu z task_template.md:
