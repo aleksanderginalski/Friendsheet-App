@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/pending_meeting_package.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
