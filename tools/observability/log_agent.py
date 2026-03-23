@@ -23,7 +23,9 @@ def main() -> None:
         args = tool_input.get('args', '')
         timestamp = datetime.now().isoformat(timespec='seconds')
 
-        logs_dir = os.path.join('tools', 'observability', 'logs')
+        # Use absolute path so the hook works regardless of working directory.
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        logs_dir = os.path.join(script_dir, 'logs')
         os.makedirs(logs_dir, exist_ok=True)
 
         log_path = os.path.join(logs_dir, f'{session_id}.jsonl')
