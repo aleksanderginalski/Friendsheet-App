@@ -87,6 +87,7 @@ _$SharedPersonImpl _$$SharedPersonImplFromJson(Map<String, dynamic> json) =>
         final val = _$SharedPersonImpl(
           firstName: $checkedConvert('firstName', (v) => v as String),
           lastName: $checkedConvert('lastName', (v) => v as String?),
+          nickname: $checkedConvert('nickname', (v) => v as String?),
         );
         return val;
       },
@@ -96,4 +97,5 @@ Map<String, dynamic> _$$SharedPersonImplToJson(_$SharedPersonImpl instance) =>
     <String, dynamic>{
       'firstName': instance.firstName,
       'lastName': instance.lastName,
+      'nickname': instance.nickname,
     };

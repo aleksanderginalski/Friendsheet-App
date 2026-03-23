@@ -584,6 +584,7 @@ SharedPerson _$SharedPersonFromJson(Map<String, dynamic> json) {
 mixin _$SharedPerson {
   String get firstName => throw _privateConstructorUsedError;
   String? get lastName => throw _privateConstructorUsedError;
+  String? get nickname => throw _privateConstructorUsedError;
 
   /// Serializes this SharedPerson to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -601,7 +602,7 @@ abstract class $SharedPersonCopyWith<$Res> {
           SharedPerson value, $Res Function(SharedPerson) then) =
       _$SharedPersonCopyWithImpl<$Res, SharedPerson>;
   @useResult
-  $Res call({String firstName, String? lastName});
+  $Res call({String firstName, String? lastName, String? nickname});
 }
 
 /// @nodoc
@@ -621,6 +622,7 @@ class _$SharedPersonCopyWithImpl<$Res, $Val extends SharedPerson>
   $Res call({
     Object? firstName = null,
     Object? lastName = freezed,
+    Object? nickname = freezed,
   }) {
     return _then(_value.copyWith(
       firstName: null == firstName
@@ -630,6 +632,10 @@ class _$SharedPersonCopyWithImpl<$Res, $Val extends SharedPerson>
       lastName: freezed == lastName
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nickname: freezed == nickname
+          ? _value.nickname
+          : nickname // ignore: cast_nullable_to_non_nullable
               as String?,
     ) as $Val);
   }
@@ -643,7 +649,7 @@ abstract class _$$SharedPersonImplCopyWith<$Res>
       __$$SharedPersonImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String firstName, String? lastName});
+  $Res call({String firstName, String? lastName, String? nickname});
 }
 
 /// @nodoc
@@ -661,6 +667,7 @@ class __$$SharedPersonImplCopyWithImpl<$Res>
   $Res call({
     Object? firstName = null,
     Object? lastName = freezed,
+    Object? nickname = freezed,
   }) {
     return _then(_$SharedPersonImpl(
       firstName: null == firstName
@@ -671,6 +678,10 @@ class __$$SharedPersonImplCopyWithImpl<$Res>
           ? _value.lastName
           : lastName // ignore: cast_nullable_to_non_nullable
               as String?,
+      nickname: freezed == nickname
+          ? _value.nickname
+          : nickname // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -678,7 +689,8 @@ class __$$SharedPersonImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$SharedPersonImpl implements _SharedPerson {
-  const _$SharedPersonImpl({required this.firstName, this.lastName});
+  const _$SharedPersonImpl(
+      {required this.firstName, this.lastName, this.nickname});
 
   factory _$SharedPersonImpl.fromJson(Map<String, dynamic> json) =>
       _$$SharedPersonImplFromJson(json);
@@ -687,10 +699,12 @@ class _$SharedPersonImpl implements _SharedPerson {
   final String firstName;
   @override
   final String? lastName;
+  @override
+  final String? nickname;
 
   @override
   String toString() {
-    return 'SharedPerson(firstName: $firstName, lastName: $lastName)';
+    return 'SharedPerson(firstName: $firstName, lastName: $lastName, nickname: $nickname)';
   }
 
   @override
@@ -701,12 +715,14 @@ class _$SharedPersonImpl implements _SharedPerson {
             (identical(other.firstName, firstName) ||
                 other.firstName == firstName) &&
             (identical(other.lastName, lastName) ||
-                other.lastName == lastName));
+                other.lastName == lastName) &&
+            (identical(other.nickname, nickname) ||
+                other.nickname == nickname));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, firstName, lastName);
+  int get hashCode => Object.hash(runtimeType, firstName, lastName, nickname);
 
   /// Create a copy of SharedPerson
   /// with the given fields replaced by the non-null parameter values.
@@ -727,7 +743,8 @@ class _$SharedPersonImpl implements _SharedPerson {
 abstract class _SharedPerson implements SharedPerson {
   const factory _SharedPerson(
       {required final String firstName,
-      final String? lastName}) = _$SharedPersonImpl;
+      final String? lastName,
+      final String? nickname}) = _$SharedPersonImpl;
 
   factory _SharedPerson.fromJson(Map<String, dynamic> json) =
       _$SharedPersonImpl.fromJson;
@@ -736,6 +753,8 @@ abstract class _SharedPerson implements SharedPerson {
   String get firstName;
   @override
   String? get lastName;
+  @override
+  String? get nickname;
 
   /// Create a copy of SharedPerson
   /// with the given fields replaced by the non-null parameter values.

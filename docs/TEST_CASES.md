@@ -1225,3 +1225,31 @@ Run after every release or hotfix:
 | UT-MERGE-008 | hierarchy view shows root and child category names | Sport, Bieg, Piwo all visible without search |
 | UT-MERGE-009 | search hides non-matching categories | only 'Piwo' ListTile visible after typing 'Piwo' |
 | UT-MERGE-010 | search shows parent name as subtitle for child category | searching 'Bieg' shows ListTile with 'Bieg' title and 'Sport' subtitle |
+
+---
+
+## TC-SENDER: Add Sender as Contact and Meeting Participant (US-096)
+
+### Automated tests — `test/presentation/providers/shared_package_inbox_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SENDER-001 | sender is always included regardless of meeting participants | sender's firstName/lastName present in `uniquePersonsFor` |
+| UT-SENDER-002 | sender nickname is propagated to SharedPerson in uniquePersonsFor | `sender.nickname == 'Anka'` for package with `senderNickname: 'Anka'` |
+
+### Automated tests — `test/presentation/providers/package_importer_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SENDER-003 | sender is always included in meeting participantIds | `participantIds` contains sender's person id |
+| UT-SENDER-004 | saves sender nickname from package when no resolution given | `person.nicknames` contains `'Anka'` when `senderNickname: 'Anka'` and no PersonResolution |
+| UT-SENDER-005 | explicit PersonResolution.nickname overrides sender suggested nickname | `person.nicknames` contains `'Aneczka'`, not `'Anka'` |
+
+### Automated tests — `test/presentation/import/package_persons_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-SENDER-006 | shows "Suggested nickname" text in opt-in tile when sender has nickname | `find.text('Suggested nickname: Anka')` finds one widget |
+| UT-SENDER-007 | does not show "Suggested nickname" when sender has no nickname | `find.textContaining('Suggested nickname')` finds nothing |
+| UT-SENDER-008 | conflict tile shows hint and pre-fills nickname field with sender nickname | hint visible; TextField controller text equals `'Anka'` after tapping "Add with Nickname" |
+| UT-SENDER-009 | conflict tile shows no hint when sender has no nickname | `find.textContaining('Suggested nickname')` finds nothing |

@@ -72,12 +72,13 @@ class SharedMeeting with _$SharedMeeting {
 }
 
 /// Participant data shared in a meeting package.
-/// Only firstName and lastName are included — no nicknames or other fields.
+/// nickname is only populated for the sender — regular participants omit it.
 @freezed
 class SharedPerson with _$SharedPerson {
   const factory SharedPerson({
     required String firstName,
     String? lastName,
+    String? nickname,
   }) = _SharedPerson;
 
   factory SharedPerson.fromJson(Map<String, dynamic> json) =>
@@ -94,6 +95,7 @@ Map<String, dynamic> _sharedMeetingToMap(SharedMeeting m) {
         .map((p) => {
               'firstName': p.firstName,
               if (p.lastName != null) 'lastName': p.lastName,
+              if (p.nickname != null) 'nickname': p.nickname,
             })
         .toList(),
     'categoryNames': m.categoryNames,
@@ -111,6 +113,7 @@ SharedMeeting _sharedMeetingFromMap(Map<String, dynamic> m) {
       return SharedPerson(
         firstName: p['firstName'] as String,
         lastName: p['lastName'] as String?,
+        nickname: p['nickname'] as String?,
       );
     }).toList(),
     categoryNames: ((m['categoryNames'] as List<dynamic>?) ?? [])

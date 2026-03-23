@@ -3217,26 +3217,33 @@ Only C can read/write their own tokens (path-based security rule).
 ### US-096: Add Sender as Contact and Meeting Participant on Import
 
 **As a** user (C)
-**I want to** have the sender (A) automatically added to my contacts and to the imported meetings
-**So that** the meeting history accurately reflects who was present, including the person who shared it
+**I want to** have the sender (A) appear in the persons conflict resolution step with their suggested nickname,
+**So that** I can decide how to add them to my contacts (or skip/link), and the meeting history accurately reflects who was present
 
 **Story Points:** 3
 **Priority:** P0
 **Labels:** `sharing`, `persons`, `bug`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Dependencies:** US-091, US-093
 
 **Acceptance Criteria:**
-- [ ] After C imports a shared package, sender A is added as a `Person` in C's contacts using sender signature data (firstName, lastName, optional nickname)
-- [ ] Sender A is added as a participant to all imported meetings from that package
-- [ ] If a Person with the same firstName + lastName already exists in C's contacts → treated as a person conflict, resolved in Step 1 of conflict resolution (US-097)
-- [ ] If A is linked to an existing person: that person is used as the participant reference in imported meetings
-- [ ] If the package has no sender signature data → import proceeds without adding sender (backwards compatibility edge case)
+- [x] Sender appears in `PackagePersonsScreen` persons list in the same way as other meeting participants
+- [x] If sender provided a nickname in the package → displayed as "Suggested nickname: X" on their tile
+- [x] When user selects "Add new" for sender and sender has a suggested nickname → person is created with that nickname automatically (no manual entry required)
+- [x] In conflict tile (`_PersonConflictTile`): if sender has a suggested nickname → nickname text field is pre-filled with it
+- [x] If sender has no nickname → flow unchanged (no suggested nickname shown)
+- [x] Sender can be linked to existing contact or skipped — same options as other participants
+- [x] `SharedPerson` model gains optional `nickname` field used exclusively for sender nickname propagation
 
 **Tasks:**
-- [ ] **TASK-096.1:** Extract sender data from `PendingMeetingPackage` and inject into persons conflict list — 1h
-- [ ] **TASK-096.2:** On import confirm: persist sender as `Person` (or link to existing) and add as participant to imported meetings — 1h
-- [ ] **TASK-096.3:** Write tests — 0.5h
+- [x] **TASK-096.1:** Sender injected into persons conflict list in `_detectPersonActivityConflicts` — already implemented in US-093
+- [x] **TASK-096.2:** Sender persisted as `Person` and added as participant to imported meetings — already implemented in US-093
+- [x] **TASK-096.3:** Add `String? nickname` to `SharedPerson` model + run build_runner — 0.5h
+- [x] **TASK-096.4:** In `_detectPersonActivityConflicts`: pass `senderNickname` to sender's `SharedPerson` — 0.25h
+- [x] **TASK-096.5:** In `PackageImporter._buildPersonMap`: use `sp.nickname` as default when creating new person without explicit `PersonResolution.nickname` — 0.25h
+- [x] **TASK-096.6:** Update `_PersonOptInTile`: show suggested nickname chip; "Add new" auto-includes it — 0.5h
+- [x] **TASK-096.7:** Update `_PersonConflictTile`: pre-fill nickname field with `sharedPerson.nickname` — 0.25h
+- [x] **TASK-096.8:** Write tests — 0.5h
 
 
 ---

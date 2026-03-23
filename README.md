@@ -23,7 +23,7 @@
 
 **M4 — Google Play Release:** Production build with release signing, store assets, Privacy Policy, Google Play Internal Testing track. Portfolio milestone.
 
-**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Receive shared meeting packages in Pending Meetings with full conflict resolution — date duplicates (US-092), activity name conflicts and person name conflicts (US-093), fuzzy near-duplicate activity detection with normalized Levenshtein distance (US-094). Sender is automatically added as a participant in all imported meetings. Merge duplicate activity categories to clean up history without data loss (US-095). Extensible architecture supports future import sources (Google Photos planned).
+**M5 — Meeting Import Hub:** Google Calendar import — browse past events, review candidates in Meeting Inbox, confirm as meetings. Peer-to-peer sharing: generate sharing token (US-089) so a friend can share their meetings with you; enter a friend's token to link their Friendsheet account to their Person profile (US-090). Receive shared meeting packages in Pending Meetings with full conflict resolution — date duplicates (US-092), activity name conflicts and person name conflicts (US-093), fuzzy near-duplicate activity detection with normalized Levenshtein distance (US-094). Sender is automatically added as a contact and participant in all imported meetings — their self-declared nickname is suggested and saved automatically (US-096). Merge duplicate activity categories to clean up history without data loss (US-095). Extensible architecture supports future import sources (Google Photos planned).
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
@@ -174,13 +174,11 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.50.0 — US-INF-010: Agent Session Observability (March 22, 2026)
-- ✅ `.claude/settings.json` — PreToolUse + Stop hooks log every skill invocation and session end to JSONL
-- ✅ `tools/observability/log_agent.py` (NEW) — hook script: appends `agent_start` entry on every skill call
-- ✅ `tools/observability/log_stop.py` (NEW) — hook script: appends `session_end` entry with token count parsed from transcript
-- ✅ `tools/observability/report.py` (NEW) — generates self-contained HTML report with SVG timeline, per-agent token estimates, cost; `--us`, `--sp`, `--notes` params for US-INF-011 cross-session dashboard
-- ✅ `tools/observability/report.bat` (NEW) — Windows launcher wrapper
-- ✅ 650 Flutter tests passing (tooling-only change, no regressions)
+### Latest: v3.51.0 — US-096: Add Sender as Contact and Meeting Participant on Import (March 23, 2026)
+- ✅ `SharedPerson` model gains optional `nickname` field — sender's self-declared nickname travels through the import pipeline
+- ✅ `PackageImporter` — sender nickname saved automatically as `Person.nicknames` unless overridden by explicit conflict resolution
+- ✅ `PackagePersonsScreen` — opt-in tile shows "Suggested nickname: X"; conflict tile pre-fills nickname field with sender's suggestion
+- ✅ 657 Flutter tests passing (+7 new tests for sender nickname propagation)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

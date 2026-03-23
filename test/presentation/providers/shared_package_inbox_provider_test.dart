@@ -46,12 +46,14 @@ void main() {
     DateTime? meetingDate,
     List<String> categoryNames = const [],
     List<SharedPerson> participants = const [],
+    String? senderNickname,
   }) =>
       PendingMeetingPackage(
         id: id,
         senderUid: 'sender-uid',
         senderFirstName: 'Ania',
         senderLastName: 'Kowalska',
+        senderNickname: senderNickname,
         sentAt: DateTime(2026, 3, 20),
         meetings: [
           SharedMeeting(
@@ -324,6 +326,22 @@ void main() {
             .any((p) => p.firstName == 'Ania' && p.lastName == 'Kowalska'),
         isTrue,
       );
+    });
+
+    test('sender nickname is propagated to SharedPerson in uniquePersonsFor',
+        () async {
+      final pkg = makePackage(senderNickname: 'Anka');
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      stubEmptyPersonsAndCategories();
+
+      await provider.initialize('u1');
+
+      final persons = provider.uniquePersonsFor('pkg1');
+      final sender = persons.values
+          .firstWhere((p) => p.firstName == 'Ania' && p.lastName == 'Kowalska');
+      expect(sender.nickname, 'Anka');
     });
   });
 
