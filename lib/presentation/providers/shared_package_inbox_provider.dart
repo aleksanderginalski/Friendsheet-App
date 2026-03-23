@@ -293,6 +293,7 @@ class SharedPackageInboxProvider extends ChangeNotifier {
         () => SharedPerson(
           firstName: pkg.senderFirstName,
           lastName: pkg.senderLastName,
+          nickname: pkg.senderNickname,
         ),
       );
 

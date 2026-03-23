@@ -158,6 +158,7 @@ class PackageImporter {
         SharedPerson(
       firstName: package.senderFirstName,
       lastName: package.senderLastName,
+      nickname: package.senderNickname,
     );
     for (final i in indicesToImport) {
       for (final sp in package.meetings[i].participants) {
@@ -175,7 +176,8 @@ class PackageImporter {
         ids[entry.key] = res.linkedPersonId!;
       } else {
         final sp = entry.value;
-        final nicknames = res?.nickname != null ? [res!.nickname!] : <String>[];
+        final resolvedNickname = res?.nickname ?? sp.nickname;
+        final nicknames = resolvedNickname != null ? [resolvedNickname] : <String>[];
         final person = await personRepo.addPerson(Person(
           id: '',
           userId: userId,

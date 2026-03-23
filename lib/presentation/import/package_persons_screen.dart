@@ -170,6 +170,15 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
   bool _showNicknameField = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill with sender's suggested nickname if available.
+    if (widget.sharedPerson.nickname != null) {
+      _controller.text = widget.sharedPerson.nickname!;
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -218,6 +227,14 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
               style: const TextStyle(
                   color: Colors.orange, fontWeight: FontWeight.bold),
             ),
+            if (widget.sharedPerson.nickname != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 4),
+                child: Text(
+                  'Suggested nickname: ${widget.sharedPerson.nickname}',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 4, children: [
               _btn('Create as New', selected: res?.isCreateNew ?? false,
@@ -333,19 +350,29 @@ class _PersonOptInTile extends StatelessWidget {
     final isDefault = res == null && !isOptedOut;
     return ListTile(
       title: Text(name),
-      subtitle: Wrap(spacing: 8, runSpacing: 4, children: [
-        _btn('Add new',
-            selected: isDefault,
-            onPressed: () =>
-                provider.clearPersonResolution(packageId, personKey)),
-        _btn('Link with Existing',
-            selected: res?.isLink ?? false,
-            onPressed: () => _pickExisting(context)),
-        _btn('Skip',
-            selected: res?.isSkip ?? isOptedOut,
-            onPressed: () => provider.resolvePersonConflict(
-                packageId, personKey, const PersonResolution.skip())),
-      ]),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (sharedPerson.nickname != null)
+            Text(
+              'Suggested nickname: ${sharedPerson.nickname}',
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          Wrap(spacing: 8, runSpacing: 4, children: [
+            _btn('Add new',
+                selected: isDefault,
+                onPressed: () =>
+                    provider.clearPersonResolution(packageId, personKey)),
+            _btn('Link with Existing',
+                selected: res?.isLink ?? false,
+                onPressed: () => _pickExisting(context)),
+            _btn('Skip',
+                selected: res?.isSkip ?? isOptedOut,
+                onPressed: () => provider.resolvePersonConflict(
+                    packageId, personKey, const PersonResolution.skip())),
+          ]),
+        ],
+      ),
     );
   }
 
