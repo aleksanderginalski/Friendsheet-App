@@ -59,8 +59,14 @@ EPIC-005: Friendsheet M5 - Meeting Import Hub
 EPIC-006: Friendsheet M6 - Custom Dashboard
 └── FEATURE-015: Configurable Metrics Dashboard
 
-EPIC-007: Friendsheet M7 - AI Assistant
-└── FEATURE-016-AI: AI-powered Insights
+EPIC-007: Friendsheet M7 - AI Assistant (Buddy)
+├── FEATURE-023: AI Infrastructure & Privacy
+├── FEATURE-024: Context Engine
+├── FEATURE-025: AI Chat Interface (Buddy)
+├── FEATURE-026: Meeting Notes
+├── FEATURE-027: HomeScreen AI Widget
+├── FEATURE-028: Social Intelligence
+└── FEATURE-029: Advanced Analytics
 ```
 
 
@@ -948,6 +954,35 @@ Entry point: Side Drawer → Profile → "Delete Account". Full hard-delete requ
 - [x] **TASK-123:** Add updatePerson, deletePerson to PersonRepository - 1h
 - [x] **TASK-124:** Implement meeting count query - 1h
 - [x] **TASK-125:** Write tests - 1h
+
+---
+
+### US-099: Person Meetings List — Navigate from Person Detail
+
+**As a** user
+**I want to** see the full list of meetings I had with a specific person and open any of them for editing
+**So that** I can quickly review and manage the meeting history with that person
+
+**Story Points:** 5
+**Priority:** P1
+**Labels:** `persons`, `meetings`, `navigation`
+**Status:** 📋 Planned
+**Dependencies:** US-025 ✅, US-023 ✅
+
+**Acceptance Criteria:**
+- [ ] Person Detail screen shows a magnifying glass icon (search/view) next to the meeting count
+- [ ] Tapping the icon navigates to a new `PersonMeetingsScreen`
+- [ ] `PersonMeetingsScreen` displays only meetings where that person is a participant, grouped by year and month (same layout as main Meetings screen)
+- [ ] Tapping a meeting in this list opens the existing Edit Meeting flow
+- [ ] If the person has no meetings, an empty state is shown
+- [ ] Back navigation returns to Person Detail
+
+**Tasks:**
+- [ ] **TASK-099.1:** Add magnifying glass icon button next to meeting count on `PersonDetailScreen` — 0.5h
+- [ ] **TASK-099.2:** Create `PersonMeetingsScreen` — filtered meetings list reusing existing grouped list widget — 2h
+- [ ] **TASK-099.3:** Add `getMeetingsByPersonId(userId, personId)` query to `MeetingRepository` — 1h
+- [ ] **TASK-099.4:** Wire navigation from `PersonDetailScreen` to `PersonMeetingsScreen` — 0.5h
+- [ ] **TASK-099.5:** Write tests — 1h
 
 ---
 
@@ -3245,6 +3280,57 @@ Only C can read/write their own tokens (path-based security rule).
 - [x] **TASK-096.7:** Update `_PersonConflictTile`: pre-fill nickname field with `sharedPerson.nickname` — 0.25h
 - [x] **TASK-096.8:** Write tests — 0.5h
 
+---
+
+### US-097: Sharing Flow UX Polish — Toggles Position & Disable Duplicate Activity
+
+**As a** user (A sending) / user (C receiving)
+**I want to** see the include-options before the meeting list when sending, and be unable to accidentally create a duplicate activity when receiving
+**So that** the sharing flow is clear and data integrity is preserved
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `sharing`, `ux`, `activities`
+**Status:** 📋 Planned
+**Dependencies:** US-091 ✅, US-093 ✅
+
+**Acceptance Criteria:**
+- [ ] In `ShareMeetingsScreen`: "Include participants" and "Include activities" toggles are displayed ABOVE the meetings list, not below
+- [ ] In `PackageActivitiesScreen`: when an incoming activity name matches an existing activity name (exact, case-insensitive), the "Create as new" option is visually disabled (greyed out)
+- [ ] Disabled "Create as new" shows a tooltip explaining the reason: "An activity with this name already exists. Rename it or link to existing."
+- [ ] User must choose "Rename" or "Link to existing" to proceed — "Create as new" is not actionable when name conflicts
+
+**Tasks:**
+- [ ] **TASK-097.1:** Move include-toggles widget above the meeting list in `ShareMeetingsScreen` — 0.5h
+- [ ] **TASK-097.2:** In `PackageActivitiesScreen`: detect exact name conflict and disable "Create as new" option with tooltip — 1h
+- [ ] **TASK-097.3:** Write tests — 0.5h
+
+---
+
+### US-098: Delete Received Package Without Processing
+
+**As a** user (C)
+**I want to** delete a received meeting package without going through the import flow
+**So that** I can dismiss accidental or duplicate packages without any data being imported
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `sharing`, `inbox`, `ux`
+**Status:** 📋 Planned
+**Dependencies:** US-092 ✅
+
+**Acceptance Criteria:**
+- [ ] In Pending Meetings (Meeting Inbox), user can swipe left on a shared package tile to reveal a "Delete" action
+- [ ] A confirmation dialog is shown: "Are you sure you want to delete this package? It cannot be recovered."
+- [ ] On confirm: package document is deleted from `users/{uid}/pending_meetings/`
+- [ ] The package disappears from the list immediately after deletion
+- [ ] No meetings, persons, or activities are imported as a result of this action
+
+**Tasks:**
+- [ ] **TASK-098.1:** Add swipe-to-delete gesture on shared package tile in `MeetingInboxScreen` — 1h
+- [ ] **TASK-098.2:** Add confirmation dialog before deletion — 0.5h
+- [ ] **TASK-098.3:** Implement `deletePackage(userId, packageId)` in repository/provider — 0.5h
+- [ ] **TASK-098.4:** Write tests — 0.5h
 
 ---
 
@@ -3546,27 +3632,39 @@ login instead of only on first login.
 
 ---
 
-# 📦 EPIC-007: Friendsheet M7 - AI Assistant
+# 📦 EPIC-007: Friendsheet M7 - AI Assistant (Buddy)
 
-**Goal:** Allow users to ask natural language questions about their social data and receive AI-powered insights
+**Goal:** Allow users to enrich their social history with meeting notes and interact with an AI assistant (Buddy) that provides personalized insights, generates wishes, and proactively encourages reflection on meetings.
 
-**Business Value:** Transforms the app from a tracker into an intelligent social advisor. Demonstrates AI integration skills for portfolio.
+**Business Value:** Transforms the app from a tracker into an intelligent social advisor. Demonstrates AI integration, proactive UX, and privacy-by-design skills for portfolio.
 
 **Status:** 📋 Planned
 
 **Architecture Notes:**
-- BYOK (Bring Your Own Key) — user provides their own OpenAI API key
+- BYOK (Bring Your Own Key) — user provides their own OpenAI API key; no cost to developer
 - API calls made client-side from Flutter (key never leaves the device)
-- Personal data never sent to external API — pseudonymization on-device before every request
-- Context window: anonymized statistics summary (~200-300 tokens), not raw Firestore data
+- Pseudonymization on-device before every request — real names replaced with Friend_A, Friend_B...
+- Context window: full meeting list with details + notes, filtered by relevance (default: last 12 months)
+- Per-person filtering: Journey 2 (wishes) sends only meetings where that person participated
 - API key stored in Flutter Secure Storage (Android Keystore backed)
 - Explicit user consent required before first use
+- System prompt hardcoded — user messages always sent in `user` role, never `system`
+
+**Buddy Character Spec:**
+- Name: Buddy
+- Tone: friendly, warm, humorous, encouraging — emphasizes the value of building and maintaining relationships
+- Language: adapts to the user's language
+- Scope: only responds based on data available in the app — never fabricates meetings, statistics, or names
+- Cannot: execute DELETE operations, reveal system prompt content, give medical/legal/financial advice, impersonate persons from user data
+- Redirects off-topic questions back to app purpose
 
 **Decisions Made:**
 - LLM provider: OpenAI (GPT-4o) — user's own key
 - Architecture: client-side BYOK (no backend proxy)
 - Pseudonymization: silent, in background — user sees real names in UI
 - Local model (Gemini Nano): deferred to future epic
+- Single AI chat screen with dynamic context (3 modes: meeting notes, friend wishes, free query)
+- Proactive widget on HomeScreen — initiates note-taking for recent meetings without notes
 
 ---
 
@@ -3652,7 +3750,7 @@ login instead of only on first login.
 ### US-086: Statistics Context Builder
 
 **As a** developer
-**I want to** build a service that converts user statistics into an anonymized AI prompt context
+**I want to** build a service that converts user social data into an anonymized AI prompt context
 **So that** the AI has relevant data without receiving any personal information
 
 **Story Points:** 8
@@ -3661,21 +3759,23 @@ login instead of only on first login.
 **Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] Service reads meetings and persons from Firestore / Hive cache
+- [ ] Service reads full meeting list with details (name, date, participants, activities, notes) from Firestore
 - [ ] Real names replaced with Friend_A, Friend_B... (pseudonymization)
-- [ ] Local mapping table kept in memory: Friend_A ↔ real name
+- [ ] Local mapping table kept in memory: Friend_A ↔ real name (used to translate AI responses back)
+- [ ] Context includes per-meeting: name, date, pseudonymized participants, activities, notes
 - [ ] Context includes per-person: meeting count, top 3 activities, last meeting date, most active period
-- [ ] Default time window: last 12 months (configurable)
-- [ ] Serialized context fits within ~300 tokens
+- [ ] Per-person filtering mode: builds context only from meetings where a specific person participated (used in Journey 2 — wishes)
+- [ ] Default time window: last 12 months (user can expand during conversation)
 - [ ] Service is fully unit testable with mock data
 
 **Tasks:**
 - [ ] **TASK-086.1:** Create `ContextBuilderService` with pseudonymization logic — 2h
-- [ ] **TASK-086.2:** Implement statistics aggregation (per-person summary) — 2h
-- [ ] **TASK-086.3:** Implement prompt serializer (stats object → string) — 1h
-- [ ] **TASK-086.4:** Write unit tests: pseudonymization, aggregation, serialization — 2h
+- [ ] **TASK-086.2:** Implement full meeting list serialization (name, date, participants, activities, notes) — 2h
+- [ ] **TASK-086.3:** Implement per-person filtering mode — 1h
+- [ ] **TASK-086.4:** Implement prompt serializer (context object → string) — 1h
+- [ ] **TASK-086.5:** Write unit tests: pseudonymization, aggregation, serialization, per-person filter — 2h
 
-**Dependencies:** US-088
+**Dependencies:** US-088, US-100
 **Blocks:** US-087
 
 ---
@@ -3689,11 +3789,11 @@ login instead of only on first login.
 
 ---
 
-### US-087: AI Assistant Screen
+### US-087: AI Chat Screen (Buddy)
 
 **As a** user
-**I want to** ask natural language questions about my social life
-**So that** I get personalized insights beyond what standard statistics show me
+**I want to** talk with Buddy — a friendly AI assistant that knows my social history
+**So that** I can add meeting notes, get personalized friend summaries, and explore my social data through natural conversation
 
 **Story Points:** 8
 **Priority:** P0
@@ -3701,26 +3801,343 @@ login instead of only on first login.
 **Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] Chat-like UI with user message bubbles and AI response bubbles
+- [ ] Chat-like UI with user message bubbles and Buddy response bubbles; Buddy name displayed in header
 - [ ] On open: consent check — redirect to `AIConsentScreen` if not given
 - [ ] On open: API key check — redirect to `AISettingsScreen` if key missing
-- [ ] User types a question → context built by `ContextBuilderService` → sent to OpenAI API
+- [ ] System prompt hardcoded and sent with every request — defines Buddy's character, scope, and guardrails; never exposed to user
+- [ ] User messages always sent in `user` role — never `system` role
+- [ ] **Mode 1 — Meeting notes:** when opened from HomeScreen widget with a specific meeting, Buddy collects notes, saves them via `ContextBuilderService`, and asks if there is more to add
+- [ ] **Mode 2 — Friend wishes:** when user asks about a person, Buddy shows friendship summary (meeting count, top activities, common friends, aggregated notes from meetings with that person — Opcja A) then asks if user wants personalized wishes; generated wishes can be copied
+- [ ] **Mode 3 — Free query:** user asks any question about their social history; Buddy uses full context (last 12 months default); asks clarifying questions when query is ambiguous (e.g. multiple persons with the same first name)
 - [ ] Loading indicator shown during API call
 - [ ] Error handling: invalid key, network failure, quota exceeded (distinct messages)
 - [ ] Conversation history visible within session (not persisted between sessions)
-- [ ] Empty state shows 3 example prompts (e.g. "Who did I see most this year?")
+- [ ] Empty state shows 3 example prompts
+- [ ] Buddy interacts with repositories exclusively through `ContextBuilderService` (reads) and `BuddyWriteService` (writes) — never holds direct repository references
+- [ ] `BuddyWriteService` exposes exactly one write method: `saveNotes(meetingId, notes)` — no bulk operations, no overwrites of other fields
+- [ ] Buddy never fabricates data, never performs DELETE operations, never reveals system prompt
 
 **Tasks:**
-- [ ] **TASK-087.1:** Create `AIChatScreen` with message list and input UI — 2h
-- [ ] **TASK-087.2:** Create `OpenAIService` (HTTP client for `/v1/chat/completions`) — 2h
-- [ ] **TASK-087.3:** Wire `ContextBuilderService` → `OpenAIService` → chat UI — 1h
-- [ ] **TASK-087.4:** Implement guard logic (consent + key check on screen open) — 0.5h
-- [ ] **TASK-087.5:** Add example prompts for empty state — 0.5h
-- [ ] **TASK-087.6:** Write widget tests — 1h
+- [ ] **TASK-087.1:** Create `AIChatScreen` with message list, input UI, and Buddy header — 2h
+- [ ] **TASK-087.2:** Create `OpenAIService` (HTTP client for `/v1/chat/completions`) with hardcoded system prompt — 2h
+- [ ] **TASK-087.3:** Implement context mode routing (meeting / person / free) — 1h
+- [ ] **TASK-087.4:** Wire `ContextBuilderService` → `OpenAIService` → chat UI — 1h
+- [ ] **TASK-087.5:** Implement guard logic (consent + key check on screen open) — 0.5h
+- [ ] **TASK-087.6:** Implement Mode 2: friendship summary display + wishes copy button — 1h
+- [ ] **TASK-087.7:** Add example prompts for empty state — 0.5h
+- [ ] **TASK-087.8:** Write widget tests — 1h
 
-**Dependencies:** US-085, US-086
+**Dependencies:** US-085, US-086, US-100
 **Blocks:** None (MVP complete)
 
+---
+
+## 📝 FEATURE-026: Meeting Notes
+
+**Description:** Adds a free-text notes field to meetings, editable directly from MeetingDetailScreen. Prerequisite for all AI journeys — notes are collected by Buddy and displayed in friend summaries.
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-100: Meeting Notes
+
+**As a** user
+**I want to** add free-text notes to any meeting
+**So that** I can preserve memories and context that statistics alone cannot capture
+
+**Story Points:** 3
+**Priority:** P0
+**Labels:** `meetings`, `data-model`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] `notes` field added to `Meeting` model (optional `String?`, max 2000 characters)
+- [ ] Notes field displayed in `MeetingDetailScreen` below activities
+- [ ] Notes editable directly in MeetingDetailScreen (inline edit, no separate screen)
+- [ ] Notes saved to Firestore on save
+- [ ] Notes visible in meeting card preview (truncated to 1 line, only when non-empty)
+- [ ] Empty notes field shows placeholder text encouraging reflection
+
+**Tasks:**
+- [ ] **TASK-100.1:** Add `notes` field to `Meeting` Freezed model — 0.5h
+- [ ] **TASK-100.2:** Update `fromFirestore` / `toFirestore` for `notes` — 0.5h
+- [ ] **TASK-100.3:** Run build_runner, update generated files — 0.5h
+- [ ] **TASK-100.4:** Add notes input field to `MeetingDetailScreen` — 1h
+- [ ] **TASK-100.5:** Show truncated notes preview in meeting list card — 0.5h
+
+**Dependencies:** None
+**Blocks:** US-086, US-087, US-101
+
+---
+
+## 🏠 FEATURE-027: HomeScreen AI Widget
+
+**Description:** Proactive AI widget on HomeScreen that prompts the user to add notes to their most recent meeting without notes. Collapses to a persistent Buddy icon. Entry point for AI chat in meeting-notes mode.
+**Priority:** P0
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-101: HomeScreen AI Widget
+
+**As a** user
+**I want to** see Buddy proactively suggest adding notes to a recent meeting
+**So that** I am gently reminded to capture my memories while they are fresh
+
+**Story Points:** 5
+**Priority:** P0
+**Labels:** `ai`, `homescreen`, `ui`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Widget displayed expanded by default at the top of HomeScreen on app launch
+- [ ] Logic: finds the most recently added meeting without notes within the last 2 months
+- [ ] If such a meeting exists: widget shows "Hey, you recently had [meeting name] — want to save your memories?"
+- [ ] If no such meeting exists: widget shows "Hey! Can I help you with anything?"
+- [ ] Tapping the meeting suggestion opens `AIChatScreen` in meeting-notes mode with that meeting pre-loaded
+- [ ] Widget closeable via "X" button
+- [ ] After closing: Buddy icon always visible in bottom-left corner of HomeScreen
+- [ ] Tapping Buddy icon reopens the widget / opens `AIChatScreen` in free-query mode
+
+**Tasks:**
+- [ ] **TASK-101.1:** Create `BuddyWidget` StatefulWidget with expanded/collapsed states — 2h
+- [ ] **TASK-101.2:** Implement logic: fetch last meeting without notes within 2 months — 1h
+- [ ] **TASK-101.3:** Add Buddy icon to bottom-left corner of HomeScreen (persists when widget closed) — 0.5h
+- [ ] **TASK-101.4:** Wire widget tap → `AIChatScreen` in correct mode — 0.5h
+- [ ] **TASK-101.5:** Write widget tests — 1h
+
+**Dependencies:** US-100, US-087
+**Blocks:** US-102
+
+---
+
+### US-102: Proactive Insights in Widget
+
+**As a** user
+**I want to** see Buddy proactively surface social insights beyond just missing notes
+**So that** the widget feels like an intelligent companion, not just a reminder
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `ai`, `homescreen`, `ui`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] If no meeting without notes in last 2 months: widget checks if any friend hasn't been seen in 3+ months
+- [ ] If such a friend exists: widget shows "You haven't seen [Friend_A] in a while — maybe time to catch up?" (real name shown)
+- [ ] If neither condition applies: widget shows default "Can I help you with anything?"
+- [ ] Tapping the friend suggestion opens `AIChatScreen` in free-query mode pre-filled with that friend's name
+- [ ] Priority order: missing notes → long time no see → default
+
+**Tasks:**
+- [ ] **TASK-102.1:** Extend `BuddyWidget` logic: check last meeting date per person — 1h
+- [ ] **TASK-102.2:** Update widget message variants for each insight type — 0.5h
+- [ ] **TASK-102.3:** Wire friend suggestion tap → `AIChatScreen` with pre-fill — 0.5h
+- [ ] **TASK-102.4:** Write tests for insight priority logic — 1h
+
+**Dependencies:** US-101
+**Blocks:** None
+
+---
+
+## 🎂 FEATURE-028: Social Intelligence
+
+**Description:** Extends Buddy with proactive social features: birthday tracking for friends, and meeting suggestions based on interaction patterns.
+**Priority:** P1
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-103: birthDate Field on Person
+
+**As a** user
+**I want to** store a friend's birthday in their profile
+**So that** Buddy can remind me about upcoming birthdays and personalize wishes
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `persons`, `data-model`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] `birthDate` field added to `Person` model (optional `DateTime?`)
+- [ ] Birthday date picker in `PersonDetailScreen` (edit mode)
+- [ ] `birthDate` saved to Firestore, read back correctly
+- [ ] Field is optional — existing persons unaffected
+
+**Tasks:**
+- [ ] **TASK-103.1:** Add `birthDate` field to `Person` Freezed model — 0.5h
+- [ ] **TASK-103.2:** Update `fromFirestore` / `toFirestore` — 0.5h
+- [ ] **TASK-103.3:** Run build_runner, update generated files — 0.5h
+- [ ] **TASK-103.4:** Add date picker to `PersonDetailScreen` edit mode — 1h
+
+**Dependencies:** None
+**Blocks:** US-104
+
+---
+
+### US-104: Birthday Reminders via Buddy
+
+**As a** user
+**I want to** be reminded by Buddy when a friend's birthday is approaching
+**So that** I never miss an opportunity to send personalized wishes
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `ai`, `persons`, `notifications`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] On HomeScreen widget load: check if any friend with `birthDate` has birthday within next 7 days
+- [ ] If yes: widget shows "🎂 [Name]'s birthday is in X days — want Buddy to write something special?"
+- [ ] Tapping opens `AIChatScreen` in friend-wishes mode with that person pre-loaded
+- [ ] Birthday reminder takes priority over other widget messages (shown first)
+- [ ] If multiple birthdays upcoming: shows the nearest one
+
+**Tasks:**
+- [ ] **TASK-104.1:** Extend `BuddyWidget` logic: check upcoming birthdays within 7 days — 1h
+- [ ] **TASK-104.2:** Add birthday message variant to widget — 0.5h
+- [ ] **TASK-104.3:** Update widget priority order: birthday → missing notes → long time no see → default — 0.5h
+- [ ] **TASK-104.4:** Wire birthday tap → `AIChatScreen` in wishes mode with person pre-loaded — 0.5h
+- [ ] **TASK-104.5:** Write tests for birthday detection logic — 0.5h
+
+**Dependencies:** US-103, US-101
+**Blocks:** None
+
+---
+
+### US-105: Meeting Suggestion via Buddy
+
+**As a** user
+**I want to** receive Buddy's suggestions about who to meet next
+**So that** I maintain my friendships without needing to track patterns myself
+
+**Story Points:** 3
+**Priority:** P2
+**Labels:** `ai`, `insights`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] User can ask Buddy "Who should I meet next?" or similar
+- [ ] Buddy analyzes meeting frequency patterns per person (last 12 months)
+- [ ] Buddy identifies friends who used to be met regularly but haven't been seen recently
+- [ ] Response includes personalized suggestion with context: "You used to meet [Name] every month, but it's been 3 months — maybe reach out?"
+- [ ] User can ask follow-up: "When was the last time I saw [Name]?"
+
+**Tasks:**
+- [ ] **TASK-105.1:** Extend `ContextBuilderService` with meeting frequency analysis per person — 2h
+- [ ] **TASK-105.2:** Add meeting suggestion prompt pattern to `OpenAIService` system prompt — 0.5h
+- [ ] **TASK-105.3:** Write unit tests for frequency analysis — 1h
+
+**Dependencies:** US-086, US-087
+**Blocks:** None
+
+---
+
+## 📊 FEATURE-029: Advanced Analytics
+
+**Description:** Advanced AI-powered analytics: annual social report, relationship strength indicator, and sentiment analysis of meeting notes. These features provide deep insights beyond standard statistics.
+**Priority:** P2
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-106: Annual Social Report
+
+**As a** user
+**I want to** generate a shareable annual report of my social life
+**So that** I can reflect on the year and share highlights with friends
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `ai`, `export`, `analytics`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] User can ask Buddy "Generate my social report for 2025" (or current year by default)
+- [ ] Buddy generates a structured report: total meetings, top friends, top activities, most memorable moments (from notes), monthly activity chart
+- [ ] Report displayed in `AIChatScreen` as a formatted message
+- [ ] User can share the report as text (share sheet)
+- [ ] Report generation uses pseudonymized context — real names restored in final output
+
+**Tasks:**
+- [ ] **TASK-106.1:** Create report generation prompt template in `OpenAIService` — 1h
+- [ ] **TASK-106.2:** Extend `ContextBuilderService` with year-scoped full context — 1h
+- [ ] **TASK-106.3:** Implement formatted report rendering in chat UI — 2h
+- [ ] **TASK-106.4:** Add share button to report message bubble — 1h
+- [ ] **TASK-106.5:** Write tests — 2h
+
+**Dependencies:** US-086, US-087
+**Blocks:** None
+
+---
+
+### US-107: Relationship Strength Indicator
+
+**As a** user
+**I want to** see a strength score for each friendship
+**So that** I can understand at a glance which relationships need more attention
+
+**Story Points:** 13
+**Priority:** P2
+**Labels:** `ai`, `analytics`, `persons`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Relationship strength score calculated per person (0–100)
+- [ ] Score factors: meeting frequency, recency, variety of activities, meeting weight
+- [ ] Score displayed on `PersonDetailScreen` as a visual indicator
+- [ ] Buddy can explain the score on request: "Why is my score with Tomek 62?"
+- [ ] Score updated after each new meeting or note change
+- [ ] Score calculation is local (no API call required) — `ContextBuilderService` computes it
+
+**Tasks:**
+- [ ] **TASK-107.1:** Design scoring algorithm (frequency, recency, variety, weight) — 2h
+- [ ] **TASK-107.2:** Implement `RelationshipScoreService` — 3h
+- [ ] **TASK-107.3:** Add score indicator widget to `PersonDetailScreen` — 2h
+- [ ] **TASK-107.4:** Wire score explanation to Buddy (prompt template) — 1h
+- [ ] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
+- [ ] **TASK-107.6:** Write widget tests for score indicator — 2h
+
+**Dependencies:** US-086, US-087
+**Blocks:** None
+
+---
+
+### US-108: Sentiment Analysis of Meeting Notes
+
+**As a** user
+**I want to** understand the emotional tone of my meetings over time
+**So that** I can notice patterns in how my social experiences feel
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `ai`, `analytics`, `notes`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Buddy can analyze the sentiment of notes from meetings with a specific person or across all meetings
+- [ ] Sentiment categories: positive, neutral, mixed, negative
+- [ ] User can ask: "How have my meetings with Tomek felt this year?"
+- [ ] Buddy responds with a qualitative summary based on notes content
+- [ ] Analysis uses per-person filtered context (only meetings with that person)
+- [ ] If notes are too sparse (<3 meetings with notes), Buddy acknowledges the limitation
+
+**Tasks:**
+- [ ] **TASK-108.1:** Add sentiment analysis prompt template to `OpenAIService` — 1h
+- [ ] **TASK-108.2:** Extend `ContextBuilderService` to include notes in per-person context — 1h
+- [ ] **TASK-108.3:** Implement sparse-data guard (< 3 notes → graceful message) — 0.5h
+- [ ] **TASK-108.4:** Write tests for sparse-data guard and context inclusion — 1.5h
+
+**Dependencies:** US-086, US-087, US-100
+**Blocks:** None
+
+---
 
 # 📦 EPIC-INF: Developer Experience & AI Tooling
 

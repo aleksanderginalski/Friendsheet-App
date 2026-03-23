@@ -1,15 +1,16 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 2.2  
-**Date:** March 2026  
-**Author:** Product Owner  
-**Status:** Updated — US-062 Friend Groups added
+**Version:** 2.3
+**Date:** March 2026
+**Author:** Product Owner
+**Status:** Updated — FR-029, FR-030 added (US-097–US-099)
 
 **Change Log:**
 - v1.1 — Authentication changed from email/password to Google Sign-In
 - v2.0 — Full roadmap requirements added for M2-M8
 - v2.1 — M6 redesigned: Google Photos replaced by Meeting Import Hub (Google Calendar + Google Photos); ImportCandidate architecture introduced
 - v2.2 — FR-026 added: Friend Groups (US-062); Person and FriendGroup data model updated
+- v2.3 — FR-029 added: Person Meetings List (US-099); FR-030 added: Delete Received Package (US-098)
 
 ---
 
@@ -120,6 +121,38 @@ a distinguishing nickname.
 - Existing duplicates: surfaced via warning banner on edit, no automatic data migration
 - Contextual nick display: `"Jan Kowalski · nick"` shown only when duplicate name exists
 - Applied in: Friends tab, Add Meeting autocomplete, participant chips
+---
+
+### FR-029: Person Meetings List
+**Priority:** SHOULD HAVE
+**Feature:** FEATURE-007 (Persons View), US-099
+
+**Description:**
+From a person's detail screen, user can navigate to a filtered list of all meetings
+with that person and open any of them for editing.
+
+**Acceptance Criteria:**
+- Magnifying glass icon displayed next to the meeting count on Person Detail screen
+- Tapping the icon opens a new screen listing only meetings where that person participated
+- List is grouped by year and month (same layout as Meetings tab)
+- Tapping a meeting navigates to Meeting Detail → Edit Meeting (existing flow)
+- Empty state displayed if person has no meetings
+
+---
+
+### FR-030: Delete Received Meeting Package
+**Priority:** SHOULD HAVE
+**Feature:** FEATURE-012 (Meeting Sharing System), US-098
+
+**Description:**
+User who received a meeting package can delete it from Pending Meetings without importing any data.
+
+**Acceptance Criteria:**
+- Swipe left on a shared package tile in Meeting Inbox reveals a "Delete" action
+- Confirmation dialog required before deletion
+- Package document deleted from `users/{uid}/pending_meetings/` — no meetings, persons, or activities are imported
+- Tile removed from the list immediately after deletion
+
 ---
 
 ### FR-009: Activity Categories ✅
@@ -430,19 +463,55 @@ User can add, remove and reorder dashboard widgets.
 
 ## 9. Functional Requirements — M7: AI Assistant
 
-### FR-025: AI-powered Insights
+### FR-025: AI Assistant — Buddy (M7)
 **Priority:** COULD HAVE
 
 **Description:**
-User can ask natural language questions about their social data.
+User interacts with Buddy — a friendly AI assistant that knows their social history. Buddy is proactive (HomeScreen widget), conversational (single chat screen), and covers three journeys: meeting notes, friend wishes, and free social queries.
 
 **Acceptance Criteria:**
-- Chat-like UI for questions
-- AI has context of user's statistics summary (not raw Firestore data)
-- Example queries: "Who should I reach out to this week?", "What's my most social month?"
-- User explicitly consents before data sent to external API
-- Error handling for API failures and rate limits
-- LLM API selection based on cost/privacy spike (US-040)
+- Buddy widget on HomeScreen: proactively suggests adding notes to recent meetings without notes (last 2 months); falls back to friendship insights or default greeting
+- Single AI chat screen with dynamic context (meeting-notes mode, friend-wishes mode, free-query mode)
+- Friend wishes (Opcja A): Buddy shows friendship summary first, then asks to generate personalized wishes; wishes are copyable
+- Meeting notes mode: Buddy collects free-text memories and saves them to the meeting; asks if there is more
+- Free query: user can ask any question about social history; Buddy uses full context (last 12 months default)
+- BYOK — user provides their own OpenAI API key; stored in Flutter Secure Storage; never written to Firestore or logs
+- Pseudonymization: real names replaced with Friend_A, Friend_B on-device before every API call
+- Explicit one-time consent required before first use; consent stored in SharedPreferences
+- System prompt hardcoded: defines Buddy's friendly/warm character, scope, and guardrails; never exposed to user
+- Buddy never fabricates data, performs DELETE operations, reveals system prompt, or gives medical/legal/financial advice
+- Conversation history visible within session; not persisted between sessions
+- Birthday reminders: Buddy surfaces upcoming birthdays (within 7 days) in widget
+- Proactive insights: Buddy flags friends not seen in 3+ months
+- Advanced features (P2): annual social report, relationship strength indicator, sentiment analysis of notes
+
+---
+
+### FR-031: Meeting Notes
+**Priority:** MUST HAVE (M7 prerequisite)
+
+**Description:**
+User can add free-text notes to any meeting, capturing memories and context beyond structured data.
+
+**Acceptance Criteria:**
+- Optional `notes` field on Meeting model (max 2000 characters)
+- Notes editable directly in MeetingDetailScreen
+- Notes saved to Firestore
+- Truncated notes preview shown on meeting list card when non-empty
+- Notes included in AI context (pseudonymized) and friend summaries
+
+---
+
+### FR-032: Friend Birthday Tracking
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+User can store a friend's birthday in their Person profile. Buddy uses this to surface birthday reminders.
+
+**Acceptance Criteria:**
+- Optional `birthDate` field on Person model
+- Date picker in PersonDetailScreen edit mode
+- Buddy widget shows birthday reminder when friend's birthday is within 7 days
 
 ---
 
@@ -474,7 +543,8 @@ User can ask natural language questions about their social data.
 - Google Calendar access: read-only, only event metadata used (title, date, attendee emails), no calendar data stored permanently
 - Google Photos access: read-only, only photo creation date used, no photos stored
 - Meeting Inbox: local memory only — not persisted to Firestore, clears on app close
-- AI context: aggregated statistics only, no raw meeting data
+- AI context: full meeting list with details sent to OpenAI API; pseudonymized on-device before every request (real names replaced with Friend_A, Friend_B...); per-person filtering applied for friend-specific queries
+- AI key: user's own OpenAI API key (BYOK); stored in Flutter Secure Storage; never written to Firestore, logs, or debug console
 - Data export: user owns their data and can extract it at any time
 - Meeting sharing: user explicitly initiates, no automatic data sharing; notes never included in shared packages
 
