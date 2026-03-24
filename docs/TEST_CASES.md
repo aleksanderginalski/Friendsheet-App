@@ -1299,3 +1299,22 @@ Run after every release or hotfix:
 | ID | Test name | Expected |
 |----|-----------|---------|
 | UT-097-004 | conflict tile shows firstName and lastName in conflict message when person has last name | `find.textContaining('"Jan Nowak" matches')` finds one widget |
+
+---
+
+## TC-US098: Delete Received Package Without Processing (US-098)
+
+### Automated tests — `test/presentation/providers/shared_package_inbox_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-098-001 | deletePackageWithoutImport calls deletePackage on repo with correct ids | `mockPackageRepo.deletePackage('u1', 'pkg1')` called once |
+| UT-098-002 | deletePackageWithoutImport removes the package from local state without importing data | `provider.packages` is empty, `hasPackages` is false |
+
+### Automated tests — `test/presentation/import/meeting_inbox_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-098-003 | shows confirmation dialog when package card is swiped left | "Delete package?" dialog visible with confirmation message |
+| UT-098-004 | cancel closes dialog and keeps the package visible | "Ania Kowalska" tile still present, `deletePackage` never called |
+| UT-098-005 | confirm deletes the package from Firestore and removes tile | "Ania Kowalska" tile gone, `mockPackageRepo.deletePackage(any, 'pkg1')` called once |
