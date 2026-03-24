@@ -4,6 +4,16 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.0.0 — US-088: API Key Management for AI Assistant (March 24, 2026)
+- ✅ `lib/data/repositories/ai_key_repository.dart` (NEW) — `AIKeyRepository`: wraps `FlutterSecureStorage` with `saveKey` / `loadKey` / `deleteKey`; storage key `'openai_api_key'`; injectable constructor for testability; key never logged or exposed
+- ✅ `lib/presentation/providers/ai_settings_provider.dart` (NEW) — `AISettingsProvider`: ChangeNotifier managing key validation (`sk-` prefix check), masked display (8 bullets + last 4 chars), `initialize` / `saveKey` / `deleteKey` / `clearError` methods
+- ✅ `lib/presentation/screens/ai_settings_screen.dart` (NEW) — `AISettingsScreen`: two-state UI — key input (TextField, Save button, error display) and key set (masked key label, Delete Key button with confirmation dialog)
+- ✅ `lib/presentation/screens/settings_screen.dart` — new "AI Assistant" `ListTile` (icon: `smart_toy_outlined`) navigates to `AISettingsScreen`; `AISettingsProvider` created at call-site per Provider Navigation Pattern
+- ✅ `.claude/settings.json` — `UserPromptSubmit` hook added: `log_agent_from_prompt.py` fires on every user message, detects `/skill-name` slash commands, writes `agent_start` entry to observability log (complements existing `PreToolUse[Skill]` hook)
+- ✅ `tools/observability/log_agent_from_prompt.py` (NEW) — parses prompt for known skill names (`pm`, `planning`, `dev`, `qa`, `debug`, `docs`, `retro`, `discover`); writes `agent_start` to JSONL session log
+- ✅ 19 new automated tests: `ai_key_repository_test.dart` (+4), `ai_settings_provider_test.dart` (+9), `ai_settings_screen_test.dart` (+6); total 693 tests passing
+- ✅ `docs/BACKLOG.md` — US-088 status → ✅ Completed; EPIC-007 / M7 status → 🔄 In Progress
+
 ### v3.55.0 — US-INF-011: Agent Observability — Cross-Session Comparison Dashboard (March 24, 2026)
 - ✅ `tools/observability/dashboard.py` (NEW) — multi-session dashboard generator: parses all `*.jsonl` logs, extracts session summaries (tokens, US, SP, agent segments); sorts by date descending; opens `dashboard.html` in default browser
 - ✅ `tools/observability/dashboard_html.py` (NEW) — HTML/SVG generation helpers: frequency histograms per SP group (vertical bars, auto-bucketed to nearest 5 000 tokens, min 4 buckets); side-by-side timeline comparison with JavaScript-driven select dropdowns; sessions table at the bottom

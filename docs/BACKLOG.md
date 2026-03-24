@@ -18,7 +18,7 @@
 | M4 | Google Play Release | ✅ COMPLETED |
 | M5 | Meeting Import Hub | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
-| M7 | AI Assistant | 💡 Future |
+| M7 | AI Assistant | 🔄 In Progress |
 ---
 
 ## 🎯 Epic Structure
@@ -3616,7 +3616,7 @@ login instead of only on first login.
 
 **Business Value:** Transforms the app from a tracker into an intelligent social advisor. Demonstrates AI integration, proactive UX, and privacy-by-design skills for portfolio.
 
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Architecture Notes:**
 - BYOK (Bring Your Own Key) — user provides their own OpenAI API key; no cost to developer
@@ -3664,22 +3664,22 @@ login instead of only on first login.
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `ai`, `security`, `settings`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 
 **Acceptance Criteria:**
-- [ ] User can enter OpenAI API key in Settings → AI Assistant
-- [ ] Key is stored using Flutter Secure Storage (Android Keystore backed)
-- [ ] Key is masked in UI (shows only last 4 characters)
-- [ ] User can delete the key at any time
-- [ ] Key is validated before saving (format check: must start with "sk-")
-- [ ] Key is never written to Firestore, logs, or debug console
+- [x] User can enter OpenAI API key in Settings → AI Assistant
+- [x] Key is stored using Flutter Secure Storage (Android Keystore backed)
+- [x] Key is masked in UI (shows only last 4 characters)
+- [x] User can delete the key at any time
+- [x] Key is validated before saving (format check: must start with "sk-")
+- [x] Key is never written to Firestore, logs, or debug console
 
 **Tasks:**
-- [ ] **TASK-088.1:** Add `flutter_secure_storage` to pubspec.yaml — 0.5h
-- [ ] **TASK-088.2:** Create `AIKeyRepository` (save / load / delete) — 1h
-- [ ] **TASK-088.3:** Create `AISettingsScreen` with masked key input UI — 2h
-- [ ] **TASK-088.4:** Add navigation entry: Settings → AI Assistant — 0.5h
-- [ ] **TASK-088.5:** Write unit tests for `AIKeyRepository` — 1h
+- [x] **TASK-088.1:** Add `flutter_secure_storage` to pubspec.yaml — already present (used by GoogleCalendarService)
+- [x] **TASK-088.2:** Create `AIKeyRepository` in `lib/data/repositories/ai_key_repository.dart` (save / load / delete via FlutterSecureStorage) — 1h
+- [x] **TASK-088.3:** Create `AISettingsProvider` (ChangeNotifier: initialize, saveKey with "sk-" validation, deleteKey, masked display) + `AISettingsScreen` (masked input, Save/Delete buttons, error display) — 2.5h
+- [x] **TASK-088.4:** Add navigation entry "AI Assistant" in `SettingsScreen`; create provider at call-site — 0.5h
+- [x] **TASK-088.5:** Write unit tests for `AIKeyRepository` — 1h (handled by /qa)
 
 **Dependencies:** None
 **Blocks:** US-085, US-086, US-087
