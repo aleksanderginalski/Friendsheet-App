@@ -82,6 +82,20 @@ Stosuj istniejące szablony z BACKLOG.md:
 - US z Acceptance Criteria i Tasks
 - Task format: TASK-{US_NUMBER}.{SEQUENCE}
 
+## Sprawdź adekwatność agentów dev
+
+Gdy sesja dotyczy nowego Epiku lub US z obszaru technicznie odmiennego od Flutter/Firebase
+(np. integracja z LLM/AI, nowe zewnętrzne API, backend poza Firestore) — zadaj pytanie:
+
+"Czy obecny /dev (CLAUDE.md — Flutter/Firebase/Provider) jest wystarczający dla tego zakresu,
+czy potrzebujemy nowego wyspecjalizowanego agenta?"
+
+Jeśli potrzebny nowy agent:
+1. Przedyskutuj zakres i nazwę (np. `/dev-ai` dla Epic-007)
+2. Opisz czym będzie się różnił od obecnego /dev
+3. Dodaj do BACKLOG.md jako US infrastrukturalne (US-INF-XXX)
+4. Zaktualizuj MULTI_AGENT_ARCHITECTURE.md — dodaj nowy agent do Agent Directory i System Map
+
 ## Ograniczenia
 - Nigdy nie commituj
 - Nie twórz Task instructions dla /dev — to rola /planning

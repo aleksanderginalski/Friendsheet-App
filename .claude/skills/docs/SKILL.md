@@ -50,6 +50,7 @@ git log main..HEAD --oneline
 - privacy.md — new data collected
 - terms.md — new user-facing functionality
 - friendsheet_design_brief.md — visual/UX decisions
+- MULTI_AGENT_ARCHITECTURE.md — when the US affects agent workflow, agent scope, or multi-agent system patterns
 
 ## TEST_CASES.md — owned by /qa, do not modify
 
