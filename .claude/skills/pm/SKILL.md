@@ -79,8 +79,11 @@ Przypomnij też o otagowaniu sesji observability:
 "Pamiętaj o raporcie sesji:
 ```powershell
 tools\observability\report.bat --us US-XXX --sp N
+tools\observability\dashboard.bat
 ```
-Zastąp US-XXX numerem US i N liczbą Story Points."
+Zastąp US-XXX numerem US i N liczbą Story Points.
+`report.bat` zapisuje dane sesji (wymagane do histogramów SP).
+`dashboard.bat` otwiera porównanie wszystkich sesji w przeglądarce."
 
 ## Gotowa komenda po routingu
 
