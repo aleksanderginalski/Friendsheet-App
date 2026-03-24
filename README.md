@@ -174,11 +174,11 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.53.0 — US-097: Sharing Flow UX Polish — Toggles Position & Disable Duplicate Activity (March 24, 2026)
-- ✅ Include-options toggles moved above meeting list in `ShareMeetingsScreen` — sender sees options before the meeting list
-- ✅ "Create as New" disabled with tooltip in `_ActivityConflictTile` — prevents accidental duplicate activity creation
-- ✅ Bug fix: person conflict tile now shows full name (firstName + lastName)
-- ✅ 669 Flutter tests passing (+4 new tests)
+### Latest: v3.54.0 — US-098: Delete Received Package Without Processing (March 24, 2026)
+- ✅ Swipe-to-delete (left) on shared package tile in Meeting Inbox — reveals red delete background with bin icon
+- ✅ Confirmation dialog before deletion: "Delete package? It cannot be recovered." with Cancel / Delete actions
+- ✅ Package document deleted from `users/{uid}/pending_meetings/` and removed from UI immediately; no data imported
+- ✅ 674 Flutter tests passing (+5 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

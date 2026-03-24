@@ -141,6 +141,7 @@ class MeetingInboxScreen extends StatelessWidget {
   }
 
   // Builds the shared packages section with a header and package cards.
+  // Each card supports swipe-to-delete (left swipe) with a confirmation dialog.
   Widget _buildPackagesSection(
       BuildContext context, SharedPackageInboxProvider packageProvider) {
     return Column(
@@ -154,16 +155,56 @@ class MeetingInboxScreen extends StatelessWidget {
           ),
         ),
         ...packageProvider.packages.map(
-          (pkg) => _SharedPackageCard(
-            package: pkg,
-            conflictCount: packageProvider.conflictsFor(pkg.id).length,
-            canProceed: packageProvider.canProceed(pkg.id),
-            onTap: () => _openConflictScreen(context, pkg, packageProvider),
+          (pkg) => Dismissible(
+            key: ValueKey(pkg.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 16),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            confirmDismiss: (_) => _confirmDelete(context),
+            onDismissed: (_) {
+              final userId = AuthService().currentUserId ?? '';
+              packageProvider.deletePackageWithoutImport(userId, pkg.id);
+            },
+            child: _SharedPackageCard(
+              package: pkg,
+              conflictCount: packageProvider.conflictsFor(pkg.id).length,
+              canProceed: packageProvider.canProceed(pkg.id),
+              onTap: () => _openConflictScreen(context, pkg, packageProvider),
+            ),
           ),
         ),
         const Divider(),
       ],
     );
+  }
+
+  // Shows a confirmation dialog before deleting a package.
+  // Returns true if the user confirms, false if they cancel.
+  Future<bool> _confirmDelete(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete package?'),
+        content: const Text(
+          'Are you sure you want to delete this package? It cannot be recovered.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   // Navigates to PackageConflictScreen, passing the provider into the new route.

@@ -345,6 +345,14 @@ class SharedPackageInboxProvider extends ChangeNotifier {
     }
   }
 
+  /// Deletes the package from Firestore without importing any data,
+  /// then clears local state. Used when the user dismisses an unwanted package.
+  Future<void> deletePackageWithoutImport(
+      String userId, String packageId) async {
+    await _packageRepo.deletePackage(userId, packageId);
+    dismissPackage(packageId);
+  }
+
   /// Imports meetings, persons, and activities from the package to Firestore,
   /// then deletes the package document and clears local state.
   Future<ImportSummary> importPackage(String packageId, String userId) async {

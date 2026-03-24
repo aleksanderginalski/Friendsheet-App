@@ -75,9 +75,10 @@ List only files actually modified. Do not write "and others" — be explicit.
 - **Files updated:** [list]
 - **Architectural impact:** [none / description]
 - **Technical debt:** [none / description]
-- **Proposed commit:**
+- **Proposed commit:** Use a **single** `powershell` code block (one command per line, no `&&`):
 ```powershell
-git add [list changed files explicitly]
+git add [file1]
+git add [file2]
 git commit -m "docs: update documentation for US-XXX (FileA, FileB, FileC)"
 ```
 

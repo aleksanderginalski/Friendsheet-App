@@ -685,4 +685,33 @@ void main() {
       expect(provider.isPersonOptedOut('pkg1', 'jan kowalski'), isFalse);
     });
   });
+
+  group('deletePackageWithoutImport', () {
+    setUp(() async {
+      final pkg = makePackage();
+      when(mockPackageRepo.fetchPackages('u1')).thenAnswer((_) async => [pkg]);
+      when(mockMeetingRepo.getMeetingsByUser('u1'))
+          .thenAnswer((_) => Stream.value([]));
+      stubEmptyPersonsAndCategories();
+      await provider.initialize('u1');
+    });
+
+    test('calls deletePackage on repo with correct ids', () async {
+      when(mockPackageRepo.deletePackage(any, any)).thenAnswer((_) async {});
+
+      await provider.deletePackageWithoutImport('u1', 'pkg1');
+
+      verify(mockPackageRepo.deletePackage('u1', 'pkg1')).called(1);
+    });
+
+    test('removes the package from local state without importing data',
+        () async {
+      when(mockPackageRepo.deletePackage(any, any)).thenAnswer((_) async {});
+
+      await provider.deletePackageWithoutImport('u1', 'pkg1');
+
+      expect(provider.packages, isEmpty);
+      expect(provider.hasPackages, isFalse);
+    });
+  });
 }
