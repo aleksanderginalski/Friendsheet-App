@@ -4,6 +4,11 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.54.0 — US-098: Delete Received Package Without Processing (March 24, 2026)
+- ✅ `lib/presentation/providers/shared_package_inbox_provider.dart` — new `deletePackageWithoutImport(userId, packageId)` method: calls `_packageRepo.deletePackage` then `dismissPackage`; deletes the Firestore document and removes the package from local state without importing any data
+- ✅ `lib/presentation/import/meeting_inbox_screen.dart` — `_buildPackagesSection`: each `_SharedPackageCard` wrapped in `Dismissible` (swipe left); `_confirmDelete` helper shows AlertDialog ("Delete package?" + "Are you sure…"); `onDismissed` calls `deletePackageWithoutImport`; cancel returns `false` to prevent dismissal
+- ✅ 5 new automated tests: `shared_package_inbox_provider_test.dart` (+2 unit tests for `deletePackageWithoutImport`), `meeting_inbox_screen_test.dart` (NEW, +3 widget tests: dialog visible on swipe, cancel keeps tile, confirm removes tile + calls repo); total 674 tests passing
+
 ### v3.53.0 — US-097: Sharing Flow UX Polish — Toggles Position & Disable Duplicate Activity (March 24, 2026)
 - ✅ `lib/presentation/sharing/share_meetings_screen.dart` — `_OptionsCard` (include participants / include activities toggles) moved above the meetings list; now appears immediately after the sender signature card
 - ✅ `lib/presentation/import/package_activity_tiles.dart` — `_ActivityConflictTile`: "Create as New" button replaced with a `const Tooltip` wrapping a permanently-disabled `OutlinedButton`; tooltip message: "An activity with this name already exists. Rename it or link to existing."

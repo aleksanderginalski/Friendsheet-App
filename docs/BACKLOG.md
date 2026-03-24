@@ -3294,21 +3294,21 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `sharing`, `inbox`, `ux`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED (March 24, 2026)
 **Dependencies:** US-092 ✅
 
 **Acceptance Criteria:**
-- [ ] In Pending Meetings (Meeting Inbox), user can swipe left on a shared package tile to reveal a "Delete" action
-- [ ] A confirmation dialog is shown: "Are you sure you want to delete this package? It cannot be recovered."
-- [ ] On confirm: package document is deleted from `users/{uid}/pending_meetings/`
-- [ ] The package disappears from the list immediately after deletion
-- [ ] No meetings, persons, or activities are imported as a result of this action
+- [x] In Pending Meetings (Meeting Inbox), user can swipe left on a shared package tile to reveal a "Delete" action
+- [x] A confirmation dialog is shown: "Are you sure you want to delete this package? It cannot be recovered."
+- [x] On confirm: package document is deleted from `users/{uid}/pending_meetings/`
+- [x] The package disappears from the list immediately after deletion
+- [x] No meetings, persons, or activities are imported as a result of this action
 
 **Tasks:**
-- [ ] **TASK-098.1:** Add swipe-to-delete gesture on shared package tile in `MeetingInboxScreen` — 1h
-- [ ] **TASK-098.2:** Add confirmation dialog before deletion — 0.5h
-- [ ] **TASK-098.3:** Add `deletePackageWithoutImport(userId, packageId)` method to `SharedPackageInboxProvider` — 0.5h
-- [ ] **TASK-098.4:** Write tests — 0.5h
+- [x] **TASK-098.1:** Add swipe-to-delete gesture on shared package tile in `MeetingInboxScreen` — 1h
+- [x] **TASK-098.2:** Add confirmation dialog before deletion — 0.5h
+- [x] **TASK-098.3:** Add `deletePackageWithoutImport(userId, packageId)` method to `SharedPackageInboxProvider` — 0.5h
+- [x] **TASK-098.4:** Write tests — 0.5h
 
 ---
 
