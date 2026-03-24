@@ -944,23 +944,23 @@ Entry point: Side Drawer → Profile → "Delete Account". Full hard-delete requ
 **Story Points:** 5
 **Priority:** P1
 **Labels:** `persons`, `meetings`, `navigation`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 **Dependencies:** US-025 ✅, US-023 ✅
 
 **Acceptance Criteria:**
-- [ ] Person Detail screen shows a magnifying glass icon (search/view) next to the meeting count
-- [ ] Tapping the icon navigates to a new `PersonMeetingsScreen`
-- [ ] `PersonMeetingsScreen` displays only meetings where that person is a participant, grouped by year and month (same layout as main Meetings screen)
-- [ ] Tapping a meeting in this list opens `MeetingDetailScreen` (existing flow)
-- [ ] If the person has no meetings, an empty state is shown
-- [ ] Back navigation returns to Person Detail
+- [x] Person Detail screen shows a magnifying glass icon (search/view) next to the meeting count
+- [x] Tapping the icon navigates to a new `PersonMeetingsScreen`
+- [x] `PersonMeetingsScreen` displays only meetings where that person is a participant, grouped by year and month (same layout as main Meetings screen)
+- [x] Tapping a meeting in this list opens `MeetingDetailScreen` (existing flow)
+- [x] If the person has no meetings, an empty state is shown
+- [x] Back navigation returns to Person Detail
 
 **Tasks:**
-- [ ] **TASK-099.1:** Add magnifying glass icon button next to meeting count on `PersonDetailScreen` — 0.5h
-- [ ] **TASK-099.2:** Create `PersonMeetingsProvider` + `PersonMeetingsScreen` — filtered meetings list with grouped year/month view — 2h
+- [x] **TASK-099.1:** Add magnifying glass icon button next to meeting count on `PersonDetailScreen` — 0.5h
+- [x] **TASK-099.2:** Create `PersonMeetingsProvider` + `PersonMeetingsScreen` — filtered meetings list with grouped year/month view — 2h
 - [x] **TASK-099.3:** `getMeetingsByParticipant(userId, personId)` already exists in `MeetingRepository` — no new method needed ✅
-- [ ] **TASK-099.4:** Wire navigation from `PersonDetailScreen` to `PersonMeetingsScreen` — 0.5h
-- [ ] **TASK-099.5:** Write tests — 1h
+- [x] **TASK-099.4:** Wire navigation from `PersonDetailScreen` to `PersonMeetingsScreen` — 0.5h
+- [x] **TASK-099.5:** Write tests — 1h
 
 ---
 

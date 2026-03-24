@@ -4,6 +4,13 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.52.0 — US-099: Person Meetings List — Navigate from Person Detail (March 24, 2026)
+- ✅ `lib/presentation/providers/person_meetings_provider.dart` (NEW) — `PersonMeetingsProvider`: loads meetings via `getMeetingsByParticipant` (Future, not Stream); manages expand/collapse state for year/month sections; `refreshMeetingCount`-compatible reload pattern
+- ✅ `lib/presentation/persons/person_meetings_screen.dart` (NEW) — `PersonMeetingsScreen`: grouped year/month list for a single person; reuses `MeetingCard`; reloads on return from `MeetingDetailScreen` to reflect deletions/edits
+- ✅ `lib/presentation/persons/person_detail_screen.dart` — meeting count `ListTile` gains `Icons.search` button; `_openPersonMeetingsScreen` navigates and calls `refreshMeetingCount` on return so the count is always in sync
+- ✅ `lib/presentation/persons/person_detail_provider.dart` — new `refreshMeetingCount()` silently re-fetches count without triggering loading state
+- ✅ 8 new automated tests: `person_meetings_provider_test.dart` (NEW, +7 tests), `person_detail_provider_test.dart` (+1 `refreshMeetingCount` test); total 665 tests passing
+
 ### v3.51.0 — US-096: Add Sender as Contact and Meeting Participant on Import (March 23, 2026)
 - ✅ `lib/data/models/pending_meeting_package.dart` — `SharedPerson` gains optional `nickname` field; `_sharedMeetingToMap` and `_sharedMeetingFromMap` updated to serialize/deserialize it (backwards-compatible: field omitted when null)
 - ✅ `lib/data/models/pending_meeting_package.freezed.dart` + `.g.dart` — regenerated after model change
