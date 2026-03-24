@@ -4,6 +4,14 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.55.0 — US-INF-011: Agent Observability — Cross-Session Comparison Dashboard (March 24, 2026)
+- ✅ `tools/observability/dashboard.py` (NEW) — multi-session dashboard generator: parses all `*.jsonl` logs, extracts session summaries (tokens, US, SP, agent segments); sorts by date descending; opens `dashboard.html` in default browser
+- ✅ `tools/observability/dashboard_html.py` (NEW) — HTML/SVG generation helpers: frequency histograms per SP group (vertical bars, auto-bucketed to nearest 5 000 tokens, min 4 buckets); side-by-side timeline comparison with JavaScript-driven select dropdowns; sessions table at the bottom
+- ✅ `tools/observability/dashboard.bat` (NEW) — Windows wrapper calling uv-managed Python 3.12; mirrors `report.bat` convention
+- ✅ `.claude/skills/pm/SKILL.md` — post-US reminder updated: `dashboard.bat` added alongside `report.bat` so both are prompted after every US completion
+- ✅ `docs/BACKLOG.md` — US-INF-011 AC revised (histogram type changed to frequency distribution per SP), status → ✅ Completed
+- ✅ 674 Flutter tests passing (no new Flutter tests — Python-only US)
+
 ### v3.54.0 — US-098: Delete Received Package Without Processing (March 24, 2026)
 - ✅ `lib/presentation/providers/shared_package_inbox_provider.dart` — new `deletePackageWithoutImport(userId, packageId)` method: calls `_packageRepo.deletePackage` then `dismissPackage`; deletes the Firestore document and removes the package from local state without importing any data
 - ✅ `lib/presentation/import/meeting_inbox_screen.dart` — `_buildPackagesSection`: each `_SharedPackageCard` wrapped in `Dismissible` (swipe left); `_confirmDelete` helper shows AlertDialog ("Delete package?" + "Are you sure…"); `onDismissed` calls `deletePackageWithoutImport`; cancel returns `false` to prevent dismissal
