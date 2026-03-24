@@ -326,32 +326,10 @@ If you already created a GitHub issue for US-005, you can:
 **Labels:** `bug` `auth` `P0`
 **Story Points:** 3
 **Priority:** P0
-**Status:** 📋 Planned
+**Status:** Canceled
 **Feature:** FEATURE-002: User Authentication
 **Epic:** EPIC-001
 
-**Context / Root Cause Area:**
-Session restoration fails on every cold start (100% reproducible). The user is never logged out, but the app always shows the login screen. Tapping "Login" bypasses the Google account picker and goes directly to HomeScreen — confirming Firebase still holds a valid token. Root cause is likely `silentSignIn()` not being awaited before routing, or `authStateChanges` stream not being handled before the first frame renders.
-
-**Acceptance Criteria:**
-- [ ] Reopening the app after cold start (removed from recents) navigates directly to HomeScreen — no login screen shown
-- [ ] Google account picker is NOT triggered during session restore (silent re-auth only)
-- [ ] If session is genuinely expired, login screen is shown normally with account picker
-- [ ] No regression: explicit logout still works, first-time login still works
-- [ ] TC-AUTH-003 passes
-
-**Tasks:**
-- [ ] **TASK-074.1:** Audit `AuthService` — verify `silentSignIn()` is called on app start and its result is awaited before routing
-- [ ] **TASK-074.2:** Audit `main.dart` / root widget — verify `authStateChanges` stream decision (authenticated → HomeScreen, unauthenticated → LoginScreen) happens before first meaningful frame
-- [ ] **TASK-074.3:** Fix routing so a loading/splash state is shown while auth resolves, then navigate without flashing login screen
-- [ ] **TASK-074.4:** Update auth restore widget test
-- [ ] **TASK-074.5:** Run `flutter analyze` + `flutter test`, report back
-
-**Definition of Done:**
-- [ ] Cold start goes directly to HomeScreen — 100% reproducible
-- [ ] No login screen flash before HomeScreen
-- [ ] TC-AUTH-003 passes
-- [ ] `flutter analyze` clean, `flutter test` green
 
 
 ### US-076: Delete Account and All User Data
@@ -966,21 +944,21 @@ Entry point: Side Drawer → Profile → "Delete Account". Full hard-delete requ
 **Story Points:** 5
 **Priority:** P1
 **Labels:** `persons`, `meetings`, `navigation`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Dependencies:** US-025 ✅, US-023 ✅
 
 **Acceptance Criteria:**
 - [ ] Person Detail screen shows a magnifying glass icon (search/view) next to the meeting count
 - [ ] Tapping the icon navigates to a new `PersonMeetingsScreen`
 - [ ] `PersonMeetingsScreen` displays only meetings where that person is a participant, grouped by year and month (same layout as main Meetings screen)
-- [ ] Tapping a meeting in this list opens the existing Edit Meeting flow
+- [ ] Tapping a meeting in this list opens `MeetingDetailScreen` (existing flow)
 - [ ] If the person has no meetings, an empty state is shown
 - [ ] Back navigation returns to Person Detail
 
 **Tasks:**
 - [ ] **TASK-099.1:** Add magnifying glass icon button next to meeting count on `PersonDetailScreen` — 0.5h
-- [ ] **TASK-099.2:** Create `PersonMeetingsScreen` — filtered meetings list reusing existing grouped list widget — 2h
-- [ ] **TASK-099.3:** Add `getMeetingsByPersonId(userId, personId)` query to `MeetingRepository` — 1h
+- [ ] **TASK-099.2:** Create `PersonMeetingsProvider` + `PersonMeetingsScreen` — filtered meetings list with grouped year/month view — 2h
+- [x] **TASK-099.3:** `getMeetingsByParticipant(userId, personId)` already exists in `MeetingRepository` — no new method needed ✅
 - [ ] **TASK-099.4:** Wire navigation from `PersonDetailScreen` to `PersonMeetingsScreen` — 0.5h
 - [ ] **TASK-099.5:** Write tests — 1h
 
@@ -1910,12 +1888,12 @@ no SQL, no native dependencies.
 
 #### Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] `flutter analyze` 0 issues
-- [ ] All tests pass (existing + new)
-- [ ] Statistics open instantly on app restart (verified manually)
-- [ ] Firestore reads after restart = 0 (verified via Firebase Console)
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] `flutter analyze` 0 issues
+- [x] All tests pass (existing + new)
+- [x] Statistics open instantly on app restart (verified manually)
+- [x] Firestore reads after restart = 0 (verified via Firebase Console)
+- [x] Documentation updated
 ---
 
 # 📦 EPIC-009: Friendsheet M3.5 - Visual Design & Brand Identity
@@ -2175,11 +2153,11 @@ no text, no letters, clean edges
 
 **Story Points:** 3
 **Priority:** P1
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED (March 05, 2026)
 **Labels:** `design`, `midjourney`, `flutter`
 **Mode:** 🎨 Design → ⚙️ Task
 **Depends on:** US-050
-**Status:** ✅ COMPLETED (March 05, 2026)
+
 
 **Acceptance Criteria:**
 - [x] Empty state illustration for MeetingsListScreen (no meetings added yet)

@@ -15,6 +15,7 @@ import '../sharing/share_meetings_screen.dart';
 import 'friend_groups_provider.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
+import 'person_meetings_screen.dart';
 
 /// Displays full details of a single person and supports edit, delete, and account linking.
 class PersonDetailScreen extends StatefulWidget {
@@ -72,6 +73,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         person: person,
         onLinkTap: () => _showLinkDialog(provider),
         onSendTap: () => _openShareMeetingsScreen(person),
+        onMeetingsTap: () => _openPersonMeetingsScreen(person),
       ),
     );
   }
@@ -242,6 +244,20 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  // Opens PersonMeetingsScreen and refreshes meeting count on return.
+  // Refresh is required because the user may have deleted meetings.
+  void _openPersonMeetingsScreen(Person person) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PersonMeetingsScreen(person: person),
+      ),
+    ).then((_) {
+      if (!mounted) return;
+      context.read<PersonDetailProvider>().refreshMeetingCount();
+    });
+  }
+
   // Opens ShareMeetingsScreen for the linked person.
   // Method lives on State so context is always alive after async operations.
   void _openShareMeetingsScreen(Person person) {
@@ -339,12 +355,14 @@ class _PersonDetailBody extends StatelessWidget {
   final Person person;
   final VoidCallback onLinkTap;
   final VoidCallback onSendTap;
+  final VoidCallback onMeetingsTap;
 
   const _PersonDetailBody({
     required this.provider,
     required this.person,
     required this.onLinkTap,
     required this.onSendTap,
+    required this.onMeetingsTap,
   });
 
   @override
@@ -371,9 +389,19 @@ class _PersonDetailBody extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.calendar_today),
           title: const Text('Meetings together'),
-          trailing: Text(
-            '${provider.meetingCount}',
-            style: Theme.of(context).textTheme.titleMedium,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${provider.meetingCount}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              IconButton(
+                icon: const Icon(Icons.search),
+                tooltip: 'View meetings',
+                onPressed: onMeetingsTap,
+              ),
+            ],
           ),
         ),
         NicknamesSection(provider: provider, person: person),
