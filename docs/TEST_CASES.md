@@ -1276,3 +1276,26 @@ Run after every release or hotfix:
 | ID | Test name | Expected |
 |----|-----------|---------|
 | UT-PM-008 | refreshMeetingCount updates count without setting isLoading | meetingCount == 2 after refresh, isLoading false |
+
+---
+
+## TC-US097: Sharing Flow UX Polish (US-097)
+
+### Automated tests — `test/presentation/sharing/share_meetings_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-097-001 | include-options toggles appear above the meeting list | Y position of "Include other participants" SwitchListTile < Y position of meeting CheckboxListTile |
+
+### Automated tests — `test/presentation/import/package_activities_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-097-002 | Create as New button is disabled when activity name exactly matches existing category | `OutlinedButton` with text "Create as New" has `onPressed == null` |
+| UT-097-003 | disabled Create as New button shows tooltip with explanation | `Tooltip` with message "An activity with this name already exists. Rename it or link to existing." found |
+
+### Automated tests — `test/presentation/import/package_persons_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-097-004 | conflict tile shows firstName and lastName in conflict message when person has last name | `find.textContaining('"Jan Nowak" matches')` finds one widget |

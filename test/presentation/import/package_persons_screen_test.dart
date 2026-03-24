@@ -125,6 +125,35 @@ void main() {
     });
   });
 
+  group('conflict tile — full name display', () {
+    testWidgets(
+        'shows firstName and lastName in conflict message when person has last name',
+        (tester) async {
+      final pkg = makePackage(
+        participants: [
+          const SharedPerson(firstName: 'Jan', lastName: 'Nowak'),
+        ],
+      );
+      final provider = await makeProvider(
+        pkg: pkg,
+        existingPersons: [
+          Person(
+            id: 'p-jan',
+            userId: 'u1',
+            firstName: 'Jan',
+            lastName: 'Nowak',
+            createdAt: DateTime(2026),
+            nicknames: const [],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(buildScreen(provider, pkg));
+
+      expect(find.textContaining('"Jan Nowak" matches'), findsOneWidget);
+    });
+  });
+
   group('conflict tile — sender nickname hint and pre-fill', () {
     testWidgets(
         'shows "Suggested nickname" hint and pre-fills field when conflict exists and sender has nickname',

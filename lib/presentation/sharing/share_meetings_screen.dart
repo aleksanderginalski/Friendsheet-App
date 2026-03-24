@@ -140,6 +140,13 @@ class _ShareMeetingsScreenState extends State<ShareMeetingsScreen> {
                 onNicknameChanged: provider.setSenderNickname,
               ),
               const SizedBox(height: 8),
+              _OptionsCard(
+                includePersons: provider.includePersons,
+                includeActivities: provider.includeActivities,
+                onIncludePersonsChanged: provider.setIncludePersons,
+                onIncludeActivitiesChanged: provider.setIncludeActivities,
+              ),
+              const SizedBox(height: 8),
               CheckboxListTile(
                 value: provider.isAllSelected,
                 onChanged: (_) => provider.toggleAll(),
@@ -156,13 +163,6 @@ class _ShareMeetingsScreenState extends State<ShareMeetingsScreen> {
                   ),
                   controlAffinity: ListTileControlAffinity.leading,
                 ),
-              ),
-              const SizedBox(height: 8),
-              _OptionsCard(
-                includePersons: provider.includePersons,
-                includeActivities: provider.includeActivities,
-                onIncludePersonsChanged: provider.setIncludePersons,
-                onIncludeActivitiesChanged: provider.setIncludeActivities,
               ),
             ],
           ),

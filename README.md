@@ -174,11 +174,11 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.52.0 — US-099: Person Meetings List — Navigate from Person Detail (March 24, 2026)
-- ✅ New `PersonMeetingsScreen` — full meeting history with a person, grouped by year/month, accessible via search icon on Person Detail
-- ✅ New `PersonMeetingsProvider` — one-time Future load with expand/collapse state; reloads on return from edit
-- ✅ `PersonDetailProvider` gains `refreshMeetingCount()` — meeting count syncs after deletions without flashing a loading state
-- ✅ 665 Flutter tests passing (+8 new tests)
+### Latest: v3.53.0 — US-097: Sharing Flow UX Polish — Toggles Position & Disable Duplicate Activity (March 24, 2026)
+- ✅ Include-options toggles moved above meeting list in `ShareMeetingsScreen` — sender sees options before the meeting list
+- ✅ "Create as New" disabled with tooltip in `_ActivityConflictTile` — prevents accidental duplicate activity creation
+- ✅ Bug fix: person conflict tile now shows full name (firstName + lastName)
+- ✅ 669 Flutter tests passing (+4 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

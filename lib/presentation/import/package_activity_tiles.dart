@@ -77,16 +77,16 @@ class _ActivityConflictTileState extends State<_ActivityConflictTile> {
             ),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 4, children: [
-              _btn('Create as New',
-                  selected: res != null &&
-                      res.isRename &&
-                      res.renamedName == widget.originalName, onPressed: () {
-                widget.provider.resolveActivityConflict(
-                    widget.packageId,
-                    widget.lowerName,
-                    ActivityResolution.rename(widget.originalName));
-                setState(() => _showRenameField = false);
-              }),
+              // Disabled — creating with the same name would produce a duplicate.
+              // User must rename or link to the existing category instead.
+              const Tooltip(
+                message: 'An activity with this name already exists. '
+                    'Rename it or link to existing.',
+                child: OutlinedButton(
+                  onPressed: null,
+                  child: Text('Create as New'),
+                ),
+              ),
               _btn('Rename',
                   selected: res != null &&
                       res.isRename &&

@@ -3269,19 +3269,19 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `sharing`, `ux`, `activities`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 **Dependencies:** US-091 ✅, US-093 ✅
 
 **Acceptance Criteria:**
-- [ ] In `ShareMeetingsScreen`: "Include participants" and "Include activities" toggles are displayed ABOVE the meetings list, not below
-- [ ] In `PackageActivitiesScreen`: when an incoming activity name matches an existing activity name (exact, case-insensitive), the "Create as new" option is visually disabled (greyed out)
-- [ ] Disabled "Create as new" shows a tooltip explaining the reason: "An activity with this name already exists. Rename it or link to existing."
-- [ ] User must choose "Rename" or "Link to existing" to proceed — "Create as new" is not actionable when name conflicts
+- [x] In `ShareMeetingsScreen`: "Include participants" and "Include activities" toggles are displayed ABOVE the meetings list, not below
+- [x] In `PackageActivitiesScreen`: when an incoming activity name matches an existing activity name (exact, case-insensitive), the "Create as new" option is visually disabled (greyed out)
+- [x] Disabled "Create as new" shows a tooltip explaining the reason: "An activity with this name already exists. Rename it or link to existing."
+- [x] User must choose "Rename" or "Link to existing" to proceed — "Create as new" is not actionable when name conflicts
 
 **Tasks:**
-- [ ] **TASK-097.1:** Move include-toggles widget above the meeting list in `ShareMeetingsScreen` — 0.5h
-- [ ] **TASK-097.2:** In `PackageActivitiesScreen`: detect exact name conflict and disable "Create as new" option with tooltip — 1h
-- [ ] **TASK-097.3:** Write tests — 0.5h
+- [x] **TASK-097.1:** Move include-toggles widget above the meeting list in `ShareMeetingsScreen` — 0.5h
+- [x] **TASK-097.2:** In `PackageActivitiesScreen`: detect exact name conflict and disable "Create as new" option with tooltip — 1h
+- [x] **TASK-097.3:** Write tests — 0.5h
 
 ---
 
