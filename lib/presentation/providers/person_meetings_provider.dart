@@ -76,8 +76,8 @@ class PersonMeetingsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _meetings = await _meetingRepository.getMeetingsByParticipant(
-          userId, personId);
+      _meetings =
+          await _meetingRepository.getMeetingsByParticipant(userId, personId);
       _initDefaultExpandedSections();
     } catch (_) {
       _error = 'Failed to load meetings';

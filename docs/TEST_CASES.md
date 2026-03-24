@@ -1253,3 +1253,26 @@ Run after every release or hotfix:
 | UT-SENDER-007 | does not show "Suggested nickname" when sender has no nickname | `find.textContaining('Suggested nickname')` finds nothing |
 | UT-SENDER-008 | conflict tile shows hint and pre-fills nickname field with sender nickname | hint visible; TextField controller text equals `'Anka'` after tapping "Add with Nickname" |
 | UT-SENDER-009 | conflict tile shows no hint when sender has no nickname | `find.textContaining('Suggested nickname')` finds nothing |
+
+
+---
+
+## TC-PERSONMEETINGS: Person Meetings List (US-099)
+
+### Automated tests — `test/presentation/providers/person_meetings_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-PM-001 | initial state — all defaults | isLoading false, error null, meetings empty, meetingsByYearAndMonth empty |
+| UT-PM-002 | loadMeetings happy path | meetings stored, isLoading false, error null |
+| UT-PM-003 | loadMeetings error | error == 'Failed to load meetings', meetings empty, isLoading false |
+| UT-PM-004 | expands current year after successful load | isYearExpanded(DateTime.now().year) == true |
+| UT-PM-005 | meetingsByYearAndMonth groups and sorts descending | years [2024, 2023]; March has 2 meetings; November has 1 |
+| UT-PM-006 | toggleYear expands then collapses | isYearExpanded(2025): false → true → false |
+| UT-PM-007 | toggleMonth expands then collapses | isMonthExpanded('2025-03'): false → true → false |
+
+### Automated tests — `test/presentation/persons/person_detail_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-PM-008 | refreshMeetingCount updates count without setting isLoading | meetingCount == 2 after refresh, isLoading false |

@@ -96,8 +96,7 @@ class _PersonMeetingsScreenState extends State<PersonMeetingsScreen> {
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, PersonMeetingsProvider provider) {
+  Widget _buildContent(BuildContext context, PersonMeetingsProvider provider) {
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
