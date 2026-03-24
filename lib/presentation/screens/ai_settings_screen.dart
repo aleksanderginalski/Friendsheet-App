@@ -69,7 +69,8 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Assistant', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('AI Assistant', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),

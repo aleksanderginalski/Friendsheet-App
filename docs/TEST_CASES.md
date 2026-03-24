@@ -1318,3 +1318,41 @@ Run after every release or hotfix:
 | UT-098-003 | shows confirmation dialog when package card is swiped left | "Delete package?" dialog visible with confirmation message |
 | UT-098-004 | cancel closes dialog and keeps the package visible | "Ania Kowalska" tile still present, `deletePackage` never called |
 | UT-098-005 | confirm deletes the package from Firestore and removes tile | "Ania Kowalska" tile gone, `mockPackageRepo.deletePackage(any, 'pkg1')` called once |
+
+---
+
+## TC-AI-KEY: API Key Management (US-088)
+
+### Automated tests — `test/data/repositories/ai_key_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-088-001 | saveKey writes key to secure storage under openai_api_key | `mockStorage.write(key: 'openai_api_key', value: 'sk-abc1234')` called once |
+| UT-088-002 | loadKey returns null when no key is stored | result is null |
+| UT-088-003 | loadKey returns stored key value | result equals `'sk-abc1234'` |
+| UT-088-004 | deleteKey deletes key from secure storage under openai_api_key | `mockStorage.delete(key: 'openai_api_key')` called once |
+
+### Automated tests — `test/presentation/providers/ai_settings_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-088-005 | initial state — all fields are at default values | `isLoading` false, `maskedKey` null, `errorMessage` null |
+| UT-088-006 | initialize — maskedKey is null when no key is stored | `maskedKey` null, `isLoading` false |
+| UT-088-007 | initialize — maskedKey shows 8 bullets + last 4 chars when key exists | `maskedKey` equals `'••••••••1234'` |
+| UT-088-008 | saveKey — sets errorMessage when key does not start with sk- | `errorMessage` equals `'Key must start with "sk-"'`, repo never called |
+| UT-088-009 | saveKey — saves key and updates maskedKey on valid key | `maskedKey` equals `'••••••••1234'`, `errorMessage` null |
+| UT-088-010 | saveKey — key shorter than 4 chars shows full suffix in mask | `maskedKey` equals `'••••••••sk-x'` |
+| UT-088-011 | deleteKey — clears maskedKey after deletion | `maskedKey` null, `isLoading` false |
+| UT-088-012 | clearError — clears errorMessage | `errorMessage` null |
+| UT-088-013 | clearError — does nothing when errorMessage is already null | no exception thrown |
+
+### Automated tests — `test/presentation/screens/ai_settings_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-088-014 | no key saved — shows key input field and Save button | `TextField` and `'Save'` visible; `'Delete Key'` absent |
+| UT-088-015 | no key saved — shows error message when errorMessage is set | `'Key must start with "sk-"'` visible |
+| UT-088-016 | key already saved — shows masked key and Delete Key button | `'••••••••1234'` and `'Delete Key'` visible; `TextField` absent |
+| UT-088-017 | delete flow — shows confirmation dialog on Delete Key tap | `'Delete API Key?'` dialog visible |
+| UT-088-018 | delete flow — CANCEL does not call deleteKey | `mockRepo.deleteKey()` never called |
+| UT-088-019 | delete flow — DELETE calls deleteKey and shows input view | `mockRepo.deleteKey()` called once; `TextField` visible |
