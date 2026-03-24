@@ -3294,7 +3294,7 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `sharing`, `inbox`, `ux`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Dependencies:** US-092 ✅
 
 **Acceptance Criteria:**
@@ -3307,7 +3307,7 @@ Only C can read/write their own tokens (path-based security rule).
 **Tasks:**
 - [ ] **TASK-098.1:** Add swipe-to-delete gesture on shared package tile in `MeetingInboxScreen` — 1h
 - [ ] **TASK-098.2:** Add confirmation dialog before deletion — 0.5h
-- [ ] **TASK-098.3:** Implement `deletePackage(userId, packageId)` in repository/provider — 0.5h
+- [ ] **TASK-098.3:** Add `deletePackageWithoutImport(userId, packageId)` method to `SharedPackageInboxProvider` — 0.5h
 - [ ] **TASK-098.4:** Write tests — 0.5h
 
 ---
