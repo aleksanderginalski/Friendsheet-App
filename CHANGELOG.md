@@ -4,6 +4,12 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v3.53.0 — US-097: Sharing Flow UX Polish — Toggles Position & Disable Duplicate Activity (March 24, 2026)
+- ✅ `lib/presentation/sharing/share_meetings_screen.dart` — `_OptionsCard` (include participants / include activities toggles) moved above the meetings list; now appears immediately after the sender signature card
+- ✅ `lib/presentation/import/package_activity_tiles.dart` — `_ActivityConflictTile`: "Create as New" button replaced with a `const Tooltip` wrapping a permanently-disabled `OutlinedButton`; tooltip message: "An activity with this name already exists. Rename it or link to existing."
+- ✅ `lib/presentation/import/package_persons_screen.dart` — `_PersonConflictTile`: conflict message now shows full name (`firstName lastName`) instead of `firstName` only (bug fix)
+- ✅ 4 new automated tests: `share_meetings_screen_test.dart` (NEW, +1), `package_activities_screen_test.dart` (NEW, +2), `package_persons_screen_test.dart` (+1 full-name regression test); total 669 tests passing
+
 ### v3.52.0 — US-099: Person Meetings List — Navigate from Person Detail (March 24, 2026)
 - ✅ `lib/presentation/providers/person_meetings_provider.dart` (NEW) — `PersonMeetingsProvider`: loads meetings via `getMeetingsByParticipant` (Future, not Stream); manages expand/collapse state for year/month sections; `refreshMeetingCount`-compatible reload pattern
 - ✅ `lib/presentation/persons/person_meetings_screen.dart` (NEW) — `PersonMeetingsScreen`: grouped year/month list for a single person; reuses `MeetingCard`; reloads on return from `MeetingDetailScreen` to reflect deletions/edits
