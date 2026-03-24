@@ -31,6 +31,11 @@
         "hooks": [{ "type": "command", "command": "C:/Users/user/AppData/Roaming/uv/python/cpython-3.12-windows-x86_64-none/python.exe C:/Programowanie/Friendsheet-App/tools/observability/log_agent.py" }]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [{ "type": "command", "command": "C:/Users/user/AppData/Roaming/uv/python/cpython-3.12-windows-x86_64-none/python.exe C:/Programowanie/Friendsheet-App/tools/observability/log_agent_from_prompt.py" }]
+      }
+    ],
     "Stop": [
       {
         "hooks": [{ "type": "command", "command": "C:/Users/user/AppData/Roaming/uv/python/cpython-3.12-windows-x86_64-none/python.exe C:/Programowanie/Friendsheet-App/tools/observability/log_stop.py" }]

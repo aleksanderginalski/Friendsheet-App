@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/repositories/ai_key_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../providers/ai_settings_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
+import 'ai_settings_screen.dart';
 import 'calendar_permission_screen.dart';
 
 /// Settings screen with calendar connection, data export, and account deletion.
@@ -141,6 +144,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _openAISettings(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => AISettingsProvider(repository: AIKeyRepository()),
+          child: const AISettingsScreen(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final exportProvider = context.watch<ExportProvider>();
@@ -157,6 +172,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: [
           _buildCalendarSection(context, calendarProvider),
+          ListTile(
+            leading: const Icon(Icons.smart_toy_outlined),
+            title: const Text('AI Assistant'),
+            subtitle: const Text('Manage your OpenAI API key'),
+            onTap: () => _openAISettings(context),
+          ),
+          const Divider(),
           ListTile(
             leading: exportProvider.isLoading
                 ? const SizedBox(
