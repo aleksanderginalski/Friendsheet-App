@@ -538,7 +538,7 @@ Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no d
 
 ### M7 (continued) — AI Assistant (Buddy)
 
-**Status:** Architecture defined (discovery session March 2026).
+**Status:** 🔄 In Progress — US-088 (API Key Management) ✅ delivered.
 
 **Provider:** OpenAI GPT-4o — BYOK (user's own API key, no cost to developer).
 
@@ -558,7 +558,7 @@ AIChatScreen
 - `OpenAIService` — HTTP client for `/v1/chat/completions`, hardcoded system prompt (Buddy character)
 - `BuddyWriteService` — single write surface: saveNotes only
 - `RelationshipScoreService` — local scoring algorithm, no API calls (US-107)
-- `AIKeyRepository` — Flutter Secure Storage wrapper for OpenAI key
+- `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
 
 **Gemini Nano (on-device):** deferred to future epic.
 

@@ -174,12 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.55.0 — US-INF-011: Agent Observability — Cross-Session Comparison Dashboard (March 24, 2026)
-- ✅ `tools\observability\dashboard.bat` — generates multi-session HTML dashboard from all JSONL session logs
-- ✅ Frequency histograms per SP value: token distribution with auto-bucketed ranges (nearest 5 000 tokens)
-- ✅ Side-by-side timeline comparison for any two sessions via JavaScript-driven dropdowns
-- ✅ Sessions table at the bottom: all sessions with tokens, cost, /planning and /dev counts
-- ✅ 674 Flutter tests passing (no new Flutter tests — Python-only US)
+### Latest: v4.0.0 — US-088: API Key Management for AI Assistant (March 24, 2026)
+- ✅ `lib/data/repositories/ai_key_repository.dart` (NEW) — secure storage wrapper for OpenAI API key (BYOK pattern)
+- ✅ `lib/presentation/providers/ai_settings_provider.dart` (NEW) — validation (`sk-` prefix), masked display (last 4 chars)
+- ✅ `lib/presentation/screens/ai_settings_screen.dart` (NEW) — key input / key set UI with delete confirmation
+- ✅ Settings → AI Assistant navigation entry added
+- ✅ Observability: `UserPromptSubmit` hook captures manual `/skill` invocations in session logs
+- ✅ 693 Flutter tests passing (+19 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
