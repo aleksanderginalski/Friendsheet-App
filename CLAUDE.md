@@ -413,6 +413,34 @@ Never use `FutureBuilder` for state that changes during the session
 (e.g. OAuth connect/disconnect) — it computes once and never updates.
 
 
+## Future-Based Screen Reload Rule
+
+When a screen loads data via a one-time `Future` (not a `Stream`), and it navigates
+to a child screen where the user may **edit or delete** that data, you MUST reload on return.
+
+```dart
+// WRONG — stale data after child screen modifies records:
+onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChildScreen()));
+
+// CORRECT — reload after return:
+onTap: () {
+  Navigator.push(context, MaterialPageRoute(builder: (_) => ChildScreen()))
+      .then((_) {
+    if (!mounted) return;
+    provider.loadData(userId, id); // re-fetches to reflect edits/deletions
+  });
+}
+```
+
+Also applies to **parent screens** that show a count or summary derived from a child list:
+- Add a dedicated `refreshCount()` method that re-fetches silently (no loading state)
+- Call it on return from the child list screen
+
+Checklist when using a Future-based screen:
+- Does the child screen allow edit or delete? → reload list on return
+- Does the parent screen show a count from this list? → refreshCount() on return from list
+- Stream-based screens (getMeetingsByUser) auto-update — this rule does NOT apply to them
+
 ## GlobalKey<NavigatorState> for Context-Independent Navigation
 
 When navigation must succeed regardless of the calling widget's lifecycle

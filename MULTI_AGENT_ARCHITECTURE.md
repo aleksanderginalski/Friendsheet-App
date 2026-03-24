@@ -834,6 +834,12 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 
 ---
 
+## Open Questions — Active
+
+| Question | Status | Notes |
+|---|---|---|
+| `/dev-ai` agent for Epic-007 (AI Assistant / Buddy) | 🔄 Pending — design via /discover before first Epic-007 US | `/dev` (CLAUDE.md) covers Flutter/Firebase only. Epic-007 requires Anthropic SDK, streaming, prompt engineering — different enough to warrant a dedicated agent. `/pm` will route Epic-007 US to `/dev-ai` once created. |
+
 ## Open Questions — Resolved
 
 | Question | Decision |
@@ -843,6 +849,7 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 | `agent: Explore` frontmatter? | Skip for now. Add after first real usage if needed. |
 | Who updates TEST_CASES.md? | `/qa` owns it. `/docs` does not touch it. |
 | Commands vs Skills? | Migrated to Skills in US-INF-009. All agents now in `.claude/skills/name/SKILL.md`. Helper files added for `/planning` and `/retro`. Decision: migrate all agents for consistency, add helper files only where there is concrete value (templates, checklists). |
+| Who updates MULTI_AGENT_ARCHITECTURE.md? | `/retro` when agent scopes change. `/docs` when the US itself affects agent workflow/patterns (added to "Update if affected" list in US-099 retro). |
 
 ---
 

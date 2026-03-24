@@ -58,6 +58,21 @@ class PersonDetailProvider extends ChangeNotifier {
     }
   }
 
+  // Silently re-fetches meeting count without setting isLoading.
+  // Used to sync the count after returning from PersonMeetingsScreen.
+  Future<void> refreshMeetingCount() async {
+    final person = _person;
+    final userId = _authService.currentUserId;
+    if (person == null || userId == null) return;
+    try {
+      _meetingCount =
+          await _meetingRepository.getMeetingsCountForPerson(userId, person.id);
+      notifyListeners();
+    } catch (_) {
+      // Silently ignore — stale count is preferable to an error state.
+    }
+  }
+
   // Validates input, updates person in repository, and refreshes local state.
   // Returns false if firstName is empty or if the repository call fails.
   Future<bool> updatePerson(String firstName, String lastName) async {

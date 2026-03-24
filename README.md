@@ -174,11 +174,11 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.51.0 — US-096: Add Sender as Contact and Meeting Participant on Import (March 23, 2026)
-- ✅ `SharedPerson` model gains optional `nickname` field — sender's self-declared nickname travels through the import pipeline
-- ✅ `PackageImporter` — sender nickname saved automatically as `Person.nicknames` unless overridden by explicit conflict resolution
-- ✅ `PackagePersonsScreen` — opt-in tile shows "Suggested nickname: X"; conflict tile pre-fills nickname field with sender's suggestion
-- ✅ 657 Flutter tests passing (+7 new tests for sender nickname propagation)
+### Latest: v3.52.0 — US-099: Person Meetings List — Navigate from Person Detail (March 24, 2026)
+- ✅ New `PersonMeetingsScreen` — full meeting history with a person, grouped by year/month, accessible via search icon on Person Detail
+- ✅ New `PersonMeetingsProvider` — one-time Future load with expand/collapse state; reloads on return from edit
+- ✅ `PersonDetailProvider` gains `refreshMeetingCount()` — meeting count syncs after deletions without flashing a loading state
+- ✅ 665 Flutter tests passing (+8 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

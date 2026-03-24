@@ -103,6 +103,20 @@ void main() {
       verify(mockPersonRepository.deletePerson('u1', 'p1')).called(1);
     });
 
+    test('refreshMeetingCount updates count without setting isLoading',
+        () async {
+      when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+          .thenAnswer((_) async => 5);
+      await provider.initialize(testPerson);
+
+      when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+          .thenAnswer((_) async => 2);
+      await provider.refreshMeetingCount();
+
+      expect(provider.meetingCount, equals(2));
+      expect(provider.isLoading, isFalse);
+    });
+
     group('linkFriendAccount', () {
       setUp(() async {
         when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
