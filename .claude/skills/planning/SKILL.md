@@ -1,7 +1,7 @@
 ---
 name: planning
 description: Weryfikacja US i generowanie Task instruction dla /dev. Używaj przed każdym developmentem.
-allowed-tools: Read, Grep, Glob, Write
+allowed-tools: Read, Edit, Grep, Glob, Write
 ---
 
 # Agent Planowania

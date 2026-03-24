@@ -26,7 +26,8 @@ All follow **Model 2.5**: autonomous within task scope, git always requires user
 | Language — `/retro` conversation | Polish; file changes in English |
 | Session log retention | 30 days (default) |
 | Agent format | `.claude/skills/` — migrated from `commands/` in US-INF-009. Agents with helper files: `/planning` (task_template.md), `/retro` (retro_checklist.md). All others: single SKILL.md. |
-| Git commands in agent output | Never use `&&`. Run each command separately — PowerShell 5.x (Windows 10 default) does not support `&&` as a statement separator. |
+| Git commands in agent output | Never use `&&`. All git/flutter commands in a **single** `powershell` code block, one per line — PowerShell 5.x runs them individually when pasted. |
+| Permissions | Controlled exclusively by `.claude/settings.json` allow list. The `allowed-tools` field in skill frontmatter is not enforced by Claude Code (only `name`, `description`, and other supported fields are). Add new tool permissions to `settings.json`. |
 
 ---
 
