@@ -3269,7 +3269,7 @@ Only C can read/write their own tokens (path-based security rule).
 **Story Points:** 3
 **Priority:** P1
 **Labels:** `sharing`, `ux`, `activities`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Dependencies:** US-091 ✅, US-093 ✅
 
 **Acceptance Criteria:**

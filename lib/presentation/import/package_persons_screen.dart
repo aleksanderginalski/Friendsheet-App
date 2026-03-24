@@ -222,7 +222,7 @@ class _PersonConflictTileState extends State<_PersonConflictTile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '⚠️ Conflict: "${widget.sharedPerson.firstName}" matches '
+              '⚠️ Conflict: "${widget.sharedPerson.lastName != null ? '${widget.sharedPerson.firstName} ${widget.sharedPerson.lastName}' : widget.sharedPerson.firstName}" matches '
               '"${widget.existingPerson.fullName}"',
               style: const TextStyle(
                   color: Colors.orange, fontWeight: FontWeight.bold),
