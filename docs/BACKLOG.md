@@ -4351,23 +4351,27 @@ login instead of only on first login.
 
 **Story Points:** 5
 **Priority:** P2
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 **Feature:** FEATURE-INF-002: Multi-Agent System
 **Trigger:** After US-INF-010 (single-session report must be working with `--us` and `--sp` parameters)
 **Dependencies:** US-INF-010
 
 **Acceptance Criteria:**
-- [ ] Running `python tools/observability/dashboard.py` generates a multi-session HTML dashboard
-- [ ] Dashboard shows SP vs tokens histogram: each US is one data point (X = story points, Y = total tokens)
-- [ ] Dashboard shows side-by-side timeline comparison for any two selected sessions (US-X vs US-Y)
-- [ ] Design Changes column visible per session: re-planning count (auto) + manual notes (from `--notes`)
-- [ ] Dashboard reads all JSONL logs from `tools/observability/logs/` — no manual data entry
-- [ ] Works correctly after at least 3 sessions logged via US-INF-010
+- [x] Running `python tools/observability/dashboard.py` generates a multi-session HTML dashboard
+- [x] Dashboard shows one frequency histogram per distinct SP value found in logs (e.g. one for 3 SP, one for 5 SP, one for 8 SP)
+- [x] Each histogram: X axis = token range buckets (e.g. "10 000–15 000", "15 001–25 000"), Y axis = count of US sessions in that range
+- [x] Dashboard shows side-by-side timeline comparison for any two selected sessions (US-X vs US-Y)
+- [x] Design Changes column visible per session: re-planning count (auto) + manual notes (from `--notes`)
+- [x] Sessions table (all sessions) is placed at the bottom of the dashboard
+- [x] Dashboard reads all JSONL logs from `tools/observability/logs/` — no manual data entry
+- [x] Works correctly after at least 3 sessions logged via US-INF-010
 
 **Technical Notes:**
 - Re-planning count = number of `/planning` invocations in a single session (auto-derived from JSONL log)
 - Dev iterations = number of `/dev` invocations in a single session (auto-derived)
-- Dashboard: Python 3, stdlib only (no matplotlib, no pandas) — use inline SVG for histogram
+- Histograms: one per distinct SP value; bucket width auto-calculated from data range; minimum 4 buckets
+- Sessions without `metadata` entry (report.bat not yet run) shown in table with "—" for US/SP, excluded from histograms
+- Dashboard: Python 3, stdlib only (no matplotlib, no pandas) — use inline SVG for all charts
 - Input: all `*.jsonl` files in `tools/observability/logs/`
 - Output: `tools/observability/reports/dashboard.html`
 

@@ -174,11 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v3.54.0 — US-098: Delete Received Package Without Processing (March 24, 2026)
-- ✅ Swipe-to-delete (left) on shared package tile in Meeting Inbox — reveals red delete background with bin icon
-- ✅ Confirmation dialog before deletion: "Delete package? It cannot be recovered." with Cancel / Delete actions
-- ✅ Package document deleted from `users/{uid}/pending_meetings/` and removed from UI immediately; no data imported
-- ✅ 674 Flutter tests passing (+5 new tests)
+### Latest: v3.55.0 — US-INF-011: Agent Observability — Cross-Session Comparison Dashboard (March 24, 2026)
+- ✅ `tools\observability\dashboard.bat` — generates multi-session HTML dashboard from all JSONL session logs
+- ✅ Frequency histograms per SP value: token distribution with auto-bucketed ranges (nearest 5 000 tokens)
+- ✅ Side-by-side timeline comparison for any two sessions via JavaScript-driven dropdowns
+- ✅ Sessions table at the bottom: all sessions with tokens, cost, /planning and /dev counts
+- ✅ 674 Flutter tests passing (no new Flutter tests — Python-only US)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
