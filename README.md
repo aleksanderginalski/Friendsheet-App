@@ -174,13 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.0.0 — US-088: API Key Management for AI Assistant (March 24, 2026)
-- ✅ `lib/data/repositories/ai_key_repository.dart` (NEW) — secure storage wrapper for OpenAI API key (BYOK pattern)
-- ✅ `lib/presentation/providers/ai_settings_provider.dart` (NEW) — validation (`sk-` prefix), masked display (last 4 chars)
-- ✅ `lib/presentation/screens/ai_settings_screen.dart` (NEW) — key input / key set UI with delete confirmation
-- ✅ Settings → AI Assistant navigation entry added
-- ✅ Observability: `UserPromptSubmit` hook captures manual `/skill` invocations in session logs
-- ✅ 693 Flutter tests passing (+19 new tests)
+### Latest: v4.1.0 — US-085: Consent Flow & Privacy Policy Update (March 25, 2026)
+- ✅ `lib/data/repositories/ai_consent_repository.dart` (NEW) — one-time AI consent persistence in SharedPreferences
+- ✅ `lib/presentation/screens/ai_consent_screen.dart` (NEW) — three-section consent UI with Privacy Policy link
+- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — consent gate before AI Assistant access
+- ✅ `docs/privacy.md` (MODIFIED) — section 2.5 added: AI data processing with three-tier classification
+- ✅ 697 Flutter tests passing (+4 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

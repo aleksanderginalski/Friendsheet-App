@@ -12,6 +12,7 @@
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
+      "Bash(cd \"c:/Programowanie/Friendsheet-App\" && git*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(flutter analyze:*)",

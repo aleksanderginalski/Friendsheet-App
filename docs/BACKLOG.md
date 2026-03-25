@@ -3695,21 +3695,21 @@ login instead of only on first login.
 **Story Points:** 3
 **Priority:** P0
 **Labels:** `ai`, `gdpr`, `legal`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 
 **Acceptance Criteria:**
-- [ ] One-time consent screen shown before the first AI query
-- [ ] Consent screen clearly explains: what IS sent (anonymized stats) and what is NOT (real names, raw data)
-- [ ] User must actively confirm with a button tap — no auto-accept
-- [ ] Consent state persisted in SharedPreferences
-- [ ] Link to full Privacy Policy available from consent screen
-- [ ] Privacy Policy updated with section 2.5 (AI data processing)
+- [x] One-time consent screen shown before the first AI query
+- [x] Consent screen clearly explains: what IS sent (anonymized stats) and what is NOT (real names, raw data)
+- [x] User must actively confirm with a button tap — no auto-accept
+- [x] Consent state persisted in SharedPreferences
+- [x] Link to full Privacy Policy available from consent screen
+- [x] Privacy Policy updated with section 2.5 (AI data processing)
 
 **Tasks:**
-- [ ] **TASK-085.1:** Create `AIConsentScreen` widget — 1.5h
-- [ ] **TASK-085.2:** Persist consent flag in SharedPreferences — 0.5h
-- [ ] **TASK-085.3:** Add consent gate before every AI query — 0.5h
-- [ ] **TASK-085.4:** Update `privacy.md` with section 2.5 — 0.5h
+- [x] **TASK-085.1:** Create `AIConsentScreen` widget — 1.5h
+- [x] **TASK-085.2:** Create `AIConsentRepository` (SharedPreferences, key: `ai_consent_granted`, methods: `hasGrantedConsent` / `grantConsent`) — 0.5h
+- [x] **TASK-085.3:** Add consent gate in `SettingsScreen._openAISettings()` — check consent; if not granted push `AIConsentScreen` which on agree calls `grantConsent()` then navigates to `AISettingsScreen`; if already granted push `AISettingsScreen` directly — 0.5h
+- [x] **TASK-085.4:** Update `docs/privacy.md` with section 2.5 (AI data processing) — 0.5h
 
 **Dependencies:** US-088
 **Blocks:** US-087

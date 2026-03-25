@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/repositories/ai_consent_repository.dart';
 import '../../data/repositories/ai_key_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
@@ -8,6 +9,7 @@ import '../providers/ai_settings_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
+import 'ai_consent_screen.dart';
 import 'ai_settings_screen.dart';
 import 'calendar_permission_screen.dart';
 
@@ -20,6 +22,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final _consentRepository = AIConsentRepository();
+
   @override
   void initState() {
     super.initState();
@@ -144,16 +148,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _openAISettings(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ChangeNotifierProvider(
-          create: (_) => AISettingsProvider(repository: AIKeyRepository()),
-          child: const AISettingsScreen(),
+  Future<void> _openAISettings() async {
+    final hasConsent = await _consentRepository.hasGrantedConsent();
+    if (!mounted) return;
+
+    if (hasConsent) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ChangeNotifierProvider(
+            create: (_) => AISettingsProvider(repository: AIKeyRepository()),
+            child: const AISettingsScreen(),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AIConsentScreen(repository: _consentRepository),
+        ),
+      );
+    }
   }
 
   @override
@@ -176,7 +192,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.smart_toy_outlined),
             title: const Text('AI Assistant'),
             subtitle: const Text('Manage your OpenAI API key'),
-            onTap: () => _openAISettings(context),
+            onTap: () {
+              _openAISettings();
+            },
           ),
           const Divider(),
           ListTile(
