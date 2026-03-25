@@ -6,6 +6,8 @@
 - **Package name:** com.friendsheet.app
 - **Main entry file:** main.dart
 - **Repository:** friendsheet-app
+- **Privacy Policy URL:** https://github.com/aleksanderginalski/Friendsheet-App/blob/main/docs/privacy.md
+- **Terms of Service URL:** https://github.com/aleksanderginalski/Friendsheet-App/blob/main/docs/terms.md
 
 ## Tech Stack
 - Flutter 3.0+ / Dart

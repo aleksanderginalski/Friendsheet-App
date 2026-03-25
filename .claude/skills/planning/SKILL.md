@@ -55,6 +55,14 @@ Zakres aktualizacji:
 - Dodaj/zaktualizuj Tasks (TASK-XXX.N)
 - Jeśli status był 📋 Planned → zmień na 🔄 In Progress
 
+## Cross-US Data Claim Check
+
+When a Task instruction includes copy about what data IS or IS NOT sent to external services
+(consent screens, privacy notices, onboarding):
+- Search BACKLOG.md for all US in the same Epic that mention the same data type
+- Flag any US that contradicts the claim (e.g. "notes never sent" vs a US that sends notes for sentiment analysis)
+- Resolve before generating the Task instruction — adjust copy or note the condition explicitly
+
 ## Generowanie Task instruction
 
 Po akceptacji wygeneruj instrukcję w języku angielskim używając szablonu z task_template.md:
