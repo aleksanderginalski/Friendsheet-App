@@ -62,7 +62,8 @@ class _MeetingNotesSectionState extends State<MeetingNotesSection> {
       widget.onMeetingUpdated(updated);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save notes. Please try again.')),
+        const SnackBar(
+            content: Text('Failed to save notes. Please try again.')),
       );
     }
   }
@@ -85,18 +86,19 @@ class _MeetingNotesSectionState extends State<MeetingNotesSection> {
         // Existing notes list
         if (_notes.isNotEmpty)
           ..._notes.asMap().entries.map(
-            (entry) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.notes, size: 20),
-              title: Text(entry.value),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 20),
-                // Disable while a save is in progress to prevent concurrent writes
-                onPressed:
-                    provider.isSavingNotes ? null : () => _removeNote(entry.key),
+                (entry) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.notes, size: 20),
+                  title: Text(entry.value),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    // Disable while a save is in progress to prevent concurrent writes
+                    onPressed: provider.isSavingNotes
+                        ? null
+                        : () => _removeNote(entry.key),
+                  ),
+                ),
               ),
-            ),
-          ),
         // Input row: text field + add-and-save button
         Row(
           children: [

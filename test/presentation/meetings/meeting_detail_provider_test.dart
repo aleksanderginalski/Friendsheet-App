@@ -11,7 +11,8 @@ import 'package:mockito/mockito.dart';
 
 import 'meeting_detail_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, ActivityCategoryRepository, MeetingRepository])
+@GenerateMocks(
+    [PersonRepository, ActivityCategoryRepository, MeetingRepository])
 void main() {
   late MockPersonRepository mockPersonRepository;
   late MockActivityCategoryRepository mockCategoryRepository;
@@ -144,6 +145,29 @@ void main() {
       await provider.initialize(testMeeting);
 
       expect(provider.categories, isEmpty);
+    });
+  });
+
+  group('saveNotes', () {
+    test('returns updated meeting with new notes on success', () async {
+      when(mockMeetingRepository.updateMeeting(any)).thenAnswer((_) async {});
+
+      final result =
+          await provider.saveNotes(testMeeting, ['Guitar', 'Kayaking']);
+
+      expect(result, isNotNull);
+      expect(result!.notes, equals(['Guitar', 'Kayaking']));
+      expect(provider.isSavingNotes, isFalse);
+    });
+
+    test('returns null when updateMeeting throws', () async {
+      when(mockMeetingRepository.updateMeeting(any))
+          .thenThrow(Exception('network error'));
+
+      final result = await provider.saveNotes(testMeeting, ['note']);
+
+      expect(result, isNull);
+      expect(provider.isSavingNotes, isFalse);
     });
   });
 }

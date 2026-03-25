@@ -1,5 +1,7 @@
 // test/models/meeting_test.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 
@@ -109,6 +111,65 @@ void main() {
 
     test('validWeights constant contains correct Fibonacci values', () {
       expect(Meeting.validWeights, [1, 2, 3, 5, 8, 13, 21]);
+    });
+
+    test('toFirestore serializes non-empty notes list', () {
+      final map = validMeeting.copyWith(
+        notes: ['Guitar session', 'Kayaking'],
+      ).toFirestore();
+
+      expect(map['notes'], equals(['Guitar session', 'Kayaking']));
+    });
+
+    test('fromFirestore reads notes field from document', () async {
+      final fakeFirestore = FakeFirebaseFirestore();
+      final now = Timestamp.fromDate(testDate);
+
+      final docRef = await fakeFirestore
+          .collection('users')
+          .doc('u1')
+          .collection('meetings')
+          .add({
+        'userId': 'u1',
+        'name': 'Test',
+        'date': now,
+        'weight': 3,
+        'participantIds': ['p1'],
+        'categoryIds': [],
+        'notes': ['Guitar', 'Kayaking'],
+        'createdAt': now,
+        'updatedAt': now,
+      });
+
+      final meeting = Meeting.fromFirestore(await docRef.get());
+
+      expect(meeting.notes, equals(['Guitar', 'Kayaking']));
+    });
+
+    test('fromFirestore defaults notes to empty list when field missing',
+        () async {
+      final fakeFirestore = FakeFirebaseFirestore();
+      final now = Timestamp.fromDate(testDate);
+
+      final docRef = await fakeFirestore
+          .collection('users')
+          .doc('u1')
+          .collection('meetings')
+          .add({
+        'userId': 'u1',
+        'name': 'Test',
+        'date': now,
+        'weight': 3,
+        'participantIds': ['p1'],
+        'categoryIds': [],
+        // no 'notes' field — simulates legacy document without notes
+        'createdAt': now,
+        'updatedAt': now,
+      });
+
+      final meeting = Meeting.fromFirestore(await docRef.get());
+
+      expect(meeting.notes, isEmpty);
     });
   });
 }

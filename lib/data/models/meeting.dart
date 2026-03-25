@@ -38,8 +38,7 @@ class Meeting with _$Meeting {
       categoryIds:
           (data['categoryIds'] as List?)?.map((e) => e as String).toList() ??
               [],
-      notes:
-          (data['notes'] as List?)?.map((e) => e as String).toList() ?? [],
+      notes: (data['notes'] as List?)?.map((e) => e as String).toList() ?? [],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
