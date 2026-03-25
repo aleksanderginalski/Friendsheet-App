@@ -1376,6 +1376,26 @@ Run after every release or hotfix:
 
 ---
 
+## TC-CONTEXT-BUILDER: Statistics Context Builder (US-086)
+
+### Automated tests — `test/data/services/context_builder_service_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-086-001 | pseudonymization — assigns Friend_A to alphabetically first person | `pseudonymToRealName['Friend_A']` = 'Anna Kowalska'; `personIdToPseudonym['p-anna']` = 'Friend_A' |
+| UT-086-002 | buildFullContext happy path — filters meetings, resolves names, builds person entry | 1 meeting (within window), pseudonymized participant, resolved activity name, notes included; person entry has correct meetingCount, topActivities, lastMeetingDate |
+| UT-086-003 | buildFullContext — skips participant not found in person map (deleted person) | `pseudonymizedParticipants` contains only known person pseudonym |
+| UT-086-004 | buildFullContext — custom from date excludes meetings before it | only 1 meeting returned; older meeting excluded |
+| UT-086-005 | buildFullContext — top activities capped at 3, ordered by frequency | `topActivities.length` = 3; first activity is 'Sport' (highest frequency) |
+| UT-086-006 | buildPersonContext — fetches only meetings for personId and scopes person list | 1 meeting; persons list contains only p1 (not p2 who has no meetings); full mapping still has p2 |
+| UT-086-007 | buildPersonContext — no time window filter, includes old meetings | old meeting (>365 days ago) included in context |
+| UT-086-008 | serializeToPrompt — empty context produces fallback messages | output contains 'No meetings in this period.' and 'No friend data available.' |
+| UT-086-009 | serializeToPrompt — full context includes all fields | output contains meeting name, date, participants, activities, notes, person summary with all fields |
+| UT-086-010 | serializeToPrompt — omits notes section when notes empty | 'notes:' not present in output |
+| UT-086-011 | serializeToPrompt — omits top activities when list empty | 'top activities:' not present; meeting count still shown |
+
+---
+
 ## TC-MEETING-NOTES: Meeting Notes (US-100)
 
 ### Automated tests — `test/data/models/meeting_test.dart`
