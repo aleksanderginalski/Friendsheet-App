@@ -4,6 +4,17 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.1.0 — US-085: Consent Flow & Privacy Policy Update (March 25, 2026)
+- ✅ `lib/data/repositories/ai_consent_repository.dart` (NEW) — `AIConsentRepository`: persists one-time AI consent flag in SharedPreferences (`'ai_consent_granted'`); `hasGrantedConsent()` / `grantConsent()` methods
+- ✅ `lib/presentation/screens/ai_consent_screen.dart` (NEW) — `AIConsentScreen`: three-section consent UI (Always sent / Sent only on explicit request / Never sent); "I understand and agree" button with loading guard; links to Privacy Policy on GitHub; navigates to `AISettingsScreen` after consent
+- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — consent gate added to `_openAISettings()`: checks `hasGrantedConsent()` before opening AI settings; shows `AIConsentScreen` on first visit, skips on subsequent visits
+- ✅ `docs/privacy.md` (MODIFIED) — new section 2.5 "AI Assistant Data (optional)": three-tier data classification (always sent / explicit request only / never sent); BYOK model explained
+- ✅ `test/data/repositories/ai_consent_repository_test.dart` (NEW) — 2 unit tests
+- ✅ `test/presentation/screens/ai_consent_screen_test.dart` (NEW) — 2 widget tests
+- ✅ 697 Flutter tests passing (+4 new tests)
+
+---
+
 ### v4.0.0 — US-088: API Key Management for AI Assistant (March 24, 2026)
 - ✅ `lib/data/repositories/ai_key_repository.dart` (NEW) — `AIKeyRepository`: wraps `FlutterSecureStorage` with `saveKey` / `loadKey` / `deleteKey`; storage key `'openai_api_key'`; injectable constructor for testability; key never logged or exposed
 - ✅ `lib/presentation/providers/ai_settings_provider.dart` (NEW) — `AISettingsProvider`: ChangeNotifier managing key validation (`sk-` prefix check), masked display (8 bullets + last 4 chars), `initialize` / `saveKey` / `deleteKey` / `clearError` methods
