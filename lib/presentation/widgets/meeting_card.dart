@@ -78,6 +78,25 @@ class MeetingCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    // Notes count — shown only when meeting has notes
+                    if (meeting.notes.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.notes,
+                            size: 12,
+                            color: theme.textTheme.bodySmall?.color,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${meeting.notes.length} '
+                            '${meeting.notes.length == 1 ? 'note' : 'notes'}',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),

@@ -39,6 +39,7 @@ Meeting makeMeeting({
   int weight = 3,
   List<String> participantIds = const ['p-1'],
   List<String> categoryIds = const [],
+  List<String> notes = const [],
   DateTime? createdAt,
   DateTime? updatedAt,
 }) {
@@ -51,6 +52,7 @@ Meeting makeMeeting({
     weight: weight,
     participantIds: participantIds,
     categoryIds: categoryIds,
+    notes: notes,
     createdAt: createdAt ?? now,
     updatedAt: updatedAt ?? now,
   );

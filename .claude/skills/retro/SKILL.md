@@ -142,6 +142,13 @@ git pull
 git branch -d [branch-name]
 ```
 
+**Step 5 — Observability report**
+```powershell
+tools\observability\report.bat --us US-XXX --sp N
+tools\observability\dashboard.bat
+```
+Replace US-XXX with the US number and N with Story Points from BACKLOG.md.
+
 Note: Never use `&&` — run each command separately (PowerShell 5.x, Windows 10).
 
 ## Ograniczenia

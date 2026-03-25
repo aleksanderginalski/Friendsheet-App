@@ -1373,4 +1373,41 @@ Run after every release or hotfix:
 | UT-088-016 | key already saved — shows masked key and Delete Key button | `'••••••••1234'` and `'Delete Key'` visible; `TextField` absent |
 | UT-088-017 | delete flow — shows confirmation dialog on Delete Key tap | `'Delete API Key?'` dialog visible |
 | UT-088-018 | delete flow — CANCEL does not call deleteKey | `mockRepo.deleteKey()` never called |
+
+---
+
+## TC-MEETING-NOTES: Meeting Notes (US-100)
+
+### Automated tests — `test/data/models/meeting_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-100-001 | toFirestore serializes non-empty notes list | `map['notes']` equals `['Guitar session', 'Kayaking']` |
+| UT-100-002 | fromFirestore reads notes field from document | `meeting.notes` equals `['Guitar', 'Kayaking']` |
+| UT-100-003 | fromFirestore defaults notes to empty list when field missing | `meeting.notes` is empty |
+
+### Automated tests — `test/presentation/meetings/meeting_detail_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-100-004 | saveNotes returns updated meeting with new notes on success | result.notes equals `['Guitar', 'Kayaking']`; `isSavingNotes` false |
+| UT-100-005 | saveNotes returns null when updateMeeting throws | result is null; `isSavingNotes` false |
+
+### Automated tests — `test/presentation/meetings/meeting_notes_section_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-100-006 | renders Notes title and input field | `'Notes'` text, `TextField`, and add icon visible |
+| UT-100-007 | empty input: no note added when add tapped | no close icons visible |
+| UT-100-008 | add note: appears in list and calls onMeetingUpdated | note text visible; `onMeetingUpdated` called with correct notes |
+| UT-100-009 | remove note: disappears from list after tapping close | note text no longer visible |
+| UT-100-010 | shows snackbar when save fails | snackbar with `'Failed to save notes. Please try again.'` visible |
+
+### Automated tests — `test/presentation/widgets/meeting_card_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-100-011 | hides notes badge when notes is empty | `Icons.notes` not found |
+| UT-100-012 | shows singular "1 note" badge | `'1 note'` visible |
+| UT-100-013 | shows plural "2 notes" badge | `'2 notes'` visible |
 | UT-088-019 | delete flow — DELETE calls deleteKey and shows input view | `mockRepo.deleteKey()` called once; `TextField` visible |

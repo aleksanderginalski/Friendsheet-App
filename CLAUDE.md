@@ -43,6 +43,7 @@ in widgets — always use `ChartColors.getGradient(id)` and
   - `lib/data/models/person.dart` → `test/data/models/person_test.dart`
 
 ## Git Workflow
+- Before creating a branch, run `git branch --show-current`. If already on the correct branch, skip branch creation.
 - Branch format: `{issue-number}-{short-description}`
 - Conventional Commits required:
   - `feat:` new feature

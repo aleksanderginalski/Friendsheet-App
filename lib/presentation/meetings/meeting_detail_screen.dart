@@ -10,6 +10,7 @@ import '../../data/repositories/person_repository.dart';
 import '../activities/activity_icons.dart';
 import '../screens/add_meeting_screen.dart';
 import 'meeting_detail_provider.dart';
+import 'meeting_notes_section.dart';
 
 /// Displays full details of a single meeting.
 /// Stores meeting in state so the view reflects updates from the edit screen.
@@ -42,6 +43,7 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
       create: (_) => MeetingDetailProvider(
         personRepository: PersonRepository(),
         categoryRepository: ActivityCategoryRepository(),
+        meetingRepository: MeetingRepository(),
       )..initialize(_meeting),
       child: Scaffold(
         appBar: AppBar(
@@ -124,6 +126,11 @@ class _MeetingDetailBody extends StatelessWidget {
           const _SectionTitle(title: 'Activities'),
           const SizedBox(height: 8),
           _ActivityList(provider: provider),
+          const SizedBox(height: 24),
+          MeetingNotesSection(
+            meeting: meeting,
+            onMeetingUpdated: onMeetingUpdated,
+          ),
           const SizedBox(height: 32),
           _EditButton(meeting: meeting, onMeetingUpdated: onMeetingUpdated),
         ],

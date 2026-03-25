@@ -4,6 +4,23 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.2.0 — US-100: Meeting Notes (March 25, 2026)
+- ✅ `lib/data/models/meeting.dart` (MODIFIED) — `notes: @Default([]) List<String>` field added to `Meeting` Freezed model; `fromFirestore` reads list with null fallback (legacy doc support); `toFirestore` always writes `'notes'`
+- ✅ `lib/data/models/meeting.freezed.dart` (REGENERATED) — Freezed codegen updated for `notes` field
+- ✅ `lib/data/models/meeting.g.dart` (REGENERATED) — JSON serialization updated for `notes` field
+- ✅ `lib/presentation/meetings/meeting_notes_section.dart` (NEW) — `MeetingNotesSection` StatefulWidget: one-by-one note entry; round green "+" button with white icon saves each note to Firestore immediately; "X" on any item removes and saves; loading guard prevents concurrent writes; snackbar on failure
+- ✅ `lib/presentation/meetings/meeting_detail_provider.dart` (MODIFIED) — `MeetingRepository` injected as optional dependency; `saveNotes(Meeting, List<String>)` method added; `isSavingNotes` getter exposed
+- ✅ `lib/presentation/meetings/meeting_detail_screen.dart` (MODIFIED) — `MeetingNotesSection` added below activities; `MeetingRepository` passed to provider at creation
+- ✅ `lib/presentation/widgets/meeting_card.dart` (MODIFIED) — note count badge (`Icons.notes` + "N note(s)") shown below subtitle row when `notes.isNotEmpty`; singular/plural handled
+- ✅ `test/helpers/test_factories.dart` (MODIFIED) — `makeMeeting()` factory extended with `notes` parameter
+- ✅ `test/presentation/meetings/meeting_detail_provider_test.dart` (MODIFIED) — `MockMeetingRepository` added to `setUp()`; 2 new `saveNotes` unit tests
+- ✅ `test/presentation/meetings/meeting_notes_section_test.dart` (NEW) — 5 widget tests: title/input render, empty-input guard, add note + callback, remove note, snackbar on failure
+- ✅ `test/presentation/widgets/meeting_card_test.dart` (NEW) — 3 widget tests: hidden badge, "1 note" singular, "2 notes" plural
+- ✅ `test/data/models/meeting_test.dart` (MODIFIED) — 3 new tests: `toFirestore` serializes notes, `fromFirestore` reads notes, `fromFirestore` defaults to empty on legacy doc
+- ✅ 710 Flutter tests passing (+13 new tests)
+
+---
+
 ### v4.1.0 — US-085: Consent Flow & Privacy Policy Update (March 25, 2026)
 - ✅ `lib/data/repositories/ai_consent_repository.dart` (NEW) — `AIConsentRepository`: persists one-time AI consent flag in SharedPreferences (`'ai_consent_granted'`); `hasGrantedConsent()` / `grantConsent()` methods
 - ✅ `lib/presentation/screens/ai_consent_screen.dart` (NEW) — `AIConsentScreen`: three-section consent UI (Always sent / Sent only on explicit request / Never sent); "I understand and agree" button with loading guard; links to Privacy Policy on GitHub; navigates to `AISettingsScreen` after consent
