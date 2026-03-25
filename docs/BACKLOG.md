@@ -3822,28 +3822,30 @@ login instead of only on first login.
 ### US-100: Meeting Notes
 
 **As a** user
-**I want to** add free-text notes to any meeting
-**So that** I can preserve memories and context that statistics alone cannot capture
+**I want to** add structured notes (as a list of points) to any meeting
+**So that** I can capture individual memories one by one and preserve context that statistics alone cannot capture
 
-**Story Points:** 3
+**Story Points:** 5
 **Priority:** P0
 **Labels:** `meetings`, `data-model`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Acceptance Criteria:**
-- [ ] `notes` field added to `Meeting` model (optional `String?`, max 2000 characters)
-- [ ] Notes field displayed in `MeetingDetailScreen` below activities
-- [ ] Notes editable directly in MeetingDetailScreen (inline edit, no separate screen)
-- [ ] Notes saved to Firestore on save
-- [ ] Notes visible in meeting card preview (truncated to 1 line, only when non-empty)
-- [ ] Empty notes field shows placeholder text encouraging reflection
+- [ ] `notes` field added to `Meeting` model as `@Default([]) List<String>` — replaces the earlier `String?` design
+- [ ] Notes section displayed in `MeetingDetailScreen` below activities
+- [ ] User adds notes one by one: text input field with "Add" button — each submitted note appears as a removable list item
+- [ ] Each note item shows a delete icon; tapping it removes the note from the list
+- [ ] Notes saved to Firestore on explicit "Save" button tap (button appears only when list is dirty)
+- [ ] Meeting card shows note count badge (e.g. "3 notes") when notes list is non-empty
+- [ ] Empty input field shows placeholder hint encouraging reflection (e.g. "What happened? Any detail worth remembering?")
 
 **Tasks:**
-- [ ] **TASK-100.1:** Add `notes` field to `Meeting` Freezed model — 0.5h
-- [ ] **TASK-100.2:** Update `fromFirestore` / `toFirestore` for `notes` — 0.5h
+- [ ] **TASK-100.1:** Change `notes` field in `Meeting` Freezed model to `@Default([]) List<String>` — 0.5h
+- [ ] **TASK-100.2:** Update `fromFirestore` (read as `List<String>`, fallback `[]`) / `toFirestore` (write always) — 0.5h
 - [ ] **TASK-100.3:** Run build_runner, update generated files — 0.5h
-- [ ] **TASK-100.4:** Add notes input field to `MeetingDetailScreen` — 1h
-- [ ] **TASK-100.5:** Show truncated notes preview in meeting list card — 0.5h
+- [ ] **TASK-100.4:** Create `_NotesSection` StatefulWidget in `lib/presentation/meetings/meeting_notes_section.dart` (input + Add button + removable items list + Save button) — 2h
+- [ ] **TASK-100.5:** Add `saveNotes(Meeting, List<String>)` to `MeetingDetailProvider`; inject `MeetingRepository` — 0.5h
+- [ ] **TASK-100.6:** Show note count badge in `MeetingCard` when `notes.isNotEmpty` — 0.5h
 
 **Dependencies:** None
 **Blocks:** US-086, US-087, US-101
@@ -4113,6 +4115,40 @@ login instead of only on first login.
 - [ ] **TASK-108.4:** Write tests for sparse-data guard and context inclusion — 1.5h
 
 **Dependencies:** US-086, US-087, US-100
+**Blocks:** None
+
+---
+
+### US-109: Local Data Cache Investigation & Implementation
+
+**As a** user
+**I want** the app to load meetings, persons, and activity categories from a local cache
+**So that** the app feels instant on every open and works reliably offline without repeatedly querying Firestore
+
+**Story Points:** 8
+**Priority:** P1
+**Labels:** `infrastructure`, `performance`, `offline`
+**Status:** 📋 Planned
+
+**Context:**
+Firestore SDK provides basic offline persistence, but it does not guarantee instant reads on app start — it first checks the network, then falls back to cache. This US investigates adding an explicit local cache layer (Hive or Drift) for the three most-read collections: `meetings`, `persons`, `activity_categories`. Goal: data visible immediately on screen open, Firestore sync happens in background.
+
+**Acceptance Criteria:**
+- [ ] Spike completed: decision documented (Hive vs Drift vs Firestore offline-only) with rationale
+- [ ] If caching layer added: meetings, persons, and activity_categories loaded from local cache on first render; Firestore stream updates cache in background
+- [ ] If caching layer added: cache invalidation triggered on any write (create / update / delete) — stale data never shown after user action
+- [ ] No visible regression in existing functionality (all current tests pass)
+- [ ] Cache is user-scoped — switching accounts clears cache
+
+**Tasks:**
+- [ ] **TASK-109.1:** Spike — evaluate Hive vs Drift vs Firestore offline persistence; document decision in `docs/architecture.md` — 2h
+- [ ] **TASK-109.2:** (If caching layer chosen) Add chosen package and configure initialization — 1h
+- [ ] **TASK-109.3:** Implement cache read/write for `meetings` — 2h
+- [ ] **TASK-109.4:** Implement cache read/write for `persons` — 1h
+- [ ] **TASK-109.5:** Implement cache read/write for `activity_categories` — 1h
+- [ ] **TASK-109.6:** Implement cache clear on account switch / logout — 0.5h
+
+**Dependencies:** None
 **Blocks:** None
 
 ---

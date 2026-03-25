@@ -4,31 +4,38 @@ import '../../data/models/activity_category.dart';
 import '../../data/models/meeting.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 
 /// Manages state for MeetingDetailScreen.
 /// Resolves participant IDs and category IDs to full objects.
+/// Also handles saving notes back to Firestore.
 class MeetingDetailProvider extends ChangeNotifier {
   final PersonRepository _personRepository;
   final ActivityCategoryRepository _categoryRepository;
+  final MeetingRepository _meetingRepository;
 
   MeetingDetailProvider({
     required PersonRepository personRepository,
     ActivityCategoryRepository? categoryRepository,
+    MeetingRepository? meetingRepository,
   })  : _personRepository = personRepository,
         _categoryRepository =
-            categoryRepository ?? ActivityCategoryRepository();
+            categoryRepository ?? ActivityCategoryRepository(),
+        _meetingRepository = meetingRepository ?? MeetingRepository();
 
   List<Person> _participants = [];
   // Only leaf categories are stored here (ancestors are filtered out).
   List<ActivityCategory> _categories = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isSavingNotes = false;
 
   List<Person> get participants => _participants;
   List<ActivityCategory> get categories => _categories;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isSavingNotes => _isSavingNotes;
 
   /// Loads full person and category objects for the given meeting.
   Future<void> initialize(Meeting meeting) async {
@@ -55,6 +62,23 @@ class MeetingDetailProvider extends ChangeNotifier {
       _errorMessage = 'Failed to load meeting details.';
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Saves updated notes list to Firestore and returns the updated meeting.
+  /// Returns null if the save fails.
+  Future<Meeting?> saveNotes(Meeting meeting, List<String> notes) async {
+    _isSavingNotes = true;
+    notifyListeners();
+    try {
+      final updated = meeting.copyWith(notes: notes);
+      await _meetingRepository.updateMeeting(updated);
+      return updated;
+    } catch (_) {
+      return null;
+    } finally {
+      _isSavingNotes = false;
       notifyListeners();
     }
   }

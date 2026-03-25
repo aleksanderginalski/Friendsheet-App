@@ -17,6 +17,7 @@ class Meeting with _$Meeting {
     required int weight,
     required List<String> participantIds,
     @Default([]) List<String> categoryIds,
+    @Default([]) List<String> notes,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Meeting;
@@ -37,6 +38,8 @@ class Meeting with _$Meeting {
       categoryIds:
           (data['categoryIds'] as List?)?.map((e) => e as String).toList() ??
               [],
+      notes:
+          (data['notes'] as List?)?.map((e) => e as String).toList() ?? [],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -51,6 +54,7 @@ class Meeting with _$Meeting {
       'weight': weight,
       'participantIds': participantIds,
       'categoryIds': categoryIds,
+      'notes': notes,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

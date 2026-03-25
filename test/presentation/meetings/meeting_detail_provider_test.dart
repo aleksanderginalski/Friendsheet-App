@@ -3,6 +3,7 @@ import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/meetings/meeting_detail_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -10,10 +11,11 @@ import 'package:mockito/mockito.dart';
 
 import 'meeting_detail_provider_test.mocks.dart';
 
-@GenerateMocks([PersonRepository, ActivityCategoryRepository])
+@GenerateMocks([PersonRepository, ActivityCategoryRepository, MeetingRepository])
 void main() {
   late MockPersonRepository mockPersonRepository;
   late MockActivityCategoryRepository mockCategoryRepository;
+  late MockMeetingRepository mockMeetingRepository;
   late MeetingDetailProvider provider;
 
   final testMeeting = Meeting(
@@ -72,9 +74,11 @@ void main() {
   setUp(() {
     mockPersonRepository = MockPersonRepository();
     mockCategoryRepository = MockActivityCategoryRepository();
+    mockMeetingRepository = MockMeetingRepository();
     provider = MeetingDetailProvider(
       personRepository: mockPersonRepository,
       categoryRepository: mockCategoryRepository,
+      meetingRepository: mockMeetingRepository,
     );
 
     // Default stub: no categories
