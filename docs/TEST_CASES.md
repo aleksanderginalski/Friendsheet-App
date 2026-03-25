@@ -1321,6 +1321,24 @@ Run after every release or hotfix:
 
 ---
 
+## TC-AI-CONSENT: Consent Flow & Privacy Policy Update (US-085)
+
+### Automated tests — `test/data/repositories/ai_consent_repository_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-085-001 | hasGrantedConsent — returns false when no consent has been stored | result is `false` |
+| UT-085-002 | grantConsent — persists consent so hasGrantedConsent returns true | result is `true` after `grantConsent()` |
+
+### Automated tests — `test/presentation/screens/ai_consent_screen_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-085-003 | content — shows all three section headers and agree button | `'Always sent to OpenAI'`, `'Sent only when you explicitly ask'`, `'Never sent to OpenAI'`, `'I understand and agree'`, `'Read full Privacy Policy'` all visible |
+| UT-085-004 | agree flow — tapping agree button calls grantConsent | `mockRepo.grantConsent()` called once |
+
+---
+
 ## TC-AI-KEY: API Key Management (US-088)
 
 ### Automated tests — `test/data/repositories/ai_key_repository_test.dart`

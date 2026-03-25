@@ -192,7 +192,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.smart_toy_outlined),
             title: const Text('AI Assistant'),
             subtitle: const Text('Manage your OpenAI API key'),
-            onTap: () { _openAISettings(); },
+            onTap: () {
+              _openAISettings();
+            },
           ),
           const Divider(),
           ListTile(
