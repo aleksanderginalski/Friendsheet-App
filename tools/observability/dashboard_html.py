@@ -214,22 +214,24 @@ const SESSIONS={sessions_js};
 const COLORS={colors_js};
 const DC='{_DEFAULT_COLOR}';
 function fmtDur(sec){{const m=Math.floor(sec/60),s=Math.round(sec%60);return m+'m '+String(s).padStart(2,'0')+'s';}}
-function timelineSVG(segs,total){{
+function fmtTok(n){{return n>=1000?Math.round(n/1000)+'k':n.toString();}}
+function timelineSVG(segs,total,totalTokens){{
   const bh=26,gap=5,lw=90,cw=340;
   const sh=segs.length*(bh+gap)+10;
   let o=[`<svg xmlns="http://www.w3.org/2000/svg" width="${{lw+cw+60}}" height="${{sh}}" style="font-family:monospace;font-size:11px;">`];
   segs.forEach((seg,i)=>{{
     const y=i*(bh+gap)+4,pct=total>0?seg.duration_sec/total:0,bw=Math.max(4,Math.round(pct*cw));
     const c=COLORS[seg.skill]||DC;
+    const lbl=totalTokens!=null?fmtTok(Math.round(totalTokens*pct)):fmtDur(seg.duration_sec);
     o.push(`<text x="${{lw-6}}" y="${{y+bh/2+4}}" text-anchor="end" fill="#333">/${{seg.skill}}</text>`);
     o.push(`<rect x="${{lw}}" y="${{y}}" width="${{bw}}" height="${{bh}}" fill="${{c}}" rx="3"/>`);
-    o.push(`<text x="${{lw+bw+6}}" y="${{y+bh/2+4}}" fill="#555">${{fmtDur(seg.duration_sec)}}</text>`);
+    o.push(`<text x="${{lw+bw+6}}" y="${{y+bh/2+4}}" fill="#555">${{lbl}}</text>`);
   }});
   o.push('</svg>');return o.join('');
 }}
 function renderPanel(s){{
-  const svg=s.segments.length?timelineSVG(s.segments,s.total_sec):'<p style="color:#aaa">No agent data</p>';
-  const tok=s.total_tokens!=null?s.total_tokens.toLocaleString():'—';
+  const svg=s.segments.length?timelineSVG(s.segments,s.total_sec,s.total_tokens):'<p style="color:#aaa">No agent data</p>';
+  const tok=s.total_tokens!=null?s.total_tokens.toLocaleString()+'  (est. per agent)':'—';
   const sp=s.sp!=null?s.sp+' SP':'—';
   return `<div class="compare-panel"><div class="panel-title">${{s.label}}</div>${{svg}}<div class="panel-meta"><span>Tokens: ${{tok}}</span><span>Duration: ${{fmtDur(s.total_sec)}}</span><span>SP: ${{sp}}</span><span>/planning: ${{s.planning_count}}</span></div></div>`;
 }}
