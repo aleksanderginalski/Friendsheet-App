@@ -174,12 +174,11 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.2.0 — US-100: Meeting Notes (March 25, 2026)
-- ✅ `lib/data/models/meeting.dart` (MODIFIED) — `notes: List<String>` field added to Meeting model
-- ✅ `lib/presentation/meetings/meeting_notes_section.dart` (NEW) — inline notes editor with instant Firestore save per note
-- ✅ `lib/presentation/meetings/meeting_detail_provider.dart` (MODIFIED) — `saveNotes()` method, `MeetingRepository` injected
-- ✅ `lib/presentation/widgets/meeting_card.dart` (MODIFIED) — note count badge when notes non-empty
-- ✅ 710 Flutter tests passing (+13 new tests)
+### Latest: v4.3.0 — US-086: Statistics Context Builder (March 25, 2026)
+- ✅ `lib/data/models/buddy_context.dart` (NEW) — `BuddyContext`, `MeetingContextEntry`, `PersonContextEntry` plain Dart models for in-memory AI context
+- ✅ `lib/data/services/context_builder_service.dart` (NEW) — `ContextBuilderService`: pseudonymization (Friend_A…), `buildFullContext()`, `buildPersonContext()`, `serializeToPrompt()`
+- ✅ `docs/privacy.md` (MODIFIED) — section 2.5 updated: meeting notes always included in AI context
+- ✅ 721 Flutter tests passing (+11 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

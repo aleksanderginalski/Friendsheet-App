@@ -3734,24 +3734,25 @@ login instead of only on first login.
 **Story Points:** 8
 **Priority:** P0
 **Labels:** `ai`, `privacy`, `data`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Service reads full meeting list with details (name, date, participants, activities, notes) from Firestore
-- [ ] Real names replaced with Friend_A, Friend_B... (pseudonymization)
-- [ ] Local mapping table kept in memory: Friend_A ↔ real name (used to translate AI responses back)
-- [ ] Context includes per-meeting: name, date, pseudonymized participants, activities, notes
-- [ ] Context includes per-person: meeting count, top 3 activities, last meeting date, most active period
-- [ ] Per-person filtering mode: builds context only from meetings where a specific person participated (used in Journey 2 — wishes)
-- [ ] Default time window: last 12 months (user can expand during conversation)
-- [ ] Service is fully unit testable with mock data
+- [x] Service reads full meeting list with details (name, date, participants, activities, notes) from Firestore
+- [x] Real names replaced with Friend_A, Friend_B... (pseudonymization applies to participant names only; meeting names sent as-is — Option A agreed in planning)
+- [x] Local mapping table kept in memory: Friend_A ↔ real name (used to translate AI responses back)
+- [x] Context includes per-meeting: name, date, pseudonymized participants, activities, notes
+- [x] Context includes per-person: meeting count, top 3 activities, last meeting date, most active period
+- [x] Per-person filtering mode: builds context only from meetings where a specific person participated (used in Journey 2 — wishes)
+- [x] Default time window: last 12 months (user can expand during conversation)
+- [x] Service is fully unit testable with mock data
 
 **Tasks:**
-- [ ] **TASK-086.1:** Create `ContextBuilderService` with pseudonymization logic — 2h
-- [ ] **TASK-086.2:** Implement full meeting list serialization (name, date, participants, activities, notes) — 2h
-- [ ] **TASK-086.3:** Implement per-person filtering mode — 1h
-- [ ] **TASK-086.4:** Implement prompt serializer (context object → string) — 1h
-- [ ] **TASK-086.5:** Write unit tests: pseudonymization, aggregation, serialization, per-person filter — 2h
+- [x] **TASK-086.1:** Create `BuddyContext`, `MeetingContextEntry`, `PersonContextEntry` plain Dart model classes in `lib/data/models/buddy_context.dart` — 0.5h
+- [x] **TASK-086.2:** Create `ContextBuilderService` in `lib/data/services/context_builder_service.dart` with constructor-injected `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; implement pseudonymization (Friend_A, Friend_B... ordered alphabetically by real name) and bidirectional mapping table — 2h
+- [x] **TASK-086.3:** Implement `buildFullContext(String userId, {DateTime? from})` — fetches meetings within time window (default: last 12 months), resolves categoryIds → category names, computes per-person aggregates (meeting count, top 3 activities, last meeting date, most active month) — 2h
+- [x] **TASK-086.4:** Implement `buildPersonContext(String userId, String personId)` — fetches only meetings where personId is a participant; same aggregation as full context — 1h
+- [x] **TASK-086.5:** Implement `serializeToPrompt(BuddyContext context)` → returns structured plain-text string for use as AI context — 1h
+- [x] **TASK-086.6:** Write unit tests: pseudonymization, aggregation, serialization, per-person filter — 2h
 
 **Dependencies:** US-088, US-100
 **Blocks:** US-087

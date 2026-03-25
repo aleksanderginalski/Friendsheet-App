@@ -4,6 +4,16 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.3.0 — US-086: Statistics Context Builder (March 25, 2026)
+- ✅ `lib/data/models/buddy_context.dart` (NEW) — three plain Dart in-memory models: `MeetingContextEntry` (name, date, pseudonymized participants, activity names, notes), `PersonContextEntry` (pseudonym, meeting count, top 3 activities, last meeting date, most active month), `BuddyContext` (meetings + persons lists + bidirectional pseudonym maps)
+- ✅ `lib/data/services/context_builder_service.dart` (NEW) — `ContextBuilderService`: constructor-injected `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; `buildFullContext()` with 12-month default window; `buildPersonContext()` for per-person scope (no time filter); `serializeToPrompt()` producing plain-text AI prompt; pseudonymization sorts persons alphabetically for determinism (Friend_A, Friend_B…); deleted-person IDs silently skipped
+- ✅ `test/data/services/context_builder_service_test.dart` (NEW) — 11 unit tests: pseudonymization order, full context happy path, deleted-person skip, custom time window, top-3 activity cap, per-person scope, no time filter in per-person mode, serializer empty/full/omit-notes/omit-activities
+- ✅ `test/data/services/context_builder_service_test.mocks.dart` (NEW) — Mockito-generated mocks for `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`
+- ✅ `docs/privacy.md` (MODIFIED) — section 2.5 updated: meeting notes are always included in AI context (not only on explicit request); wording aligned with actual `serializeToPrompt` behavior
+- ✅ 721 Flutter tests passing (+11 new tests)
+
+---
+
 ### v4.2.0 — US-100: Meeting Notes (March 25, 2026)
 - ✅ `lib/data/models/meeting.dart` (MODIFIED) — `notes: @Default([]) List<String>` field added to `Meeting` Freezed model; `fromFirestore` reads list with null fallback (legacy doc support); `toFirestore` always writes `'notes'`
 - ✅ `lib/data/models/meeting.freezed.dart` (REGENERATED) — Freezed codegen updated for `notes` field
