@@ -554,7 +554,7 @@ AIChatScreen
 ```
 
 **Key services:**
-- `ContextBuilderService` — pseudonymization, per-person filtering, prompt serialization
+- `ContextBuilderService` ✅ — pseudonymization, per-person filtering, prompt serialization (`lib/data/services/context_builder_service.dart`)
 - `OpenAIService` — HTTP client for `/v1/chat/completions`, hardcoded system prompt (Buddy character)
 - `BuddyWriteService` — single write surface: saveNotes only
 - `RelationshipScoreService` — local scoring algorithm, no API calls (US-107)

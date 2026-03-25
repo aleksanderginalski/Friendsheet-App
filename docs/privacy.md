@@ -52,16 +52,13 @@ If you choose to use the AI Assistant feature, a summary of your social activity
 is sent to **OpenAI's API** on your behalf. This data is prepared on-device and anonymized
 before sending:
 
-**Always sent to OpenAI:**
-- Meeting statistics: total count, frequency, distribution by month
-- Activity breakdown: category names and usage counts
-- Social graph summary: meeting counts per friend, last meeting date, most common activities
+**Always sent to OpenAI (when you use the AI Assistant):**
+- Meeting list: name, date, activity categories, and notes for each meeting in the last 12 months
+- Social graph summary: meeting counts per friend, last meeting date, most common activities, most active month
 - All friend names are replaced with generic identifiers (Friend_A, Friend_B, ...) before
   the data leaves your device — OpenAI never receives real names
-
-**Sent only when you explicitly ask:**
-- Meeting notes — included only when you request sentiment analysis
-  (e.g. "How have my meetings with Anna felt this year?"). Never sent during standard statistics queries
+- Meeting notes (if any) are included as part of the meeting context — they help the AI give
+  personalised answers about your social history
 
 **Never sent to OpenAI:**
 - Your real name or your friends' real names
