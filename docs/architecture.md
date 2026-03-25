@@ -77,7 +77,7 @@ erDiagram
         int weight
         array participantIds
         array categoryIds
-        string notes "nullable, free-text memories (US-100, max 2000 chars)"
+        array notes "list of memory bullet points, each a short string (US-100)"
         datetime createdAt
         datetime updatedAt
     }

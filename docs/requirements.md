@@ -1,9 +1,9 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 2.3
+**Version:** 2.4
 **Date:** March 2026
 **Author:** Product Owner
-**Status:** Updated — FR-029, FR-030 added (US-097–US-099)
+**Status:** Updated — FR-031 implemented (US-100)
 
 **Change Log:**
 - v1.1 — Authentication changed from email/password to Google Sign-In
@@ -11,6 +11,7 @@
 - v2.1 — M6 redesigned: Google Photos replaced by Meeting Import Hub (Google Calendar + Google Photos); ImportCandidate architecture introduced
 - v2.2 — FR-026 added: Friend Groups (US-062); Person and FriendGroup data model updated
 - v2.3 — FR-029 added: Person Meetings List (US-099); FR-030 added: Delete Received Package (US-098)
+- v2.4 — FR-031 implemented: Meeting Notes as `List<String>` (US-100)
 
 ---
 
@@ -489,16 +490,17 @@ User interacts with Buddy — a friendly AI assistant that knows their social hi
 
 ### FR-031: Meeting Notes
 **Priority:** MUST HAVE (M7 prerequisite)
+**Status:** ✅ Implemented (US-100)
 
 **Description:**
-User can add free-text notes to any meeting, capturing memories and context beyond structured data.
+User can add structured notes to any meeting as a list of bullet points, capturing individual memories one by one.
 
 **Acceptance Criteria:**
-- Optional `notes` field on Meeting model (max 2000 characters)
-- Notes editable directly in MeetingDetailScreen
-- Notes saved to Firestore
-- Truncated notes preview shown on meeting list card when non-empty
-- Notes included in AI context (pseudonymized) and friend summaries
+- `notes` field on Meeting model — `List<String>` with default empty list; stored in Firestore as an array
+- Notes added one by one inline in MeetingDetailScreen (below activities) — no separate screen
+- Each note saved to Firestore immediately when added via round green "+" button; removal also auto-saves
+- Note count badge displayed on meeting list card when notes non-empty (singular/plural handled)
+- Notes included in AI context (US-086) and friend summaries (US-087)
 
 ---
 

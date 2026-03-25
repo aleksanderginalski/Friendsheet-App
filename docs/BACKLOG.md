@@ -3828,24 +3828,24 @@ login instead of only on first login.
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `meetings`, `data-model`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] `notes` field added to `Meeting` model as `@Default([]) List<String>` — replaces the earlier `String?` design
-- [ ] Notes section displayed in `MeetingDetailScreen` below activities
-- [ ] User adds notes one by one: text input field with "Add" button — each submitted note appears as a removable list item
-- [ ] Each note item shows a delete icon; tapping it removes the note from the list
-- [ ] Notes saved to Firestore on explicit "Save" button tap (button appears only when list is dirty)
-- [ ] Meeting card shows note count badge (e.g. "3 notes") when notes list is non-empty
-- [ ] Empty input field shows placeholder hint encouraging reflection (e.g. "What happened? Any detail worth remembering?")
+- [x] `notes` field added to `Meeting` model as `@Default([]) List<String>` — replaces the earlier `String?` design
+- [x] Notes section displayed in `MeetingDetailScreen` below activities
+- [x] User adds notes one by one: text input field with "Add" button — each submitted note appears as a removable list item
+- [x] Each note item shows a delete icon; tapping it removes the note from the list
+- [x] Notes saved to Firestore immediately on "+" tap (instant save — no separate Save button needed)
+- [x] Meeting card shows note count badge (e.g. "3 notes") when notes list is non-empty
+- [x] Empty input field shows placeholder hint encouraging reflection ("What happened? Worth noting?")
 
 **Tasks:**
-- [ ] **TASK-100.1:** Change `notes` field in `Meeting` Freezed model to `@Default([]) List<String>` — 0.5h
-- [ ] **TASK-100.2:** Update `fromFirestore` (read as `List<String>`, fallback `[]`) / `toFirestore` (write always) — 0.5h
-- [ ] **TASK-100.3:** Run build_runner, update generated files — 0.5h
-- [ ] **TASK-100.4:** Create `_NotesSection` StatefulWidget in `lib/presentation/meetings/meeting_notes_section.dart` (input + Add button + removable items list + Save button) — 2h
-- [ ] **TASK-100.5:** Add `saveNotes(Meeting, List<String>)` to `MeetingDetailProvider`; inject `MeetingRepository` — 0.5h
-- [ ] **TASK-100.6:** Show note count badge in `MeetingCard` when `notes.isNotEmpty` — 0.5h
+- [x] **TASK-100.1:** Change `notes` field in `Meeting` Freezed model to `@Default([]) List<String>` — 0.5h
+- [x] **TASK-100.2:** Update `fromFirestore` (read as `List<String>`, fallback `[]`) / `toFirestore` (write always) — 0.5h
+- [x] **TASK-100.3:** Run build_runner, update generated files — 0.5h
+- [x] **TASK-100.4:** Create `MeetingNotesSection` StatefulWidget in `lib/presentation/meetings/meeting_notes_section.dart` (input + round green Add button + removable items list; instant Firestore save on each add/remove) — 2h
+- [x] **TASK-100.5:** Add `saveNotes(Meeting, List<String>)` to `MeetingDetailProvider`; inject `MeetingRepository` — 0.5h
+- [x] **TASK-100.6:** Show note count badge in `MeetingCard` when `notes.isNotEmpty` — 0.5h
 
 **Dependencies:** None
 **Blocks:** US-086, US-087, US-101
