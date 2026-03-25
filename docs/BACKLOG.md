@@ -4414,6 +4414,39 @@ Firestore SDK provides basic offline persistence, but it does not guarantee inst
 
 ---
 
+### US-INF-012: Create /dev-ai Agent for Epic-007
+
+**As a** Developer
+**I want to** have a dedicated implementation agent for AI/LLM US
+**So that** Epic-007 development has consistent guardrails for OpenAI integration, streaming, pseudonymization, and security patterns that are out of scope for the standard /dev agent
+
+**Story Points:** 2
+**Priority:** P0
+**Labels:** `dx`, `claude-code`, `agents`, `ai`
+**Status:** ✅ COMPLETED (March 25, 2026)
+**Feature:** FEATURE-INF-002: Multi-Agent System
+**Trigger:** Before first Epic-007 US implementation (US-087)
+
+**Acceptance Criteria:**
+- [x] `.claude/skills/dev-ai/SKILL.md` created with AI-specific implementation rules
+- [x] `openai_dart` package usage pattern documented (constructor injection for testability)
+- [x] System prompt rules: hardcoded const, never exposed to user, Buddy refuses to reveal
+- [x] Data flow documented: ContextBuilderService (reads) → OpenAIService → BuddyWriteService (writes only)
+- [x] Pseudonymization rule: real names never reach OpenAI API
+- [x] Streaming pattern documented (`Stream<String>` + typing indicator)
+- [x] Multi-language rule: Buddy mirrors user's language via system prompt instruction
+- [x] Error handling matrix: no connection / invalid key / quota exceeded / generic
+- [x] Guard logic pattern on screen open: consent check → key check
+- [x] Security rules: no logging of key, prompt content, or response content
+- [x] `/pm` routing updated: Epic-007 US → `/dev-ai` (removed "not ready" warning)
+- [x] `MULTI_AGENT_ARCHITECTURE.md` updated: agent added to System Map, Directory, Specifications
+- [x] Open Question for `/dev-ai` moved to Resolved
+
+**Dependencies:** US-INF-009 (Skills migration)
+**Blocks:** US-087 and all Epic-007 US
+
+---
+
 ## ⚙️ FEATURE-INF-003: CI/CD Enhancement
 
 **Description:** Professional CI/CD pipeline on GitHub Actions — automated test runs and coverage reports on every PR. Serves as portfolio showcase demonstrating production-grade project setup.

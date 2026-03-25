@@ -496,7 +496,8 @@ WidgetsBinding.instance.addPostFrameCallback((_) async {
 | /pm | .claude/skills/pm/SKILL.md | Polish | Session router, git status check |
 | /discover | .claude/skills/discover/SKILL.md | Polish | Strategic sessions, new Epics |
 | /planning | .claude/skills/planning/SKILL.md | Polish | US verification + Task instruction |
-| /dev | CLAUDE.md (this file) | English | Implementation |
+| /dev | CLAUDE.md (this file) | English | Implementation (Flutter/Firebase/Provider) |
+| /dev-ai | .claude/skills/dev-ai/SKILL.md | English | AI/LLM implementation (Epic-007) |
 | /qa | .claude/skills/qa/SKILL.md | English | Tests |
 | /debug | .claude/skills/debug/SKILL.md | Polish | Problem solving |
 | /docs | .claude/skills/docs/SKILL.md | English | Documentation update |

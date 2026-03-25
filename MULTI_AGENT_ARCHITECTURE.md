@@ -65,6 +65,7 @@ Used for implementing specific User Stories from backlog.
 │  /pm        — Session router, context explainer        │
 │  /planning  — US verification + Task instruction       │
 │  /dev       — Implementation (CLAUDE.md)               │
+│  /dev-ai    — AI/LLM implementation (Epic-007)         │
 │  /qa        — Tests                                    │
 │  /debug     — Problem solving (on demand)              │
 │  /docs      — Documentation update                     │
@@ -72,7 +73,7 @@ Used for implementing specific User Stories from backlog.
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Total: 8 agents** (pm, discover, planning, dev, qa, debug, docs, retro)
+**Total: 9 agents** (pm, discover, planning, dev, dev-ai, qa, debug, docs, retro)
 
 ---
 
@@ -497,6 +498,34 @@ Napisz wyraźnie:
 
 ---
 
+### `/dev-ai` — AI Implementation Agent
+
+**Language:** English
+**Purpose:** Implementation of Epic-007 (M7 — AI Assistant / Buddy) US involving OpenAI API.
+**When to use:** Any US that requires `OpenAIService`, `AIChatScreen`, `BuddyWriteService`, streaming, or prompt engineering.
+**Inherits:** All CLAUDE.md rules (Flutter best practices, Clean Architecture, git workflow).
+**Does NOT replace `/dev`** for Flutter/Firebase-only US.
+
+#### Frontmatter
+```yaml
+---
+name: dev-ai
+description: AI/LLM implementation agent for Epic-007 (M7 — AI Assistant / Buddy). Use for all US involving OpenAI API, streaming, prompt engineering, BuddyWriteService, and AIChatScreen. Reads CLAUDE.md for base Flutter/Firebase rules.
+---
+```
+
+#### Key rules (summary — full spec in SKILL.md)
+- Package: `openai_dart` — supports SSE streaming, injectable client for tests
+- System prompt: `const String`, hardcoded, never exposed to user, Buddy refuses to reveal
+- Read path: `ContextBuilderService` → `OpenAIService` (no direct repo access)
+- Write path: `BuddyWriteService.saveNotes()` only — no other writes from chat
+- Pseudonymization: enforced by `ContextBuilderService` — real names never reach OpenAI API
+- Streaming: `Stream<String>` with fragment-by-fragment UI update
+- Multi-language: Buddy mirrors user's language via system prompt instruction
+- Security: no logging of key, prompt content, or response content
+
+---
+
 ### `/qa` — Test Agent
 
 **Language:** English
@@ -837,14 +866,13 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 
 ## Open Questions — Active
 
-| Question | Status | Notes |
-|---|---|---|
-| `/dev-ai` agent for Epic-007 (AI Assistant / Buddy) | 🔄 Pending — design via /discover before first Epic-007 US | `/dev` (CLAUDE.md) covers Flutter/Firebase only. Epic-007 requires Anthropic SDK, streaming, prompt engineering — different enough to warrant a dedicated agent. `/pm` will route Epic-007 US to `/dev-ai` once created. |
+*(none)*
 
 ## Open Questions — Resolved
 
 | Question | Decision |
 |---|---|
+| `/dev-ai` agent for Epic-007 (AI Assistant / Buddy) | Created in US-INF-012 (March 25, 2026). Lives in `.claude/skills/dev-ai/SKILL.md`. Handles OpenAI API, streaming (openai_dart), pseudonymization rules, BuddyWriteService pattern, system prompt guardrails. Inherits all CLAUDE.md Flutter/Firebase rules. |
 | `/retro` → agent files or RETRO_LOG.md? | Agent files + MULTI_AGENT_ARCHITECTURE.md. User can ask "why?" before each change. |
 | `/planning` write access to BACKLOG.md? | Yes. User approves before commit. |
 | `agent: Explore` frontmatter? | Skip for now. Add after first real usage if needed. |
@@ -868,4 +896,4 @@ Przedstaw ją jako opcję, nie obowiązek: "Zauważyłem że... Czy chcesz to om
 ---
 
 *Update this document after each /retro session that proposes structural changes.*
-*Current agent count: 8 (/pm, /discover, /planning, /dev, /qa, /debug, /docs, /retro)*
+*Current agent count: 9 (/pm, /discover, /planning, /dev, /dev-ai, /qa, /debug, /docs, /retro)*

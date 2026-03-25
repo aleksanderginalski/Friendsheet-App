@@ -53,10 +53,9 @@ Po zroutowaniu do /planning — wskaż też właściwy agent implementacyjny:
 | Typ US | Agent implementacyjny |
 |---|---|
 | Flutter UI, Firestore, Provider, standardowy flow | `/dev` (CLAUDE.md) |
-| Epic-007 / AI Assistant / integracja z Anthropic API | `/dev-ai` (gdy będzie gotowy) |
+| Epic-007 / AI Assistant / integracja z OpenAI API | `/dev-ai` (.claude/skills/dev-ai/SKILL.md) |
 
-Jeśli typ US jest niejasny — zapytaj: "To US dotyczy integracji z AI/LLM czy standardowego Flutter/Firebase?"
-Jeśli `/dev-ai` nie istnieje jeszcze a US dotyczy Epic-007 — ostrzeż: "US należy do Epic-007. Agent /dev-ai nie jest jeszcze gotowy — uruchom /discover żeby go zaprojektować."
+Jeśli typ US jest niejasny — zapytaj: "To US dotyczy integracji z AI/LLM (OpenAI, streaming, Buddy) czy standardowego Flutter/Firebase?"
 
 **Ważne:** Gdy użytkownik opisuje pomysł lub nowe US których nie ma w backlogu —
 nie elaboruj, nie zadawaj pytań doprecyzowujących, nie draftujesz US.
