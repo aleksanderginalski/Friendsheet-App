@@ -46,6 +46,36 @@ This data is used **only during the import process** to pre-fill meeting suggest
 - Advertising identifiers
 - Data from Google Drive, Gmail, or any other Google services not listed above
 
+### 2.5 AI Assistant Data (optional)
+
+If you choose to use the AI Assistant feature, a summary of your social activity data
+is sent to **OpenAI's API** on your behalf. This data is prepared on-device and anonymized
+before sending:
+
+**Always sent to OpenAI:**
+- Meeting statistics: total count, frequency, distribution by month
+- Activity breakdown: category names and usage counts
+- Social graph summary: meeting counts per friend, last meeting date, most common activities
+- All friend names are replaced with generic identifiers (Friend_A, Friend_B, ...) before
+  the data leaves your device — OpenAI never receives real names
+
+**Sent only when you explicitly ask:**
+- Meeting notes — included only when you request sentiment analysis
+  (e.g. "How have my meetings with Anna felt this year?"). Never sent during standard statistics queries
+
+**Never sent to OpenAI:**
+- Your real name or your friends' real names
+- Raw Firestore data or any data not explicitly listed above
+- Your email address, Google UID, or any account credentials
+
+The AI Assistant uses your **own OpenAI API key** (BYOK — Bring Your Own Key). We do not
+proxy your requests through our servers. Your API key is stored exclusively on your device
+using Android Keystore-backed secure storage and is never written to Firestore or logs.
+It authenticates directly with OpenAI's API from your device — Friendsheet servers never see it.
+
+You must explicitly accept this data processing before using the AI Assistant.
+You can withdraw consent at any time by deleting your API key in Settings → AI Assistant.
+
 ---
 
 ## 3. How We Use Your Data
