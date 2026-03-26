@@ -538,7 +538,7 @@ Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no d
 
 ### M7 (continued) — AI Assistant (Buddy)
 
-**Status:** 🔄 In Progress — US-088 (API Key Management) ✅ delivered.
+**Status:** 🔄 In Progress — US-088 (API Key Management) ✅, US-085 (Consent Flow) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅ delivered.
 
 **Provider:** OpenAI GPT-4o — BYOK (user's own API key, no cost to developer).
 
@@ -553,12 +553,33 @@ AIChatScreen
     └── WRITE → BuddyWriteService.saveNotes() → MeetingRepository (notes field only)
 ```
 
+**Three interaction modes (US-087):**
+- **Mode 1 — Meeting notes:** `AIChatScreen(meetingId: ...)` → `includeNotes: true` in context; Buddy collects notes and saves via `BuddyWriteService.saveNotes()`
+- **Mode 2 — Friend context:** `AIChatScreen(personId: ...)` → `buildPersonContext()` used; Buddy shows friendship summary and personalised wishes
+- **Mode 3 — Free query (default):** `buildFullContext()` without notes; Buddy answers social-history questions
+
 **Key services:**
-- `ContextBuilderService` ✅ — pseudonymization, per-person filtering, prompt serialization (`lib/data/services/context_builder_service.dart`)
-- `OpenAIService` — HTTP client for `/v1/chat/completions`, hardcoded system prompt (Buddy character)
-- `BuddyWriteService` — single write surface: saveNotes only
-- `RelationshipScoreService` — local scoring algorithm, no API calls (US-107)
+- `ContextBuilderService` ✅ — pseudonymization, per-person filtering, prompt serialization with `includeNotes` flag (`lib/data/services/context_builder_service.dart`)
+- `OpenAIService` ✅ — `openai_dart`-based streaming client; hardcoded `_systemPrompt` (Buddy character + guardrails); maps API errors to typed exceptions (`lib/data/services/open_ai_service.dart`)
+- `BuddyWriteService` ✅ — single write surface: `saveNotes(userId, meetingId, notes)` only (`lib/data/services/buddy_write_service.dart`)
+- `AIChatProvider` ✅ — ChangeNotifier managing chat session: streaming accumulation, pseudonym back-translation, proactive notes detection, retry logic (`lib/presentation/ai_chat/ai_chat_provider.dart`)
+- `RelationshipScoreService` — local scoring algorithm, no API calls (US-107, planned)
 - `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
+
+**New packages (US-087):**
+- `openai_dart: ^2.0.0` — official Dart client for OpenAI API (streaming support)
+- `flutter_markdown: ^0.7.7+1` — markdown rendering in `ChatBubble` for formatted Buddy responses
+
+**Error handling (typed exceptions):**
+```dart
+// lib/data/models/ai_exceptions.dart
+AINetworkException   → retry button in chat UI
+AIInvalidKeyException → link to AISettingsScreen
+AIQuotaExceededException → link to OpenAI billing page
+AIUnknownException   → generic error message
+```
+
+**Pseudonym back-translation:** `AIChatProvider` replaces `Friend_A`, `Friend_B`... with real names in displayed responses using `BuddyContext.pseudonymToRealName` map. Real names never leave the device in outbound requests.
 
 **Gemini Nano (on-device):** deferred to future epic.
 

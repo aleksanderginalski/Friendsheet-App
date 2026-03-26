@@ -32,6 +32,7 @@ class PersonContextEntry {
     required this.topActivities,
     this.lastMeetingDate,
     this.mostActivePeriod,
+    this.meetingsByYear = const {},
   });
 
   /// Pseudonym assigned to this person, e.g. 'Friend_A'.
@@ -49,6 +50,10 @@ class PersonContextEntry {
   /// Month with the highest number of meetings, formatted as 'MMMM yyyy'.
   /// e.g. 'March 2024'.
   final String? mostActivePeriod;
+
+  /// Meeting count broken down by year, e.g. {2025: 5, 2026: 31}.
+  /// Enables the AI to answer year-specific questions accurately.
+  final Map<int, int> meetingsByYear;
 }
 
 /// The full anonymized context bundle passed to the AI prompt serializer.

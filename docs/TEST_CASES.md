@@ -918,6 +918,91 @@ Manual verification — no Flutter code involved. Run once after agent files are
 
 ---
 
+## TC-BUDDY: Buddy AI Chat (US-087)
+
+### TC-BUDDY-001 — Open Buddy chat (generic mode)
+**Priority:** P1
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Buddy chat from main screen (no meeting/person context) | AIChatScreen opens with greeting message from Buddy | ⬜ | |
+| 2 | Observe greeting content | Contains bullet-point suggestions ("Who did I meet most…", etc.) | ⬜ | |
+| 3 | Type a question and send | Loading indicator shown, AI response streams in | ⬜ | |
+| 4 | Observe AI response | Response uses real person names (not pseudonyms like Friend_A) | ⬜ | |
+
+---
+
+### TC-BUDDY-002 — Buddy chat opened from meeting (Mode 1 — notes)
+**Priority:** P1
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Buddy chat from a specific meeting's detail screen | Greeting mentions the meeting name | ⬜ | |
+| 2 | Dictate notes (e.g. "We talked about travel plans") | Message sent to AI | ⬜ | |
+| 3 | Tap "Save Notes" in chat | Notes appended to the meeting in Firestore | ⬜ | |
+| 4 | Navigate back to meeting detail | Notes field shows the newly saved notes | ⬜ | |
+
+---
+
+### TC-BUDDY-003 — Buddy chat opened from person (person mode)
+**Priority:** P2
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Open Buddy chat from a person's detail screen | Greeting appears (no meeting name since meetingId is null) | ⬜ | |
+| 2 | Ask "How many meetings did we have?" | AI answers based on that person's full meeting history | ⬜ | |
+
+---
+
+### TC-BUDDY-004 — Proactive note prompt for recent meeting without notes
+**Priority:** P2
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Have a meeting within last 30 days with no notes | — | ⬜ | |
+| 2 | Open Buddy chat (generic mode) | Greeting proactively mentions that meeting by name and date | ⬜ | |
+
+---
+
+### TC-BUDDY-005 — Error handling: invalid API key
+**Priority:** P1
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Set an invalid key in Settings → AI Assistant | — | ⬜ | |
+| 2 | Send a message in Buddy chat | Error banner shown: "Your API key is invalid…" | ⬜ | |
+| 3 | Tap dismiss on error banner | Banner disappears | ⬜ | |
+
+---
+
+### TC-BUDDY-006 — Retry failed message
+**Priority:** P2
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Send a message that fails (e.g. no network) | Error banner shown | ⬜ | |
+| 2 | Restore network and tap "Retry" | Last user message is re-sent, new AI response appears | ⬜ | |
+
+---
+
+### TC-BUDDY-007 — API key save strips whitespace
+**Priority:** P2
+**Related US:** US-087
+
+| Step | Action | Expected Result | Status | Notes |
+|------|--------|----------------|--------|-------|
+| 1 | Paste an API key with trailing newline/spaces into Settings | — | ⬜ | |
+| 2 | Save the key | Key saved successfully (whitespace stripped) | ⬜ | |
+| 3 | Send a message in Buddy chat | AI responds normally (key is valid after stripping) | ⬜ | |
+
+---
+
 ## Regression Checklist
 
 Run after every release or hotfix:

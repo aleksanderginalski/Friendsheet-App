@@ -1,9 +1,9 @@
 # Friendsheet - Requirements Documentation
 
-**Version:** 2.4
+**Version:** 2.5
 **Date:** March 2026
 **Author:** Product Owner
-**Status:** Updated — FR-031 implemented (US-100)
+**Status:** Updated — FR-025 partially implemented (US-087: AI Chat Screen)
 
 **Change Log:**
 - v1.1 — Authentication changed from email/password to Google Sign-In
@@ -12,6 +12,7 @@
 - v2.2 — FR-026 added: Friend Groups (US-062); Person and FriendGroup data model updated
 - v2.3 — FR-029 added: Person Meetings List (US-099); FR-030 added: Delete Received Package (US-098)
 - v2.4 — FR-031 implemented: Meeting Notes as `List<String>` (US-100)
+- v2.5 — FR-025 partially implemented: AI Chat Screen (Buddy) delivered (US-087); consent flow (US-085), API key management (US-088), context builder (US-086) all ✅
 
 ---
 
@@ -34,7 +35,7 @@ The application enables users to track meetings with friends with the ability to
 | M4 | Google Play Release | 📋 Planned |
 | M5 | Social: Data Sharing | 📋 Planned |
 | M6 | Custom Dashboard | 📋 Planned |
-| M7 | AI Assistant | 💡 Future |
+| M7 | AI Assistant | 🔄 In Progress |
 
 ---
 
@@ -466,6 +467,7 @@ User can add, remove and reorder dashboard widgets.
 
 ### FR-025: AI Assistant — Buddy (M7)
 **Priority:** COULD HAVE
+**Status:** 🔄 Partially Implemented — US-088 (API Key) ✅, US-085 (Consent) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅; US-101 (HomeScreen widget), US-107 (relationship score), US-106 (annual report) planned
 
 **Description:**
 User interacts with Buddy — a friendly AI assistant that knows their social history. Buddy is proactive (HomeScreen widget), conversational (single chat screen), and covers three journeys: meeting notes, friend wishes, and free social queries.

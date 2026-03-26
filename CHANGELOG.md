@@ -4,6 +4,32 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.4.0 — US-087: Buddy AI Chat Screen (March 26, 2026)
+- ✅ `pubspec.yaml` (MODIFIED) — `openai_dart: ^2.0.0` and `flutter_markdown: ^0.7.7+1` added
+- ✅ `pubspec.lock` (REGENERATED) — dependency tree updated for new packages
+- ✅ `lib/data/models/ai_exceptions.dart` (NEW) — typed exception hierarchy: `AINetworkException`, `AIInvalidKeyException`, `AIQuotaExceededException`, `AIUnknownException`
+- ✅ `lib/data/models/chat_message.dart` (NEW) — plain Dart `ChatMessage` class (role: user/assistant, content: String)
+- ✅ `lib/data/models/buddy_context.dart` (MODIFIED) — minor update for US-087 integration
+- ✅ `lib/data/repositories/ai_key_repository.dart` (MODIFIED) — minor update for OpenAI service injection
+- ✅ `lib/data/services/open_ai_service.dart` (NEW) — `OpenAIService`: wraps `openai_dart`; injected `OpenAIClient` + `AIKeyRepository`; hardcoded `const String _systemPrompt` (Buddy character, scope, guardrails); `Stream<String> sendMessage(contextPrompt, history, userMessage)`; maps API errors to typed `AIException` subclasses
+- ✅ `lib/data/services/buddy_write_service.dart` (NEW) — `BuddyWriteService`: injected `MeetingRepository`; single write method `saveNotes(userId, meetingId, notes)` — enforces write isolation principle
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `serializeToPrompt()` gains `includeNotes: bool = false` parameter; notes omitted by default (Mode 3); added `meetingsByYear` map and sorted output for richer context
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (NEW) — `AIChatProvider` ChangeNotifier: injected `ContextBuilderService`, `OpenAIService`, `BuddyWriteService`, `MeetingRepository`; state: messages list, isLoading, errorMessage; `initialize(userId, {meetingId?, personId?})` with proactive meeting-without-notes detection (30-day window); `sendMessage()` with streaming accumulation and pseudonym back-translation; `retry()`
+- ✅ `lib/presentation/ai_chat/ai_chat_screen.dart` (NEW) — `AIChatScreen`: chat UI with user/Buddy bubbles; streaming fragment display; typing indicator; copy button on every Buddy message; three-state error display (network retry / settings link / OpenAI link); consent + key guard in `initState` via `addPostFrameCallback`; accepts optional `meetingId` and `personId` parameters
+- ✅ `lib/presentation/ai_chat/chat_bubble.dart` (NEW) — `ChatBubble` StatelessWidget: role-differentiated bubble style, markdown rendering via `flutter_markdown`, copy-to-clipboard button on Buddy messages
+- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — "Buddy — AI Assistant" `ListTile` added (icon: `smart_toy`); `AIChatProvider` created at call-site via `ChangeNotifierProvider`
+- ✅ `test/data/models/ai_exceptions_test.dart` (NEW) — unit tests for exception class hierarchy
+- ✅ `test/data/models/chat_message_test.dart` (NEW) — unit tests for `ChatMessage` model
+- ✅ `test/data/repositories/ai_key_repository_test.dart` (MODIFIED) — additional tests for updated repository
+- ✅ `test/data/services/buddy_write_service_test.dart` (NEW) — unit tests for `BuddyWriteService.saveNotes()`
+- ✅ `test/data/services/buddy_write_service_test.mocks.dart` (NEW) — Mockito-generated mocks
+- ✅ `test/data/services/context_builder_service_test.dart` (MODIFIED) — tests updated for `includeNotes` parameter; notes-in-output tests now pass `includeNotes: true` explicitly
+- ✅ `test/presentation/providers/ai_chat_provider_test.dart` (NEW) — 30 unit tests: initialize modes (free/meetingId/personId), proactive opening detection, sendMessage streaming, pseudonym back-translation, error mapping, retry logic
+- ✅ `test/presentation/providers/ai_chat_provider_test.mocks.dart` (NEW) — Mockito-generated mocks for all injected services
+- ✅ 760 Flutter tests passing (+30 new tests)
+
+---
+
 ### v4.3.0 — US-086: Statistics Context Builder (March 25, 2026)
 - ✅ `lib/data/models/buddy_context.dart` (NEW) — three plain Dart in-memory models: `MeetingContextEntry` (name, date, pseudonymized participants, activity names, notes), `PersonContextEntry` (pseudonym, meeting count, top 3 activities, last meeting date, most active month), `BuddyContext` (meetings + persons lists + bidirectional pseudonym maps)
 - ✅ `lib/data/services/context_builder_service.dart` (NEW) — `ContextBuilderService`: constructor-injected `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; `buildFullContext()` with 12-month default window; `buildPersonContext()` for per-person scope (no time filter); `serializeToPrompt()` producing plain-text AI prompt; pseudonymization sorts persons alphabetically for determinism (Friend_A, Friend_B…); deleted-person IDs silently skipped

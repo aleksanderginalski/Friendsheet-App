@@ -61,6 +61,8 @@ dependencies:
 
   # UI Icons
   cupertino_icons: ^1.0.6
+  openai_dart: ^2.0.0
+  flutter_markdown: ^0.7.7+1
 
 # Development dependencies - only used during development
 dev_dependencies:

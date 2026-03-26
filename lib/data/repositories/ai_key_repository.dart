@@ -13,8 +13,12 @@ class AIKeyRepository {
   static const _apiKeyStorageKey = 'openai_api_key';
 
   /// Writes [key] to secure storage. Overwrites any existing value.
+  /// Strips whitespace and line-break characters that may be introduced
+  /// when pasting a key from clipboard.
   Future<void> saveKey(String key) async {
-    await _storage.write(key: _apiKeyStorageKey, value: key);
+    await _storage.write(
+        key: _apiKeyStorageKey,
+        value: key.trim().replaceAll(RegExp(r'[\r\n]'), ''));
   }
 
   /// Returns the stored key, or null if no key has been saved.

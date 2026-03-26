@@ -5,6 +5,7 @@ import '../../data/repositories/ai_consent_repository.dart';
 import '../../data/repositories/ai_key_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../ai_chat/ai_chat_screen.dart';
 import '../providers/ai_settings_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
@@ -148,6 +149,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _openBuddyChat() {
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => buildAIChatRoute(userId: userId),
+      ),
+    );
+  }
+
   Future<void> _openAISettings() async {
     final hasConsent = await _consentRepository.hasGrantedConsent();
     if (!mounted) return;
@@ -188,6 +200,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: [
           _buildCalendarSection(context, calendarProvider),
+          ListTile(
+            leading: const Icon(
+              Icons.smart_toy_outlined,
+              color: Color(0xFF4CAF50),
+            ),
+            title: const Text('Buddy — AI Assistant'),
+            subtitle: const Text('Chat with your AI social assistant'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: _openBuddyChat,
+          ),
           ListTile(
             leading: const Icon(Icons.smart_toy_outlined),
             title: const Text('AI Assistant'),
