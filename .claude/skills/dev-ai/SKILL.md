@@ -142,6 +142,36 @@ Rules:
 
 ---
 
+## Context Serialization Quality
+
+When implementing or modifying `ContextBuilderService.serializeToPrompt()`:
+
+**Always pre-compute aggregations — never rely on model self-counting.**
+LLMs make frequent counting errors over long lists. The model must receive
+ready-made numbers, not raw data to count.
+
+Required in Friend Summaries:
+- Per-year meeting breakdown: `Friend_AH: 36 meetings (2026: 31, 2025: 5)`
+- Sort persons by **current-year** meeting count descending — first entry = answer to "who did I meet most this year?"
+
+```dart
+// WRONG — model must count manually → unreliable:
+'- ${p.pseudonym}: ${p.meetingCount} meetings'
+
+// CORRECT — pre-computed yearly breakdown, sorted desc by current year:
+final currentYear = DateTime.now().year;
+final sortedPersons = context.persons.toList()
+  ..sort((a, b) => (b.meetingsByYear[currentYear] ?? 0)
+      .compareTo(a.meetingsByYear[currentYear] ?? 0));
+// serialize with breakdown: (2026: 31, 2025: 5)
+```
+
+This prevents the model from giving wrong answers to year-specific questions
+like "z kim spotykałem się najczęściej w tym roku?" when total 12-month counts
+differ from current-year counts.
+
+---
+
 ## Multi-Language
 
 Buddy detects the user's language and responds in it automatically.
