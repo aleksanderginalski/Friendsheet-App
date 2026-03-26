@@ -10,6 +10,7 @@ COST_PER_TOKEN = 0.000006
 
 _SKILL_COLORS = {
     'pm': '#4CAF50', 'planning': '#2196F3', 'dev': '#FF9800',
+    'dev-ai': '#E91E63',
     'qa': '#9C27B0', 'debug': '#F44336', 'docs': '#00BCD4',
     'retro': '#795548', 'discover': '#607D8B',
 }
