@@ -23,10 +23,20 @@ def _parse_ts(ts_str: str) -> datetime:
     return datetime.fromisoformat(ts_str)
 
 
+_IMPL_AGENTS = {'dev', 'dev-ai', 'debug'}
+
+
 def _compute_timeline(entries: list[dict]) -> list[dict]:
-    """Build ordered agent segments with durations (mirrors report.py logic)."""
+    """Build ordered agent segments with durations (mirrors report.py logic).
+
+    Injects a synthetic dev-ai segment when planning is immediately followed
+    by a non-implementation agent (continuation session pattern).
+    """
     agents = [e for e in entries if e.get('type') == 'agent_start']
-    session_ends = [e for e in entries if e.get('type') == 'session_end']
+    session_ends = sorted(
+        [e for e in entries if e.get('type') == 'session_end' and 'timestamp' in e],
+        key=lambda e: _parse_ts(e['timestamp']),
+    )
 
     if not agents:
         return []
@@ -38,15 +48,53 @@ def _compute_timeline(entries: list[dict]) -> list[dict]:
         except (KeyError, ValueError):
             pass
 
-    segments = []
+    raw = []
     for i, agent in enumerate(agents):
         start = _parse_ts(agent['timestamp'])
         end = _parse_ts(agents[i + 1]['timestamp']) if i + 1 < len(agents) else end_ts
-        segments.append({
+        raw.append({
             'skill': agent.get('skill', 'unknown'),
             'args': agent.get('args', ''),
-            'duration_sec': max(0.0, (end - start).total_seconds()),
+            'start': start,
+            'end': end,
         })
+
+    segments = []
+    for i, seg in enumerate(raw):
+        is_planning_gap = (
+            seg['skill'].lower() == 'planning'
+            and i + 1 < len(raw)
+            and raw[i + 1]['skill'].lower() not in _IMPL_AGENTS
+        )
+        if is_planning_gap:
+            planning_actual_end = None
+            for se in session_ends:
+                if _parse_ts(se['timestamp']) > seg['start']:
+                    planning_actual_end = _parse_ts(se['timestamp'])
+                    break
+            if planning_actual_end and planning_actual_end < seg['end']:
+                segments.append({
+                    'skill': seg['skill'],
+                    'args': seg['args'],
+                    'duration_sec': max(0.0, (planning_actual_end - seg['start']).total_seconds()),
+                })
+                segments.append({
+                    'skill': 'dev-ai',
+                    'args': '[estimated]',
+                    'duration_sec': max(0.0, (seg['end'] - planning_actual_end).total_seconds()),
+                })
+            else:
+                segments.append({
+                    'skill': seg['skill'],
+                    'args': seg['args'],
+                    'duration_sec': max(0.0, (seg['end'] - seg['start']).total_seconds()),
+                })
+        else:
+            segments.append({
+                'skill': seg['skill'],
+                'args': seg['args'],
+                'duration_sec': max(0.0, (seg['end'] - seg['start']).total_seconds()),
+            })
     return segments
 
 

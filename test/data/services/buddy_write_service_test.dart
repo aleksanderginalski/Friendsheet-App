@@ -41,7 +41,7 @@ void main() {
       final existing = makeMeeting(id: 'm1', notes: ['old note']);
       when(mockMeetingRepo.getMeetingsByUser('user-1'))
           .thenAnswer((_) => Stream.value([existing]));
-      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async => null);
+      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async {});
 
       await service.saveNotes('user-1', 'm1', ['new note A', 'new note B']);
 
@@ -55,7 +55,7 @@ void main() {
       final existing = makeMeeting(id: 'm1', notes: []);
       when(mockMeetingRepo.getMeetingsByUser('user-1'))
           .thenAnswer((_) => Stream.value([existing]));
-      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async => null);
+      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async {});
 
       await service.saveNotes('user-1', 'm1', ['first note']);
 
@@ -69,7 +69,7 @@ void main() {
       final existing = makeMeeting(id: 'm1', notes: ['original']);
       when(mockMeetingRepo.getMeetingsByUser('user-1'))
           .thenAnswer((_) => Stream.value([existing]));
-      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async => null);
+      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async {});
 
       await service.saveNotes('user-1', 'm1', ['extra']);
 

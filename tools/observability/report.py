@@ -86,40 +86,110 @@ def _fmt_duration(seconds: float) -> str:
     return f'{m}m {s:02d}s'
 
 
+_IMPL_AGENTS = {'dev', 'dev-ai', 'debug'}
+
+
 def _compute_timeline(entries: list[dict]) -> list[dict]:
     """
-    Build an ordered list of agent segments with durations.
+    Build an ordered list of agent segments with durations and token deltas.
 
-    Each segment: {skill, args, start, end, duration_sec}
-    The last agent's end = session_end timestamp (or now if missing).
+    Each segment: {skill, args, start, end, duration_sec, token_delta, synthetic}
+
+    When a planning segment is immediately followed by a non-implementation agent
+    (qa, docs, retro) with no dev/dev-ai/debug in between — a synthetic dev-ai
+    segment is injected to represent implementation work done in a continuation
+    session (where the Skill hook does not re-fire).
+
+    Token deltas are computed from cumulative session_end entries rather than
+    time-proportional approximation.
     """
     agents = [e for e in entries if e.get('type') == 'agent_start']
-    session_end_entries = [e for e in entries if e.get('type') == 'session_end']
+    session_ends = sorted(
+        [
+            e for e in entries
+            if e.get('type') == 'session_end'
+            and 'timestamp' in e
+            and e.get('total_tokens') is not None
+        ],
+        key=lambda e: _parse_ts(e['timestamp']),
+    )
 
     if not agents:
         return []
 
     end_ts = datetime.now()
-    if session_end_entries:
+    if session_ends:
         try:
-            end_ts = _parse_ts(session_end_entries[-1]['timestamp'])
+            end_ts = _parse_ts(session_ends[-1]['timestamp'])
         except (KeyError, ValueError):
             pass
 
-    segments = []
+    # Build raw agent boundaries
+    raw = []
     for i, agent in enumerate(agents):
         start = _parse_ts(agent['timestamp'])
-        if i + 1 < len(agents):
-            end = _parse_ts(agents[i + 1]['timestamp'])
-        else:
-            end = end_ts
-        duration_sec = max(0, (end - start).total_seconds())
-        segments.append({
+        end = _parse_ts(agents[i + 1]['timestamp']) if i + 1 < len(agents) else end_ts
+        raw.append({
             'skill': agent.get('skill', 'unknown'),
             'args': agent.get('args', ''),
             'start': start,
             'end': end,
+        })
+
+    # Inject synthetic dev-ai when planning → non-impl agent detected
+    expanded = []
+    for i, seg in enumerate(raw):
+        is_planning_gap = (
+            seg['skill'].lower() == 'planning'
+            and i + 1 < len(raw)
+            and raw[i + 1]['skill'].lower() not in _IMPL_AGENTS
+        )
+        if is_planning_gap:
+            # Find the first session_end after planning's start = planning's actual end
+            planning_actual_end = None
+            for se in session_ends:
+                se_ts = _parse_ts(se['timestamp'])
+                if se_ts > seg['start']:
+                    planning_actual_end = se_ts
+                    break
+            if planning_actual_end and planning_actual_end < seg['end']:
+                expanded.append({**seg, 'end': planning_actual_end, 'synthetic': False})
+                expanded.append({
+                    'skill': 'dev-ai',
+                    'args': '[estimated]',
+                    'start': planning_actual_end,
+                    'end': seg['end'],
+                    'synthetic': True,
+                })
+            else:
+                expanded.append({**seg, 'synthetic': False})
+        else:
+            expanded.append({**seg, 'synthetic': False})
+
+    # Compute duration and actual token deltas using session_end cumulative data
+    def _tokens_at(ts: datetime) -> int | None:
+        result = None
+        for se in session_ends:
+            if _parse_ts(se['timestamp']) <= ts:
+                result = se.get('total_tokens')
+            else:
+                break
+        return result
+
+    segments = []
+    for seg in expanded:
+        duration_sec = max(0.0, (seg['end'] - seg['start']).total_seconds())
+        tok_start = _tokens_at(seg['start'])
+        tok_end = _tokens_at(seg['end'])
+        token_delta = max(0, tok_end - tok_start) if (tok_start is not None and tok_end is not None) else None
+        segments.append({
+            'skill': seg['skill'],
+            'args': seg['args'],
+            'start': seg['start'],
+            'end': seg['end'],
             'duration_sec': duration_sec,
+            'token_delta': token_delta,
+            'synthetic': seg['synthetic'],
         })
     return segments
 
@@ -132,6 +202,7 @@ _SKILL_COLORS = {
     'pm':       '#4CAF50',
     'planning': '#2196F3',
     'dev':      '#FF9800',
+    'dev-ai':   '#E91E63',
     'qa':       '#9C27B0',
     'debug':    '#F44336',
     'docs':     '#00BCD4',
@@ -195,13 +266,15 @@ def _build_html(
 
     # Metadata
     meta = next((e for e in entries if e.get('type') == 'metadata'), {})
-    end_entry = next((e for e in entries if e.get('type') == 'session_end'), {})
+    session_end_list = [e for e in entries if e.get('type') == 'session_end']
+    end_entry = session_end_list[-1] if session_end_list else {}
     total_tokens = end_entry.get('total_tokens')
     session_date = segments[0]['start'].strftime('%Y-%m-%d %H:%M') if segments else '—'
     total_sec = sum(s['duration_sec'] for s in segments)
 
     planning_count = sum(1 for s in segments if s['skill'].lower() == 'planning')
     dev_count = sum(1 for s in segments if s['skill'].lower() == 'dev')
+    dev_ai_count = sum(1 for s in segments if s['skill'].lower() == 'dev-ai' and not s.get('synthetic'))
 
     cost_str = '—'
     if total_tokens is not None:
@@ -212,17 +285,26 @@ def _build_html(
     svg = _build_svg_bars(segments, total_sec)
 
     # Timeline table rows
+    has_synthetic = any(s.get('synthetic') for s in segments)
     rows = []
     for seg in segments:
-        tok = '—'
-        pct = '—'
-        if total_tokens is not None and total_sec > 0:
+        delta = seg.get('token_delta')
+        if delta is not None:
+            tok = f'{delta:,}'
+            pct = f'{delta / total_tokens * 100:.1f}%' if total_tokens else '—'
+        elif total_tokens is not None and total_sec > 0:
             est = int(total_tokens * (seg['duration_sec'] / total_sec))
-            tok = f'{est:,}'
+            tok = f'~{est:,}'
             pct = f'{seg["duration_sec"] / total_sec * 100:.1f}%'
+        else:
+            tok = '—'
+            pct = '—'
+        label = f'/{seg["skill"]}'
+        if seg.get('synthetic'):
+            label += ' *'
         rows.append(
             f'<tr>'
-            f'<td style="color:{_color(seg["skill"])};font-weight:bold">/{seg["skill"]}</td>'
+            f'<td style="color:{_color(seg["skill"])};font-weight:bold">{label}</td>'
             f'<td>{seg["start"].strftime("%H:%M:%S")}</td>'
             f'<td>{_fmt_duration(seg["duration_sec"])}</td>'
             f'<td>{tok}</td>'
@@ -295,8 +377,9 @@ def _build_html(
       {rows_html}
     </tbody>
   </table>
-  <div class="disclaimer">Token per agent = time-proportion approximation.
-  Claude Code does not expose per-call token counts.</div>
+  <div class="disclaimer">Tokens per agent computed from cumulative session_end entries at segment boundaries.<br>
+  * = synthetic /dev-ai segment (no agent_start recorded — continuation session; estimated from session_end data).<br>
+  ~ = time-proportion fallback (used when session_end data is unavailable).</div>
 </div>
 
 <div class="card">
@@ -304,6 +387,7 @@ def _build_html(
   <div class="changes-row">
     <div class="change-chip">/planning invocations: {planning_count}</div>
     <div class="change-chip">/dev invocations: {dev_count}</div>
+    <div class="change-chip">/dev-ai invocations: {dev_ai_count}</div>
   </div>
   <p style="margin-top:12px;font-size:0.9rem;color:#444;">Notes: {notes_display}</p>
 </div>

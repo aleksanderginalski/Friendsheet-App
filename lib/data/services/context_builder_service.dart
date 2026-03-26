@@ -132,8 +132,9 @@ class ContextBuilderService {
         if (participants.isNotEmpty) sb.write(': participants [$participants]');
         if (activities.isNotEmpty) sb.write(', activities [$activities]');
         // Only include notes when explicitly requested (Mode 1 — meeting notes collection).
-        if (includeNotes && m.notes.isNotEmpty)
+        if (includeNotes && m.notes.isNotEmpty) {
           sb.write(', notes: [${m.notes.join('; ')}]');
+        }
         buffer.writeln(sb.toString());
       }
     }
