@@ -312,7 +312,7 @@ void main() {
         personIdToPseudonym: const {'p1': 'Friend_A'},
       );
 
-      final output = service.serializeToPrompt(ctx);
+      final output = service.serializeToPrompt(ctx, includeNotes: true);
 
       expect(output, contains('Lunch on 05 Mar 2026'));
       expect(output, contains('participants [Friend_A]'));

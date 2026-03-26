@@ -53,12 +53,14 @@ is sent to **OpenAI's API** on your behalf. This data is prepared on-device and 
 before sending:
 
 **Always sent to OpenAI (when you use the AI Assistant):**
-- Meeting list: name, date, activity categories, and notes for each meeting in the last 12 months
+- Meeting list: name, date, and activity categories for each meeting in the last 12 months
 - Social graph summary: meeting counts per friend, last meeting date, most common activities, most active month
 - All friend names are replaced with generic identifiers (Friend_A, Friend_B, ...) before
   the data leaves your device — OpenAI never receives real names
-- Meeting notes (if any) are included as part of the meeting context — they help the AI give
-  personalised answers about your social history
+
+**Sent only when you explicitly enter notes collection mode (Mode 1):**
+- Meeting notes — only when you open the AI Assistant specifically to add or review notes
+  for a meeting. Notes are never sent during free queries (Mode 3) or friend-context queries (Mode 2).
 
 **Never sent to OpenAI:**
 - Your real name or your friends' real names

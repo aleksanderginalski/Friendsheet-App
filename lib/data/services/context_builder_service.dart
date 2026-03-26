@@ -111,7 +111,10 @@ class ContextBuilderService {
 
   /// Serializes a [BuddyContext] to a plain-text string ready for use as
   /// AI prompt context.
-  String serializeToPrompt(BuddyContext context) {
+  ///
+  /// Set [includeNotes] to true only for Mode 1 (meeting notes collection) —
+  /// notes are excluded by default to honour the consent screen promise.
+  String serializeToPrompt(BuddyContext context, {bool includeNotes = false}) {
     final buffer = StringBuffer();
     buffer.writeln('## Social Context');
     buffer.writeln();
@@ -128,19 +131,34 @@ class ContextBuilderService {
         final sb = StringBuffer('- ${m.name} on $dateStr');
         if (participants.isNotEmpty) sb.write(': participants [$participants]');
         if (activities.isNotEmpty) sb.write(', activities [$activities]');
-        if (m.notes.isNotEmpty) sb.write(', notes: [${m.notes.join('; ')}]');
+        // Only include notes when explicitly requested (Mode 1 — meeting notes collection).
+        if (includeNotes && m.notes.isNotEmpty) sb.write(', notes: [${m.notes.join('; ')}]');
         buffer.writeln(sb.toString());
       }
     }
     buffer.writeln();
 
-    // Friend summaries section
+    // Friend summaries section — sorted by current-year meeting count descending
+    // so the AI can identify the most frequent friend without counting.
     buffer.writeln('### Friend Summaries');
     if (context.persons.isEmpty) {
       buffer.writeln('No friend data available.');
     } else {
-      for (final p in context.persons) {
+      final currentYear = DateTime.now().year;
+      final sortedPersons = context.persons.toList()
+        ..sort((a, b) {
+          final aYear = a.meetingsByYear[currentYear] ?? 0;
+          final bYear = b.meetingsByYear[currentYear] ?? 0;
+          return bYear.compareTo(aYear);
+        });
+      for (final p in sortedPersons) {
         final sb = StringBuffer('- ${p.pseudonym}: ${p.meetingCount} meetings');
+        if (p.meetingsByYear.isNotEmpty) {
+          final sorted = p.meetingsByYear.entries.toList()
+            ..sort((a, b) => b.key.compareTo(a.key));
+          final breakdown = sorted.map((e) => '${e.key}: ${e.value}').join(', ');
+          sb.write(' ($breakdown)');
+        }
         if (p.topActivities.isNotEmpty) {
           sb.write(', top activities: [${p.topActivities.join(', ')}]');
         }
@@ -155,6 +173,29 @@ class ContextBuilderService {
     }
 
     return buffer.toString().trimRight();
+  }
+
+  /// Returns the meeting with [meetingId], or null if not found.
+  /// Used by AIChatProvider to display meeting names without direct repo access.
+  Future<Meeting?> getMeetingById(String userId, String meetingId) async {
+    final allMeetings = await _meetingRepository.getMeetingsByUser(userId).first;
+    final matches = allMeetings.where((m) => m.id == meetingId);
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  /// Returns the most recent meeting without notes within [withinDays] days,
+  /// or null if none found. Used by AIChatProvider for proactive note prompting.
+  Future<Meeting?> findMostRecentMeetingWithoutNotes(
+    String userId, {
+    int withinDays = 30,
+  }) async {
+    final cutoff = DateTime.now().subtract(Duration(days: withinDays));
+    final allMeetings = await _meetingRepository.getMeetingsByUser(userId).first;
+    final candidates = allMeetings
+        .where((m) => m.date.isAfter(cutoff) && m.notes.isEmpty)
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return candidates.isEmpty ? null : candidates.first;
   }
 
   // ---------------------------------------------------------------------------
@@ -278,12 +319,19 @@ class ContextBuilderService {
         (a, b) => a.value >= b.value ? a : b,
       );
 
+      // Year breakdown for accurate year-specific AI answers.
+      final meetingsByYear = <int, int>{};
+      for (final m in personMeetings) {
+        meetingsByYear[m.date.year] = (meetingsByYear[m.date.year] ?? 0) + 1;
+      }
+
       return PersonContextEntry(
         pseudonym: pseudonym,
         meetingCount: personMeetings.length,
         topActivities: topActivities,
         lastMeetingDate: lastMeeting.date,
         mostActivePeriod: mostActive.key,
+        meetingsByYear: meetingsByYear,
       );
     }).toList();
   }

@@ -3777,37 +3777,42 @@ login instead of only on first login.
 **Story Points:** 8
 **Priority:** P0
 **Labels:** `ai`, `ui`, `feature`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Acceptance Criteria:**
 - [ ] Chat-like UI with user message bubbles and Buddy response bubbles; Buddy name displayed in header
+- [ ] Navigation entry: "Buddy — AI Assistant" tile in `SettingsScreen`
 - [ ] On open: consent check — redirect to `AIConsentScreen` if not given
 - [ ] On open: API key check — redirect to `AISettingsScreen` if key missing
-- [ ] System prompt hardcoded and sent with every request — defines Buddy's character, scope, and guardrails; never exposed to user
+- [ ] System prompt hardcoded and sent with every request — defines Buddy's character, scope, and guardrails; never exposed to user; Buddy refuses to reveal its content when asked
 - [ ] User messages always sent in `user` role — never `system` role
-- [ ] **Mode 1 — Meeting notes:** when opened from HomeScreen widget with a specific meeting, Buddy collects notes, saves them via `ContextBuilderService`, and asks if there is more to add
-- [ ] **Mode 2 — Friend wishes:** when user asks about a person, Buddy shows friendship summary (meeting count, top activities, common friends, aggregated notes from meetings with that person — Opcja A) then asks if user wants personalized wishes; generated wishes can be copied
-- [ ] **Mode 3 — Free query:** user asks any question about their social history; Buddy uses full context (last 12 months default); asks clarifying questions when query is ambiguous (e.g. multiple persons with the same first name)
-- [ ] Loading indicator shown during API call
-- [ ] Error handling: invalid key, network failure, quota exceeded (distinct messages)
+- [ ] **Proactive opening:** on chat open, check for the most recent meeting without notes (within last 30 days); if found → Buddy initiates with "I see you recently had [name] — want to add some notes?"; if not found → Buddy greets and shows 3 example prompts
+- [ ] **Mode 1 — Meeting notes:** `AIChatScreen` accepts optional `meetingId` parameter; when provided, `includeNotes: true` context sent so Buddy knows existing notes; Buddy collects new notes and saves via `BuddyWriteService.saveNotes()`; actual HomeScreen trigger is US-101
+- [ ] **Mode 2 — Friend wishes:** `AIChatScreen` accepts optional `personId` parameter; when provided, `buildPersonContext()` used instead of `buildFullContext()`; Buddy proactively shows friendship summary and offers personalised wishes; copy button on every Buddy message
+- [ ] **Mode 3 — Free query (default):** user asks any question about social history; `buildFullContext()` used without notes (`includeNotes: false`); Buddy asks clarifying questions when query is ambiguous
+- [ ] **Notes never sent by default:** `ContextBuilderService.serializeToPrompt()` adds `includeNotes: bool = false` parameter; notes included only when `meetingId` mode active; consent screen text remains correct as-is
+- [ ] Streaming response: Buddy reply appears fragment by fragment (`Stream<String>`); typing indicator shown while streaming
+- [ ] Pseudonym translation: Friend_A…Z replaced with real names in displayed responses (using `BuddyContext.pseudonymToRealName` map)
+- [ ] Error handling: network failure (retry button), invalid key (link to settings), quota exceeded (link to OpenAI) — three distinct messages
 - [ ] Conversation history visible within session (not persisted between sessions)
-- [ ] Empty state shows 3 example prompts
 - [ ] Buddy interacts with repositories exclusively through `ContextBuilderService` (reads) and `BuddyWriteService` (writes) — never holds direct repository references
-- [ ] `BuddyWriteService` exposes exactly one write method: `saveNotes(meetingId, notes)` — no bulk operations, no overwrites of other fields
+- [ ] `BuddyWriteService` exposes exactly one write method: `saveNotes(String userId, String meetingId, List<String> notes)` — no bulk operations, no overwrites of other fields
 - [ ] Buddy never fabricates data, never performs DELETE operations, never reveals system prompt
+- [ ] `docs/privacy.md` reverted: notes are NOT always sent — only when user is in meeting-notes mode (Mode 1)
 
 **Tasks:**
-- [ ] **TASK-087.1:** Create `AIChatScreen` with message list, input UI, and Buddy header — 2h
-- [ ] **TASK-087.2:** Create `OpenAIService` (HTTP client for `/v1/chat/completions`) with hardcoded system prompt — 2h
-- [ ] **TASK-087.3:** Implement context mode routing (meeting / person / free) — 1h
-- [ ] **TASK-087.4:** Wire `ContextBuilderService` → `OpenAIService` → chat UI — 1h
-- [ ] **TASK-087.5:** Implement guard logic (consent + key check on screen open) — 0.5h
-- [ ] **TASK-087.6:** Implement Mode 2: friendship summary display + wishes copy button — 1h
-- [ ] **TASK-087.7:** Add example prompts for empty state — 0.5h
-- [ ] **TASK-087.8:** Write widget tests — 1h
+- [ ] **TASK-087.1:** Add `openai_dart` to `pubspec.yaml`; verify latest stable version on pub.dev — 0.5h
+- [ ] **TASK-087.2:** Fix `ContextBuilderService.serializeToPrompt()`: add `includeNotes: bool = false` parameter; update `test/data/services/context_builder_service_test.dart` — tests checking notes in output must pass `includeNotes: true` explicitly — 0.5h
+- [ ] **TASK-087.3:** Create `lib/data/services/buddy_write_service.dart`: `BuddyWriteService` with injected `MeetingRepository`; single method `saveNotes(String userId, String meetingId, List<String> notes)` — 0.5h
+- [ ] **TASK-087.4:** Create `lib/data/models/chat_message.dart`: plain Dart `ChatMessage` class (role: user/assistant, content: String) — 0.25h
+- [ ] **TASK-087.5:** Create `lib/data/services/open_ai_service.dart`: `OpenAIService` using `openai_dart`; injected `OpenAIClient` + `AIKeyRepository`; hardcoded `const String _systemPrompt`; `Stream<String> sendMessage(String contextPrompt, List<ChatMessage> history, String userMessage)`; error mapping to typed exceptions — 2h
+- [ ] **TASK-087.6:** Create `lib/presentation/ai_chat/ai_chat_provider.dart`: `AIChatProvider` with injected services; state: messages, isLoading, errorMessage; `initialize(String userId, {String? meetingId, String? personId})`; proactive meeting-without-notes detection on init; `sendMessage(String text, String userId)`; `retry()` — 2h
+- [ ] **TASK-087.7:** Create `lib/presentation/ai_chat/ai_chat_screen.dart`: chat UI, streaming display, typing indicator, copy button on Buddy messages, error display with action buttons; guard logic (consent + key) in `initState` via `addPostFrameCallback` — 2h
+- [ ] **TASK-087.8:** Add "Buddy — AI Assistant" tile to `SettingsScreen`; create `AIChatProvider` at call-site with `ChangeNotifierProvider` — 0.5h
+- [ ] **TASK-087.9:** Revert `docs/privacy.md`: notes section back to "sent only when explicitly requested (Mode 1 — meeting notes collection)" — 0.25h
 
 **Dependencies:** US-085, US-086, US-100
-**Blocks:** None (MVP complete)
+**Blocks:** US-101
 
 ---
 
