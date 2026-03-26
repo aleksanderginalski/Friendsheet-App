@@ -103,7 +103,8 @@ class AIChatProvider extends ChangeNotifier {
       );
 
       // History = all messages except the initial Buddy greeting (index 0).
-      final history = _messages.length > 1 ? _messages.sublist(1) : <ChatMessage>[];
+      final history =
+          _messages.length > 1 ? _messages.sublist(1) : <ChatMessage>[];
 
       final buffer = StringBuffer();
       await for (final chunk in _openAIService.sendMessage(

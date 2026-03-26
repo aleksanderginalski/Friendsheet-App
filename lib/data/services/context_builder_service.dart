@@ -132,7 +132,8 @@ class ContextBuilderService {
         if (participants.isNotEmpty) sb.write(': participants [$participants]');
         if (activities.isNotEmpty) sb.write(', activities [$activities]');
         // Only include notes when explicitly requested (Mode 1 — meeting notes collection).
-        if (includeNotes && m.notes.isNotEmpty) sb.write(', notes: [${m.notes.join('; ')}]');
+        if (includeNotes && m.notes.isNotEmpty)
+          sb.write(', notes: [${m.notes.join('; ')}]');
         buffer.writeln(sb.toString());
       }
     }
@@ -156,7 +157,8 @@ class ContextBuilderService {
         if (p.meetingsByYear.isNotEmpty) {
           final sorted = p.meetingsByYear.entries.toList()
             ..sort((a, b) => b.key.compareTo(a.key));
-          final breakdown = sorted.map((e) => '${e.key}: ${e.value}').join(', ');
+          final breakdown =
+              sorted.map((e) => '${e.key}: ${e.value}').join(', ');
           sb.write(' ($breakdown)');
         }
         if (p.topActivities.isNotEmpty) {
@@ -178,7 +180,8 @@ class ContextBuilderService {
   /// Returns the meeting with [meetingId], or null if not found.
   /// Used by AIChatProvider to display meeting names without direct repo access.
   Future<Meeting?> getMeetingById(String userId, String meetingId) async {
-    final allMeetings = await _meetingRepository.getMeetingsByUser(userId).first;
+    final allMeetings =
+        await _meetingRepository.getMeetingsByUser(userId).first;
     final matches = allMeetings.where((m) => m.id == meetingId);
     return matches.isEmpty ? null : matches.first;
   }
@@ -190,7 +193,8 @@ class ContextBuilderService {
     int withinDays = 30,
   }) async {
     final cutoff = DateTime.now().subtract(Duration(days: withinDays));
-    final allMeetings = await _meetingRepository.getMeetingsByUser(userId).first;
+    final allMeetings =
+        await _meetingRepository.getMeetingsByUser(userId).first;
     final candidates = allMeetings
         .where((m) => m.date.isAfter(cutoff) && m.notes.isEmpty)
         .toList()

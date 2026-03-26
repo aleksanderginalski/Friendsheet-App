@@ -28,6 +28,42 @@ void main() {
         value: 'sk-abc1234',
       )).called(1);
     });
+
+    test('strips leading and trailing whitespace before saving', () async {
+      when(mockStorage.write(key: anyNamed('key'), value: anyNamed('value')))
+          .thenAnswer((_) async {});
+
+      await repository.saveKey('  sk-abc1234  ');
+
+      verify(mockStorage.write(
+        key: 'openai_api_key',
+        value: 'sk-abc1234',
+      )).called(1);
+    });
+
+    test('strips \\r\\n line-break characters before saving', () async {
+      when(mockStorage.write(key: anyNamed('key'), value: anyNamed('value')))
+          .thenAnswer((_) async {});
+
+      await repository.saveKey('sk-abc1234\r\n');
+
+      verify(mockStorage.write(
+        key: 'openai_api_key',
+        value: 'sk-abc1234',
+      )).called(1);
+    });
+
+    test('strips embedded newlines before saving', () async {
+      when(mockStorage.write(key: anyNamed('key'), value: anyNamed('value')))
+          .thenAnswer((_) async {});
+
+      await repository.saveKey('sk-abc\n1234');
+
+      verify(mockStorage.write(
+        key: 'openai_api_key',
+        value: 'sk-abc1234',
+      )).called(1);
+    });
   });
 
   group('loadKey', () {

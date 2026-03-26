@@ -364,5 +364,99 @@ void main() {
       expect(output, isNot(contains('top activities:')));
       expect(output, contains('Friend_A: 2 meetings'));
     });
+
+    test('includes meetingsByYear breakdown in output', () {
+      const ctx = BuddyContext(
+        meetings: [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 8,
+            topActivities: [],
+            meetingsByYear: {2025: 5, 2026: 3},
+          ),
+        ],
+        pseudonymToRealName: {},
+        personIdToPseudonym: {},
+      );
+
+      final output = service.serializeToPrompt(ctx);
+
+      // Breakdown must appear, newest year first.
+      expect(output, contains('2026: 3'));
+      expect(output, contains('2025: 5'));
+      final idx2026 = output.indexOf('2026: 3');
+      final idx2025 = output.indexOf('2025: 5');
+      expect(idx2026, lessThan(idx2025));
+    });
+
+    test('sorts persons by current-year meeting count descending', () {
+      final currentYear = DateTime.now().year;
+      final ctx = BuddyContext(
+        meetings: const [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_B',
+            meetingCount: 2,
+            topActivities: const [],
+            meetingsByYear: {currentYear: 2},
+          ),
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 5,
+            topActivities: const [],
+            meetingsByYear: {currentYear: 5},
+          ),
+        ],
+        pseudonymToRealName: const {},
+        personIdToPseudonym: const {},
+      );
+
+      final output = service.serializeToPrompt(ctx);
+
+      // Friend_A (5 meetings this year) must appear before Friend_B (2).
+      final idxA = output.indexOf('Friend_A');
+      final idxB = output.indexOf('Friend_B');
+      expect(idxA, lessThan(idxB));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // buildFullContext — meetingsByYear populated
+  // ---------------------------------------------------------------------------
+
+  group('meetingsByYear', () {
+    test('populates meetingsByYear on PersonContextEntry', () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockMeetingRepo.getMeetingsByUser('user-1')).thenAnswer(
+        (_) => Stream.value([
+          makeMeeting(
+              id: 'm1',
+              date: DateTime(2025, 6, 1),
+              participantIds: ['p1'],
+              categoryIds: []),
+          makeMeeting(
+              id: 'm2',
+              date: DateTime(2025, 8, 1),
+              participantIds: ['p1'],
+              categoryIds: []),
+          makeMeeting(
+              id: 'm3',
+              date: DateTime(2026, 1, 10),
+              participantIds: ['p1'],
+              categoryIds: []),
+        ]),
+      );
+
+      final ctx =
+          await service.buildFullContext('user-1', from: DateTime(2024, 1, 1));
+
+      final p = ctx.persons.first;
+      expect(p.meetingsByYear[2025], 2);
+      expect(p.meetingsByYear[2026], 1);
+    });
   });
 }

@@ -30,21 +30,19 @@ class ChatBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.78,
         ),
         decoration: BoxDecoration(
-          color: _isUser
-              ? const Color(0xFF4CAF50)
-              : Colors.grey.shade200,
+          color: _isUser ? const Color(0xFF4CAF50) : Colors.grey.shade200,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
-            bottomLeft: _isUser
-                ? const Radius.circular(16)
-                : const Radius.circular(4),
-            bottomRight: _isUser
-                ? const Radius.circular(4)
-                : const Radius.circular(16),
+            bottomLeft:
+                _isUser ? const Radius.circular(16) : const Radius.circular(4),
+            bottomRight:
+                _isUser ? const Radius.circular(4) : const Radius.circular(16),
           ),
         ),
-        child: _isUser ? _UserContent(content: content) : _BuddyContent(content: content, isLoading: isLoading),
+        child: _isUser
+            ? _UserContent(content: content)
+            : _BuddyContent(content: content, isLoading: isLoading),
       ),
     );
   }
@@ -80,13 +78,16 @@ class _BuddyContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 4),
+          padding:
+              const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 4),
           child: MarkdownBody(
             data: content,
             styleSheet: MarkdownStyleSheet(
               p: const TextStyle(color: Colors.black87, fontSize: 14),
-              strong: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-              em: const TextStyle(color: Colors.black87, fontStyle: FontStyle.italic),
+              strong: const TextStyle(
+                  color: Colors.black87, fontWeight: FontWeight.bold),
+              em: const TextStyle(
+                  color: Colors.black87, fontStyle: FontStyle.italic),
             ),
             shrinkWrap: true,
           ),

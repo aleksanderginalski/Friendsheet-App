@@ -58,7 +58,8 @@ class OpenAIService {
       if (_injectedClient == null) ownedClient = client;
 
       final items = <openai.Item>[
-        openai.MessageItem.userText('Here is my social context:\n$contextPrompt'),
+        openai.MessageItem.userText(
+            'Here is my social context:\n$contextPrompt'),
         ...history.map(_toMessageItem),
         openai.MessageItem.userText(userMessage),
       ];

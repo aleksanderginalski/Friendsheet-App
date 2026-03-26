@@ -62,8 +62,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
-            create: (_) =>
-                AISettingsProvider(repository: AIKeyRepository()),
+            create: (_) => AISettingsProvider(repository: AIKeyRepository()),
             child: const AISettingsScreen(),
           ),
         ),
