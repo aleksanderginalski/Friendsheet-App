@@ -13,7 +13,7 @@
 | M4 | Google Play Release | ✅ Completed |
 | M5 | Meeting Import Hub | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
-| M7 | AI Assistant | 💡 Future |
+| M7 | AI Assistant | 🔄 In Progress |
 
 **M2 — Management & CRUD:** Full CRUD for meetings, persons and activities. Meetings list grouped by year and month. Activity categories with icons and 2-level hierarchy. Friend groups for organising contacts.
 
@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Natural language queries about social data. LLM API selection requires cost/privacy spike first.
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, three interaction modes (meeting notes, friend context, free query), pseudonym back-translation, and write isolation via `BuddyWriteService`. Foundation services (`ContextBuilderService`, `OpenAIService`) operational. Remaining US: proactive HomeScreen widget (US-101), relationship score (US-107), sentiment analysis (US-108), annual report (US-106).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (650)
+✅ All tests passing (760)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,11 +174,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.3.0 — US-086: Statistics Context Builder (March 25, 2026)
-- ✅ `lib/data/models/buddy_context.dart` (NEW) — `BuddyContext`, `MeetingContextEntry`, `PersonContextEntry` plain Dart models for in-memory AI context
-- ✅ `lib/data/services/context_builder_service.dart` (NEW) — `ContextBuilderService`: pseudonymization (Friend_A…), `buildFullContext()`, `buildPersonContext()`, `serializeToPrompt()`
-- ✅ `docs/privacy.md` (MODIFIED) — section 2.5 updated: meeting notes always included in AI context
-- ✅ 721 Flutter tests passing (+11 new tests)
+### Latest: v4.4.0 — US-087: Buddy AI Chat Screen (March 26, 2026)
+- ✅ `lib/data/services/open_ai_service.dart` (NEW) — `OpenAIService`: OpenAI Responses API streaming client with typed error mapping (`AINetworkException`, `AIInvalidKeyException`, `AIQuotaExceededException`)
+- ✅ `lib/data/services/buddy_write_service.dart` (NEW) — `BuddyWriteService`: single write surface for AI (`saveNotes` only — enforces write isolation principle)
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (NEW) — `AIChatProvider`: three-mode chat session management with streaming, pseudonym back-translation, and proactive notes detection
+- ✅ `lib/presentation/ai_chat/ai_chat_screen.dart` (NEW) + `chat_bubble.dart` (NEW) — full Buddy chat UI with markdown rendering (`flutter_markdown`), typing indicator, and error recovery actions
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `serializeToPrompt()` adds `includeNotes: bool = false`; notes sent only in Mode 1 (meeting notes)
+- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — "Buddy — AI Assistant" navigation entry added
+- ✅ 760 Flutter tests passing (+30 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

@@ -1391,3 +1391,81 @@ the collection group path while allowing the single intended mutation.
 
 ---
 
+## Pattern: API Key Sanitization on Save (US-087)
+
+Always strip `\r\n` whitespace from user-pasted API keys before storing them.
+Copy-paste from browsers or terminals often appends invisible trailing newlines
+that cause authentication failures not visible in masked UI.
+
+```dart
+// lib/data/repositories/ai_key_repository.dart
+
+Future<void> saveKey(String key) async {
+  // Strip whitespace/newlines introduced by copy-paste
+  final sanitized = key.trim().replaceAll(RegExp(r'[\r\n]'), '');
+  await _storage.write(key: _storageKey, value: sanitized);
+}
+```
+
+Rule: always sanitize before storage, not before validation — the raw key may
+appear valid on-screen (masked) while containing invisible control characters.
+
+---
+
+## Pattern: Pseudonym Back-Translation (US-087)
+
+When sending pseudonymized context to an LLM and displaying the response to the user,
+translate pseudonyms back to real names in the displayed text.
+The pseudonym map lives in `BuddyContext` — never pass real names outbound.
+
+```dart
+// lib/presentation/ai_chat/ai_chat_provider.dart
+
+String _translatePseudonyms(String text, Map<String, String> pseudonymToReal) {
+  // Sort by pseudonym length descending to avoid partial replacements
+  // (e.g. "Friend_A" must not partially match before "Friend_AB")
+  final sorted = pseudonymToReal.keys.toList()
+    ..sort((a, b) => b.length.compareTo(a.length));
+
+  var result = text;
+  for (final pseudonym in sorted) {
+    result = result.replaceAll(pseudonym, pseudonymToReal[pseudonym]!);
+  }
+  return result;
+}
+```
+
+Rule: always sort replacement keys longest-first to prevent shorter keys from
+matching inside longer ones. This guarantees deterministic back-translation
+regardless of how many pseudonyms are in the map.
+
+---
+
+## Pattern: Yearly Meeting Count in Context (US-087)
+
+When building AI context, include a yearly breakdown of meeting counts so the LLM
+can refer to historical trends without receiving unbounded historical data.
+
+```dart
+// lib/data/services/context_builder_service.dart
+
+// Build year → count map from the full meeting list
+final meetingsByYear = <int, int>{};
+for (final meeting in allMeetings) {
+  final year = meeting.date.year;
+  meetingsByYear[year] = (meetingsByYear[year] ?? 0) + 1;
+}
+
+// Serialize sorted by year descending for readability
+final yearLines = meetingsByYear.entries.toList()
+  ..sort((a, b) => b.key.compareTo(a.key));
+final yearSummary = yearLines
+  .map((e) => '  ${e.key}: ${e.value} meetings')
+  .join('\n');
+```
+
+Rule: sort yearly output descending (most recent first) — LLMs weight earlier
+tokens more heavily; putting the most relevant years at the top improves response quality.
+
+---
+
