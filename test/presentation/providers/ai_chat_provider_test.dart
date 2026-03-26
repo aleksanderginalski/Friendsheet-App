@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/ai_exceptions.dart';
 import 'package:friendsheet/data/models/buddy_context.dart';
-import 'package:friendsheet/data/models/chat_message.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/services/buddy_write_service.dart';
 import 'package:friendsheet/data/services/context_builder_service.dart';
@@ -305,7 +304,7 @@ void main() {
       when(mockContextBuilder.getMeetingById(any, any))
           .thenAnswer((_) async => makeMeeting());
       when(mockBuddyWrite.saveNotes(any, any, any))
-          .thenAnswer((_) async => null);
+          .thenAnswer((_) async {});
 
       await provider.initialize('user-1', meetingId: 'm1');
       await provider.saveNotes(['note 1', 'note 2']);
