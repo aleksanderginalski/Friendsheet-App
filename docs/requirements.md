@@ -13,6 +13,7 @@
 - v2.3 — FR-029 added: Person Meetings List (US-099); FR-030 added: Delete Received Package (US-098)
 - v2.4 — FR-031 implemented: Meeting Notes as `List<String>` (US-100)
 - v2.5 — FR-025 partially implemented: AI Chat Screen (Buddy) delivered (US-087); consent flow (US-085), API key management (US-088), context builder (US-086) all ✅
+- v2.6 — FR-033 added: Tool Calling (US-110) — Buddy queries only relevant data via OpenAI function calling, supports arbitrary date ranges; FR-034 added: Offline-First Mode (US-111) — full CRUD available offline via Firestore SDK write queue + Hive cache (US-109)
 
 ---
 
@@ -519,6 +520,35 @@ User can store a friend's birthday in their Person profile. Buddy uses this to s
 
 ---
 
+### FR-033: AI Tool Calling — Historical Queries
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+Buddy can answer questions about any time period using OpenAI tool calling (function calling). Instead of sending the full 12-month context in every request, Buddy requests only the data relevant to the user's question from the on-device cache.
+
+**Acceptance Criteria:**
+- User can ask Buddy about meetings from any year (e.g. "Summarise my relationship with Gosia in 2019")
+- Buddy fetches only relevant data per question — no full-context payload
+- When a person name is ambiguous, app shows a native disambiguation UI (not AI text)
+- Pseudonymization maintained: OpenAI never receives real names in tool call parameters
+
+---
+
+### FR-034: Offline-First Mode
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+User can browse and edit their data without an internet connection. Write operations are queued locally and synced automatically when connectivity returns.
+
+**Acceptance Criteria:**
+- All read screens (meetings, persons, statistics) load from on-device Hive cache immediately on app open
+- Add / edit / delete meetings and persons work offline; changes appear instantly in UI
+- Offline banner displayed when connectivity is lost; dismissed automatically on reconnect
+- Pending sync indicator shown when writes are queued and not yet confirmed by Firestore
+- Online-only features (Buddy AI chat, Google Calendar import) display informative message when offline
+
+---
+
 ## 10. Non-Functional Requirements
 
 ### NFR-001: Data Storage
@@ -553,12 +583,15 @@ User can store a friend's birthday in their Person profile. Buddy uses this to s
 - Meeting sharing: user explicitly initiates, no automatic data sharing; notes never included in shared packages
 
 ### NFR-005: Offline Availability
-- Firestore offline persistence enabled
-- Authenticated users can access cached data without internet
+- Firestore offline persistence enabled; write operations queued on-disk by SDK and replayed automatically on reconnect
+- All read screens (meetings, persons, statistics, activities) available offline via Hive `LocalCacheService` (US-109)
+- Add / edit / delete meetings and persons available offline — Firestore SDK queues writes (US-111)
 - New authentication requires internet connection
-- Statistics computed from cached data when offline
+- Statistics computed from Hive cache when offline
 - Export available offline (uses local cache)
-- Calendar and Photos import require active internet connection
+- Calendar import, Google Sign-In, and Buddy AI chat require active internet connection
+- Offline banner shown automatically when connectivity is lost; dismissed on reconnect (US-111)
+- Pending sync indicator shown when Firestore has queued writes not yet confirmed (US-111)
 
 ### NFR-006: Compatibility
 - Android API Level 21+ (Android 5.0)

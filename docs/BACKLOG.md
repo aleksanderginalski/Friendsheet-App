@@ -3774,7 +3774,7 @@ login instead of only on first login.
 **I want to** talk with Buddy — a friendly AI assistant that knows my social history
 **So that** I can add meeting notes, get personalized friend summaries, and explore my social data through natural conversation
 
-**Story Points:** 8
+**Story Points:** 13
 **Priority:** P0
 **Labels:** `ai`, `ui`, `feature`
 **Status:** ✅ COMPLETED (March 26, 2026)
@@ -4058,6 +4058,8 @@ login instead of only on first login.
 - [ ] **TASK-106.4:** Add share button to report message bubble — 1h
 - [ ] **TASK-106.5:** Write tests — 2h
 
+**Note:** After US-110 (Tool Calling) is implemented, TASK-106.2 should be replaced with tool-calling-based data fetching instead of `ContextBuilderService` year-scoped context — enables querying full history without token limits.
+
 **Dependencies:** US-086, US-087
 **Blocks:** None
 
@@ -4120,41 +4122,128 @@ login instead of only on first login.
 - [ ] **TASK-108.3:** Implement sparse-data guard (< 3 notes → graceful message) — 0.5h
 - [ ] **TASK-108.4:** Write tests for sparse-data guard and context inclusion — 1.5h
 
-**Dependencies:** US-086, US-087, US-100
+**Dependencies:** US-086, US-087, US-100, US-109
 **Blocks:** None
 
 ---
 
-### US-109: Local Data Cache Investigation & Implementation
+### US-109: Local Data Cache (Hive)
 
 **As a** user
-**I want** the app to load meetings, persons, and activity categories from a local cache
-**So that** the app feels instant on every open and works reliably offline without repeatedly querying Firestore
+**I want** the app to load meetings, persons, and activity categories from a local Hive cache
+**So that** data is available instantly on screen open and tool calls during AI chat never require Firestore round-trips
 
 **Story Points:** 8
 **Priority:** P1
-**Labels:** `infrastructure`, `performance`, `offline`
+**Labels:** `infrastructure`, `performance`, `offline`, `ai`
 **Status:** 📋 Planned
 
 **Context:**
-Firestore SDK provides basic offline persistence, but it does not guarantee instant reads on app start — it first checks the network, then falls back to cache. This US investigates adding an explicit local cache layer (Hive or Drift) for the three most-read collections: `meetings`, `persons`, `activity_categories`. Goal: data visible immediately on screen open, Firestore sync happens in background.
+Spike completed (March 2026 discovery session). Decision: **Hive** (already in project for statistics cache). Max dataset: ~10,000 meetings × 500 B + 250 persons = ~5 MB — trivially fits in device memory and on disk. In-memory filtering in Dart is faster than any Firestore query at this scale. Drift/SQLite would be overkill. This US is a prerequisite for US-110 (Tool Calling) — `LocalCacheService` exposes typed read methods that tool calls use to query data without hitting Firestore.
 
 **Acceptance Criteria:**
-- [ ] Spike completed: decision documented (Hive vs Drift vs Firestore offline-only) with rationale
-- [ ] If caching layer added: meetings, persons, and activity_categories loaded from local cache on first render; Firestore stream updates cache in background
-- [ ] If caching layer added: cache invalidation triggered on any write (create / update / delete) — stale data never shown after user action
-- [ ] No visible regression in existing functionality (all current tests pass)
-- [ ] Cache is user-scoped — switching accounts clears cache
+- [ ] On app start, all meetings/persons/activity_categories are loaded from Firestore into Hive cache asynchronously without blocking UI
+- [ ] After any write operation (add/edit/delete meeting or person), local cache is updated immediately (write-through) — no stale data after user action
+- [ ] `LocalCacheService` exposes typed read methods: `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getPersonSummary`, `getAllPersons`, `getMeetingNotes`
+- [ ] Cache is user-scoped — cleared on logout and account switch
+- [ ] Cache survives app restart (Hive persists to disk)
+- [ ] No visible UI changes for end user
+- [ ] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-109.1:** Spike — evaluate Hive vs Drift vs Firestore offline persistence; document decision in `docs/architecture.md` — 2h
-- [ ] **TASK-109.2:** (If caching layer chosen) Add chosen package and configure initialization — 1h
-- [ ] **TASK-109.3:** Implement cache read/write for `meetings` — 2h
-- [ ] **TASK-109.4:** Implement cache read/write for `persons` — 1h
-- [ ] **TASK-109.5:** Implement cache read/write for `activity_categories` — 1h
-- [ ] **TASK-109.6:** Implement cache clear on account switch / logout — 0.5h
+- [ ] **TASK-109.1:** Configure Hive boxes for meetings/persons/activity_categories — 1h
+- [ ] **TASK-109.2:** Implement sync on app start: load all from Firestore → write to Hive — 2h
+- [ ] **TASK-109.3:** Implement write-through: update cache after every repository write — 2h
+- [ ] **TASK-109.4:** Implement `LocalCacheService` with 6 typed read methods — 2h
+- [ ] **TASK-109.5:** Implement cache clear on logout / account switch — 0.5h
+- [ ] **TASK-109.6:** Audit one-shot Firestore reads (`Future<>`-based `.get()` calls) across repositories and providers; migrate top 2–3 highest-frequency paths to `LocalCacheService`; add `// Firestore-primary: stream-based` comment to stream-driven reads — 2h
 
 **Dependencies:** None
+**Blocks:** US-110, US-111
+
+---
+
+### US-110: Tool Calling + Person Disambiguation
+
+**As a** user
+**I want** Buddy to query only the data relevant to my question — including data from any time period
+**So that** I can ask about historical meetings (e.g. 2019) without Buddy being limited to the last 12 months, and without sending my entire database to OpenAI on every message
+
+**Story Points:** 13
+**Priority:** P2
+**Labels:** `ai`, `privacy`, `ux`
+**Status:** 📋 Planned
+
+**Context:**
+Currently `ContextBuilderService` sends all meetings from the last 12 months in every request, regardless of what the user asked. This approach cannot answer questions about older data and wastes tokens. Tool calling (OpenAI function calling) lets Buddy request only the data it needs for each question. Pseudonymization is preserved: OpenAI sees Friend_A aliases, the app resolves them to real personIds when executing tool calls. When a person name is ambiguous (e.g. "Małgorzata" matches two contacts), the app shows a native Flutter disambiguation bottom sheet — not a text prompt from the AI.
+
+**Acceptance Criteria:**
+- [ ] Buddy can answer questions about any date range, not limited to the last 12 months
+- [ ] Tool calls query `LocalCacheService` — no direct Firestore access during AI chat
+- [ ] Pseudonymization maintained: OpenAI requests data using Friend_A aliases; app resolves to real personId before querying cache
+- [ ] When a person name matches multiple contacts, app shows native disambiguation bottom sheet (Flutter UI, not AI text)
+- [ ] New conversation state `awaitingDisambiguation`: streaming paused, bottom sheet shown, resumed after user selection
+- [ ] User can cancel disambiguation — Buddy acknowledges and asks for clarification
+- [ ] Tools defined: `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getPersonSummary`
+- [ ] Person matching: exact match on firstName or nickname → auto-resolved; multiple matches → disambiguation
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-110.1:** Define tool schemas as JSON Schema (4 tools) — 1h
+- [ ] **TASK-110.2:** Handle `tool_calls` in OpenAI response — parse and dispatch in `AIChatProvider` — 2h
+- [ ] **TASK-110.3:** Implement tool execution: alias → LocalCacheService → result — 2h
+- [ ] **TASK-110.4:** Add `awaitingDisambiguation` state to `AIChatProvider` state machine — 1h
+- [ ] **TASK-110.5:** Implement `DisambiguationBottomSheet` — native Flutter, person list, cancel option — 2h
+- [ ] **TASK-110.6:** Resume tool call pipeline after user selection — 1h
+
+**Dependencies:** US-109
+**Blocks:** None
+
+---
+
+### US-111: Offline-First App
+
+**As a** user
+**I want** to browse my meetings, persons, and statistics without an internet connection
+**So that** I can use the app anywhere and trust that my data is always available, even without connectivity
+
+**Story Points:** 13
+**Priority:** P2
+**Labels:** `infrastructure`, `offline`, `ux`
+**Status:** 📋 Planned
+
+**Context:**
+Firestore SDK on Flutter mobile has built-in offline persistence enabled by default — write operations (add/edit/delete) are queued locally on disk and replayed automatically on reconnect. This US leverages that mechanism rather than building a custom write queue. The main work is: replacing stream-based reads with cache-first reads (using `LocalCacheService` from US-109), adding connectivity detection with UI indicators, and gracefully disabling online-only features (Buddy AI, Google Calendar) when offline. Single-user usage pattern (phone + emulator, never simultaneously) means write conflicts are not a concern.
+
+**Features available offline after this US:**
+- ✅ Browse meetings list and meeting details
+- ✅ Browse persons list and person profiles
+- ✅ View statistics (all years)
+- ✅ Add / edit / delete meetings and persons (Firestore SDK queues, syncs on reconnect)
+- ❌ Buddy AI chat (requires OpenAI API) — disabled with message
+- ❌ Google Calendar sync (requires Google API) — disabled with message
+- ❌ Google Sign-In on first launch (requires network)
+
+**Acceptance Criteria:**
+- [ ] App displays data immediately on screen open using `LocalCacheService` — no loading spinner for cached data
+- [ ] Firestore stream runs in background and updates cache silently; UI reflects changes without full reload
+- [ ] Offline banner visible at top of screen when connectivity is lost
+- [ ] Offline banner dismisses automatically when connectivity returns
+- [ ] Pending sync indicator shown when Firestore has queued writes not yet sent
+- [ ] Write operations (add/edit/delete) work while offline — changes visible immediately in UI via cache; synced to Firestore on reconnect
+- [ ] Online-only features (Buddy, Google Calendar) show "Requires internet connection" message when offline instead of crashing
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-111.1:** Verify Firestore offline persistence is enabled; add `Settings(persistenceEnabled: true)` if not explicit — 0.5h
+- [ ] **TASK-111.2:** Add `connectivity_plus` package; implement `ConnectivityService` singleton with `ValueNotifier<ConnectivityStatus>` — 1h
+- [ ] **TASK-111.3:** Replace stream-based reads on MeetingsList, PersonsList with cache-first pattern: load from `LocalCacheService` → render → Firestore stream updates cache in background — 3h
+- [ ] **TASK-111.4:** Implement offline banner widget (auto-shows/hides based on `ConnectivityService`) — 1h
+- [ ] **TASK-111.5:** Implement pending sync indicator — hook into Firestore pending writes state — 2h
+- [ ] **TASK-111.6:** Graceful degradation for online-only features: wrap Buddy entry points and Google Calendar with connectivity check + informative message — 1.5h
+- [ ] **TASK-111.7:** Write tests for connectivity state transitions and cache-first read paths — 2h
+
+**Dependencies:** US-109
 **Blocks:** None
 
 ---
