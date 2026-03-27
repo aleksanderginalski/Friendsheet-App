@@ -2,120 +2,182 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
+import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../ai_chat/ai_chat_screen.dart';
+import '../providers/buddy_widget_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../sharing/generate_sharing_token_screen.dart';
+import '../widgets/buddy_widget.dart';
 import '../widgets/build_meeting_base_cta_card.dart';
 import '../widgets/home_loading_screen.dart';
 import '../widgets/statistics_section.dart';
 import 'calendar_events_screen.dart';
 
-/// Home tab showing the onboarding CTA or statistics based on meeting count.
+/// Home tab showing statistics or the onboarding CTA, with a floating Buddy
+/// widget anchored at the bottom-left corner.
 ///
-/// Shows [OnboardingCalendarCtaCard] when the user has fewer than 50 meetings.
-/// Switches to [StatisticsSection] automatically once the threshold is reached.
-///
-/// [HomeProvider] is provided by the parent (MainScreen) following the
-/// Provider Navigation Pattern.
+/// [BuddyWidgetProvider], [HomeProvider], and [StatisticsProvider] are
+/// provided by MainScreen following the Provider Navigation Pattern.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<HomeProvider, StatisticsProvider>(
-      builder: (context, homeProvider, statsProvider, _) {
-        if (!homeProvider.isInitialized) {
-          return const Scaffold(
-            body: SafeArea(child: HomeLoadingScreen()),
-          );
-        }
-
-        if (homeProvider.shouldShowCta) {
-          return Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: BuildMeetingBaseCtaCard(
-                    onImport: () async {
-                      final calendarService = GoogleCalendarService();
-                      final isConnected = await calendarService.isConnected();
-                      if (!context.mounted) return;
-
-                      List<GoogleCalendar> calendars;
-                      if (isConnected) {
-                        calendars = await calendarService.fetchCalendars();
-                      } else {
-                        try {
-                          calendars = await calendarService.requestAccess();
-                        } catch (_) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Calendar access denied'),
-                            ),
-                          );
-                          return;
-                        }
-                      }
-
-                      if (!context.mounted) return;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CalendarEventsScreen(
-                            calendars: calendars,
-                            onReconnect: () async {
-                              try {
-                                final newCalendars =
-                                    await GoogleCalendarService()
-                                        .requestAccess();
-                                if (!context.mounted) return;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CalendarEventsScreen(
-                                      calendars: newCalendars,
-                                    ),
-                                  ),
-                                );
-                              } catch (_) {
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Calendar access denied'),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    onShareToken: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const GenerateSharingTokenScreen(),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-
-        // Existing statistics layout — unchanged.
-        return const Scaffold(
-          body: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: StatisticsSection(),
-            ),
-          ),
+    return Consumer<BuddyWidgetProvider>(
+      builder: (context, buddyProvider, _) {
+        return Consumer2<HomeProvider, StatisticsProvider>(
+          builder: (context, homeProvider, statsProvider, _) {
+            final bodyContent = _buildBodyContent(context, homeProvider);
+            return _buildScaffold(context, buddyProvider, bodyContent);
+          },
         );
       },
     );
   }
+
+  Widget _buildBodyContent(BuildContext context, HomeProvider homeProvider) {
+    if (!homeProvider.isInitialized) {
+      return const HomeLoadingScreen();
+    }
+
+    if (homeProvider.shouldShowCta) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: BuildMeetingBaseCtaCard(
+            onImport: () => _handleImport(context),
+            onShareToken: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const GenerateSharingTokenScreen(),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const Padding(
+      padding: EdgeInsets.all(24.0),
+      child: StatisticsSection(),
+    );
+  }
+
+  Widget _buildScaffold(
+    BuildContext context,
+    BuddyWidgetProvider buddyProvider,
+    Widget bodyContent,
+  ) {
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Positioned.fill gives bodyContent tight constraints — same as
+            // Scaffold.body used to provide. Required for StatisticsSection which
+            // contains an Expanded(PageView) that needs bounded height.
+            Positioned.fill(child: bodyContent),
+            // Buddy widget — always anchored at bottom-left, icon always visible.
+            if (buddyProvider.isInitialized)
+              Positioned(
+                // Negative bottom compensates for transparent bottom padding
+                // in the statistics_illustration asset so the character sits
+                // flush with the bottom nav bar.
+                bottom: -50,
+                left: -50,
+                child: BuddyWidget(
+                  suggestedMeeting: buddyProvider.suggestedMeeting,
+                  isExpanded: buddyProvider.isExpanded,
+                  onDismiss: buddyProvider.collapse,
+                  onActionTap: () => _openAIChatMeetingMode(
+                    context,
+                    buddyProvider,
+                  ),
+                  onIconTap: () => _openAIChatFreeQuery(context),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Opens AIChatScreen in meeting-notes mode for the suggested meeting.
+void _openAIChatMeetingMode(
+  BuildContext context,
+  BuddyWidgetProvider provider,
+) {
+  final userId = AuthService().currentUserId ?? '';
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => buildAIChatRoute(
+        userId: userId,
+        meetingId: provider.suggestedMeeting?.id,
+      ),
+    ),
+  );
+}
+
+/// Opens AIChatScreen in free-query mode (icon tap — general chat).
+void _openAIChatFreeQuery(BuildContext context) {
+  final userId = AuthService().currentUserId ?? '';
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => buildAIChatRoute(userId: userId),
+    ),
+  );
+}
+
+Future<void> _handleImport(BuildContext context) async {
+  final calendarService = GoogleCalendarService();
+  final isConnected = await calendarService.isConnected();
+  if (!context.mounted) return;
+
+  List<GoogleCalendar> calendars;
+  if (isConnected) {
+    calendars = await calendarService.fetchCalendars();
+  } else {
+    try {
+      calendars = await calendarService.requestAccess();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Calendar access denied')),
+      );
+      return;
+    }
+  }
+
+  if (!context.mounted) return;
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => CalendarEventsScreen(
+        calendars: calendars,
+        onReconnect: () async {
+          try {
+            final newCalendars = await GoogleCalendarService().requestAccess();
+            if (!context.mounted) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CalendarEventsScreen(calendars: newCalendars),
+              ),
+            );
+          } catch (_) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Calendar access denied')),
+            );
+          }
+        },
+      ),
+    ),
+  );
 }

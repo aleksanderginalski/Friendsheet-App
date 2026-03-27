@@ -538,7 +538,7 @@ Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no d
 
 ### M7 (continued) — AI Assistant (Buddy)
 
-**Status:** 🔄 In Progress — US-088 (API Key Management) ✅, US-085 (Consent Flow) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅ delivered.
+**Status:** 🔄 In Progress — US-088 (API Key Management) ✅, US-085 (Consent Flow) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅, US-101 (HomeScreen Buddy Widget) ✅ delivered.
 
 **Provider:** OpenAI GPT-4o — BYOK (user's own API key, no cost to developer).
 
@@ -563,12 +563,19 @@ AIChatScreen
 - `OpenAIService` ✅ — `openai_dart`-based streaming client; hardcoded `_systemPrompt` (Buddy character + guardrails); maps API errors to typed exceptions (`lib/data/services/open_ai_service.dart`)
 - `BuddyWriteService` ✅ — single write surface: `saveNotes(userId, meetingId, notes)` only (`lib/data/services/buddy_write_service.dart`)
 - `AIChatProvider` ✅ — ChangeNotifier managing chat session: streaming accumulation, pseudonym back-translation, proactive notes detection, retry logic (`lib/presentation/ai_chat/ai_chat_provider.dart`)
-- `RelationshipScoreService` — local scoring algorithm, no API calls (US-107, planned)
+- `BuddyWidgetProvider` ✅ — ChangeNotifier for HomeScreen floating widget; fetches `getLastMeetingWithoutNotes` (60-day window); exposes `suggestedMeeting`, `isExpanded`, `isInitialized`; created and owned by `MainScreen` (`lib/presentation/providers/buddy_widget_provider.dart`)
+- `BuddyWidget` ✅ — purely presentational floating widget; `SizedBox(224×224)` Stack with `clipBehavior: Clip.none`; icon always visible; speech-bubble card `Positioned(bottom: _kBubbleAnchor)` above icon; `_TailPainter` CustomPainter triangle; tap routes to `AIChatScreen` in meeting-notes or free-query mode (`lib/presentation/widgets/buddy_widget.dart`)
+- `LocalCacheService` 📋 — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109)
+- `ConnectivityService` 📋 — singleton with `ValueNotifier<ConnectivityStatus>`; drives offline banner and graceful degradation (US-111)
+- `RelationshipScoreService` 📋 — local scoring algorithm, no API calls (US-107)
 - `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
 
 **New packages (US-087):**
 - `openai_dart: ^2.0.0` — official Dart client for OpenAI API (streaming support)
 - `flutter_markdown: ^0.7.7+1` — markdown rendering in `ChatBubble` for formatted Buddy responses
+
+**Planned packages (US-111):**
+- `connectivity_plus` — network connectivity detection for offline-first mode
 
 **Error handling (typed exceptions):**
 ```dart
@@ -582,6 +589,70 @@ AIUnknownException   → generic error message
 **Pseudonym back-translation:** `AIChatProvider` replaces `Friend_A`, `Friend_B`... with real names in displayed responses using `BuddyContext.pseudonymToRealName` map. Real names never leave the device in outbound requests.
 
 **Gemini Nano (on-device):** deferred to future epic.
+
+---
+
+### M7 (continued) — Tool Calling Architecture (US-110)
+
+**Decision (March 2026 discovery session):** Replace full-context upfront approach with OpenAI tool calling for historical and arbitrary date-range queries. Current `ContextBuilderService` approach (12-month window) retained for US-101–US-108 where applicable; tool calling added as a parallel path for deep queries.
+
+**Tool calling data flow:**
+```
+User question
+  → OpenAI API + tool definitions (JSON Schema)
+    → tool_call: resolvePerson / getMeetingsByPersonAndYear / getMeetingsByDateRange / getPersonSummary
+      → LocalCacheService (in-memory Hive data, no Firestore round-trip)
+        → tool result returned to OpenAI
+          → final response (pseudonyms back-translated before display)
+```
+
+**Tool definitions (4 tools):**
+| Tool | Parameters | Purpose |
+|---|---|---|
+| `resolvePerson` | `query: String` | Match name/nickname → return pseudonym(s) or ambiguous |
+| `getMeetingsByPersonAndYear` | `personAlias: String, year: int` | Filter meetings by participant + year |
+| `getMeetingsByDateRange` | `startDate: String, endDate: String` | Filter meetings by date range |
+| `getPersonSummary` | `personAlias: String` | Aggregate stats for a person |
+
+**Pseudonymization in tool calling:** System prompt contains `[{alias: "Friend_A", firstName: "Gosia"}, ...]`. OpenAI resolves natural names to aliases in tool call parameters. App maps alias → personId at execution time. Firestore/cache never receives real names from OpenAI.
+
+**Person disambiguation:** When `resolvePerson` returns `{status: "ambiguous", candidates: [...]}`, `AIChatProvider` enters `awaitingDisambiguation` state — streaming paused, native Flutter `DisambiguationBottomSheet` shown, pipeline resumed after user selection.
+
+**Matching priority:** exact firstName → exact nickname → multiple matches → disambiguation
+
+---
+
+### M7 (continued) — Offline-First Architecture (US-109, US-111)
+
+**Decision (March 2026 discovery session):** Hive chosen over Drift/SQLite. Max dataset ~5 MB (10,000 meetings × 500 B + 250 persons). In-memory filtering in Dart is sufficient at this scale — no SQL queries needed.
+
+**Cache strategy:**
+- **Sync on app start:** full load from Firestore → Hive (async, non-blocking)
+- **Write-through:** every repository write updates Hive immediately; Firestore SDK queues offline writes and syncs on reconnect
+- **User-scoped:** cache cleared on logout / account switch
+
+**`LocalCacheService` read methods (used by tool calling and offline screens):**
+```
+resolvePerson(String query) → List<Person>
+getMeetingsByPersonAndYear(String personPseudonym, int year) → List<Meeting>
+getMeetingsByDateRange(DateTime start, DateTime end) → List<Meeting>
+getPersonSummary(String personPseudonym) → PersonSummary
+getAllPersons() → List<Person>
+getMeetingNotes(String meetingId) → List<String>
+```
+
+**Offline writes:** Firestore SDK offline persistence is enabled by default on Flutter mobile. Write operations while offline are queued on-disk by the SDK and replayed automatically on reconnect. No custom write queue required.
+
+**Offline UI indicators:**
+- Offline banner: shown at top of screen when `ConnectivityService.isConnected == false`; auto-dismisses on reconnect
+- Pending sync indicator: shown when Firestore has queued writes not yet confirmed
+
+**Features available offline:**
+- ✅ All read screens (meetings, persons, statistics, activities)
+- ✅ Add / edit / delete meetings and persons (Firestore SDK queues)
+- ❌ Buddy AI chat — disabled, message shown
+- ❌ Google Calendar sync — disabled, message shown
+- ❌ Google Sign-In on first launch — requires network
 
 ---
 

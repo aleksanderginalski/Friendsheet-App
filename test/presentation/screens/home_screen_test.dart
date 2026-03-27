@@ -8,6 +8,7 @@ import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/presentation/providers/buddy_widget_provider.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
 import 'package:friendsheet/presentation/screens/home_screen.dart';
@@ -87,6 +88,7 @@ void main() {
   late MockMeetingRepository mockMeetingRepository;
   late StatisticsProvider statisticsProvider;
   late HomeProvider homeProvider;
+  late BuddyWidgetProvider buddyWidgetProvider;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -99,7 +101,13 @@ void main() {
     // ignore: argument_type_not_assignable
     when(mockMeetingRepository.getMeetingsByUser(any))
         .thenAnswer((_) => const Stream.empty());
+    // Default stub: no meeting without notes found.
+    // ignore: argument_type_not_assignable
+    when(mockMeetingRepository.getLastMeetingWithoutNotes(any, any))
+        .thenAnswer((_) async => null);
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
+    buddyWidgetProvider =
+        BuddyWidgetProvider(meetingRepository: mockMeetingRepository);
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
@@ -119,6 +127,7 @@ void main() {
   });
 
   tearDown(() {
+    buddyWidgetProvider.dispose();
     statisticsProvider.dispose();
     homeProvider.dispose();
   });
@@ -127,6 +136,7 @@ void main() {
     return MaterialApp(
       home: MultiProvider(
         providers: [
+          ChangeNotifierProvider.value(value: buddyWidgetProvider),
           ChangeNotifierProvider.value(value: homeProvider),
           ChangeNotifierProvider.value(value: statisticsProvider),
         ],

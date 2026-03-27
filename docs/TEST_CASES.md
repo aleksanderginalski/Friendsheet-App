@@ -1516,3 +1516,39 @@ Run after every release or hotfix:
 | UT-100-012 | shows singular "1 note" badge | `'1 note'` visible |
 | UT-100-013 | shows plural "2 notes" badge | `'2 notes'` visible |
 | UT-088-019 | delete flow — DELETE calls deleteKey and shows input view | `mockRepo.deleteKey()` called once; `TextField` visible |
+
+---
+
+## US-101 — HomeScreen AI Widget (Buddy)
+
+### Automated tests — `test/presentation/providers/buddy_widget_provider_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-101-001 | initial state: not initialized, expanded, no suggested meeting | `isInitialized` false; `isExpanded` true; `suggestedMeeting` null |
+| UT-101-002 | initialize sets suggestedMeeting and isInitialized when meeting found | `isInitialized` true; `suggestedMeeting` equals test meeting |
+| UT-101-003 | initialize sets isInitialized with null meeting when none found | `isInitialized` true; `suggestedMeeting` null |
+| UT-101-004 | collapse sets isExpanded to false | `isExpanded` false |
+| UT-101-005 | expand restores isExpanded to true after collapse | `isExpanded` true |
+
+### Automated tests — `test/presentation/widgets/buddy_widget_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-101-006 | collapsed state shows no bubble text | no `'Hey'` text; no `"Let's do it!"` button |
+| UT-101-007 | expanded with meeting shows meeting name and action button | meeting name visible; `"Let's do it!"` button visible |
+| UT-101-008 | expanded without meeting shows generic message, no action button | `'Hey! Can I help you with anything?'` visible; no button |
+| UT-101-009 | tapping X calls onDismiss | `onDismiss` callback invoked |
+| UT-101-010 | tapping "Let's do it!" calls onActionTap | `onActionTap` callback invoked |
+| UT-101-011 | tapping icon calls onIconTap | `onIconTap` callback invoked |
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-101-012 | getLastMeetingWithoutNotes returns null when no meetings exist in range | result is null |
+| UT-101-013 | getLastMeetingWithoutNotes returns null when all meetings in range have notes | result is null |
+| UT-101-014 | getLastMeetingWithoutNotes returns most recent meeting without notes | result.name equals `'Newer'` |
+| UT-101-015 | getLastMeetingWithoutNotes skips meetings with notes and returns first one without | result.name equals `'Older'` |
+| UT-101-016 | getLastMeetingWithoutNotes does not return meetings before since date | result is null |
+

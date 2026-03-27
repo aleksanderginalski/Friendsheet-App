@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (760)
+✅ All tests passing (776)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,14 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.4.0 — US-087: Buddy AI Chat Screen (March 26, 2026)
-- ✅ `lib/data/services/open_ai_service.dart` (NEW) — `OpenAIService`: OpenAI Responses API streaming client with typed error mapping (`AINetworkException`, `AIInvalidKeyException`, `AIQuotaExceededException`)
-- ✅ `lib/data/services/buddy_write_service.dart` (NEW) — `BuddyWriteService`: single write surface for AI (`saveNotes` only — enforces write isolation principle)
-- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (NEW) — `AIChatProvider`: three-mode chat session management with streaming, pseudonym back-translation, and proactive notes detection
-- ✅ `lib/presentation/ai_chat/ai_chat_screen.dart` (NEW) + `chat_bubble.dart` (NEW) — full Buddy chat UI with markdown rendering (`flutter_markdown`), typing indicator, and error recovery actions
-- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `serializeToPrompt()` adds `includeNotes: bool = false`; notes sent only in Mode 1 (meeting notes)
-- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — "Buddy — AI Assistant" navigation entry added
-- ✅ 760 Flutter tests passing (+30 new tests)
+### Latest: v4.5.0 — US-101: HomeScreen AI Widget — Buddy (March 27, 2026)
+- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (NEW) — `BuddyWidgetProvider`: fetches last meeting without notes (60-day window); expand/collapse state
+- ✅ `lib/presentation/widgets/buddy_widget.dart` (NEW) — `BuddyWidget`: floating icon always visible in bottom-left; speech-bubble card with `CustomPainter` tail; X dismiss, "Let's do it!" action, icon tap routes
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getLastMeetingWithoutNotes(userId, since)` added
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — Stack layout with `Positioned.fill` + `BuddyWidget` overlay; `SafeArea(bottom: false)`
+- ✅ `lib/presentation/widgets/statistics_section.dart` (MODIFIED) — `statistics_illustration` decoration image removed (replaced by BuddyWidget icon)
+- ✅ 776 Flutter tests passing (+16 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

@@ -303,8 +303,7 @@ void main() {
           .thenAnswer((_) async => emptyContext);
       when(mockContextBuilder.getMeetingById(any, any))
           .thenAnswer((_) async => makeMeeting());
-      when(mockBuddyWrite.saveNotes(any, any, any))
-          .thenAnswer((_) async {});
+      when(mockBuddyWrite.saveNotes(any, any, any)).thenAnswer((_) async {});
 
       await provider.initialize('user-1', meetingId: 'm1');
       await provider.saveNotes(['note 1', 'note 2']);

@@ -23,6 +23,7 @@ import '../activities/activities_list_screen.dart';
 import '../import/meeting_inbox_screen.dart';
 import '../persons/friend_groups_provider.dart';
 import '../persons/persons_list_provider.dart';
+import '../providers/buddy_widget_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
@@ -54,6 +55,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   int _titleTapCount = 0;
   Timer? _titleTapTimer;
+  late final BuddyWidgetProvider _buddyWidgetProvider;
   late final HomeProvider _homeProvider;
   late final PersonsListProvider _personsListProvider;
   late final FriendGroupsProvider _friendGroupsProvider;
@@ -66,6 +68,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    _buddyWidgetProvider =
+        BuddyWidgetProvider(meetingRepository: MeetingRepository());
     _homeProvider = HomeProvider(meetingRepository: MeetingRepository());
     _personsListProvider = PersonsListProvider(
       personRepository: PersonRepository(),
@@ -112,6 +116,7 @@ class _MainScreenState extends State<MainScreen> {
       final userId = AuthService().currentUserId;
       if (userId != null) {
         _homeProvider.initialize(userId);
+        _buddyWidgetProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);
         _sharedPackageInboxProvider.initialize(userId);
       }
@@ -147,6 +152,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void dispose() {
     _titleTapTimer?.cancel();
+    _buddyWidgetProvider.dispose();
     _homeProvider.dispose();
     _personsListProvider.dispose();
     _friendGroupsProvider.dispose();
@@ -258,6 +264,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: _buddyWidgetProvider),
         ChangeNotifierProvider.value(value: _homeProvider),
         ChangeNotifierProvider.value(value: _personsListProvider),
         ChangeNotifierProvider.value(value: _friendGroupsProvider),

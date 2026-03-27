@@ -99,6 +99,22 @@ class MeetingRepository {
     await cacheInvalidator?.invalidateMeetingsCache();
   }
 
+  /// Returns the most recently dated meeting (within [since]) that has no notes.
+  /// Fetches all meetings since [since] ordered by date descending, filters client-side.
+  /// Returns null if every meeting in range has at least one note.
+  Future<Meeting?> getLastMeetingWithoutNotes(
+      String userId, DateTime since) async {
+    final snapshot = await _meetingsRef(userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+        .orderBy('date', descending: true)
+        .get();
+    for (final doc in snapshot.docs) {
+      final meeting = Meeting.fromFirestore(doc);
+      if (meeting.notes.isEmpty) return meeting;
+    }
+    return null;
+  }
+
   /// Removes personId from participantIds in all meetings that contain them.
   /// Uses a WriteBatch to apply all updates atomically.
   Future<void> removePersonFromMeetings(String userId, String personId) async {
