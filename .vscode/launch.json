@@ -10,6 +10,15 @@
             "request": "launch",
             "script": "${file}",
             "args": []
+        },
+        {
+            "name": "Python: Observability Dashboard",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/observability/dashboard.py",
+            "python": "C:/Users/user/AppData/Roaming/uv/python/cpython-3.12.12-windows-x86_64-none/python.exe",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal"
         }
     ]
 }
