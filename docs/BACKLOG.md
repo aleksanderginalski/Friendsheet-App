@@ -3876,29 +3876,29 @@ login instead of only on first login.
 **Story Points:** 5
 **Priority:** P0
 **Labels:** `ai`, `homescreen`, `ui`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] `statistics_illustration` icon always visible in bottom-left corner of HomeScreen — this is Buddy's "face"
-- [ ] On app launch: chat bubble card expanded above the icon by default
-- [ ] Logic: finds the most recently added meeting without notes within the last 2 months
-- [ ] If such a meeting exists: bubble shows "Hey, you recently had [meeting name] — want to save your memories?" with "Let's do it!" button
-- [ ] If no such meeting exists: bubble shows "Hey! Can I help you with anything?"
-- [ ] Chat bubble has a visible tail connecting it visually to the icon below (speech-bubble style)
-- [ ] Tapping "Let's do it!" opens `AIChatScreen` in meeting-notes mode with that meeting pre-loaded
-- [ ] Bubble closeable via "X" button; icon remains visible after dismissal
-- [ ] Tapping Buddy icon always opens `AIChatScreen` in free-query mode (general chat)
+- [x] `statistics_illustration` icon always visible in bottom-left corner of HomeScreen — this is Buddy's "face"
+- [x] On app launch: chat bubble card expanded above the icon by default
+- [x] Logic: finds the most recently added meeting without notes within the last 2 months
+- [x] If such a meeting exists: bubble shows "Hey, you recently had [meeting name] — want to save your memories?" with "Let's do it!" button
+- [x] If no such meeting exists: bubble shows "Hey! Can I help you with anything?"
+- [x] Chat bubble has a visible tail connecting it visually to the icon below (speech-bubble style)
+- [x] Tapping "Let's do it!" opens `AIChatScreen` in meeting-notes mode with that meeting pre-loaded
+- [x] Bubble closeable via "X" button; icon remains visible after dismissal
+- [x] Tapping Buddy icon always opens `AIChatScreen` in free-query mode (general chat)
 
 **Tasks:**
 - [x] **TASK-101.1:** Create `BuddyWidget` StatefulWidget with expanded/collapsed states — 2h
 - [x] **TASK-101.2:** Implement logic: fetch last meeting without notes within 2 months (`getLastMeetingWithoutNotes` on `MeetingRepository`) — 1h
 - [x] **TASK-101.3:** Add Buddy icon (`statistics_illustration.png`) to bottom-left corner of HomeScreen via Stack + Positioned (persists when widget closed) — 0.5h
 - [x] **TASK-101.4:** Wire widget tap → `AIChatScreen` in correct mode (meeting-notes or free-query) — 0.5h
-- [ ] **TASK-101.5:** Write widget tests — 1h (/qa responsibility)
+- [x] **TASK-101.5:** Write widget tests — 1h (/qa responsibility)
 - [ ] **TASK-101.6:** Refactor `BuddyWidget` positioning — replace hardcoded pixel offsets (`left: -50`, `bottom: -50`, `left: 80`, `_kBubbleAnchor: 168`) with a proper layout approach that doesn't rely on magic numbers compensating for asset transparent padding — 1h
 
 **Dependencies:** US-100, US-087
-**Status:** ✅ Done (TASK-101.5 and TASK-101.6 pending /qa and future refactor)
+**Status:** ✅ COMPLETED (TASK-101.6 deferred as tech debt)
 **Blocks:** US-102
 
 ---

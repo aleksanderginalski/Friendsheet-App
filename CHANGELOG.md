@@ -4,6 +4,24 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.0 — US-101: HomeScreen AI Widget — Buddy (March 27, 2026)
+- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (NEW) — `BuddyWidgetProvider`: fetches last meeting without notes in the past 60 days; exposes `suggestedMeeting`, `isExpanded`, `isInitialized`; `collapse()` / `expand()` for widget card state
+- ✅ `lib/presentation/widgets/buddy_widget.dart` (NEW) — `BuddyWidget`: purely presentational floating widget; icon always visible (bottom-left); when expanded shows speech-bubble card above the icon with a `CustomPainter` tail; X button anchored top-right; "Let's do it!" button when meeting suggested; `_TailPainter` draws triangle connecting bubble to icon
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getLastMeetingWithoutNotes(userId, since)`: fetches meetings since a date ordered by date descending; returns first with empty notes list; null if none found
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — HomeScreen rebuilt with `Stack + Positioned`: `Positioned.fill` for body content (required for `Expanded + PageView` tight constraints); `BuddyWidget` anchored at `bottom: -50, left: -50` via `clipBehavior: Clip.none`; `SafeArea(bottom: false)` lets icon hug the bottom nav bar edge
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `BuddyWidgetProvider` wired: created in `initState`, initialized in `addPostFrameCallback`, disposed in `dispose`, exposed via `MultiProvider`
+- ✅ `lib/presentation/widgets/statistics_section.dart` (MODIFIED) — removed `Align(bottomLeft, Image(statistics_illustration, height:160))` — replaced by `BuddyWidget` icon
+- ✅ `test/presentation/providers/buddy_widget_provider_test.dart` (NEW) — 5 unit tests: initial state, initialize with/without meeting, collapse, expand
+- ✅ `test/presentation/providers/buddy_widget_provider_test.mocks.dart` (NEW) — Mockito-generated mocks
+- ✅ `test/presentation/widgets/buddy_widget_test.dart` (NEW) — 6 widget tests: collapsed state, expanded with/without meeting, onDismiss, onActionTap, onIconTap callbacks
+- ✅ `test/data/repositories/meeting_repository_test.dart` (MODIFIED) — 5 new tests for `getLastMeetingWithoutNotes`: empty range, all with notes, most recent first, skip-with-notes, before-since boundary
+- ✅ `test/presentation/screens/home_screen_test.dart` (MODIFIED) — `BuddyWidgetProvider` added to test setUp and MultiProvider tree
+- ✅ All mock files regenerated via `dart run build_runner build --delete-conflicting-outputs`
+- ✅ 776 Flutter tests passing (+16 new tests)
+- ⚠️ **Tech debt (TASK-101.6):** `BuddyWidget` positioning uses hardcoded pixel offsets (`left: -50`, `bottom: -50`, `_kBubbleAnchor: 168`) to compensate for transparent padding in `statistics_illustration.png` — to be replaced with a proper layout approach
+
+---
+
 ### v4.4.0 — US-087: Buddy AI Chat Screen (March 26, 2026)
 - ✅ `pubspec.yaml` (MODIFIED) — `openai_dart: ^2.0.0` and `flutter_markdown: ^0.7.7+1` added
 - ✅ `pubspec.lock` (REGENERATED) — dependency tree updated for new packages

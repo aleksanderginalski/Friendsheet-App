@@ -468,7 +468,7 @@ User can add, remove and reorder dashboard widgets.
 
 ### FR-025: AI Assistant — Buddy (M7)
 **Priority:** COULD HAVE
-**Status:** 🔄 Partially Implemented — US-088 (API Key) ✅, US-085 (Consent) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅; US-101 (HomeScreen widget), US-107 (relationship score), US-106 (annual report) planned
+**Status:** 🔄 Partially Implemented — US-088 (API Key) ✅, US-085 (Consent) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅, US-101 (HomeScreen Buddy widget) ✅; US-107 (relationship score), US-106 (annual report) planned
 
 **Description:**
 User interacts with Buddy — a friendly AI assistant that knows their social history. Buddy is proactive (HomeScreen widget), conversational (single chat screen), and covers three journeys: meeting notes, friend wishes, and free social queries.

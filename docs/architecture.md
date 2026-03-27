@@ -538,7 +538,7 @@ Shares `MeetingInboxScreen` and `MeetingInboxProvider` with FEATURE-013 — no d
 
 ### M7 (continued) — AI Assistant (Buddy)
 
-**Status:** 🔄 In Progress — US-088 (API Key Management) ✅, US-085 (Consent Flow) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅ delivered.
+**Status:** 🔄 In Progress — US-088 (API Key Management) ✅, US-085 (Consent Flow) ✅, US-086 (Context Builder) ✅, US-087 (AI Chat Screen) ✅, US-101 (HomeScreen Buddy Widget) ✅ delivered.
 
 **Provider:** OpenAI GPT-4o — BYOK (user's own API key, no cost to developer).
 
@@ -563,6 +563,8 @@ AIChatScreen
 - `OpenAIService` ✅ — `openai_dart`-based streaming client; hardcoded `_systemPrompt` (Buddy character + guardrails); maps API errors to typed exceptions (`lib/data/services/open_ai_service.dart`)
 - `BuddyWriteService` ✅ — single write surface: `saveNotes(userId, meetingId, notes)` only (`lib/data/services/buddy_write_service.dart`)
 - `AIChatProvider` ✅ — ChangeNotifier managing chat session: streaming accumulation, pseudonym back-translation, proactive notes detection, retry logic (`lib/presentation/ai_chat/ai_chat_provider.dart`)
+- `BuddyWidgetProvider` ✅ — ChangeNotifier for HomeScreen floating widget; fetches `getLastMeetingWithoutNotes` (60-day window); exposes `suggestedMeeting`, `isExpanded`, `isInitialized`; created and owned by `MainScreen` (`lib/presentation/providers/buddy_widget_provider.dart`)
+- `BuddyWidget` ✅ — purely presentational floating widget; `SizedBox(224×224)` Stack with `clipBehavior: Clip.none`; icon always visible; speech-bubble card `Positioned(bottom: _kBubbleAnchor)` above icon; `_TailPainter` CustomPainter triangle; tap routes to `AIChatScreen` in meeting-notes or free-query mode (`lib/presentation/widgets/buddy_widget.dart`)
 - `LocalCacheService` 📋 — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109)
 - `ConnectivityService` 📋 — singleton with `ValueNotifier<ConnectivityStatus>`; drives offline banner and graceful degradation (US-111)
 - `RelationshipScoreService` 📋 — local scoring algorithm, no API calls (US-107)
