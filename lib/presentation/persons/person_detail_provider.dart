@@ -111,6 +111,15 @@ class PersonDetailProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Updates birthDayMonth ("MM-dd" format) for the current person.
+  // Passing null clears the birthday.
+  Future<void> updateBirthDayMonth(String? value) async {
+    final updated = _person!.copyWith(birthDayMonth: value);
+    await _personRepository.updatePerson(updated);
+    _person = updated;
+    notifyListeners();
+  }
+
   // Removes a nickname from the person.
   Future<void> removeNickname(String nickname) async {
     final updated = _person!.copyWith(

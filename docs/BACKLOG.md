@@ -3944,25 +3944,27 @@ login instead of only on first login.
 ### US-103: birthDate Field on Person
 
 **As a** user
-**I want to** store a friend's birthday in their profile
+**I want to** store a friend's birthday (day and month) in their profile
 **So that** Buddy can remind me about upcoming birthdays and personalize wishes
 
 **Story Points:** 2
 **Priority:** P1
 **Labels:** `persons`, `data-model`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Acceptance Criteria:**
-- [ ] `birthDate` field added to `Person` model (optional `DateTime?`)
-- [ ] Birthday date picker in `PersonDetailScreen` (edit mode)
-- [ ] `birthDate` saved to Firestore, read back correctly
+- [ ] `birthDayMonth` field (`String?`, format `"MM-dd"`) added to `Person` Freezed model
+- [ ] Birthday row in `PersonDetailScreen` body — tapping opens a month/day picker; shows formatted date `d MMM` (e.g. "15 Mar") or "Not set"
+- [ ] `birthDayMonth` saved to Firestore and read back correctly
 - [ ] Field is optional — existing persons unaffected
+- [ ] Year is never stored or displayed (GDPR: day+month only)
+- [ ] `privacy.md` note: birthday data update deferred to /docs after US completion
 
 **Tasks:**
-- [ ] **TASK-103.1:** Add `birthDate` field to `Person` Freezed model — 0.5h
-- [ ] **TASK-103.2:** Update `fromFirestore` / `toFirestore` — 0.5h
+- [ ] **TASK-103.1:** Add `birthDayMonth String?` field to `Person` Freezed model — 0.5h
+- [ ] **TASK-103.2:** Update `fromFirestore` / `toFirestore` (store as `"MM-dd"` string) — 0.5h
 - [ ] **TASK-103.3:** Run build_runner, update generated files — 0.5h
-- [ ] **TASK-103.4:** Add date picker to `PersonDetailScreen` edit mode — 1h
+- [ ] **TASK-103.4:** Add birthday `ListTile` to `_PersonDetailBody`; tapping opens custom month/day picker dialog; add `updateBirthDayMonth(String?)` to `PersonDetailProvider` — 1h
 
 **Dependencies:** None
 **Blocks:** US-104
