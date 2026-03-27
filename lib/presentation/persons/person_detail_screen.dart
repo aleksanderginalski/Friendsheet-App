@@ -74,6 +74,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         onLinkTap: () => _showLinkDialog(provider),
         onSendTap: () => _openShareMeetingsScreen(person),
         onMeetingsTap: () => _openPersonMeetingsScreen(person),
+        onBirthdayTap: () => _showBirthdayPicker(person, provider),
       ),
     );
   }
@@ -282,6 +283,138 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     );
   }
 
+  // Opens a month/day picker dialog. Year is never stored (GDPR).
+  // StatefulBuilder manages dropdown state; day list is clamped to month max.
+  // Method lives on State so context is always alive after async gaps.
+  Future<void> _showBirthdayPicker(
+      Person person, PersonDetailProvider provider) async {
+    int? selectedMonth;
+    int? selectedDay;
+    if (person.birthDayMonth != null) {
+      final parts = person.birthDayMonth!.split('-');
+      selectedMonth = int.parse(parts[0]);
+      selectedDay = int.parse(parts[1]);
+    }
+
+    // Max days per month using leap year (Feb = 29).
+    const maxDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final int currentMax =
+              selectedMonth != null ? maxDays[selectedMonth! - 1] : 31;
+
+          return AlertDialog(
+            title: const Text('Birthday'),
+            content: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Month'),
+                      DropdownButton<int>(
+                        value: selectedMonth,
+                        isExpanded: true,
+                        hint: const Text('Month'),
+                        items: List.generate(
+                          12,
+                          (i) => DropdownMenuItem(
+                            value: i + 1,
+                            child: Text(monthNames[i]),
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setDialogState(() {
+                            selectedMonth = val;
+                            // Clamp day to new month's max days.
+                            if (selectedDay != null && selectedMonth != null) {
+                              final max = maxDays[selectedMonth! - 1];
+                              if (selectedDay! > max) selectedDay = max;
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Day'),
+                      DropdownButton<int>(
+                        value: selectedDay,
+                        isExpanded: true,
+                        hint: const Text('Day'),
+                        items: List.generate(
+                          currentMax,
+                          (i) => DropdownMenuItem(
+                            value: i + 1,
+                            child: Text('${i + 1}'),
+                          ),
+                        ),
+                        onChanged: (val) {
+                          setDialogState(() => selectedDay = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              if (person.birthDayMonth != null)
+                TextButton(
+                  onPressed: () async {
+                    await provider.updateBirthDayMonth(null);
+                    if (ctx.mounted) Navigator.of(ctx).pop();
+                  },
+                  child: const Text('Clear'),
+                ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: selectedMonth != null && selectedDay != null
+                    ? () async {
+                        final formatted =
+                            '${selectedMonth!.toString().padLeft(2, '0')}-'
+                            '${selectedDay!.toString().padLeft(2, '0')}';
+                        await provider.updateBirthDayMonth(formatted);
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                      }
+                    : null,
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   // Opens the token input dialog and handles linking result.
   // Method lives on State so context is always alive (not from a closure).
   Future<void> _showLinkDialog(PersonDetailProvider provider) async {
@@ -350,12 +483,38 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   }
 }
 
+// Formats "MM-dd" string as "d MMM" (e.g. "03-15" -> "15 Mar").
+// Returns "Not set" when value is null.
+String _formatBirthDayMonth(String? value) {
+  if (value == null) return 'Not set';
+  final parts = value.split('-');
+  final month = int.parse(parts[0]);
+  final day = int.parse(parts[1]);
+  const months = [
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '$day ${months[month]}';
+}
+
 class _PersonDetailBody extends StatelessWidget {
   final PersonDetailProvider provider;
   final Person person;
   final VoidCallback onLinkTap;
   final VoidCallback onSendTap;
   final VoidCallback onMeetingsTap;
+  final VoidCallback onBirthdayTap;
 
   const _PersonDetailBody({
     required this.provider,
@@ -363,6 +522,7 @@ class _PersonDetailBody extends StatelessWidget {
     required this.onLinkTap,
     required this.onSendTap,
     required this.onMeetingsTap,
+    required this.onBirthdayTap,
   });
 
   @override
@@ -386,6 +546,13 @@ class _PersonDetailBody extends StatelessWidget {
             title: const Text('Last Name'),
             subtitle: Text(person.lastName!),
           ),
+        ListTile(
+          leading: const Icon(Icons.cake_outlined),
+          title: const Text('Birthday'),
+          subtitle: Text(_formatBirthDayMonth(person.birthDayMonth)),
+          trailing: const Icon(Icons.edit_outlined),
+          onTap: onBirthdayTap,
+        ),
         ListTile(
           leading: const Icon(Icons.calendar_today),
           title: const Text('Meetings together'),

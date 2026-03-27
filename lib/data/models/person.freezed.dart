@@ -27,6 +27,7 @@ mixin _$Person {
   DateTime get createdAt => throw _privateConstructorUsedError;
   List<String> get nicknames => throw _privateConstructorUsedError;
   String? get linkedUserId => throw _privateConstructorUsedError;
+  String? get birthDayMonth => throw _privateConstructorUsedError;
 
   /// Serializes this Person to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +50,8 @@ abstract class $PersonCopyWith<$Res> {
       String? lastName,
       DateTime createdAt,
       List<String> nicknames,
-      String? linkedUserId});
+      String? linkedUserId,
+      String? birthDayMonth});
 }
 
 /// @nodoc
@@ -74,6 +76,7 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
     Object? createdAt = null,
     Object? nicknames = null,
     Object? linkedUserId = freezed,
+    Object? birthDayMonth = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -104,6 +107,10 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
           ? _value.linkedUserId
           : linkedUserId // ignore: cast_nullable_to_non_nullable
               as String?,
+      birthDayMonth: freezed == birthDayMonth
+          ? _value.birthDayMonth
+          : birthDayMonth // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -122,7 +129,8 @@ abstract class _$$PersonImplCopyWith<$Res> implements $PersonCopyWith<$Res> {
       String? lastName,
       DateTime createdAt,
       List<String> nicknames,
-      String? linkedUserId});
+      String? linkedUserId,
+      String? birthDayMonth});
 }
 
 /// @nodoc
@@ -145,6 +153,7 @@ class __$$PersonImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? nicknames = null,
     Object? linkedUserId = freezed,
+    Object? birthDayMonth = freezed,
   }) {
     return _then(_$PersonImpl(
       id: null == id
@@ -175,6 +184,10 @@ class __$$PersonImplCopyWithImpl<$Res>
           ? _value.linkedUserId
           : linkedUserId // ignore: cast_nullable_to_non_nullable
               as String?,
+      birthDayMonth: freezed == birthDayMonth
+          ? _value.birthDayMonth
+          : birthDayMonth // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -189,7 +202,8 @@ class _$PersonImpl extends _Person {
       this.lastName,
       required this.createdAt,
       final List<String> nicknames = const [],
-      this.linkedUserId})
+      this.linkedUserId,
+      this.birthDayMonth})
       : _nicknames = nicknames,
         super._();
 
@@ -217,10 +231,12 @@ class _$PersonImpl extends _Person {
 
   @override
   final String? linkedUserId;
+  @override
+  final String? birthDayMonth;
 
   @override
   String toString() {
-    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt, nicknames: $nicknames, linkedUserId: $linkedUserId)';
+    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt, nicknames: $nicknames, linkedUserId: $linkedUserId, birthDayMonth: $birthDayMonth)';
   }
 
   @override
@@ -239,13 +255,23 @@ class _$PersonImpl extends _Person {
             const DeepCollectionEquality()
                 .equals(other._nicknames, _nicknames) &&
             (identical(other.linkedUserId, linkedUserId) ||
-                other.linkedUserId == linkedUserId));
+                other.linkedUserId == linkedUserId) &&
+            (identical(other.birthDayMonth, birthDayMonth) ||
+                other.birthDayMonth == birthDayMonth));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, firstName, lastName,
-      createdAt, const DeepCollectionEquality().hash(_nicknames), linkedUserId);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      firstName,
+      lastName,
+      createdAt,
+      const DeepCollectionEquality().hash(_nicknames),
+      linkedUserId,
+      birthDayMonth);
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.
@@ -271,7 +297,8 @@ abstract class _Person extends Person {
       final String? lastName,
       required final DateTime createdAt,
       final List<String> nicknames,
-      final String? linkedUserId}) = _$PersonImpl;
+      final String? linkedUserId,
+      final String? birthDayMonth}) = _$PersonImpl;
   const _Person._() : super._();
 
   factory _Person.fromJson(Map<String, dynamic> json) = _$PersonImpl.fromJson;
@@ -290,6 +317,8 @@ abstract class _Person extends Person {
   List<String> get nicknames;
   @override
   String? get linkedUserId;
+  @override
+  String? get birthDayMonth;
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.

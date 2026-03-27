@@ -19,6 +19,8 @@
       "Bash(flutter test:*)",
       "Bash(dart run build_runner:*)",
       "Bash(dart format:*)",
+      "Read(.claude/current_task.md)",
+      "Edit(.claude/current_task.md)",
       "Write(.claude/current_task.md)",
       "Write(docs/**)",
       "Bash(touch .claude/*)",

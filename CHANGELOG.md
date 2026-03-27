@@ -4,6 +4,19 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.1 — US-103: birthDayMonth Field on Person (March 27, 2026)
+- ✅ `lib/data/models/person.dart` (MODIFIED) — `birthDayMonth String?` field added to `Person` Freezed model; `fromFirestore` reads field null-safely; `toFirestore` writes it conditionally (omitted when null)
+- ✅ `lib/data/models/person.freezed.dart` (REGENERATED) — Freezed-generated code updated for new field
+- ✅ `lib/data/models/person.g.dart` (REGENERATED) — JSON serialization updated
+- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — `updateBirthDayMonth(String?)` added; null clears the field
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — Birthday `ListTile` added to `_PersonDetailBody` (icon: `cake_outlined`); `_showBirthdayPicker` dialog with two `DropdownButton` widgets (Month / Day); day list clamped to month maximum (leap year: Feb = 29); `_formatBirthDayMonth` helper formats `"MM-dd"` → `"d MMM"`; `onBirthdayTap` callback wired via State to avoid stale context
+- ✅ `docs/privacy.md` (MODIFIED) — Section 2.2 updated to mention birthday data (day and month only, year never stored)
+- ✅ `test/data/models/person_test.dart` (MODIFIED) — 4 new tests: `toFirestore` includes/omits `birthDayMonth`; `fromFirestore` reads/null when absent
+- ✅ `test/presentation/persons/person_detail_provider_test.dart` (MODIFIED) — 2 new tests: `updateBirthDayMonth` set and clear
+- ✅ 782 Flutter tests passing (+6 new tests)
+
+---
+
 ### v4.5.0 — US-101: HomeScreen AI Widget — Buddy (March 27, 2026)
 - ✅ `lib/presentation/providers/buddy_widget_provider.dart` (NEW) — `BuddyWidgetProvider`: fetches last meeting without notes in the past 60 days; exposes `suggestedMeeting`, `isExpanded`, `isInitialized`; `collapse()` / `expand()` for widget card state
 - ✅ `lib/presentation/widgets/buddy_widget.dart` (NEW) — `BuddyWidget`: purely presentational floating widget; icon always visible (bottom-left); when expanded shows speech-bubble card above the icon with a `CustomPainter` tail; X button anchored top-right; "Let's do it!" button when meeting suggested; `_TailPainter` draws triangle connecting bubble to icon

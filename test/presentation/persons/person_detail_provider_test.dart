@@ -117,6 +117,30 @@ void main() {
       expect(provider.isLoading, isFalse);
     });
 
+    group('updateBirthDayMonth', () {
+      setUp(() async {
+        when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+            .thenAnswer((_) async => 0);
+        when(mockPersonRepository.updatePerson(any))
+            .thenAnswer((_) => Future<void>.value());
+        await provider.initialize(testPerson);
+      });
+
+      test('sets birthDayMonth and saves to repository', () async {
+        await provider.updateBirthDayMonth('03-15');
+
+        expect(provider.person!.birthDayMonth, '03-15');
+        verify(mockPersonRepository.updatePerson(any)).called(1);
+      });
+
+      test('clears birthDayMonth when null is passed', () async {
+        await provider.updateBirthDayMonth('03-15');
+        await provider.updateBirthDayMonth(null);
+
+        expect(provider.person!.birthDayMonth, isNull);
+      });
+    });
+
     group('linkFriendAccount', () {
       setUp(() async {
         when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))

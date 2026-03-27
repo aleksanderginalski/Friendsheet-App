@@ -167,6 +167,23 @@ void main() {
         final map = personWithoutLastName.toFirestore();
         expect(map.containsKey('linkedUserId'), false);
       });
+
+      test('includes birthDayMonth when set', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+          birthDayMonth: '03-15',
+        );
+        final map = person.toFirestore();
+        expect(map['birthDayMonth'], '03-15');
+      });
+
+      test('omits birthDayMonth key when null', () {
+        final map = personWithoutLastName.toFirestore();
+        expect(map.containsKey('birthDayMonth'), false);
+      });
     });
 
     group('linkedUserId (fromFirestore)', () {
@@ -201,6 +218,41 @@ void main() {
         final person = Person.fromFirestore(doc);
 
         expect(person.linkedUserId, isNull);
+      });
+    });
+
+    group('birthDayMonth (fromFirestore)', () {
+      late FakeFirebaseFirestore fakeFirestore;
+
+      setUp(() {
+        fakeFirestore = FakeFirebaseFirestore();
+      });
+
+      test('reads birthDayMonth when present in document', () async {
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+          'birthDayMonth': '03-15',
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.birthDayMonth, '03-15');
+      });
+
+      test('birthDayMonth is null when field absent from document', () async {
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.birthDayMonth, isNull);
       });
     });
   });

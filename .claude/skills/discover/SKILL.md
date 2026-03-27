@@ -38,6 +38,11 @@ Zadawaj pytania które pomagają doprecyzować:
 - Jakie są koszty (czas, pieniądze, złożoność)?
 - Jak to wpłynie na istniejącą architekturę?
 
+Gdy US dotyczy pól wejściowych (formularze, selekcja daty/czasu, pickery, dialogi):
+- "Jak użytkownik powinien wchodzić w interakcję z tym polem? Czy masz na myśli konkretny wzorzec UX — np. klawiatura, dropdown, systemowy picker, niestandardowy dialog?"
+- Jeśli dane są częściowe (np. tylko miesiąc+dzień, tylko rok+miesiąc) — zawsze dopytaj: "Jaki podzbiór danych przechowujemy i jak to wpływa na wybór kontrolki?"
+- Zapisz ustalony wzorzec UX w AC lub Tasks danego US — żeby /planning nie musiał go zgadywać.
+
 Zawsze sprawdzaj czy pomysł nie pokrywa się z istniejącym backlogiem:
 grep -oE "EPIC-[0-9]+|FEATURE-[0-9]+|US-[0-9]+" BACKLOG.md
 
