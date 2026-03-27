@@ -167,6 +167,65 @@ void main() {
       });
     });
 
+    group('getLastMeetingWithoutNotes', () {
+      test('returns null when no meetings exist in range', () async {
+        final since = DateTime(2026, 1, 1);
+        final result =
+            await repository.getLastMeetingWithoutNotes('user-1', since);
+        expect(result, isNull);
+      });
+
+      test('returns null when all meetings in range have notes', () async {
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1').copyWith(
+            date: DateTime(2026, 2, 1),
+            notes: ['Some note'],
+          ),
+        );
+        final result = await repository.getLastMeetingWithoutNotes(
+            'user-1', DateTime(2026, 1, 1));
+        expect(result, isNull);
+      });
+
+      test('returns most recent meeting without notes', () async {
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'Older')
+              .copyWith(date: DateTime(2026, 2, 1), notes: []),
+        );
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'Newer')
+              .copyWith(date: DateTime(2026, 3, 1), notes: []),
+        );
+        final result = await repository.getLastMeetingWithoutNotes(
+            'user-1', DateTime(2026, 1, 1));
+        expect(result?.name, equals('Newer'));
+      });
+
+      test('skips meetings with notes and returns first one without', () async {
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'Newest')
+              .copyWith(date: DateTime(2026, 3, 1), notes: ['has note']),
+        );
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'Older')
+              .copyWith(date: DateTime(2026, 2, 1), notes: []),
+        );
+        final result = await repository.getLastMeetingWithoutNotes(
+            'user-1', DateTime(2026, 1, 1));
+        expect(result?.name, equals('Older'));
+      });
+
+      test('does not return meetings before since date', () async {
+        await repository.saveMeeting(
+          makeMeeting(userId: 'user-1', name: 'TooOld')
+              .copyWith(date: DateTime(2025, 12, 31), notes: []),
+        );
+        final result = await repository.getLastMeetingWithoutNotes(
+            'user-1', DateTime(2026, 1, 1));
+        expect(result, isNull);
+      });
+    });
+
     group('replaceCategoryInMeetings', () {
       test('replaces sourceId with targetId and removes sourceId', () async {
         final id = await repository.saveMeeting(
