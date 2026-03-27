@@ -1,3 +1,4 @@
 {
-    "python.terminal.activateEnvironment": false
+    "python.terminal.activateEnvironment": false,
+    "python.defaultInterpreterPath": "C:/Users/user/AppData/Roaming/uv/python/cpython-3.12.12-windows-x86_64-none/python.exe"
 }
