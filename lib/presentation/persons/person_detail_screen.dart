@@ -299,8 +299,18 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     // Max days per month using leap year (Feb = 29).
     const maxDays = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
 
     await showDialog<void>(
@@ -481,8 +491,19 @@ String _formatBirthDayMonth(String? value) {
   final month = int.parse(parts[0]);
   final day = int.parse(parts[1]);
   const months = [
-    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    '',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '$day ${months[month]}';
 }

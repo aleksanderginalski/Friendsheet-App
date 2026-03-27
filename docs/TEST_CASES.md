@@ -1552,3 +1552,24 @@ Run after every release or hotfix:
 | UT-101-015 | getLastMeetingWithoutNotes skips meetings with notes and returns first one without | result.name equals `'Older'` |
 | UT-101-016 | getLastMeetingWithoutNotes does not return meetings before since date | result is null |
 
+---
+
+## US-103 — birthDayMonth Field on Person
+
+### Automated tests — `test/data/models/person_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-103-001 | toFirestore() includes birthDayMonth when set | map['birthDayMonth'] equals `'03-15'` |
+| UT-103-002 | toFirestore() omits birthDayMonth key when null | map does not contain key `'birthDayMonth'` |
+| UT-103-003 | fromFirestore reads birthDayMonth when present in document | person.birthDayMonth equals `'03-15'` |
+| UT-103-004 | fromFirestore birthDayMonth is null when field absent from document | person.birthDayMonth is null |
+
+### Automated tests — `test/presentation/persons/person_detail_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-103-005 | updateBirthDayMonth sets value and saves to repository | person.birthDayMonth equals `'03-15'`; updatePerson called once |
+| UT-103-006 | updateBirthDayMonth clears value when null is passed | person.birthDayMonth is null after set then clear |
+
+
