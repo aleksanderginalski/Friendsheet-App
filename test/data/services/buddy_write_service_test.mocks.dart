@@ -147,6 +147,22 @@ class MockMeetingRepository extends _i1.Mock implements _i2.MeetingRepository {
       ) as _i4.Future<void>);
 
   @override
+  _i4.Future<_i5.Meeting?> getLastMeetingWithoutNotes(
+    String? userId,
+    DateTime? since,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getLastMeetingWithoutNotes,
+          [
+            userId,
+            since,
+          ],
+        ),
+        returnValue: _i4.Future<_i5.Meeting?>.value(),
+      ) as _i4.Future<_i5.Meeting?>);
+
+  @override
   _i4.Future<void> removePersonFromMeetings(
     String? userId,
     String? personId,

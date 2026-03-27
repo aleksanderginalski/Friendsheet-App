@@ -277,14 +277,6 @@ class _StatisticsSectionState extends State<StatisticsSection> {
                         .toList(),
                   ),
           ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Image.asset(
-              'assets/images/statistics_illustration.png',
-              height: 160,
-              fit: BoxFit.contain,
-            ),
-          ),
         ],
       ],
     );
