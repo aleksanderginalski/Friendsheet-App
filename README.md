@@ -174,13 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.0 — US-101: HomeScreen AI Widget — Buddy (March 27, 2026)
-- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (NEW) — `BuddyWidgetProvider`: fetches last meeting without notes (60-day window); expand/collapse state
-- ✅ `lib/presentation/widgets/buddy_widget.dart` (NEW) — `BuddyWidget`: floating icon always visible in bottom-left; speech-bubble card with `CustomPainter` tail; X dismiss, "Let's do it!" action, icon tap routes
-- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getLastMeetingWithoutNotes(userId, since)` added
-- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — Stack layout with `Positioned.fill` + `BuddyWidget` overlay; `SafeArea(bottom: false)`
-- ✅ `lib/presentation/widgets/statistics_section.dart` (MODIFIED) — `statistics_illustration` decoration image removed (replaced by BuddyWidget icon)
-- ✅ 776 Flutter tests passing (+16 new tests)
+### Latest: v4.5.1 — US-103: birthDayMonth Field on Person (March 27, 2026)
+- ✅ `lib/data/models/person.dart` (MODIFIED) — `birthDayMonth String?` added to `Person` Freezed model; stored as `"MM-dd"` (day+month only, year never stored — GDPR)
+- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — `updateBirthDayMonth(String?)` added
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — Birthday row with month/day dropdown picker; day list auto-clamps on month change
+- ✅ `docs/privacy.md` (MODIFIED) — Section 2.2 updated to mention birthday data
+- ✅ 782 Flutter tests passing (+6 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

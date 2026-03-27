@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Friendsheet**
-**Last updated:** March 2026
+**Last updated:** March 27, 2026
 
 ---
 
@@ -26,7 +26,7 @@ This data is provided by Google and is used solely to identify your account with
 ### 2.2 App Data
 Data you enter manually into the app:
 - Meeting records (name, date, participants)
-- Friend profiles (first name, last name)
+- Friend profiles (first name, last name, optional birthday — day and month only, year is never stored)
 - Activity categories
 
 ### 2.3 Google Calendar Data (optional)

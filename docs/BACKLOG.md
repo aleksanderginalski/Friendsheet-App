@@ -3950,21 +3950,21 @@ login instead of only on first login.
 **Story Points:** 2
 **Priority:** P1
 **Labels:** `persons`, `data-model`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] `birthDayMonth` field (`String?`, format `"MM-dd"`) added to `Person` Freezed model
-- [ ] Birthday row in `PersonDetailScreen` body — tapping opens a month/day picker; shows formatted date `d MMM` (e.g. "15 Mar") or "Not set"
-- [ ] `birthDayMonth` saved to Firestore and read back correctly
-- [ ] Field is optional — existing persons unaffected
-- [ ] Year is never stored or displayed (GDPR: day+month only)
-- [ ] `privacy.md` note: birthday data update deferred to /docs after US completion
+- [x] `birthDayMonth` field (`String?`, format `"MM-dd"`) added to `Person` Freezed model
+- [x] Birthday row in `PersonDetailScreen` body — tapping opens a month/day picker; shows formatted date `d MMM` (e.g. "15 Mar") or "Not set"
+- [x] `birthDayMonth` saved to Firestore and read back correctly
+- [x] Field is optional — existing persons unaffected
+- [x] Year is never stored or displayed (GDPR: day+month only)
+- [x] `privacy.md` updated to mention birthday data
 
 **Tasks:**
-- [ ] **TASK-103.1:** Add `birthDayMonth String?` field to `Person` Freezed model — 0.5h
-- [ ] **TASK-103.2:** Update `fromFirestore` / `toFirestore` (store as `"MM-dd"` string) — 0.5h
-- [ ] **TASK-103.3:** Run build_runner, update generated files — 0.5h
-- [ ] **TASK-103.4:** Add birthday `ListTile` to `_PersonDetailBody`; tapping opens custom month/day picker dialog; add `updateBirthDayMonth(String?)` to `PersonDetailProvider` — 1h
+- [x] **TASK-103.1:** Add `birthDayMonth String?` field to `Person` Freezed model — 0.5h
+- [x] **TASK-103.2:** Update `fromFirestore` / `toFirestore` (store as `"MM-dd"` string) — 0.5h
+- [x] **TASK-103.3:** Run build_runner, update generated files — 0.5h
+- [x] **TASK-103.4:** Add birthday `ListTile` to `_PersonDetailBody`; tapping opens custom month/day picker dialog; add `updateBirthDayMonth(String?)` to `PersonDetailProvider` — 1h
 
 **Dependencies:** None
 **Blocks:** US-104
