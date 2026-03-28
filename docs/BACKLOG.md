@@ -4059,27 +4059,163 @@ Interactive action buttons:
 
 ---
 
-### US-106: Buddy Widget Auto-Refresh
+### US-112: Buddy Widget Auto-Refresh
 
+**As a** user
+**I want** Buddy widget to show up-to-date data after I add or edit persons, meetings, or notes
+**So that** I don't have to restart the app to see changes reflected in birthday reminders and meeting suggestions
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `ux`, `performance`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] On return to HomeScreen from PersonDetailScreen (after adding/editing birthday), BuddyWidgetProvider refreshes — new birthday appears immediately
+- [ ] On return to HomeScreen from AIChatScreen (after saving notes), BuddyWidgetProvider refreshes — updated meeting suggestions
+- [ ] On return to HomeScreen from any screen that may modify persons or meetings, BuddyWidgetProvider refreshes
+- [ ] Urgency threshold respected in real time: birthday added for today → widget immediately shows "urgent" mode
+- [ ] Refresh reads from LocalCacheService (no direct Firestore call per refresh)
+- [ ] No visible loading flash during refresh
+
+**Tasks:**
+- [ ] **TASK-112.1:** Add `refresh(String userId)` method to `BuddyWidgetProvider` — delegates to `initialize()` — 0.5h
+- [ ] **TASK-112.2:** Call `refresh()` via `.then()` on all `Navigator.push()` calls from `HomeScreen` that navigate to screens capable of modifying persons or meetings — 1h
+- [ ] **TASK-112.3:** Migrate `BuddyWidgetProvider` data reads to `LocalCacheService` (replaces direct repository calls) — 1h
+
+**Dependencies:** US-109
+**Blocks:** None
+**Implementation order:** 2nd (after US-109)
 
 ---
 
-### US-107: App Language Selection
+### US-113: Buddy Language Selection
 
+**As a** user
+**I want** to choose the language Buddy responds in
+**So that** Buddy always replies in my preferred language regardless of what language I type in
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `settings`, `ux`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Language selector available in SettingsScreen: Polish / English
+- [ ] Selected language persisted in SharedPreferences (key: `buddy_language`)
+- [ ] On first Buddy open (no language set): onboarding step forces language choice before chat starts
+- [ ] System prompt updated with explicit language instruction: "Always respond in [language], regardless of the language the user writes in"
+- [ ] Changing language in Settings takes effect in the next Buddy session (no restart required)
+- [ ] Default (if SharedPreferences key missing): show language picker
+
+**Tasks:**
+- [ ] **TASK-113.1:** Add `buddy_language` key read/write to SharedPreferences in a new `BuddySettingsService` — 0.5h
+- [ ] **TASK-113.2:** Add language selector tile to SettingsScreen (Polish / English toggle) — 0.5h
+- [ ] **TASK-113.3:** Inject language into `OpenAIService` system prompt — 0.5h
+- [ ] **TASK-113.4:** Add language picker step to Buddy first-open guard (before chat loads, if key absent) — 1h
+
+**Dependencies:** None
+**Blocks:** US-114
+**Implementation order:** 3rd (after US-112)
 
 ---
 
-### US-108: Buddy Onboarding Instructions
+### US-114: Buddy Onboarding Flow
 
+**As a** new user
+**I want** Buddy to guide me through the app's main features
+**So that** I can learn how to use Friendsheet at my own pace, choosing only the topics I need help with
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `ai`, `onboarding`, `ux`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Trigger: first Buddy open AND user has fewer than 50 meetings
+- [ ] Buddy presents a topic selection: user picks which features they want to learn (multi-select checkboxes as action buttons)
+- [ ] Topics: Add a meeting | Add a person + birthday | Statistics | Connect Buddy AI (BYOK) | Connect Google Calendar | Sharing tokens (peer-to-peer) | Buddy AI features (notes, wishes, birthdays)
+- [ ] "Skip" option: "I already know how to use it" — skips onboarding entirely
+- [ ] For each selected topic: Buddy sends an explanation message + navigation action button → user taps → app navigates to the relevant screen → on return, Buddy continues to next topic
+- [ ] After all selected topics completed: Buddy congratulates and returns to normal chat mode
+- [ ] Onboarding completion stored in SharedPreferences (key: `buddy_onboarding_completed`)
+- [ ] "Show me again" button in SettingsScreen resets the flag and re-triggers onboarding on next Buddy open
+- [ ] Language follows US-113 setting
+
+**Tasks:**
+- [ ] **TASK-114.1:** Add `buddy_onboarding_completed` flag to SharedPreferences; add "Show me again" tile to SettingsScreen — 0.5h
+- [ ] **TASK-114.2:** Add `onboarding` mode to `BuddyChatMode`; define `OnboardingTopic` enum (7 topics) — 0.5h
+- [ ] **TASK-114.3:** Implement onboarding greeting in `AIChatProvider`: check flag + meeting count on `initialize()`; show topic selector as `pendingActions` — 1h
+- [ ] **TASK-114.4:** Implement topic flow: for each selected topic, send explanation message + navigation action button; track progress through selected topics — 2h
+- [ ] **TASK-114.5:** Wire navigation action buttons from `AIChatScreen` to correct app screens (7 destinations) — 1.5h
+- [ ] **TASK-114.6:** Handle return from each navigated screen: resume onboarding flow for next topic — 1h
+- [ ] **TASK-114.7:** Write completion message; persist `buddy_onboarding_completed` flag on finish or skip — 0.5h
+
+**Dependencies:** US-113
+**Blocks:** None
+**Implementation order:** 5th (last of this group)
 
 ---
 
-### US-109: Buddy Birthday Message Quality
+### US-115: Buddy Birthday Message Quality
+
+**As a** user
+**I want** Buddy to generate birthday messages that match my personal writing style and include meaningful friendship stats
+**So that** the messages feel genuinely personal and reflect our actual shared history
+
+**Story Points:** 8
+**Priority:** P1
+**Labels:** `ai`, `persons`, `ux`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+
+Birthday year stats summary:
+- [ ] "Birthday year" period = from person's last birthday date to today (e.g. 17 May 2025 → 16 May 2026); not calendar year
+- [ ] `buildBirthdayContext` in `ContextBuilderService` updated to use exact birthday dates instead of last 365 days
+- [ ] Stats message shows: total meetings in birthday year | total weight (points) in birthday year
+- [ ] Top activities list: up to 8 activities ranked by points in the birthday year; if fewer than 8 exist, show all
+- [ ] Parent categories do NOT inherit points from child categories — only activities directly assigned to meetings count
+- [ ] Each activity row: `[Name] | X pts | +/-Y% vs previous birthday year | Top Z | +/-M places`
+  - Points: sum for current birthday year
+  - % change: vs same activity in previous birthday year (prev birthday -1 year → prev birthday -1 day)
+  - Top Z: rank among all persons for this activity in the current birthday year
+  - +/-M: rank change vs previous birthday year
+
+Writing style:
+- [ ] Default system prompt includes a style description based on user's personal writing style: warm, informal, references specific shared memories, uses emojis naturally, ~10-20 sentences, structure: gratitude → specific memories → hopes for the future
+- [ ] SettingsScreen: "Teach Buddy your writing style" option — opens a special AIChatScreen session where user pastes example messages; Buddy generates a style description and saves it to Hive (key: `buddy_writing_style`)
+- [ ] When `buddy_writing_style` is set in Hive: style description appended to birthday wish prompt (overrides default)
+- [ ] Style examples are processed once and discarded — only the generated description is stored, never the original messages
+- [ ] User will provide additional example messages during implementation to refine the default style description
+
+**Tasks:**
+- [ ] **TASK-115.1:** Refactor `buildBirthdayContext` — compute exact birthday year date range from `Person.birthDayMonth`; fetch meetings for that range and the previous birthday year range — 1h
+- [ ] **TASK-115.2:** Compute per-activity stats for both periods: direct-assignment-only points, % change, cross-person rank, rank change — 2h
+- [ ] **TASK-115.3:** Update `formatBirthdayStats` in `birthday_format_helpers.dart` — new format with birthday-year scope and per-activity rows — 1h
+- [ ] **TASK-115.4:** Update birthday system prompt section with default style description (refined with user-provided examples at implementation time) — 0.5h
+- [ ] **TASK-115.5:** Implement `buddyStyleSetup` mode in `AIChatProvider`: collect user examples → send to OpenAI with style-extraction prompt → save result to Hive — 1.5h
+- [ ] **TASK-115.6:** Add "Teach Buddy your writing style" tile to SettingsScreen; inject Hive style description into birthday wish prompt when present — 1h
+
+**Dependencies:** US-087, US-104
+**Blocks:** US-117
+**Implementation order:** 4th (after US-113)
+
+---
+
+### US-116: App UI Localization
 
 **Status:** 📋 Planned
+
+**Note:** Full UI localization — flutter_localizations, ARB files, all app strings. Polish + English on launch. Large scope (8+ SP). Planned after US-113 (Buddy Language Selection) is delivered.
+
+---
+
+### US-117: User-Defined Writing Style
+
+**Status:** 📋 Planned
+
+**Note:** Allow any user to define their own Buddy writing style via the style-setup flow introduced in US-115. The default style (user's personal style, hardcoded) can be overridden per-user. Placeholder — scope to be refined when US-115 is complete.
 
 ---
 
