@@ -1572,4 +1572,55 @@ Run after every release or hotfix:
 | UT-103-005 | updateBirthDayMonth sets value and saves to repository | person.birthDayMonth equals `'03-15'`; updatePerson called once |
 | UT-103-006 | updateBirthDayMonth clears value when null is passed | person.birthDayMonth is null after set then clear |
 
+---
+
+## US-104 — Birthday Reminders via Buddy
+
+### Automated tests — `test/presentation/ai_chat/birthday_format_helpers_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-104-001 | formatBirthdayStats — happy path includes all fields | output contains person name, meeting count, year counts, top activities |
+| UT-104-002 | formatBirthdayStats — zero totalWeight omits weight line | output does not contain 'Total weight' |
+| UT-104-003 | formatBirthdayStats — positive totalWeight shows weight line | output contains 'Total weight: 10 pts' |
+| UT-104-004 | formatBirthdayStats — empty topActivities shows fallback | output contains 'no recorded activities yet' |
+| UT-104-005 | buildBirthdayListGreeting — non-empty options returns upcoming birthdays message | output contains 'upcoming birthdays' |
+| UT-104-006 | buildBirthdayListGreeting — empty options returns no-birthdays message | output contains 'No birthdays found yet' |
+| UT-104-007 | birthdayActionLabel — formats label with full name, days and date | label matches '🎂 Anna Smith — 5 days — D Mon' pattern |
+| UT-104-008 | birthdayActionLabel — singular 'day' when daysUntil is 1 | label contains '1 day' not '1 days' |
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-104-009 | getRecentMeetingsWithoutNotes happy path — returns meetings without notes within since, ordered newest first | 2 meetings returned, newest first |
+| UT-104-010 | getRecentMeetingsWithoutNotes returns empty list when all meetings have notes | result is empty |
+| UT-104-011 | getRecentMeetingsWithoutNotes respects the limit parameter | at most 2 meetings returned when limit=2 |
+| UT-104-012 | getRecentMeetingsWithoutNotes does not return meetings on or before since date | result is empty when only meeting is before since |
+
+### Automated tests — `test/presentation/providers/buddy_widget_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-104-013 | birthday detection happy path — populates upcomingBirthdayInfo, daysUntilBirthday and urgentBirthdayPersons | 2 entries; soonest person sorted first; soon person is urgent; later person is not |
+| UT-104-014 | persons without birthDayMonth are excluded from birthday lists | upcomingBirthdayInfo empty; urgentBirthdayPersons empty |
+| UT-104-015 | birthday today is treated as upcoming (daysUntil == 0) | daysUntilBirthday\['p-today'\] == 0; person in urgentBirthdayPersons |
+
+### Automated tests — `test/presentation/providers/ai_chat_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-104-016 | initialize birthdayList mode — greeting contains 'upcoming birthdays', pendingActions has birthday_list_select action with person label | 1 message; 1 pending action with actionId 'birthday_list_select:p1'; label contains 'Anna' |
+| UT-104-017 | initialize birthdayList mode — empty options returns no-birthdays greeting with empty pendingActions | message contains 'No birthdays'; pendingActions is empty |
+| UT-104-018 | initialize meetingNotesList mode — greeting about meetings without notes, pendingAction with meeting label | 1 message contains 'without notes'; pendingAction actionId 'meeting_notes:m1'; label contains 'Team Lunch' |
+| UT-104-019 | handleAction birthday_list_select — clears pendingActions and adds assistant birthday stats message with person name | pendingActions null; at least 2 messages; assistant message contains 'Anna' |
+| UT-104-020 | handleAction meeting_notes — clears pendingActions and appends greeting mentioning meeting name | pendingActions null; last assistant message contains 'Board Meeting' |
+
+### Automated tests — `test/data/services/context_builder_service_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-104-021 | buildBirthdayContext happy path — filters to 365-day window, excludes older meetings | 1 meeting in context (within window); older meeting excluded |
+| UT-104-022 | buildBirthdayContext — returns empty meeting/person lists when all meetings outside 365-day window | meetings empty; persons empty |
+| UT-104-023 | totalWeight on PersonContextEntry sums meeting weights correctly | two meetings weight=3 each → totalWeight == 6; meetingCount == 2 |
 

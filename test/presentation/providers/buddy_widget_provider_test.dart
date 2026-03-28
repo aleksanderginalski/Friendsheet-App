@@ -115,5 +115,111 @@ void main() {
 
       expect(provider.isExpanded, isTrue);
     });
+
+    group('birthday detection', () {
+      Person makePerson({
+        required String id,
+        required String firstName,
+        String? birthDayMonth,
+      }) =>
+          Person(
+            id: id,
+            userId: 'user-1',
+            firstName: firstName,
+            createdAt: DateTime(2026, 1, 1),
+            birthDayMonth: birthDayMonth,
+          );
+
+      setUp(() {
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsWithoutNotes(any, any))
+            .thenAnswer((_) async => <Meeting>[]);
+      });
+
+      test(
+          'happy path — populates upcomingBirthdayInfo, daysUntilBirthday and urgentBirthdayPersons',
+          () async {
+        final today = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+        );
+        // Birthday 2 days from today → urgent (< 5). Use explicit datetime
+        // arithmetic to avoid DST-induced off-by-one in Duration(days: N).
+        final soonDate = DateTime(today.year, today.month, today.day + 2);
+        final soonBdm =
+            '${soonDate.month.toString().padLeft(2, '0')}-${soonDate.day.toString().padLeft(2, '0')}';
+        // Birthday 30 days from today → not urgent.
+        final laterDate = DateTime(today.year, today.month, today.day + 30);
+        final laterBdm =
+            '${laterDate.month.toString().padLeft(2, '0')}-${laterDate.day.toString().padLeft(2, '0')}';
+
+        final personSoon =
+            makePerson(id: 'p-soon', firstName: 'Soon', birthDayMonth: soonBdm);
+        final personLater = makePerson(
+            id: 'p-later', firstName: 'Later', birthDayMonth: laterBdm);
+
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [personSoon, personLater]);
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.upcomingBirthdayInfo.length, 2);
+        // soonBdm person should have daysUntil < laterBdm person → sorted first.
+        expect(provider.upcomingBirthdayInfo.first.person.id, 'p-soon');
+        final soonDays = provider.daysUntilBirthday['p-soon']!;
+        final laterDays = provider.daysUntilBirthday['p-later']!;
+        expect(soonDays, lessThan(5)); // urgent threshold
+        expect(laterDays, greaterThan(soonDays));
+        // urgent: only person within next 5 days
+        expect(provider.urgentBirthdayPersons.length, 1);
+        expect(provider.urgentBirthdayPersons.first.id, 'p-soon');
+      });
+
+      test('persons without birthDayMonth are excluded from birthday lists',
+          () async {
+        final personNoBirth = makePerson(id: 'p-no', firstName: 'NoBirth');
+
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [personNoBirth]);
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.upcomingBirthdayInfo, isEmpty);
+        expect(provider.urgentBirthdayPersons, isEmpty);
+        expect(provider.daysUntilBirthday, isEmpty);
+      });
+
+      test('birthday today is treated as upcoming (daysUntil == 0)', () async {
+        final today = DateTime.now();
+        final bdm =
+            '${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+        final person =
+            makePerson(id: 'p-today', firstName: 'Today', birthDayMonth: bdm);
+
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [person]);
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.daysUntilBirthday['p-today'], 0);
+        expect(provider.urgentBirthdayPersons, contains(person));
+      });
+    });
   });
 }
