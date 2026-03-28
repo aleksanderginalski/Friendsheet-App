@@ -154,9 +154,7 @@ void _openAIChatBirthday(
   } else {
     // Show urgent persons if any, otherwise the 3 nearest upcoming.
     final options = urgent.isNotEmpty
-        ? provider.upcomingBirthdayInfo
-            .where((b) => b.daysUntil < 5)
-            .toList()
+        ? provider.upcomingBirthdayInfo.where((b) => b.daysUntil < 5).toList()
         : provider.upcomingBirthdayInfo.take(3).toList();
     Navigator.push(
       context,

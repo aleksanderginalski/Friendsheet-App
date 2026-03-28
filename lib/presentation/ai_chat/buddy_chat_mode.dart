@@ -2,11 +2,11 @@ import '../../data/models/person.dart';
 
 /// Chat modes for AIChatScreen. Determines the initial greeting and flow.
 enum BuddyChatMode {
-  freeQuery,        // general chat (existing behaviour)
-  meetingNotes,     // add notes to a specific meeting (existing behaviour)
+  freeQuery, // general chat (existing behaviour)
+  meetingNotes, // add notes to a specific meeting (existing behaviour)
   meetingNotesList, // show top-3 meetings without notes as selectable actions
-  birthdayList,     // show upcoming birthdays as selectable actions
-  birthdayWishes,   // auto-generate stats + AI wish for a specific person
+  birthdayList, // show upcoming birthdays as selectable actions
+  birthdayWishes, // auto-generate stats + AI wish for a specific person
 }
 
 /// A selectable action rendered as a button in the chat UI.

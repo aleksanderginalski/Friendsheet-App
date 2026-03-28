@@ -4059,6 +4059,30 @@ Interactive action buttons:
 
 ---
 
+### US-106: Buddy Widget Auto-Refresh
+
+**Status:** 📋 Planned
+
+---
+
+### US-107: App Language Selection
+
+**Status:** 📋 Planned
+
+---
+
+### US-108: Buddy Onboarding Instructions
+
+**Status:** 📋 Planned
+
+---
+
+### US-109: Buddy Birthday Message Quality
+
+**Status:** 📋 Planned
+
+---
+
 ## 📊 FEATURE-029: Advanced Analytics
 
 **Description:** Advanced AI-powered analytics: annual social report, relationship strength indicator, and sentiment analysis of meeting notes. These features provide deep insights beyond standard statistics.

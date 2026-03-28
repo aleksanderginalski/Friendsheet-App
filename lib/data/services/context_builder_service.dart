@@ -375,8 +375,7 @@ class ContextBuilderService {
       }
 
       // Sum of meeting weights — used for birthday stats display.
-      final totalWeight =
-          personMeetings.fold(0, (sum, m) => sum + m.weight);
+      final totalWeight = personMeetings.fold(0, (sum, m) => sum + m.weight);
 
       return PersonContextEntry(
         pseudonym: pseudonym,

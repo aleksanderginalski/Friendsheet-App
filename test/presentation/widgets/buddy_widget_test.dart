@@ -77,8 +77,7 @@ void main() {
       expect(find.text('💾 Save Your Memories'), findsNothing);
     });
 
-    testWidgets(
-        'expanded with meetings shows save memories button',
+    testWidgets('expanded with meetings shows save memories button',
         (tester) async {
       await tester.pumpWidget(
         buildWidget(suggestedMeetings: [testMeeting]),

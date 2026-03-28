@@ -193,10 +193,10 @@ class AIChatProvider extends ChangeNotifier {
     final personEntry = _context!.persons.firstWhere(
       (p) => p.pseudonym == pseudonym,
       orElse: () => const PersonContextEntry(
-          pseudonym: '',
-          meetingCount: 0,
-          topActivities: [],
-        ),
+        pseudonym: '',
+        meetingCount: 0,
+        topActivities: [],
+      ),
     );
 
     final statsMsg = formatBirthdayStats(
@@ -210,10 +210,8 @@ class AIChatProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final contextPrompt =
-          _contextBuilderService.serializeToPrompt(_context!);
-      final wishPrompt =
-          'My friend $personName has a birthday coming up soon. '
+      final contextPrompt = _contextBuilderService.serializeToPrompt(_context!);
+      final wishPrompt = 'My friend $personName has a birthday coming up soon. '
           'Using our shared activity history, write a warm, personal birthday '
           'message I could send them. Keep it friendly and specific to what we '
           'enjoy together.';
