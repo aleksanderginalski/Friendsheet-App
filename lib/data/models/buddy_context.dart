@@ -33,6 +33,7 @@ class PersonContextEntry {
     this.lastMeetingDate,
     this.mostActivePeriod,
     this.meetingsByYear = const {},
+    this.totalWeight = 0,
   });
 
   /// Pseudonym assigned to this person, e.g. 'Friend_A'.
@@ -54,6 +55,10 @@ class PersonContextEntry {
   /// Meeting count broken down by year, e.g. {2025: 5, 2026: 31}.
   /// Enables the AI to answer year-specific questions accurately.
   final Map<int, int> meetingsByYear;
+
+  /// Sum of [Meeting.weight] values across all meetings with this person
+  /// in the current context window. Used for birthday stats display.
+  final int totalWeight;
 }
 
 /// The full anonymized context bundle passed to the AI prompt serializer.

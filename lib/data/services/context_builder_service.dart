@@ -109,6 +109,49 @@ class ContextBuilderService {
     );
   }
 
+  /// Builds context scoped to meetings where [personId] participated,
+  /// limited to the last 365 days for token optimization.
+  /// Use this instead of [buildPersonContext] for birthday wishes generation.
+  Future<BuddyContext> buildBirthdayContext(
+    String userId,
+    String personId,
+  ) async {
+    final maps = await _buildMaps(userId);
+    final categoryNames = await _loadCategoryNames(userId);
+    final cutoff = DateTime.now().subtract(const Duration(days: 365));
+
+    final allMeetings = await _meetingRepository.getMeetingsByParticipant(
+      userId,
+      personId,
+    );
+    final meetings = allMeetings.where((m) => m.date.isAfter(cutoff)).toList();
+
+    final meetingEntries = meetings
+        .map((m) => _toMeetingEntry(m, maps.personIdToPseudonym, categoryNames))
+        .toList();
+
+    final participantIds = {
+      for (final m in meetings) ...m.participantIds,
+    };
+    final scopedIdToPseudonym = Map.fromEntries(
+      maps.personIdToPseudonym.entries
+          .where((e) => participantIds.contains(e.key)),
+    );
+
+    final personEntries = _buildPersonEntries(
+      meetings,
+      scopedIdToPseudonym,
+      categoryNames,
+    );
+
+    return BuddyContext(
+      meetings: meetingEntries,
+      persons: personEntries,
+      pseudonymToRealName: maps.pseudonymToRealName,
+      personIdToPseudonym: maps.personIdToPseudonym,
+    );
+  }
+
   /// Serializes a [BuddyContext] to a plain-text string ready for use as
   /// AI prompt context.
   ///
@@ -155,6 +198,7 @@ class ContextBuilderService {
         });
       for (final p in sortedPersons) {
         final sb = StringBuffer('- ${p.pseudonym}: ${p.meetingCount} meetings');
+        if (p.totalWeight > 0) sb.write(', total weight: ${p.totalWeight}');
         if (p.meetingsByYear.isNotEmpty) {
           final sorted = p.meetingsByYear.entries.toList()
             ..sort((a, b) => b.key.compareTo(a.key));
@@ -330,6 +374,10 @@ class ContextBuilderService {
         meetingsByYear[m.date.year] = (meetingsByYear[m.date.year] ?? 0) + 1;
       }
 
+      // Sum of meeting weights — used for birthday stats display.
+      final totalWeight =
+          personMeetings.fold(0, (sum, m) => sum + m.weight);
+
       return PersonContextEntry(
         pseudonym: pseudonym,
         meetingCount: personMeetings.length,
@@ -337,6 +385,7 @@ class ContextBuilderService {
         lastMeetingDate: lastMeeting.date,
         mostActivePeriod: mostActive.key,
         meetingsByYear: meetingsByYear,
+        totalWeight: totalWeight,
       );
     }).toList();
   }
