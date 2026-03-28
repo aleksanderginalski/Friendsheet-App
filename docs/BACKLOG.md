@@ -3980,51 +3980,51 @@ login instead of only on first login.
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `ai`, `persons`, `notifications`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
 
 Birthday detection:
-- [ ] `BuddyWidgetProvider` checks all persons with `birthDayMonth` set; computes days until next birthday (wraps to next year if past)
-- [ ] Threshold: < 5 days → "urgent" birthday mode; any birthday set → "Check upcoming birthdays" available
+- [x] `BuddyWidgetProvider` checks all persons with `birthDayMonth` set; computes days until next birthday (wraps to next year if past)
+- [x] Threshold: < 5 days → "urgent" birthday mode; any birthday set → "Check upcoming birthdays" available
 
 Scenario 1 — No urgent birthdays (< 5 days):
-- [ ] BuddyWidget shows "Save Your Memories" button (when meetings without notes exist) + "Check upcoming birthdays" button (when at least one person has `birthDayMonth` set)
-- [ ] "Check upcoming birthdays" → opens AIChatScreen; Buddy message lists up to 3 nearest birthdays (name, days, date) with an action button per person
-- [ ] Tapping a person button in chat → Buddy switches to birthday-wishes flow for that person
+- [x] BuddyWidget shows "Save Your Memories" button (when meetings without notes exist) + "Check upcoming birthdays" button (when at least one person has `birthDayMonth` set)
+- [x] "Check upcoming birthdays" → opens AIChatScreen; Buddy message lists up to 3 nearest birthdays (name, days, date) with an action button per person
+- [x] Tapping a person button in chat → Buddy switches to birthday-wishes flow for that person
 
 Scenario 2 — Exactly one urgent birthday:
-- [ ] BuddyWidget shows: "Save Your Memories" + "🎂 [Name]'s birthday is in X days!"
-- [ ] Tapping birthday button → opens AIChatScreen; Buddy auto-sends 2 messages:
+- [x] BuddyWidget shows: "Save Your Memories" + "🎂 [Name]'s birthday is in X days!"
+- [x] Tapping birthday button → opens AIChatScreen; Buddy auto-sends 2 messages:
   - Message 1 (Dart-computed): meeting count, total weight, top activities, year-over-year comparison
   - Message 2 (AI-generated): personalized birthday wish based on context
-- [ ] AI context limited to last 365 days and only meetings with that person (token optimization)
+- [x] AI context limited to last 365 days and only meetings with that person (token optimization)
 
 Scenario 3 — Multiple urgent birthdays:
-- [ ] BuddyWidget shows: "Save Your Memories" + "🎂 X friends have birthdays soon!"
-- [ ] Tapping → opens AIChatScreen; Buddy lists all urgent persons as action buttons ("🎂 [Name] — X days")
-- [ ] Tapping a person → Buddy generates stats + wishes for that person
+- [x] BuddyWidget shows: "Save Your Memories" + "🎂 X friends have birthdays soon!"
+- [x] Tapping → opens AIChatScreen; Buddy lists all urgent persons as action buttons ("🎂 [Name] — X days")
+- [x] Tapping a person → Buddy generates stats + wishes for that person
 
 Save Your Memories (scope expansion):
-- [ ] "Save Your Memories" button replaces old single-meeting CTA
-- [ ] Tapping → opens AIChatScreen in meeting-notes-list mode; Buddy shows up to 3 most recent meetings without notes (last 60 days) as action buttons
-- [ ] Tapping a meeting → Buddy switches to meeting-notes mode for that meeting
+- [x] "Save Your Memories" button replaces old single-meeting CTA
+- [x] Tapping → opens AIChatScreen in meeting-notes-list mode; Buddy shows up to 3 most recent meetings without notes (last 60 days) as action buttons
+- [x] Tapping a meeting → Buddy switches to meeting-notes mode for that meeting
 
 Interactive action buttons:
-- [ ] `AIChatProvider` exposes `pendingActions: List<BuddyAction>?`
-- [ ] `AIChatScreen` renders action buttons above the input row when `pendingActions` is non-null
-- [ ] Tapping an action calls `AIChatProvider.handleAction()` which clears actions and continues flow
+- [x] `AIChatProvider` exposes `pendingActions: List<BuddyAction>?`
+- [x] `AIChatScreen` renders action buttons as a chat bubble in the message list when `pendingActions` is non-null
+- [x] Tapping an action calls `AIChatProvider.handleAction()` which clears actions and continues flow
 
 **Tasks:**
-- [ ] **TASK-104.1:** Create `lib/presentation/ai_chat/buddy_chat_mode.dart` — `BuddyChatMode` enum, `BuddyAction` class, `BirthdayPersonInfo` class — 0.5h
-- [ ] **TASK-104.2:** Add `totalWeight: int` (default 0) to `PersonContextEntry`; update `_buildPersonEntries` to compute weight sum; update `serializeToPrompt` to include weight when > 0; add `buildBirthdayContext(userId, personId)` (last 365 days, person-scoped) to `ContextBuilderService` — 1h
-- [ ] **TASK-104.3:** Add `getRecentMeetingsWithoutNotes(userId, since, {int limit = 3})` to `MeetingRepository` — 0.5h
-- [ ] **TASK-104.4:** Refactor `BuddyWidgetProvider` — add `PersonRepository` dependency; birthday detection (days until, 5-day threshold); expose `urgentBirthdayPersons`, `daysUntilBirthday`, `upcomingBirthdayInfo`, `suggestedMeetings` (top 3) — 1h
-- [ ] **TASK-104.5:** Redesign `BuddyWidget` — 2-button layout; birthday CTA variants (single / multiple / check); "Save Your Memories" button — 1h
-- [ ] **TASK-104.6:** Extend `AIChatProvider` — add `mode`, `meetingOptions`, `birthdayOptions` to `initialize()`; implement `meetingNotesList`, `birthdayList`, `birthdayWishes` greeting paths; add `pendingActions` + `handleAction()`; implement `_initBirthdayWishes` (Dart stats msg + AI wishes call) — 2h
-- [ ] **TASK-104.7:** Update `AIChatScreen` + `buildAIChatRoute` — new params; render `pendingActions` buttons above input row — 0.5h
-- [ ] **TASK-104.8:** Update `HomeScreen` — new navigation callbacks for all modes — 0.5h
-- [ ] **TASK-104.9:** Update test `setUp()` in `buddy_widget_provider_test.dart` and `home_screen_test.dart` — add mock `PersonRepository` — 0.5h
+- [x] **TASK-104.1:** Create `lib/presentation/ai_chat/buddy_chat_mode.dart` — `BuddyChatMode` enum, `BuddyAction` class, `BirthdayPersonInfo` class — 0.5h
+- [x] **TASK-104.2:** Add `totalWeight: int` (default 0) to `PersonContextEntry`; update `_buildPersonEntries` to compute weight sum; update `serializeToPrompt` to include weight when > 0; add `buildBirthdayContext(userId, personId)` (last 365 days, person-scoped) to `ContextBuilderService` — 1h
+- [x] **TASK-104.3:** Add `getRecentMeetingsWithoutNotes(userId, since, {int limit = 3})` to `MeetingRepository` — 0.5h
+- [x] **TASK-104.4:** Refactor `BuddyWidgetProvider` — add `PersonRepository` dependency; birthday detection (days until, 5-day threshold); expose `urgentBirthdayPersons`, `daysUntilBirthday`, `upcomingBirthdayInfo`, `suggestedMeetings` (top 3) — 1h
+- [x] **TASK-104.5:** Redesign `BuddyWidget` — 2-button layout; birthday CTA variants (single / multiple / check); "Save Your Memories" button; Column layout fix for correct hit-test bounds — 1h
+- [x] **TASK-104.6:** Extend `AIChatProvider` — add `mode`, `meetingOptions`, `birthdayOptions` to `initialize()`; implement `meetingNotesList`, `birthdayList`, `birthdayWishes` greeting paths; add `pendingActions` + `handleAction()`; implement `_initBirthdayWishes` (Dart stats msg + AI wishes call) — 2h
+- [x] **TASK-104.7:** Update `AIChatScreen` + `buildAIChatRoute` — new params; render `pendingActions` as `_ActionsBubble` inside ListView — 0.5h
+- [x] **TASK-104.8:** Update `HomeScreen` — new navigation callbacks for all modes — 0.5h
+- [x] **TASK-104.9:** Update test `setUp()` in `buddy_widget_provider_test.dart` and `home_screen_test.dart` — add mock `PersonRepository` — 0.5h
 
 **Dependencies:** US-103, US-101
 **Blocks:** None

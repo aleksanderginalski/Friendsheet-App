@@ -4,6 +4,30 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.2 — US-104: Birthday Reminders via Buddy (March 28, 2026)
+- ✅ `lib/presentation/ai_chat/buddy_chat_mode.dart` (NEW) — `BuddyChatMode` enum (`freeQuery`, `meetingNotes`, `meetingNotesList`, `birthdayList`, `birthdayWishes`); `BuddyAction` class (label + actionId); `BirthdayPersonInfo` class (person + daysUntil)
+- ✅ `lib/presentation/ai_chat/birthday_format_helpers.dart` (NEW) — `formatBirthdayStats()` (Dart-computed stats message: meeting count, year-over-year breakdown, total weight, top activities); `buildBirthdayListGreeting()` (generic greeting for birthday list mode); `birthdayActionLabel()` (full name + days + date formatted as button label)
+- ✅ `lib/data/models/buddy_context.dart` (MODIFIED) — `totalWeight: int` field added to `PersonContextEntry` (default 0); sum of meeting weights for the context window
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getRecentMeetingsWithoutNotes(userId, since, {int limit = 3})` added; returns up to N most recent meetings within date range that have an empty notes list
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `buildBirthdayContext(userId, personId)` added (365-day window, person-scoped, token-optimized); `_buildPersonEntries` updated to compute `totalWeight`; `serializeToPrompt` includes weight line when > 0
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (MODIFIED) — `initialize()` gains `mode`, `meetingOptions`, `birthdayOptions` params; `meetingNotesList` path shows top-3 meetings as action buttons; `birthdayList` path shows upcoming birthdays as action buttons; `birthdayWishes` path streams Dart stats + AI wish; `pendingActions: List<BuddyAction>?` exposed; `handleAction()` clears actions and continues flow; default freeQuery greeting updated to match HomeScreen tone
+- ✅ `lib/presentation/ai_chat/ai_chat_screen.dart` (MODIFIED) — `_ActionsRow` (bottom bar) replaced with `_ActionsBubble` (assistant-style chat bubble in `ListView.builder`); `buildAIChatRoute` factory updated with new params
+- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (MODIFIED) — `PersonRepository` added as dependency; birthday detection computes `daysUntil` for each person with `birthDayMonth` set (wraps to next year when past); exposes `urgentBirthdayPersons` (< 5 days), `daysUntilBirthday`, `upcomingBirthdayInfo`, `suggestedMeetings` (top 3 without notes)
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — navigation callbacks updated for all modes (`meetingNotesList`, `birthdayWishes`, `birthdayList`); passes `meetingOptions` and `birthdayOptions` to `buildAIChatRoute`
+- ✅ `lib/presentation/widgets/buddy_widget.dart` (MODIFIED) — root layout changed from `SizedBox(224×224) + Stack` to `Column([bubble, icon])` — fixes hit-test clipping that blocked X button and Save Memories taps; button padding increased for better tap targets; birthday CTA variants: single urgent ("🎂 [Name]'s birthday is in X days!"), multiple urgent ("🎂 X friends have birthdays soon!"), non-urgent ("Check upcoming birthdays")
+- ✅ `test/presentation/ai_chat/birthday_format_helpers_test.dart` (NEW) — 12 unit tests: `formatBirthdayStats` (year-over-year, weight present/absent, empty activities, name+count), `buildBirthdayListGreeting` (empty list, non-empty, no name leakage), `birthdayActionLabel` (full name, first name only, singular/plural day, emoji prefix)
+- ✅ `test/data/repositories/meeting_repository_test.dart` (MODIFIED) — 4 new tests for `getRecentMeetingsWithoutNotes`: happy path ordering, all-have-notes returns empty, limit param, excludes old meetings
+- ✅ `test/presentation/providers/buddy_widget_provider_test.dart` (MODIFIED) — `MockPersonRepository` added; 3 new birthday detection tests: urgency threshold + sorting, persons without `birthDayMonth` excluded, today = daysUntil 0
+- ✅ `test/presentation/providers/ai_chat_provider_test.dart` (MODIFIED) — 4 new tests: `birthdayList` mode greeting + actions, `meetingNotesList` mode greeting + actions, `handleAction` birthday flow, `handleAction` meeting-notes flow
+- ✅ `test/data/services/context_builder_service_test.dart` (MODIFIED) — 3 new tests: `buildBirthdayContext` 365-day filter, empty window, `totalWeight` summation
+- ✅ `test/presentation/screens/home_screen_test.dart` (MODIFIED) — stubs updated for `getRecentMeetingsWithoutNotes` and `getPersonsByUser`
+- ✅ `test/presentation/widgets/buddy_widget_test.dart` (MODIFIED) — rewritten for new `BuddyWidget` API (`suggestedMeetings`, `urgentBirthdayPersons`, `daysUntilBirthday`, `upcomingBirthdayInfo`); birthday button label test added
+- ✅ All mock files regenerated via `dart run build_runner build --delete-conflicting-outputs`
+- ✅ 811 Flutter tests passing (+35 new tests)
+- ⚠️ **Tech debt resolved (TASK-101.6):** `BuddyWidget` Column layout replaces pixel-offset `SizedBox+Stack` — no longer blocked by `RenderBox.hitTest` size check
+
+---
+
 ### v4.5.1 — US-103: birthDayMonth Field on Person (March 27, 2026)
 - ✅ `lib/data/models/person.dart` (MODIFIED) — `birthDayMonth String?` field added to `Person` Freezed model; `fromFirestore` reads field null-safely; `toFirestore` writes it conditionally (omitted when null)
 - ✅ `lib/data/models/person.freezed.dart` (REGENERATED) — Freezed-generated code updated for new field
