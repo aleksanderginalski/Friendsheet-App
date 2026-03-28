@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
+import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/presentation/ai_chat/buddy_chat_mode.dart';
 import 'package:friendsheet/presentation/widgets/buddy_widget.dart';
 
 void main() {
@@ -15,13 +17,25 @@ void main() {
     updatedAt: DateTime(2026, 3, 1),
   );
 
+  final testPerson = Person(
+    id: 'p1',
+    userId: 'user-1',
+    firstName: 'Ada',
+    createdAt: DateTime(2026, 1, 1),
+    birthDayMonth: '04-02',
+  );
+
   // Mirrors HomeScreen: BuddyWidget anchored at bottom-left of a Stack so
   // the bubble (positioned above the icon) stays within the visible area.
   Widget buildWidget({
-    Meeting? meeting,
+    List<Meeting> suggestedMeetings = const [],
+    List<Person> urgentBirthdayPersons = const [],
+    Map<String, int> daysUntilBirthday = const {},
+    List<BirthdayPersonInfo> upcomingBirthdayInfo = const [],
     bool isExpanded = true,
     VoidCallback? onDismiss,
-    VoidCallback? onActionTap,
+    VoidCallback? onSaveMemoriesTap,
+    VoidCallback? onBirthdayTap,
     VoidCallback? onIconTap,
   }) {
     return MaterialApp(
@@ -33,10 +47,14 @@ void main() {
               bottom: 0,
               left: 0,
               child: BuddyWidget(
-                suggestedMeeting: meeting,
+                suggestedMeetings: suggestedMeetings,
+                urgentBirthdayPersons: urgentBirthdayPersons,
+                daysUntilBirthday: daysUntilBirthday,
+                upcomingBirthdayInfo: upcomingBirthdayInfo,
                 isExpanded: isExpanded,
                 onDismiss: onDismiss ?? () {},
-                onActionTap: onActionTap ?? () {},
+                onSaveMemoriesTap: onSaveMemoriesTap ?? () {},
+                onBirthdayTap: onBirthdayTap ?? () {},
                 onIconTap: onIconTap ?? () {},
               ),
             ),
@@ -47,36 +65,62 @@ void main() {
   }
 
   group('BuddyWidget', () {
-    testWidgets('collapsed state shows no bubble text', (tester) async {
+    testWidgets('collapsed state shows only the icon', (tester) async {
       await tester.pumpWidget(
-        buildWidget(meeting: testMeeting, isExpanded: false),
+        buildWidget(
+          suggestedMeetings: [testMeeting],
+          isExpanded: false,
+        ),
       );
 
       expect(find.textContaining('Hey'), findsNothing);
-      expect(find.text("Let's do it!"), findsNothing);
+      expect(find.text('💾 Save Your Memories'), findsNothing);
     });
 
-    testWidgets('expanded with meeting shows meeting name and action button',
+    testWidgets('expanded with meetings shows save memories button',
         (tester) async {
-      await tester.pumpWidget(buildWidget(meeting: testMeeting));
+      await tester.pumpWidget(
+        buildWidget(suggestedMeetings: [testMeeting]),
+      );
 
-      expect(find.textContaining('Gloomhaven'), findsOneWidget);
-      expect(find.text("Let's do it!"), findsOneWidget);
+      expect(find.textContaining('Hey'), findsOneWidget);
+      expect(find.text('💾 Save Your Memories'), findsOneWidget);
     });
 
     testWidgets(
-        'expanded without meeting shows generic message, no action button',
+        'expanded without meetings or birthdays shows generic message, no buttons',
         (tester) async {
       await tester.pumpWidget(buildWidget());
 
       expect(find.text('Hey! Can I help you with anything?'), findsOneWidget);
-      expect(find.text("Let's do it!"), findsNothing);
+      expect(find.text('💾 Save Your Memories'), findsNothing);
+    });
+
+    testWidgets(
+        'expanded with one urgent birthday shows specific birthday button',
+        (tester) async {
+      final info = BirthdayPersonInfo(person: testPerson, daysUntil: 2);
+      await tester.pumpWidget(
+        buildWidget(
+          urgentBirthdayPersons: [testPerson],
+          daysUntilBirthday: {'p1': 2},
+          upcomingBirthdayInfo: [info],
+        ),
+      );
+
+      expect(
+        find.textContaining("Ada's birthday is in 2 days"),
+        findsOneWidget,
+      );
     });
 
     testWidgets('tapping X calls onDismiss', (tester) async {
       var dismissed = false;
       await tester.pumpWidget(
-        buildWidget(meeting: testMeeting, onDismiss: () => dismissed = true),
+        buildWidget(
+          suggestedMeetings: [testMeeting],
+          onDismiss: () => dismissed = true,
+        ),
       );
 
       // The X button renders above the BuddyWidget Stack's bounds (bubble is
@@ -86,13 +130,17 @@ void main() {
       expect(dismissed, isTrue);
     });
 
-    testWidgets("tapping Let's do it! calls onActionTap", (tester) async {
+    testWidgets('tapping Save Your Memories calls onSaveMemoriesTap',
+        (tester) async {
       var tapped = false;
       await tester.pumpWidget(
-        buildWidget(meeting: testMeeting, onActionTap: () => tapped = true),
+        buildWidget(
+          suggestedMeetings: [testMeeting],
+          onSaveMemoriesTap: () => tapped = true,
+        ),
       );
 
-      await tester.tap(find.text("Let's do it!"));
+      await tester.tap(find.text('💾 Save Your Memories'));
       expect(tapped, isTrue);
     });
 

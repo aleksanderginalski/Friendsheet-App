@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/meeting.dart';
 import '../../data/repositories/ai_consent_repository.dart';
 import '../../data/repositories/ai_key_repository.dart';
 import '../../data/services/buddy_write_service.dart';
@@ -10,6 +11,7 @@ import '../providers/ai_settings_provider.dart';
 import '../screens/ai_consent_screen.dart';
 import '../screens/ai_settings_screen.dart';
 import 'ai_chat_provider.dart';
+import 'buddy_chat_mode.dart';
 import 'chat_bubble.dart';
 
 /// The Buddy AI chat screen. On open it checks consent and API key,
@@ -20,11 +22,24 @@ class AIChatScreen extends StatefulWidget {
     required this.userId,
     this.meetingId,
     this.personId,
+    this.mode = BuddyChatMode.freeQuery,
+    this.meetingOptions = const [],
+    this.birthdayOptions = const [],
   });
 
   final String userId;
   final String? meetingId;
   final String? personId;
+
+  /// Determines the initial greeting and flow — see [BuddyChatMode].
+  final BuddyChatMode mode;
+
+  /// Meetings shown as selectable actions in [BuddyChatMode.meetingNotesList].
+  final List<Meeting> meetingOptions;
+
+  /// Birthday persons shown as selectable actions in [BuddyChatMode.birthdayList]
+  /// or used for context in [BuddyChatMode.birthdayWishes].
+  final List<BirthdayPersonInfo> birthdayOptions;
 
   @override
   State<AIChatScreen> createState() => _AIChatScreenState();
@@ -74,6 +89,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
           widget.userId,
           meetingId: widget.meetingId,
           personId: widget.personId,
+          mode: widget.mode,
+          meetingOptions: widget.meetingOptions,
+          birthdayOptions: widget.birthdayOptions,
         );
   }
 
@@ -124,6 +142,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
       if (provider.messages.isNotEmpty) _scrollToBottom();
     });
 
+    final hasPending =
+        provider.pendingActions != null && provider.pendingActions!.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Buddy'),
@@ -136,19 +157,32 @@ class _AIChatScreenState extends State<AIChatScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount:
-                  provider.messages.length + (provider.isLoading ? 1 : 0),
+              itemCount: provider.messages.length +
+                  (hasPending ? 1 : 0) +
+                  (provider.isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index < provider.messages.length) {
                   final msg = provider.messages[index];
                   return ChatBubble(role: msg.role, content: msg.content);
                 }
-                // Loading indicator bubble.
-                return const ChatBubble(
-                  role: 'assistant',
-                  content: '',
-                  isLoading: true,
-                );
+                var extra = index - provider.messages.length;
+                if (hasPending) {
+                  if (extra == 0) {
+                    return _ActionsBubble(
+                      actions: provider.pendingActions!,
+                      onAction: provider.handleAction,
+                    );
+                  }
+                  extra -= 1;
+                }
+                if (extra == 0 && provider.isLoading) {
+                  return const ChatBubble(
+                    role: 'assistant',
+                    content: '',
+                    isLoading: true,
+                  );
+                }
+                return const SizedBox.shrink();
               },
             ),
           ),
@@ -165,6 +199,61 @@ class _AIChatScreenState extends State<AIChatScreen> {
             onSend: _sendMessage,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Renders pending [BuddyAction] items as an assistant-style chat bubble
+/// with each action on its own line.
+class _ActionsBubble extends StatelessWidget {
+  const _ActionsBubble({required this.actions, required this.onAction});
+
+  final List<BuddyAction> actions;
+  final void Function(BuddyAction) onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.78,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(4),
+            bottomRight: Radius.circular(16),
+          ),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: actions.asMap().entries.map((entry) {
+            final isLast = entry.key == actions.length - 1;
+            return Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+              child: ElevatedButton(
+                onPressed: () => onAction(entry.value),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  textStyle: const TextStyle(fontSize: 14),
+                ),
+                child: Text(entry.value.label),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -288,6 +377,9 @@ Widget buildAIChatRoute({
   required String userId,
   String? meetingId,
   String? personId,
+  BuddyChatMode mode = BuddyChatMode.freeQuery,
+  List<Meeting> meetingOptions = const [],
+  List<BirthdayPersonInfo> birthdayOptions = const [],
 }) {
   return ChangeNotifierProvider(
     create: (_) => AIChatProvider(
@@ -299,6 +391,9 @@ Widget buildAIChatRoute({
       userId: userId,
       meetingId: meetingId,
       personId: personId,
+      mode: mode,
+      meetingOptions: meetingOptions,
+      birthdayOptions: birthdayOptions,
     ),
   );
 }

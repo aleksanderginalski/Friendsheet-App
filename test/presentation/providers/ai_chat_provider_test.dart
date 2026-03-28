@@ -2,10 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/ai_exceptions.dart';
 import 'package:friendsheet/data/models/buddy_context.dart';
 import 'package:friendsheet/data/models/meeting.dart';
+import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/services/buddy_write_service.dart';
 import 'package:friendsheet/data/services/context_builder_service.dart';
 import 'package:friendsheet/data/services/open_ai_service.dart';
 import 'package:friendsheet/presentation/ai_chat/ai_chat_provider.dart';
+import 'package:friendsheet/presentation/ai_chat/buddy_chat_mode.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -348,6 +350,182 @@ void main() {
       provider.clearError();
 
       expect(provider.errorMessage, isNull);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // initialize — birthdayList mode
+  // ---------------------------------------------------------------------------
+
+  group('initialize — birthdayList mode', () {
+    test(
+        'sets greeting containing upcoming birthdays text and pendingActions with birthday labels',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Anna',
+        createdAt: now,
+        birthDayMonth: '06-15',
+      );
+      final birthdayOptions = [
+        BirthdayPersonInfo(person: person, daysUntil: 3),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.birthdayList,
+        birthdayOptions: birthdayOptions,
+      );
+
+      expect(provider.messages.length, 1);
+      expect(provider.messages.first.role, 'assistant');
+      expect(
+        provider.messages.first.content,
+        contains('upcoming birthdays'),
+      );
+      expect(provider.pendingActions, isNotNull);
+      expect(provider.pendingActions!.length, 1);
+      expect(
+          provider.pendingActions!.first.actionId, 'birthday_list_select:p1');
+      expect(provider.pendingActions!.first.label, contains('Anna'));
+    });
+
+    test('greeting says no birthdays when options list is empty', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.birthdayList,
+        birthdayOptions: [],
+      );
+
+      expect(provider.messages.first.content, contains('No birthdays'));
+      expect(provider.pendingActions, isEmpty);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // initialize — meetingNotesList mode
+  // ---------------------------------------------------------------------------
+
+  group('initialize — meetingNotesList mode', () {
+    test(
+        'sets greeting about meetings without notes and pendingActions with meeting labels',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final meeting = makeMeeting(id: 'm1', name: 'Team Lunch');
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.meetingNotesList,
+        meetingOptions: [meeting],
+      );
+
+      expect(provider.messages.length, 1);
+      expect(provider.messages.first.role, 'assistant');
+      expect(provider.messages.first.content, contains('without notes'));
+      expect(provider.pendingActions, isNotNull);
+      expect(provider.pendingActions!.length, 1);
+      expect(provider.pendingActions!.first.actionId, 'meeting_notes:m1');
+      expect(provider.pendingActions!.first.label, contains('Team Lunch'));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // handleAction — birthday_list_select
+  // ---------------------------------------------------------------------------
+
+  group('handleAction — birthday_list_select', () {
+    test('clears pendingActions and adds an assistant birthday stats message',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Anna',
+        createdAt: now,
+        birthDayMonth: '06-15',
+      );
+      final birthdayOptions = [
+        BirthdayPersonInfo(person: person, daysUntil: 3),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.birthdayList,
+        birthdayOptions: birthdayOptions,
+      );
+
+      // Stub birthday context used by _initBirthdayWishes
+      const contextWithMapping = BuddyContext(
+        meetings: [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 2,
+            topActivities: ['Sport'],
+          ),
+        ],
+        pseudonymToRealName: {'Friend_A': 'Anna'},
+        personIdToPseudonym: {'p1': 'Friend_A'},
+      );
+      when(mockContextBuilder.buildBirthdayContext('user-1', 'p1'))
+          .thenAnswer((_) async => contextWithMapping);
+      when(mockContextBuilder.serializeToPrompt(any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenReturn('context');
+      when(mockOpenAI.sendMessage(any, any, any))
+          .thenAnswer((_) => Stream.value('Happy birthday Anna!'));
+
+      final action = provider.pendingActions!.first;
+      await provider.handleAction(action);
+
+      expect(provider.pendingActions, isNull);
+      // messages: [birthday-list greeting, user tap, stats, AI wish]
+      expect(provider.messages.length, greaterThanOrEqualTo(2));
+      // At least one assistant message about the person name.
+      final assistantMsgs =
+          provider.messages.where((m) => m.role == 'assistant').toList();
+      expect(assistantMsgs.any((m) => m.content.contains('Anna')), isTrue);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // handleAction — meeting_notes
+  // ---------------------------------------------------------------------------
+
+  group('handleAction — meeting_notes', () {
+    test(
+        'sets active meeting ID and appends greeting that mentions the meeting name',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final meeting = makeMeeting(id: 'm1', name: 'Board Meeting');
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.meetingNotesList,
+        meetingOptions: [meeting],
+      );
+
+      when(mockContextBuilder.getMeetingById('user-1', 'm1'))
+          .thenAnswer((_) async => meeting);
+
+      final action = provider.pendingActions!.first;
+      await provider.handleAction(action);
+
+      expect(provider.pendingActions, isNull);
+      final assistantMsgs =
+          provider.messages.where((m) => m.role == 'assistant').toList();
+      expect(assistantMsgs.last.content, contains('Board Meeting'));
     });
   });
 

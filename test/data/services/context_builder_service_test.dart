@@ -422,6 +422,104 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // buildBirthdayContext
+  // ---------------------------------------------------------------------------
+
+  group('buildBirthdayContext', () {
+    test('happy path — filters to 365-day window and excludes older meetings',
+        () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+
+      // One meeting within 365 days, one older than 365 days.
+      when(mockMeetingRepo.getMeetingsByParticipant('user-1', 'p1'))
+          .thenAnswer((_) async => [
+                makeMeeting(
+                    id: 'recent',
+                    date: withinWindow,
+                    participantIds: ['p1'],
+                    categoryIds: []),
+                makeMeeting(
+                    id: 'old',
+                    date: outsideWindow,
+                    participantIds: ['p1'],
+                    categoryIds: []),
+              ]);
+
+      final ctx = await service.buildBirthdayContext('user-1', 'p1');
+
+      // Only the recent meeting within 365 days is included.
+      expect(ctx.meetings.length, 1);
+      expect(ctx.meetings.first.name, 'Meeting recent');
+    });
+
+    test(
+        'returns empty meeting list when all meetings are outside 365-day window',
+        () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockMeetingRepo.getMeetingsByParticipant('user-1', 'p1'))
+          .thenAnswer((_) async => [
+                makeMeeting(
+                    id: 'old',
+                    date: outsideWindow,
+                    participantIds: ['p1'],
+                    categoryIds: []),
+              ]);
+
+      final ctx = await service.buildBirthdayContext('user-1', 'p1');
+
+      expect(ctx.meetings, isEmpty);
+      expect(ctx.persons, isEmpty);
+    });
+
+    test('totalWeight on PersonContextEntry sums meeting weights correctly',
+        () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+
+      // Two meetings with weight=3 each → totalWeight should be 6.
+      final m1 = Meeting(
+        id: 'm1',
+        userId: 'user-1',
+        name: 'M1',
+        date: withinWindow,
+        weight: 3,
+        participantIds: const ['p1'],
+        categoryIds: const [],
+        createdAt: withinWindow,
+        updatedAt: withinWindow,
+      );
+      final m2 = Meeting(
+        id: 'm2',
+        userId: 'user-1',
+        name: 'M2',
+        date: withinWindow.subtract(const Duration(days: 5)),
+        weight: 3,
+        participantIds: const ['p1'],
+        categoryIds: const [],
+        createdAt: withinWindow,
+        updatedAt: withinWindow,
+      );
+
+      when(mockMeetingRepo.getMeetingsByParticipant('user-1', 'p1'))
+          .thenAnswer((_) async => [m1, m2]);
+
+      final ctx = await service.buildBirthdayContext('user-1', 'p1');
+
+      expect(ctx.persons.length, 1);
+      expect(ctx.persons.first.totalWeight, 6);
+      expect(ctx.persons.first.meetingCount, 2);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // buildFullContext — meetingsByYear populated
   // ---------------------------------------------------------------------------
 

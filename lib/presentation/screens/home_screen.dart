@@ -5,6 +5,7 @@ import '../../data/models/google_calendar.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../ai_chat/ai_chat_screen.dart';
+import '../ai_chat/buddy_chat_mode.dart';
 import '../providers/buddy_widget_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
@@ -89,13 +90,16 @@ class HomeScreen extends StatelessWidget {
                 bottom: -50,
                 left: -50,
                 child: BuddyWidget(
-                  suggestedMeeting: buddyProvider.suggestedMeeting,
+                  suggestedMeetings: buddyProvider.suggestedMeetings,
+                  urgentBirthdayPersons: buddyProvider.urgentBirthdayPersons,
+                  daysUntilBirthday: buddyProvider.daysUntilBirthday,
+                  upcomingBirthdayInfo: buddyProvider.upcomingBirthdayInfo,
                   isExpanded: buddyProvider.isExpanded,
                   onDismiss: buddyProvider.collapse,
-                  onActionTap: () => _openAIChatMeetingMode(
-                    context,
-                    buddyProvider,
-                  ),
+                  onSaveMemoriesTap: () =>
+                      _openAIChatSaveMemories(context, buddyProvider),
+                  onBirthdayTap: () =>
+                      _openAIChatBirthday(context, buddyProvider),
                   onIconTap: () => _openAIChatFreeQuery(context),
                 ),
               ),
@@ -106,8 +110,8 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// Opens AIChatScreen in meeting-notes mode for the suggested meeting.
-void _openAIChatMeetingMode(
+/// Opens AIChatScreen in meeting-notes-list mode (top-3 meeting selection).
+void _openAIChatSaveMemories(
   BuildContext context,
   BuddyWidgetProvider provider,
 ) {
@@ -117,10 +121,52 @@ void _openAIChatMeetingMode(
     MaterialPageRoute(
       builder: (_) => buildAIChatRoute(
         userId: userId,
-        meetingId: provider.suggestedMeeting?.id,
+        mode: BuddyChatMode.meetingNotesList,
+        meetingOptions: provider.suggestedMeetings,
       ),
     ),
   );
+}
+
+/// Opens AIChatScreen in the appropriate birthday flow.
+///
+/// Scenario 2 (exactly one urgent): directly opens birthday-wishes for that person.
+/// Scenario 1 & 3 (zero or multiple urgent): opens birthday-list for selection.
+void _openAIChatBirthday(
+  BuildContext context,
+  BuddyWidgetProvider provider,
+) {
+  final userId = AuthService().currentUserId ?? '';
+  final urgent = provider.urgentBirthdayPersons;
+
+  if (urgent.length == 1) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => buildAIChatRoute(
+          userId: userId,
+          mode: BuddyChatMode.birthdayWishes,
+          personId: urgent[0].id,
+          birthdayOptions: provider.upcomingBirthdayInfo,
+        ),
+      ),
+    );
+  } else {
+    // Show urgent persons if any, otherwise the 3 nearest upcoming.
+    final options = urgent.isNotEmpty
+        ? provider.upcomingBirthdayInfo.where((b) => b.daysUntil < 5).toList()
+        : provider.upcomingBirthdayInfo.take(3).toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => buildAIChatRoute(
+          userId: userId,
+          mode: BuddyChatMode.birthdayList,
+          birthdayOptions: options,
+        ),
+      ),
+    );
+  }
 }
 
 /// Opens AIChatScreen in free-query mode (icon tap — general chat).

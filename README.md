@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, three interaction modes (meeting notes, friend context, free query), pseudonym back-translation, and write isolation via `BuddyWriteService`. Foundation services (`ContextBuilderService`, `OpenAIService`) operational. Remaining US: proactive HomeScreen widget (US-101), relationship score (US-107), sentiment analysis (US-108), annual report (US-106).
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" now shows top-3 meetings without notes as in-chat action buttons. Remaining US: meeting suggestions (US-105), widget auto-refresh (US-106), language selection (US-107).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (776)
+✅ All tests passing (811)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,12 +174,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.1 — US-103: birthDayMonth Field on Person (March 27, 2026)
-- ✅ `lib/data/models/person.dart` (MODIFIED) — `birthDayMonth String?` added to `Person` Freezed model; stored as `"MM-dd"` (day+month only, year never stored — GDPR)
-- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — `updateBirthDayMonth(String?)` added
-- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — Birthday row with month/day dropdown picker; day list auto-clamps on month change
-- ✅ `docs/privacy.md` (MODIFIED) — Section 2.2 updated to mention birthday data
-- ✅ 782 Flutter tests passing (+6 new tests)
+### Latest: v4.5.2 — US-104: Birthday Reminders via Buddy (March 28, 2026)
+- ✅ Birthday detection in `BuddyWidgetProvider`: urgent (< 5 days) and upcoming modes; per-person days-until computed at startup
+- ✅ `BuddyWidget` redesigned: 2-button layout ("Save Your Memories" + birthday CTA); Column layout fix resolves hit-test clipping bug from US-101
+- ✅ `AIChatProvider` extended with `birthdayList`, `birthdayWishes`, `meetingNotesList` modes; `pendingActions` + `handleAction()` pattern for in-chat action buttons
+- ✅ `_ActionsBubble` in `AIChatScreen`: action buttons rendered as assistant chat bubble (not bottom bar)
+- ✅ `birthday_format_helpers.dart` (NEW): Dart-computed stats message + birthday button label helper
+- ✅ `buildBirthdayContext` in `ContextBuilderService`: 365-day token-optimized context for birthday wishes
+- ✅ 811 Flutter tests passing (+35 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

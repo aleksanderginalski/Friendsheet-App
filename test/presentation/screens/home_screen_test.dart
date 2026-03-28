@@ -101,13 +101,19 @@ void main() {
     // ignore: argument_type_not_assignable
     when(mockMeetingRepository.getMeetingsByUser(any))
         .thenAnswer((_) => const Stream.empty());
-    // Default stub: no meeting without notes found.
+    // Default stub: no meetings without notes found.
     // ignore: argument_type_not_assignable
-    when(mockMeetingRepository.getLastMeetingWithoutNotes(any, any))
-        .thenAnswer((_) async => null);
+    when(mockMeetingRepository.getRecentMeetingsWithoutNotes(any, any))
+        .thenAnswer((_) async => []);
+    // Default stub: no persons — no birthday logic runs.
+    // ignore: argument_type_not_assignable
+    when(mockPersonRepository.getPersonsByUser(any))
+        .thenAnswer((_) async => []);
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
-    buddyWidgetProvider =
-        BuddyWidgetProvider(meetingRepository: mockMeetingRepository);
+    buddyWidgetProvider = BuddyWidgetProvider(
+      meetingRepository: mockMeetingRepository,
+      personRepository: mockPersonRepository,
+    );
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,

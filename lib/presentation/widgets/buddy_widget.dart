@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/meeting.dart';
+import '../../data/models/person.dart';
+import '../ai_chat/buddy_chat_mode.dart';
 
 /// Floating Buddy widget anchored at the bottom-left of HomeScreen.
 ///
@@ -12,15 +14,28 @@ import '../../data/models/meeting.dart';
 class BuddyWidget extends StatelessWidget {
   const BuddyWidget({
     super.key,
-    required this.suggestedMeeting,
+    required this.suggestedMeetings,
+    required this.urgentBirthdayPersons,
+    required this.daysUntilBirthday,
+    required this.upcomingBirthdayInfo,
     required this.isExpanded,
     required this.onDismiss,
-    required this.onActionTap,
+    required this.onSaveMemoriesTap,
+    required this.onBirthdayTap,
     required this.onIconTap,
   });
 
-  /// The meeting to suggest notes for, or null when showing the default message.
-  final Meeting? suggestedMeeting;
+  /// Top-3 meetings without notes — shows 'Save Your Memories' button when non-empty.
+  final List<Meeting> suggestedMeetings;
+
+  /// Persons whose birthday falls within the next 5 days.
+  final List<Person> urgentBirthdayPersons;
+
+  /// Maps personId to days until their next birthday.
+  final Map<String, int> daysUntilBirthday;
+
+  /// All persons with a birthday set, sorted by days until birthday.
+  final List<BirthdayPersonInfo> upcomingBirthdayInfo;
 
   /// When true, the chat bubble card is visible above the icon.
   final bool isExpanded;
@@ -28,17 +43,16 @@ class BuddyWidget extends StatelessWidget {
   /// Called when the user taps the [X] close button — collapses the bubble.
   final VoidCallback onDismiss;
 
-  /// Called from the "Let's do it!" button — opens AIChatScreen in meeting-notes mode.
-  final VoidCallback onActionTap;
+  /// Called from the 'Save Your Memories' button — opens meeting-notes-list mode.
+  final VoidCallback onSaveMemoriesTap;
+
+  /// Called from the birthday CTA button — opens the appropriate birthday flow.
+  final VoidCallback onBirthdayTap;
 
   /// Called when the user taps the Buddy icon — opens AIChatScreen in free-query mode.
   final VoidCallback onIconTap;
 
-  // Vertical distance from the image bottom to where the bubble tail tip
-  // should land — adjusted to align with the character's visible head area,
-  // accounting for the transparent top padding in the asset.
   static const double _kIconSize = 224.0;
-  static const double _kBubbleAnchor = 168.0;
 
   @override
   Widget build(BuildContext context) {
@@ -53,63 +67,98 @@ class BuddyWidget extends StatelessWidget {
 
     if (!isExpanded) return icon;
 
-    // Stack is sized to the icon (224×224). The bubble is positioned above
-    // the character's head via Positioned(bottom: _kBubbleAnchor).
-    // clipBehavior: Clip.none lets the bubble render above the Stack bounds.
-    return SizedBox(
-      width: _kIconSize,
-      height: _kIconSize,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          icon,
-          Positioned(
-            bottom: _kBubbleAnchor,
-            left: 80,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _BuddyBubble(
-                  suggestedMeeting: suggestedMeeting,
-                  onDismiss: onDismiss,
-                  onActionTap: onActionTap,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 24),
-                  child: Transform.translate(
-                    offset: const Offset(0, -1),
-                    child: const SizedBox(
-                      width: 28,
-                      height: 16,
-                      child: CustomPaint(painter: _TailPainter()),
-                    ),
+    // Column layout: bubble above icon.
+    // Avoids SizedBox/Stack clip that would block hit-testing for widgets
+    // positioned above the SizedBox bounds.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 80),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _BuddyBubble(
+                suggestedMeetings: suggestedMeetings,
+                urgentBirthdayPersons: urgentBirthdayPersons,
+                daysUntilBirthday: daysUntilBirthday,
+                upcomingBirthdayInfo: upcomingBirthdayInfo,
+                onDismiss: onDismiss,
+                onSaveMemoriesTap: onSaveMemoriesTap,
+                onBirthdayTap: onBirthdayTap,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 24),
+                child: Transform.translate(
+                  offset: const Offset(0, -1),
+                  child: const SizedBox(
+                    width: 28,
+                    height: 16,
+                    child: CustomPaint(painter: _TailPainter()),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        icon,
+      ],
     );
   }
 }
 
 class _BuddyBubble extends StatelessWidget {
   const _BuddyBubble({
-    required this.suggestedMeeting,
+    required this.suggestedMeetings,
+    required this.urgentBirthdayPersons,
+    required this.daysUntilBirthday,
+    required this.upcomingBirthdayInfo,
     required this.onDismiss,
-    required this.onActionTap,
+    required this.onSaveMemoriesTap,
+    required this.onBirthdayTap,
   });
 
-  final Meeting? suggestedMeeting;
+  final List<Meeting> suggestedMeetings;
+  final List<Person> urgentBirthdayPersons;
+  final Map<String, int> daysUntilBirthday;
+  final List<BirthdayPersonInfo> upcomingBirthdayInfo;
   final VoidCallback onDismiss;
-  final VoidCallback onActionTap;
+  final VoidCallback onSaveMemoriesTap;
+  final VoidCallback onBirthdayTap;
+
+  static const _buttonStyle = ButtonStyle(
+    backgroundColor: WidgetStatePropertyAll(Color(0xFF4CAF50)),
+    foregroundColor: WidgetStatePropertyAll(Colors.white),
+    padding: WidgetStatePropertyAll(
+      EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    ),
+    textStyle: WidgetStatePropertyAll(TextStyle(fontSize: 13)),
+  );
+
+  String _birthdayButtonLabel() {
+    final urgentCount = urgentBirthdayPersons.length;
+    if (urgentCount == 1) {
+      final person = urgentBirthdayPersons[0];
+      final days = daysUntilBirthday[person.id] ?? 0;
+      return '🎂 ${person.firstName}\'s birthday is in $days ${days == 1 ? 'day' : 'days'}!';
+    }
+    if (urgentCount > 1) {
+      return '🎂 $urgentCount friends have birthdays soon!';
+    }
+    // No urgent birthday — offer to check upcoming ones.
+    return '🗓 Check upcoming birthdays';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final message = suggestedMeeting != null
-        ? 'Hey, you recently had "${suggestedMeeting!.name}" — want to save your memories?'
+    final hasMeetings = suggestedMeetings.isNotEmpty;
+    final hasBirthdays = upcomingBirthdayInfo.isNotEmpty;
+    final showAnyButton = hasMeetings || hasBirthdays;
+
+    final message = showAnyButton
+        ? 'Hey! Need help? Here\'s what I can do for you:'
         : 'Hey! Can I help you with anything?';
 
     return ConstrainedBox(
@@ -146,22 +195,20 @@ class _BuddyBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(message, style: const TextStyle(fontSize: 13)),
-                if (suggestedMeeting != null) ...[
+                if (hasMeetings) ...[
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: onActionTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      textStyle: const TextStyle(fontSize: 13),
-                    ),
-                    child: const Text("Let's do it!"),
+                    onPressed: onSaveMemoriesTap,
+                    style: _buttonStyle,
+                    child: const Text('💾 Save Your Memories'),
+                  ),
+                ],
+                if (hasBirthdays) ...[
+                  const SizedBox(height: 6),
+                  ElevatedButton(
+                    onPressed: onBirthdayTap,
+                    style: _buttonStyle,
+                    child: Text(_birthdayButtonLabel()),
                   ),
                 ],
               ],

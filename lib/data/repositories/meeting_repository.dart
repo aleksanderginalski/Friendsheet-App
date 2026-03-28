@@ -115,6 +115,22 @@ class MeetingRepository {
     return null;
   }
 
+  /// Returns the [limit] most recent meetings without notes since [since],
+  /// ordered by date descending. Used by BuddyWidgetProvider to populate the
+  /// 'Save Your Memories' meeting-selection list.
+  Future<List<Meeting>> getRecentMeetingsWithoutNotes(
+    String userId,
+    DateTime since, {
+    int limit = 3,
+  }) async {
+    final allMeetings = await getMeetingsByUser(userId).first;
+    final candidates = allMeetings
+        .where((m) => m.date.isAfter(since) && m.notes.isEmpty)
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return candidates.take(limit).toList();
+  }
+
   /// Removes personId from participantIds in all meetings that contain them.
   /// Uses a WriteBatch to apply all updates atomically.
   Future<void> removePersonFromMeetings(String userId, String personId) async {
