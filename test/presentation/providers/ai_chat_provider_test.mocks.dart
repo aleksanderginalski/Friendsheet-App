@@ -121,6 +121,31 @@ class MockContextBuilderService extends _i1.Mock
       ) as _i4.Future<_i2.BuddyContext>);
 
   @override
+  _i4.Future<_i2.BuddyContext> buildBirthdayContext(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #buildBirthdayContext,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+          this,
+          Invocation.method(
+            #buildBirthdayContext,
+            [
+              userId,
+              personId,
+            ],
+          ),
+        )),
+      ) as _i4.Future<_i2.BuddyContext>);
+
+  @override
   String serializeToPrompt(
     _i2.BuddyContext? context, {
     bool? includeNotes = false,
