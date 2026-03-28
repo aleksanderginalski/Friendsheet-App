@@ -4160,13 +4160,16 @@ Interactive action buttons:
 ### US-115: Buddy Birthday Message Quality
 
 **As a** user
-**I want** Buddy to generate birthday messages that match my personal writing style and include meaningful friendship stats
-**So that** the messages feel genuinely personal and reflect our actual shared history
+**I want** Buddy to show meaningful friendship stats before birthday wishes and generate messages in a warm, personal style
+**So that** birthday messages feel genuinely personal and reflect our actual shared history
 
-**Story Points:** 8
+**Story Points:** 5
 **Priority:** P1
 **Labels:** `ai`, `persons`, `ux`
 **Status:** 📋 Planned
+
+**Context:**
+This US is purely developer work — no new Settings UI for end-users. The default writing style is embedded in the system prompt by the developer based on example messages provided at implementation time. User-adjustable style is delivered in US-117.
 
 **Acceptance Criteria:**
 
@@ -4182,20 +4185,15 @@ Birthday year stats summary:
   - Top Z: rank among all persons for this activity in the current birthday year
   - +/-M: rank change vs previous birthday year
 
-Writing style:
-- [ ] Default system prompt includes a style description based on user's personal writing style: warm, informal, references specific shared memories, uses emojis naturally, ~10-20 sentences, structure: gratitude → specific memories → hopes for the future
-- [ ] SettingsScreen: "Teach Buddy your writing style" option — opens a special AIChatScreen session where user pastes example messages; Buddy generates a style description and saves it to Hive (key: `buddy_writing_style`)
-- [ ] When `buddy_writing_style` is set in Hive: style description appended to birthday wish prompt (overrides default)
-- [ ] Style examples are processed once and discarded — only the generated description is stored, never the original messages
-- [ ] User will provide additional example messages during implementation to refine the default style description
+Default writing style (developer task, not user-facing):
+- [ ] Birthday wish system prompt updated with a style description: warm, informal, references specific shared memories, uses emojis naturally, ~10-20 sentences, structure: gratitude → specific memories → hopes for the future
+- [ ] Style description refined using example messages provided by the developer at implementation time — examples are NOT stored in the codebase or committed to the repository
 
 **Tasks:**
 - [ ] **TASK-115.1:** Refactor `buildBirthdayContext` — compute exact birthday year date range from `Person.birthDayMonth`; fetch meetings for that range and the previous birthday year range — 1h
 - [ ] **TASK-115.2:** Compute per-activity stats for both periods: direct-assignment-only points, % change, cross-person rank, rank change — 2h
 - [ ] **TASK-115.3:** Update `formatBirthdayStats` in `birthday_format_helpers.dart` — new format with birthday-year scope and per-activity rows — 1h
-- [ ] **TASK-115.4:** Update birthday system prompt section with default style description (refined with user-provided examples at implementation time) — 0.5h
-- [ ] **TASK-115.5:** Implement `buddyStyleSetup` mode in `AIChatProvider`: collect user examples → send to OpenAI with style-extraction prompt → save result to Hive — 1.5h
-- [ ] **TASK-115.6:** Add "Teach Buddy your writing style" tile to SettingsScreen; inject Hive style description into birthday wish prompt when present — 1h
+- [ ] **TASK-115.4:** Update birthday wish system prompt with default style description; developer provides example messages during implementation to calibrate the description — 1h
 
 **Dependencies:** US-087, US-104
 **Blocks:** US-117
@@ -4205,17 +4203,71 @@ Writing style:
 
 ### US-116: App UI Localization
 
+**As a** user
+**I want** the app interface to be available in Polish and English
+**So that** I can use the app in my preferred language
+
+**Story Points:** 8
+**Priority:** P3
+**Labels:** `localization`, `ux`, `infrastructure`
 **Status:** 📋 Planned
 
-**Note:** Full UI localization — flutter_localizations, ARB files, all app strings. Polish + English on launch. Large scope (8+ SP). Planned after US-113 (Buddy Language Selection) is delivered.
+**Context:**
+Current UI is in English. This US extracts all UI strings into ARB files and adds a language selector independent of Buddy's language (US-113).
+
+**Acceptance Criteria:**
+- [ ] All UI strings (labels, buttons, error messages, empty states) extracted to `app_en.arb` and `app_pl.arb`
+- [ ] Language selector in SettingsScreen: "App Language" — Polish / English — independent from Buddy Language (US-113)
+- [ ] Selected language persisted in SharedPreferences (key: `app_language`)
+- [ ] Language change takes effect immediately without app restart
+- [ ] No date/number format changes in scope — text strings only
+- [ ] `flutter_localizations` and `intl` packages configured
+
+**Tasks:**
+- [ ] **TASK-116.1:** Add `flutter_localizations` and `intl` to `pubspec.yaml`; configure `MaterialApp` with `localizationsDelegates` and `supportedLocales` — 1h
+- [ ] **TASK-116.2:** Audit all screens and extract hardcoded strings to `app_en.arb` and `app_pl.arb` — 4h
+- [ ] **TASK-116.3:** Replace hardcoded strings with `AppLocalizations.of(context)` calls throughout `lib/` — 2h
+- [ ] **TASK-116.4:** Add "App Language" selector tile to SettingsScreen; persist selection to SharedPreferences — 0.5h
+- [ ] **TASK-116.5:** Apply locale change at runtime without restart — 0.5h
+
+**Dependencies:** US-113 (language settings infrastructure)
+**Blocks:** None
 
 ---
 
 ### US-117: User-Defined Writing Style
 
+**As a** user
+**I want** to adjust Buddy's writing style to match my preferences
+**So that** AI-generated messages feel personal and appropriate for how I communicate with friends
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `ai`, `settings`, `ux`
 **Status:** 📋 Planned
 
-**Note:** Allow any user to define their own Buddy writing style via the style-setup flow introduced in US-115. The default style (user's personal style, hardcoded) can be overridden per-user. Placeholder — scope to be refined when US-115 is complete.
+**Acceptance Criteria:**
+- [ ] New section in SettingsScreen → Buddy → "Styl Buddy'ego"
+- [ ] 4 style sliders, each saved independently:
+  - Poważny (0) ↔ Zabawny (10)
+  - Formalny (0) ↔ Nieformalny (10)
+  - Zwięzły (0) ↔ Rozbudowany (10)
+  - Powściągliwy (0) ↔ Ekspresywny (10)
+- [ ] Default slider positions: mid-point (5) for all dimensions
+- [ ] "Paste example messages" option: user provides sample messages → Buddy generates a style description → stored in Hive (key: `buddy_writing_style`) → overrides slider-based description when present
+- [ ] When no examples provided: style description auto-generated from current slider values and injected into every OpenAI prompt
+- [ ] Style applies to ALL AI-generated messages (AIChatScreen responses, birthday wishes) — does NOT affect Dart-computed messages (stats summaries, action button labels, widget CTAs)
+- [ ] Removing examples (reset button) reverts to slider-based style
+- [ ] Style description stored in Hive (key: `buddy_style_description`); regenerated when sliders change
+
+**Tasks:**
+- [ ] **TASK-117.1:** Add `BuddyStyleService` — generates style description string from 4 slider values; reads/writes to Hive — 1h
+- [ ] **TASK-117.2:** Build "Styl Buddy'ego" settings section: 4 labeled sliders + "Paste examples" tile + reset button — 1.5h
+- [ ] **TASK-117.3:** Implement example-based style extraction: open `AIChatScreen` in `buddyStyleSetup` mode (from US-115); on completion save result to `buddy_writing_style` key — 0.5h
+- [ ] **TASK-117.4:** Inject style description (slider-based or example-based) into every OpenAI prompt in `OpenAIService` — 1h
+
+**Dependencies:** US-115
+**Blocks:** None
 
 ---
 
