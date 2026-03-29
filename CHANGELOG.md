@@ -4,6 +4,28 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.3 — US-102: Proactive Insights in Widget (March 29, 2026)
+- ✅ `lib/presentation/ai_chat/buddy_chat_mode.dart` (MODIFIED) — `lapsedFriendsList`, `lapsedFriendDetail`, `greeting` values added to `BuddyChatMode` enum; `LapsedPersonInfo` class added (person + daysSinceLastMeeting)
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getPersonIdsSeenSince(userId, since)` added (returns `Set<String>` of personIds in any meeting since the given date); `getRecentMeetingsByPerson(userId, personId, {int limit = 4})` added (N most recent meetings for a person, client-side sorted)
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `buildLapsedFriendContext(userId, personId, {int limit = 4})` added; fetches last N meetings via `getRecentMeetingsByPerson` and builds pseudonymized `BuddyContext` for LTNS reconnection flow
+- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (MODIFIED) — LTNS detection added to `initialize()`: fetches `getPersonIdsSeenSince(since 90 days)`, excludes recently seen persons, skips contacts never met (no historical meetings), sorts by longest absence; exposes `lapsedPersons: List<LapsedPersonInfo>` (top 3)
+- ✅ `lib/presentation/widgets/buddy_widget.dart` (MODIFIED) — `lapsedPersons` and `onLongTimeNoSeeTap` params added; "👋 Long time no see — X days" button rendered when `lapsedPersons.isNotEmpty`
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (MODIFIED) — `lapsedFriendsList` mode: shows top-3 lapsed persons as `pendingActions` with `lapsed_select:personId:days` IDs; `lapsedFriendDetail` mode triggered by `lapsed_select` action: calls `buildLapsedFriendContext` + streams AI reconnection message; `greeting` mode: builds contextual buttons from all available insight states (meetings, birthdays, LTNS); `greeting_*` actions route to respective sub-flows; `lapsedOptions` param added to `initialize()`
+- ✅ `lib/presentation/ai_chat/ai_chat_screen.dart` (MODIFIED) — AppBar title "Buddy" uses `GoogleFonts.pacifico` (white, 22px); `lapsedOptions` param wired through `buildAIChatRoute` and `_checkGuards`
+- ✅ `lib/presentation/screens/buddy_menu_screen.dart` (NEW) — `BuddyMenuScreen` StatelessWidget: AppBar with Pacifico font; two `ListTile` entries ("AI Assistant" → greeting mode, "API Key" → AI settings); pops itself before calling callbacks to avoid stale context
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — Side Menu drawer "Buddy" section replaced with single `ListTile` navigating to `BuddyMenuScreen`; `_openBuddyMenu()`, `_openBuddyGreeting()`, `_openAISettings()` State methods added following stale context rule
+- ✅ `lib/presentation/screens/settings_screen.dart` (MODIFIED) — "Buddy — AI Assistant" section and related `ListTile` entries removed; unused AI imports cleaned up
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — icon tap changed to `greeting` mode; `_openLtnsChat()` top-level function added; `openAIChatGreeting()` made public for use from `main_screen.dart`; `lapsedPersons` wired to `BuddyWidget`
+- ✅ `test/data/repositories/meeting_repository_test.dart` (MODIFIED) — 6 new tests: `getPersonIdsSeenSince` (3 tests), `getRecentMeetingsByPerson` (3 tests)
+- ✅ `test/data/services/context_builder_service_test.dart` (MODIFIED) — 2 new tests: `buildLapsedFriendContext` happy path and empty-meetings case
+- ✅ `test/presentation/providers/buddy_widget_provider_test.dart` (MODIFIED) — 3 new LTNS detection tests: happy path, recently-seen excluded, never-met excluded
+- ✅ `test/presentation/providers/ai_chat_provider_test.dart` (MODIFIED) — 11 new tests: `lapsedFriendsList` mode (2), `greeting` mode (4), `lapsed_select` action (1), `greeting_free/meetings/birthday/ltns` actions (4)
+- ✅ `test/presentation/widgets/buddy_widget_test.dart` (MODIFIED) — 2 new tests: LTNS button rendered with days count, tap calls `onLongTimeNoSeeTap`
+- ✅ All mock files regenerated via `dart run build_runner build --delete-conflicting-outputs`
+- ✅ 835 Flutter tests passing (+24 new tests)
+
+---
+
 ### v4.5.2 — US-104: Birthday Reminders via Buddy (March 28, 2026)
 - ✅ `lib/presentation/ai_chat/buddy_chat_mode.dart` (NEW) — `BuddyChatMode` enum (`freeQuery`, `meetingNotes`, `meetingNotesList`, `birthdayList`, `birthdayWishes`); `BuddyAction` class (label + actionId); `BirthdayPersonInfo` class (person + daysUntil)
 - ✅ `lib/presentation/ai_chat/birthday_format_helpers.dart` (NEW) — `formatBirthdayStats()` (Dart-computed stats message: meeting count, year-over-year breakdown, total weight, top activities); `buildBirthdayListGreeting()` (generic greeting for birthday list mode); `birthdayActionLabel()` (full name + days + date formatted as button label)

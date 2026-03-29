@@ -94,13 +94,16 @@ class HomeScreen extends StatelessWidget {
                   urgentBirthdayPersons: buddyProvider.urgentBirthdayPersons,
                   daysUntilBirthday: buddyProvider.daysUntilBirthday,
                   upcomingBirthdayInfo: buddyProvider.upcomingBirthdayInfo,
+                  lapsedPersons: buddyProvider.lapsedPersons,
                   isExpanded: buddyProvider.isExpanded,
                   onDismiss: buddyProvider.collapse,
                   onSaveMemoriesTap: () =>
                       _openAIChatSaveMemories(context, buddyProvider),
                   onBirthdayTap: () =>
                       _openAIChatBirthday(context, buddyProvider),
-                  onIconTap: () => _openAIChatFreeQuery(context),
+                  onLongTimeNoSeeTap: () =>
+                      _openLtnsChat(context, buddyProvider),
+                  onIconTap: () => openAIChatGreeting(context, buddyProvider),
                 ),
               ),
           ],
@@ -169,13 +172,34 @@ void _openAIChatBirthday(
   }
 }
 
-/// Opens AIChatScreen in free-query mode (icon tap — general chat).
-void _openAIChatFreeQuery(BuildContext context) {
+/// Opens AIChatScreen in greeting mode (icon tap — shows all contextual actions).
+void openAIChatGreeting(BuildContext context, BuddyWidgetProvider provider) {
   final userId = AuthService().currentUserId ?? '';
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => buildAIChatRoute(userId: userId),
+      builder: (_) => buildAIChatRoute(
+        userId: userId,
+        mode: BuddyChatMode.greeting,
+        meetingOptions: provider.suggestedMeetings,
+        birthdayOptions: provider.upcomingBirthdayInfo,
+        lapsedOptions: provider.lapsedPersons,
+      ),
+    ),
+  );
+}
+
+/// Opens AIChatScreen in lapsed-friends-list mode (LTNS button tap).
+void _openLtnsChat(BuildContext context, BuddyWidgetProvider provider) {
+  final userId = AuthService().currentUserId ?? '';
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => buildAIChatRoute(
+        userId: userId,
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: provider.lapsedPersons,
+      ),
     ),
   );
 }

@@ -1624,3 +1624,54 @@ Run after every release or hotfix:
 | UT-104-022 | buildBirthdayContext — returns empty meeting/person lists when all meetings outside 365-day window | meetings empty; persons empty |
 | UT-104-023 | totalWeight on PersonContextEntry sums meeting weights correctly | two meetings weight=3 each → totalWeight == 6; meetingCount == 2 |
 
+## US-102 — Proactive Insights in Widget
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-102-001 | getPersonIdsSeenSince — returns personIds from meetings on or after since date | set contains p1, p2 |
+| UT-102-002 | getPersonIdsSeenSince — excludes persons from meetings before since date | empty set |
+| UT-102-003 | getPersonIdsSeenSince — returns empty set when no meetings exist | empty set |
+| UT-102-004 | getRecentMeetingsByPerson — returns meetings for person ordered newest first | first.name == 'Newer' |
+| UT-102-005 | getRecentMeetingsByPerson — respects the limit parameter | results.length == 2 |
+| UT-102-006 | getRecentMeetingsByPerson — returns empty list when person has no meetings | empty list |
+
+### Automated tests — `test/data/services/context_builder_service_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-102-007 | buildLapsedFriendContext happy path — uses getRecentMeetingsByPerson and builds context | 1 meeting in context |
+| UT-102-008 | buildLapsedFriendContext — returns empty context when person has no meetings | meetings empty; persons empty |
+
+### Automated tests — `test/presentation/providers/buddy_widget_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-102-009 | LTNS happy path — person not seen in 90+ days appears in lapsedPersons | lapsedPersons.length == 1; daysSinceLastMeeting >= 100 |
+| UT-102-010 | Person seen recently is excluded from lapsedPersons | lapsedPersons empty |
+| UT-102-011 | Person never met (no historical meetings) excluded from lapsedPersons | lapsedPersons empty |
+
+### Automated tests — `test/presentation/providers/ai_chat_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-102-012 | initialize lapsedFriendsList mode — greeting + pendingActions with lapsed person labels | greeting contains "haven't seen"; actionId == 'lapsed_select:p1:120' |
+| UT-102-013 | initialize lapsedFriendsList mode — empty options → empty pendingActions | pendingActions empty |
+| UT-102-014 | initialize greeting mode — shows greeting_meetings button | pendingActions has greeting_meetings |
+| UT-102-015 | initialize greeting mode — shows greeting_birthday button | pendingActions has greeting_birthday |
+| UT-102-016 | initialize greeting mode — shows greeting_ltns button | pendingActions has greeting_ltns |
+| UT-102-017 | initialize greeting mode — shows greeting_free when no contextual options | pendingActions has greeting_free only |
+| UT-102-018 | handleAction lapsed_select — calls buildLapsedFriendContext and streams AI recall | assistant message contains person name |
+| UT-102-019 | handleAction greeting_free — appends user label and free-query assistant reply | user and assistant messages added |
+| UT-102-020 | handleAction greeting_meetings — produces meeting pendingActions | pendingActions has meeting_notes:m1 |
+| UT-102-021 | handleAction greeting_birthday — produces birthday pendingActions | pendingActions has birthday_list_select:p1 |
+| UT-102-022 | handleAction greeting_ltns — produces lapsed pendingActions | pendingActions has lapsed_select:p1:... |
+
+### Automated tests — `test/presentation/widgets/buddy_widget_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-102-023 | expanded with lapsed persons shows LTNS button | "Long time no see" text visible; "95 days" visible |
+| UT-102-024 | tapping LTNS button calls onLongTimeNoSeeTap | callback invoked |
+

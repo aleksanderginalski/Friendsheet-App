@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
@@ -25,6 +26,7 @@ class AIChatScreen extends StatefulWidget {
     this.mode = BuddyChatMode.freeQuery,
     this.meetingOptions = const [],
     this.birthdayOptions = const [],
+    this.lapsedOptions = const [],
   });
 
   final String userId;
@@ -40,6 +42,10 @@ class AIChatScreen extends StatefulWidget {
   /// Birthday persons shown as selectable actions in [BuddyChatMode.birthdayList]
   /// or used for context in [BuddyChatMode.birthdayWishes].
   final List<BirthdayPersonInfo> birthdayOptions;
+
+  /// Lapsed friends shown as selectable actions in [BuddyChatMode.lapsedFriendsList]
+  /// or passed through greeting mode for contextual buttons.
+  final List<LapsedPersonInfo> lapsedOptions;
 
   @override
   State<AIChatScreen> createState() => _AIChatScreenState();
@@ -92,6 +98,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
           mode: widget.mode,
           meetingOptions: widget.meetingOptions,
           birthdayOptions: widget.birthdayOptions,
+          lapsedOptions: widget.lapsedOptions,
         );
   }
 
@@ -147,7 +154,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buddy'),
+        title: Text(
+          'Buddy',
+          style: GoogleFonts.pacifico(fontSize: 22, color: Colors.white),
+        ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
@@ -380,6 +390,7 @@ Widget buildAIChatRoute({
   BuddyChatMode mode = BuddyChatMode.freeQuery,
   List<Meeting> meetingOptions = const [],
   List<BirthdayPersonInfo> birthdayOptions = const [],
+  List<LapsedPersonInfo> lapsedOptions = const [],
 }) {
   return ChangeNotifierProvider(
     create: (_) => AIChatProvider(
@@ -394,6 +405,7 @@ Widget buildAIChatRoute({
       mode: mode,
       meetingOptions: meetingOptions,
       birthdayOptions: birthdayOptions,
+      lapsedOptions: lapsedOptions,
     ),
   );
 }

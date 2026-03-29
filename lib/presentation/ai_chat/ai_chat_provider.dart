@@ -43,6 +43,7 @@ class AIChatProvider extends ChangeNotifier {
   List<BuddyAction>? _pendingActions;
   List<Meeting> _meetingOptions = [];
   List<BirthdayPersonInfo> _birthdayOptions = [];
+  List<LapsedPersonInfo> _lapsedOptions = [];
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   bool get isLoading => _isLoading;
@@ -62,12 +63,14 @@ class AIChatProvider extends ChangeNotifier {
     BuddyChatMode mode = BuddyChatMode.freeQuery,
     List<Meeting>? meetingOptions,
     List<BirthdayPersonInfo>? birthdayOptions,
+    List<LapsedPersonInfo>? lapsedOptions,
   }) async {
     _userId = userId;
     _activeMeetingId = meetingId;
     _activePersonId = personId;
     _meetingOptions = meetingOptions ?? [];
     _birthdayOptions = birthdayOptions ?? [];
+    _lapsedOptions = lapsedOptions ?? [];
 
     // Birthday-wishes: auto-generate stats + AI wish for one person.
     if (mode == BuddyChatMode.birthdayWishes && personId != null) {
@@ -101,6 +104,62 @@ class AIChatProvider extends ChangeNotifier {
         final label = '${m.name} ($days ${days == 1 ? 'day' : 'days'} ago)';
         return BuddyAction(label: label, actionId: 'meeting_notes:${m.id}');
       }).toList();
+      _safeNotify();
+      return;
+    }
+
+    // Lapsed-friends-list: show top-3 lapsed friends as selectable buttons.
+    if (mode == BuddyChatMode.lapsedFriendsList) {
+      _context = await _contextBuilderService.buildFullContext(userId);
+      const greeting =
+          'Hey! Here are friends you haven\'t seen in a while. Who would you like to reconnect with?';
+      _messages = [const ChatMessage(role: 'assistant', content: greeting)];
+      _pendingActions = _lapsedOptions.map((lp) {
+        final days = lp.daysSinceLastMeeting;
+        final label =
+            '${lp.person.firstName} — $days ${days == 1 ? 'day' : 'days'}';
+        return BuddyAction(
+          label: label,
+          actionId: 'lapsed_select:${lp.person.id}:$days',
+        );
+      }).toList();
+      _safeNotify();
+      return;
+    }
+
+    // Greeting: shows all contextual action buttons matching the widget state.
+    if (mode == BuddyChatMode.greeting) {
+      _context = await _contextBuilderService.buildFullContext(userId);
+      const greeting =
+          'Hey! 👋 Great to see you! Here\'s what I can help you with:';
+      _messages = [const ChatMessage(role: 'assistant', content: greeting)];
+      final actions = <BuddyAction>[];
+      if (_meetingOptions.isNotEmpty) {
+        actions.add(const BuddyAction(
+          label: '💾 Save Your Memories',
+          actionId: 'greeting_meetings',
+        ));
+      }
+      if (_birthdayOptions.isNotEmpty) {
+        actions.add(const BuddyAction(
+          label: '🎂 Birthday Reminders',
+          actionId: 'greeting_birthday',
+        ));
+      }
+      if (_lapsedOptions.isNotEmpty) {
+        final days = _lapsedOptions.first.daysSinceLastMeeting;
+        actions.add(BuddyAction(
+          label: '👋 Long time no see — $days days',
+          actionId: 'greeting_ltns',
+        ));
+      }
+      if (actions.isEmpty) {
+        actions.add(const BuddyAction(
+          label: '💬 Ask me anything',
+          actionId: 'greeting_free',
+        ));
+      }
+      _pendingActions = actions;
       _safeNotify();
       return;
     }
@@ -150,6 +209,103 @@ class AIChatProvider extends ChangeNotifier {
       _messages = [
         ..._messages,
         ChatMessage(role: 'assistant', content: greeting),
+      ];
+      _safeNotify();
+      return;
+    }
+
+    // Lapsed-friend selected from list — stream AI recall for that person.
+    if (action.actionId.startsWith('lapsed_select:')) {
+      final parts = action.actionId.split(':');
+      final personId = parts[1];
+      _activePersonId = personId;
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      _safeNotify();
+      await _initLapsedFriendDetail(_userId!, personId);
+      return;
+    }
+
+    // Greeting action — route to the appropriate sub-flow.
+    if (action.actionId == 'greeting_meetings') {
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      _safeNotify();
+      const greeting = 'Here are your most recent meetings without notes. '
+          'Which one would you like to add memories to?';
+      _messages = [
+        ..._messages,
+        const ChatMessage(role: 'assistant', content: greeting),
+      ];
+      _pendingActions = _meetingOptions.map((m) {
+        final days = DateTime.now().difference(m.date).inDays;
+        final label = '${m.name} ($days ${days == 1 ? 'day' : 'days'} ago)';
+        return BuddyAction(label: label, actionId: 'meeting_notes:${m.id}');
+      }).toList();
+      _safeNotify();
+      return;
+    }
+
+    if (action.actionId == 'greeting_birthday') {
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      _safeNotify();
+      final greeting = buildBirthdayListGreeting(_birthdayOptions);
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'assistant', content: greeting),
+      ];
+      _pendingActions = _birthdayOptions.map((b) {
+        return BuddyAction(
+          label: birthdayActionLabel(b),
+          actionId: 'birthday_list_select:${b.person.id}',
+        );
+      }).toList();
+      _safeNotify();
+      return;
+    }
+
+    if (action.actionId == 'greeting_ltns') {
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      _safeNotify();
+      const greeting =
+          'Here are friends you haven\'t seen in a while. Who would you like to reconnect with?';
+      _messages = [
+        ..._messages,
+        const ChatMessage(role: 'assistant', content: greeting),
+      ];
+      _pendingActions = _lapsedOptions.map((lp) {
+        final days = lp.daysSinceLastMeeting;
+        final label =
+            '${lp.person.firstName} — $days ${days == 1 ? 'day' : 'days'}';
+        return BuddyAction(
+          label: label,
+          actionId: 'lapsed_select:${lp.person.id}:$days',
+        );
+      }).toList();
+      _safeNotify();
+      return;
+    }
+
+    if (action.actionId == 'greeting_free') {
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      const reply =
+          'Sure! Ask me anything about your social life — meetings, friends, activities, you name it.';
+      _messages = [
+        ..._messages,
+        const ChatMessage(role: 'assistant', content: reply),
       ];
       _safeNotify();
       return;
@@ -220,6 +376,47 @@ class AIChatProvider extends ChangeNotifier {
         contextPrompt,
         [],
         wishPrompt,
+      )) {
+        buffer.write(chunk);
+      }
+      final translated = _translatePseudonyms(
+        buffer.toString(),
+        _context!.pseudonymToRealName,
+      );
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'assistant', content: translated),
+      ];
+    } catch (e) {
+      _errorMessage = _mapError(e);
+    }
+    _isLoading = false;
+    _safeNotify();
+  }
+
+  /// Streams an AI recall of the last 4 meetings with [personId] and suggests reconnecting.
+  Future<void> _initLapsedFriendDetail(String userId, String personId) async {
+    _context =
+        await _contextBuilderService.buildLapsedFriendContext(userId, personId);
+
+    final pseudonym = _context!.personIdToPseudonym[personId] ?? '';
+    final personName =
+        _context!.pseudonymToRealName[pseudonym] ?? 'your friend';
+
+    _isLoading = true;
+    _safeNotify();
+
+    try {
+      final contextPrompt = _contextBuilderService.serializeToPrompt(_context!);
+      final prompt =
+          'I haven\'t seen $personName in a long time. Based on our last few meetings '
+          'and activities we shared, remind me of some highlights and suggest a way '
+          'to reconnect — something specific we might enjoy doing together again.';
+      final buffer = StringBuffer();
+      await for (final chunk in _openAIService.sendMessage(
+        contextPrompt,
+        [],
+        prompt,
       )) {
         buffer.write(chunk);
       }

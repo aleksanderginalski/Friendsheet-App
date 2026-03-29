@@ -81,6 +81,12 @@ If during implementation a scope change or clarification is discovered
 an additional change not listed in the Task instruction), update `docs/BACKLOG.md`
 immediately — add or modify tasks, update ACs if needed. Do not wait for /docs.
 
+**Numbering rule when adding new items to BACKLOG.md:**
+Before assigning any new US or TASK number, use Grep tool to find the current highest number:
+- New US: Grep `### US-[0-9]+` in BACKLOG.md (content mode) → pick highest → increment by 1
+- New TASK: Grep `TASK-{US_NUMBER}` in BACKLOG.md → pick highest sequence → increment by 1
+Never guess or reuse numbers — duplicate numbers cause planning errors.
+
 ## Scope Boundaries
 
 /dev writes implementation code only. It does NOT write tests.

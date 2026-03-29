@@ -32,10 +32,12 @@ void main() {
     List<Person> urgentBirthdayPersons = const [],
     Map<String, int> daysUntilBirthday = const {},
     List<BirthdayPersonInfo> upcomingBirthdayInfo = const [],
+    List<LapsedPersonInfo> lapsedPersons = const [],
     bool isExpanded = true,
     VoidCallback? onDismiss,
     VoidCallback? onSaveMemoriesTap,
     VoidCallback? onBirthdayTap,
+    VoidCallback? onLongTimeNoSeeTap,
     VoidCallback? onIconTap,
   }) {
     return MaterialApp(
@@ -51,10 +53,12 @@ void main() {
                 urgentBirthdayPersons: urgentBirthdayPersons,
                 daysUntilBirthday: daysUntilBirthday,
                 upcomingBirthdayInfo: upcomingBirthdayInfo,
+                lapsedPersons: lapsedPersons,
                 isExpanded: isExpanded,
                 onDismiss: onDismiss ?? () {},
                 onSaveMemoriesTap: onSaveMemoriesTap ?? () {},
                 onBirthdayTap: onBirthdayTap ?? () {},
+                onLongTimeNoSeeTap: onLongTimeNoSeeTap ?? () {},
                 onIconTap: onIconTap ?? () {},
               ),
             ),
@@ -141,6 +145,33 @@ void main() {
       );
 
       await tester.tap(find.text('💾 Save Your Memories'));
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('expanded with lapsed persons shows LTNS button',
+        (tester) async {
+      final lapsed = LapsedPersonInfo(
+        person: testPerson,
+        daysSinceLastMeeting: 95,
+      );
+      await tester.pumpWidget(buildWidget(lapsedPersons: [lapsed]));
+
+      expect(find.textContaining('Long time no see'), findsOneWidget);
+      expect(find.textContaining('95 days'), findsOneWidget);
+    });
+
+    testWidgets('tapping LTNS button calls onLongTimeNoSeeTap', (tester) async {
+      var tapped = false;
+      final lapsed = LapsedPersonInfo(
+        person: testPerson,
+        daysSinceLastMeeting: 95,
+      );
+      await tester.pumpWidget(buildWidget(
+        lapsedPersons: [lapsed],
+        onLongTimeNoSeeTap: () => tapped = true,
+      ));
+
+      await tester.tap(find.textContaining('Long time no see'));
       expect(tapped, isTrue);
     });
 

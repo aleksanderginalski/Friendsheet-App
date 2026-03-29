@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
 import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/ai_key_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/pending_meeting_package_repository.dart';
 import '../../data/repositories/person_repository.dart';
@@ -23,6 +24,7 @@ import '../activities/activities_list_screen.dart';
 import '../import/meeting_inbox_screen.dart';
 import '../persons/friend_groups_provider.dart';
 import '../persons/persons_list_provider.dart';
+import '../providers/ai_settings_provider.dart';
 import '../providers/buddy_widget_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
@@ -34,6 +36,8 @@ import '../providers/statistics_provider.dart';
 import '../sharing/generate_sharing_token_screen.dart';
 import '../widgets/easter_egg_dialog.dart';
 import 'add_meeting_screen.dart';
+import 'ai_settings_screen.dart';
+import 'buddy_menu_screen.dart';
 import 'calendar_events_screen.dart';
 import 'calendar_permission_screen.dart';
 import 'home_screen.dart';
@@ -162,6 +166,39 @@ class _MainScreenState extends State<MainScreen> {
     _meetingInboxProvider.dispose();
     _sharedPackageInboxProvider.dispose();
     super.dispose();
+  }
+
+  /// Opens BuddyMenuScreen — single entry point for all Buddy features.
+  void _openBuddyMenu() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BuddyMenuScreen(
+          onAIAssistantTap: _openBuddyGreeting,
+          onAPIKeyTap: _openAISettings,
+        ),
+      ),
+    );
+  }
+
+  /// Opens AIChatScreen in greeting mode via the Buddy drawer entry.
+  /// Uses State context (always alive) — avoids stale-context bug from drawer closures.
+  void _openBuddyGreeting() {
+    openAIChatGreeting(context, _buddyWidgetProvider);
+  }
+
+  /// Opens AISettingsScreen for managing the OpenAI API key.
+  void _openAISettings() {
+    final keyRepo = AIKeyRepository();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => AISettingsProvider(repository: keyRepo),
+          child: const AISettingsScreen(),
+        ),
+      ),
+    );
   }
 
   /// Navigates to GenerateSharingTokenScreen using the State's own context.
@@ -405,6 +442,15 @@ class _MainScreenState extends State<MainScreen> {
                     }
                   },
                 );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.smart_toy_outlined),
+              title: const Text('Buddy'),
+              onTap: () {
+                Navigator.pop(context);
+                _openBuddyMenu();
               },
             ),
             const Divider(),

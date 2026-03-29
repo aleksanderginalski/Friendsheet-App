@@ -131,6 +131,41 @@ class MeetingRepository {
     return candidates.take(limit).toList();
   }
 
+  /// Returns the set of personIds that appear in at least one meeting since [since].
+  /// Used by [BuddyWidgetProvider] to identify recently seen contacts.
+  Future<Set<String>> getPersonIdsSeenSince(
+      String userId, DateTime since) async {
+    final snapshot = await _meetingsRef(userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+        .get();
+    final personIds = <String>{};
+    for (final doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final participants =
+          List<String>.from((data['participantIds'] as List?) ?? []);
+      personIds.addAll(participants);
+    }
+    return personIds;
+  }
+
+  /// Returns the [limit] most recent meetings where [personId] is a participant,
+  /// ordered by date descending. Sorting is done client-side to avoid a
+  /// composite Firestore index (consistent with [getMeetingsByParticipant]).
+  Future<List<Meeting>> getRecentMeetingsByPerson(
+    String userId,
+    String personId, {
+    int limit = 4,
+  }) async {
+    final snapshot = await _meetingsRef(userId)
+        .where('participantIds', arrayContains: personId)
+        .get();
+    final meetings = snapshot.docs
+        .map((doc) => Meeting.fromFirestore(doc))
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+    return meetings.take(limit).toList();
+  }
+
   /// Removes personId from participantIds in all meetings that contain them.
   /// Uses a WriteBatch to apply all updates atomically.
   Future<void> removePersonFromMeetings(String userId, String personId) async {

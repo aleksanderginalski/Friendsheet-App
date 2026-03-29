@@ -14,6 +14,7 @@
 - v2.4 — FR-031 implemented: Meeting Notes as `List<String>` (US-100)
 - v2.5 — FR-025 partially implemented: AI Chat Screen (Buddy) delivered (US-087); consent flow (US-085), API key management (US-088), context builder (US-086) all ✅
 - v2.6 — FR-033 added: Tool Calling (US-110) — Buddy queries only relevant data via OpenAI function calling, supports arbitrary date ranges; FR-034 added: Offline-First Mode (US-111) — full CRUD available offline via Firestore SDK write queue + Hive cache (US-109)
+- v2.7 — FR-035 added: Buddy Language Selection (US-113); FR-036 added: Buddy Onboarding (US-114); FR-037 added: Buddy Birthday Message Quality (US-115); FR-038 added: App UI Localization (US-116); FR-039 added: User-Defined Writing Style (US-117)
 
 ---
 
@@ -546,6 +547,76 @@ User can browse and edit their data without an internet connection. Write operat
 - Offline banner displayed when connectivity is lost; dismissed automatically on reconnect
 - Pending sync indicator shown when writes are queued and not yet confirmed by Firestore
 - Online-only features (Buddy AI chat, Google Calendar import) display informative message when offline
+
+---
+
+### FR-035: Buddy Language Selection
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+User can choose the language Buddy responds in (Polish or English). The selection is persisted and applied to all Buddy responses. New users are prompted to choose a language on first Buddy open.
+
+**Acceptance Criteria:**
+- Language selector in SettingsScreen: Polish / English
+- Buddy always responds in the selected language regardless of the language the user types in
+- First Buddy open: language picker shown before chat starts
+- Selection persisted in SharedPreferences
+
+---
+
+### FR-036: Buddy Onboarding
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+First-time users with fewer than 50 meetings are guided through the app's main features by Buddy. Users choose which topics they want help with and Buddy navigates them to the relevant screens.
+
+**Acceptance Criteria:**
+- Trigger: first Buddy open AND fewer than 50 meetings
+- User selects topics: Add meeting | Add person + birthday | Statistics | Connect Buddy AI | Connect Google Calendar | Sharing tokens | Buddy AI features
+- Skip option available
+- "Show me again" accessible from SettingsScreen
+
+---
+
+### FR-037: Buddy Birthday Message Quality
+**Priority:** MUST HAVE (M7)
+
+**Description:**
+Birthday stats shown before Buddy's wish are scoped to the person's "birthday year" (last birthday to today) rather than calendar year. Activity ranking is direct-assignment-only (parent categories do not inherit child points). Buddy generates wishes in the user's personal writing style, which can be taught via a one-time setup flow in Settings.
+
+**Acceptance Criteria:**
+- Stats period: person's last birthday date → today (not calendar year)
+- Top 8 activities by points; each row: name | pts | % change vs previous birthday year | rank | rank change
+- Parent categories excluded from ranking unless directly added to a meeting
+- Default writing style: warm, informal, references shared memories, uses emojis, ~10-20 sentences
+- User can teach Buddy their style in Settings: paste examples → Buddy extracts style description → stored in Hive → applied to all future birthday wishes
+
+---
+
+### FR-038: App UI Localization
+**Priority:** NICE TO HAVE (M7)
+
+**Description:**
+All UI strings available in Polish and English via ARB files. Language selection in SettingsScreen, independent of Buddy's language setting.
+
+**Acceptance Criteria:**
+- App language selector in SettingsScreen (Polish / English), persisted in SharedPreferences
+- All UI text strings (labels, buttons, error messages) localized via flutter_localizations
+- Language change takes effect immediately without restart
+- Date/number formatting not in scope for this US
+
+---
+
+### FR-039: User-Defined Writing Style
+**Priority:** SHOULD HAVE (M7)
+
+**Description:**
+Users can adjust Buddy's AI writing style via sliders (4 dimensions) or by providing example messages. The style is applied to all OpenAI-generated messages.
+
+**Acceptance Criteria:**
+- 4 style sliders in SettingsScreen → Buddy → "Styl Buddy'ego": Poważny↔Zabawny, Formalny↔Nieformalny, Zwięzły↔Rozbudowany, Powściągliwy↔Ekspresywny
+- Example messages option: user pastes samples → Buddy extracts style description → stored in Hive → overrides sliders
+- Style injected into every OpenAI prompt; affects all AI-generated messages only
 
 ---
 

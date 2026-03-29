@@ -3909,25 +3909,111 @@ login instead of only on first login.
 **I want to** see Buddy proactively surface social insights beyond just missing notes
 **So that** the widget feels like an intelligent companion, not just a reminder
 
-**Story Points:** 3
+**Story Points:** 8
 **Priority:** P1
 **Labels:** `ai`, `homescreen`, `ui`
+**Status:** ✅ COMPLETED
+
+**Acceptance Criteria:**
+
+BuddyWidget — 3 simultaneous insight buttons:
+- [x] BuddyWidget shows up to 3 buttons simultaneously when conditions are met: birthday CTA (existing, from US-104), "💾 Save Your Memories" (meetings without notes), "👋 Long time no see — X days"
+- [x] "👋 Long time no see — X days" shows the number of days since the user last saw their longest-absent friend (e.g. "👋 Long time no see — 127 days")
+- [x] LTNS condition: at least one friend not seen in 90+ days (based on meeting participation)
+- [x] `BuddyWidgetProvider` exposes `lapsedPersons: List<LapsedPersonInfo>` — top 3 persons ranked by longest absence (person + daysSinceLastMeeting)
+- [x] `MeetingRepository`: new method `getPersonIdsSeenSince(userId, since)` returning `Set<String>` of personIds appearing in any meeting since that date
+
+AIChatScreen — lapsedFriendsList mode:
+- [x] Tapping "👋 Long time no see" opens `AIChatScreen` in new `lapsedFriendsList` `BuddyChatMode`
+- [x] `lapsedFriendsList` mode opens with 3 action buttons in the chat bubble: "[Name] — [X] days" for each of the top 3 lapsed persons
+- [x] Tapping a person action button switches to `lapsedFriendDetail` mode for that person
+- [x] `lapsedFriendDetail` mode: Buddy receives context of last 4 meetings with that person (names + activities) and streams a warm message referencing shared memories + suggests planning something new
+
+AIChatScreen — greeting mode:
+- [x] New `greeting` `BuddyChatMode`: opens with the same contextual action buttons as BuddyWidget (meetings + birthday + LTNS); each button triggers its respective mode
+- [x] If no conditions are met: greeting shows "Hey! Can I help you with anything?" with no action buttons (free-query mode)
+- [x] Tapping the Buddy icon on HomeScreen opens `AIChatScreen` in `greeting` mode (was: free-query mode)
+- [x] Side Menu → Buddy → AI Assistant navigates to `AIChatScreen` in `greeting` mode
+
+Side Menu — Buddy section:
+- [x] Side Menu has a "Buddy" tile (single entry, like Settings) that opens a `BuddyMenuScreen` sub-screen with "AI Assistant" and "API Key" entries
+- [x] Existing Buddy AI Assistant and API Key entries are removed from Settings and replaced by Side Menu → Buddy entries
+
+Font fix:
+- [x] `AIChatScreen` AppBar title "Buddy" uses Pacifico font (same as Friendsheet main AppBar), white color
+
+**Tasks:**
+- [x] **TASK-102.1:** Add `LapsedPersonInfo` data class; add `getPersonIdsSeenSince(userId, since)` to `MeetingRepository`; compute `lapsedPersons` in `BuddyWidgetProvider.initialize()` — 1h
+- [x] **TASK-102.2:** Update `BuddyWidget`: add `onLongTimeNoSeeTap` callback and "👋 Long time no see — X days" button (X = daysSinceLastMeeting of first lapsed person); button visible when `lapsedPersons.isNotEmpty` — 1h
+- [x] **TASK-102.3:** Add `lapsedFriendsList` and `lapsedFriendDetail` to `BuddyChatMode`; implement in `AIChatProvider`: action buttons for top 3 lapsed persons → on person tap, fetch last 4 meetings with that person + their activities → stream AI response — 2h
+- [x] **TASK-102.4:** Add `greeting` to `BuddyChatMode`; `AIChatProvider` in greeting mode builds action buttons from passed-in `suggestedMeetings`, `upcomingBirthdayInfo`, `lapsedPersons`; update `HomeScreen` icon tap + Side Menu → Buddy → AI Assistant to open greeting mode — 1h
+- [x] **TASK-102.5:** Side Menu restructure — single "Buddy" tile opening `BuddyMenuScreen`; remove Buddy entries from Settings — 1h
+- [x] **TASK-102.6:** Fix `AIChatScreen` AppBar title: Pacifico font, white color — 0.5h
+- [x] **TASK-102.7:** Write tests — /qa responsibility
+
+**Dependencies:** US-101, US-104
+**Blocks:** US-118
+
+---
+
+### US-118: LTNS Exclusion Filter in Buddy
+
+**As a** user
+**I want to** control which friends Buddy includes in Long Time No See reminders
+**So that** I can exclude people I intentionally see less often
+
+**Story Points:** 3
+**Priority:** P2
+**Labels:** `ai`, `settings`, `ui`
 **Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] If no meeting without notes in last 2 months: widget checks if any friend hasn't been seen in 3+ months
-- [ ] If such a friend exists: widget shows "You haven't seen [Friend_A] in a while — maybe time to catch up?" (real name shown)
-- [ ] If neither condition applies: widget shows default "Can I help you with anything?"
-- [ ] Tapping the friend suggestion opens `AIChatScreen` in free-query mode pre-filled with that friend's name
-- [ ] Priority order: missing notes → long time no see → default
+- [ ] Side Menu → Buddy → "Long time no see" entry opens a new `LtnsFilterScreen`
+- [ ] `LtnsFilterScreen` lists all persons; each has an inclusion toggle (enabled = included in LTNS suggestions)
+- [ ] Default: all persons included (opt-out model)
+- [ ] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
+- [ ] `BuddyWidgetProvider` reads the exclusion list on `initialize()` and filters out excluded persons from `lapsedPersons`
+- [ ] Filter UI reuses the same person-list style as existing filter dialogs in statistics
 
 **Tasks:**
-- [ ] **TASK-102.1:** Extend `BuddyWidget` logic: check last meeting date per person — 1h
-- [ ] **TASK-102.2:** Update widget message variants for each insight type — 0.5h
-- [ ] **TASK-102.3:** Wire friend suggestion tap → `AIChatScreen` with pre-fill — 0.5h
-- [ ] **TASK-102.4:** Write tests for insight priority logic — 1h
+- [ ] **TASK-118.1:** Persist excluded person IDs in SharedPreferences; create `LtnsExclusionService` with `getExcludedIds()` / `setExcluded(personId, excluded)` — 0.5h
+- [ ] **TASK-118.2:** Create `LtnsFilterScreen` — person list with inclusion toggles, SharedPreferences-backed — 1h
+- [ ] **TASK-118.3:** Add "Long time no see" entry under Side Menu → Buddy section (requires US-102 merged); navigate to `LtnsFilterScreen` — 0.5h
+- [ ] **TASK-118.4:** Update `BuddyWidgetProvider.initialize()` to read exclusion list and filter `lapsedPersons` — 0.5h
+- [ ] **TASK-118.5:** Write tests — /qa responsibility
 
-**Dependencies:** US-101
+**Dependencies:** US-102
+**Blocks:** None
+
+---
+
+### US-119: Meeting Notes — Save via Buddy Chat
+
+**As a** user
+**I want to** save notes to a meeting by typing them in the Buddy chat
+**So that** I can capture memories conversationally without leaving the chat
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `bug`, `notes`
+**Status:** 📋 Planned
+
+**Context:** `AIChatProvider.saveNotes()` and `BuddyWriteService.saveNotes()` exist but are never called from the chat flow. This US wires them up. Bug discovered during US-102 manual verification.
+
+**Acceptance Criteria:**
+- [ ] When Buddy is in `meetingNotes` mode and the user sends a message, that message is automatically saved as a note to the active meeting via `BuddyWriteService.saveNotes()`
+- [ ] Each user message in the session becomes one note entry (one note per send, not split by lines)
+- [ ] After saving, Buddy continues the conversation normally — no interruption to the chat flow
+- [ ] If `saveNotes()` throws, the error is shown via the existing error banner; the user message is still displayed
+- [ ] Notes are not duplicated when the user sends multiple messages in the same session (each message appended individually)
+- [ ] Existing `meetingNotesList` flow (selecting a meeting from the list) then transitions to `meetingNotes` mode — saving works the same way in both entry paths
+
+**Tasks:**
+- [ ] **TASK-119.1:** In `AIChatProvider.sendMessage()`, after a successful AI response, if `_activeMeetingId != null`, call `saveNotes([text])` where `text` is the current user message — 1h
+- [ ] **TASK-119.2:** Write tests for the save-on-send path — /qa responsibility
+- [ ] **TASK-119.3:** Verify that the `meetingNotesList` → meeting selection → `meetingNotes` transition correctly sets `_activeMeetingId` before the first user message is sent — 0.5h
+
+**Dependencies:** US-087, US-102
 **Blocks:** None
 
 ---
@@ -4059,27 +4145,215 @@ Interactive action buttons:
 
 ---
 
-### US-106: Buddy Widget Auto-Refresh
+### US-112: Buddy Widget Auto-Refresh
 
+**As a** user
+**I want** Buddy widget to show up-to-date data after I add or edit persons, meetings, or notes
+**So that** I don't have to restart the app to see changes reflected in birthday reminders and meeting suggestions
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `ux`, `performance`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] On return to HomeScreen from PersonDetailScreen (after adding/editing birthday), BuddyWidgetProvider refreshes — new birthday appears immediately
+- [ ] On return to HomeScreen from AIChatScreen (after saving notes), BuddyWidgetProvider refreshes — updated meeting suggestions
+- [ ] On return to HomeScreen from any screen that may modify persons or meetings, BuddyWidgetProvider refreshes
+- [ ] Urgency threshold respected in real time: birthday added for today → widget immediately shows "urgent" mode
+- [ ] Refresh reads from LocalCacheService (no direct Firestore call per refresh)
+- [ ] No visible loading flash during refresh
+
+**Tasks:**
+- [ ] **TASK-112.1:** Add `refresh(String userId)` method to `BuddyWidgetProvider` — delegates to `initialize()` — 0.5h
+- [ ] **TASK-112.2:** Call `refresh()` via `.then()` on all `Navigator.push()` calls from `HomeScreen` that navigate to screens capable of modifying persons or meetings — 1h
+- [ ] **TASK-112.3:** Migrate `BuddyWidgetProvider` data reads to `LocalCacheService` (replaces direct repository calls) — 1h
+
+**Dependencies:** US-109
+**Blocks:** None
+**Implementation order:** 2nd (after US-109)
 
 ---
 
-### US-107: App Language Selection
+### US-113: Buddy Language Selection
 
+**As a** user
+**I want** to choose the language Buddy responds in
+**So that** Buddy always replies in my preferred language regardless of what language I type in
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `settings`, `ux`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Language selector available in SettingsScreen: Polish / English
+- [ ] Selected language persisted in SharedPreferences (key: `buddy_language`)
+- [ ] On first Buddy open (no language set): onboarding step forces language choice before chat starts
+- [ ] System prompt updated with explicit language instruction: "Always respond in [language], regardless of the language the user writes in"
+- [ ] Changing language in Settings takes effect in the next Buddy session (no restart required)
+- [ ] Default (if SharedPreferences key missing): show language picker
+
+**Tasks:**
+- [ ] **TASK-113.1:** Add `buddy_language` key read/write to SharedPreferences in a new `BuddySettingsService` — 0.5h
+- [ ] **TASK-113.2:** Add language selector tile to SettingsScreen (Polish / English toggle) — 0.5h
+- [ ] **TASK-113.3:** Inject language into `OpenAIService` system prompt — 0.5h
+- [ ] **TASK-113.4:** Add language picker step to Buddy first-open guard (before chat loads, if key absent) — 1h
+
+**Dependencies:** None
+**Blocks:** US-114
+**Implementation order:** 3rd (after US-112)
 
 ---
 
-### US-108: Buddy Onboarding Instructions
+### US-114: Buddy Onboarding Flow
 
+**As a** new user
+**I want** Buddy to guide me through the app's main features
+**So that** I can learn how to use Friendsheet at my own pace, choosing only the topics I need help with
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `ai`, `onboarding`, `ux`
 **Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] Trigger: first Buddy open AND user has fewer than 50 meetings
+- [ ] Buddy presents a topic selection: user picks which features they want to learn (multi-select checkboxes as action buttons)
+- [ ] Topics: Add a meeting | Add a person + birthday | Statistics | Connect Buddy AI (BYOK) | Connect Google Calendar | Sharing tokens (peer-to-peer) | Buddy AI features (notes, wishes, birthdays)
+- [ ] "Skip" option: "I already know how to use it" — skips onboarding entirely
+- [ ] For each selected topic: Buddy sends an explanation message + navigation action button → user taps → app navigates to the relevant screen → on return, Buddy continues to next topic
+- [ ] After all selected topics completed: Buddy congratulates and returns to normal chat mode
+- [ ] Onboarding completion stored in SharedPreferences (key: `buddy_onboarding_completed`)
+- [ ] "Show me again" button in SettingsScreen resets the flag and re-triggers onboarding on next Buddy open
+- [ ] Language follows US-113 setting
+
+**Tasks:**
+- [ ] **TASK-114.1:** Add `buddy_onboarding_completed` flag to SharedPreferences; add "Show me again" tile to SettingsScreen — 0.5h
+- [ ] **TASK-114.2:** Add `onboarding` mode to `BuddyChatMode`; define `OnboardingTopic` enum (7 topics) — 0.5h
+- [ ] **TASK-114.3:** Implement onboarding greeting in `AIChatProvider`: check flag + meeting count on `initialize()`; show topic selector as `pendingActions` — 1h
+- [ ] **TASK-114.4:** Implement topic flow: for each selected topic, send explanation message + navigation action button; track progress through selected topics — 2h
+- [ ] **TASK-114.5:** Wire navigation action buttons from `AIChatScreen` to correct app screens (7 destinations) — 1.5h
+- [ ] **TASK-114.6:** Handle return from each navigated screen: resume onboarding flow for next topic — 1h
+- [ ] **TASK-114.7:** Write completion message; persist `buddy_onboarding_completed` flag on finish or skip — 0.5h
+
+**Dependencies:** US-113
+**Blocks:** None
+**Implementation order:** 5th (last of this group)
 
 ---
 
-### US-109: Buddy Birthday Message Quality
+### US-115: Buddy Birthday Message Quality
 
+**As a** user
+**I want** Buddy to show meaningful friendship stats before birthday wishes and generate messages in a warm, personal style
+**So that** birthday messages feel genuinely personal and reflect our actual shared history
+
+**Story Points:** 5
+**Priority:** P1
+**Labels:** `ai`, `persons`, `ux`
 **Status:** 📋 Planned
+
+**Context:**
+This US is purely developer work — no new Settings UI for end-users. The default writing style is embedded in the system prompt by the developer based on example messages provided at implementation time. User-adjustable style is delivered in US-117.
+
+**Acceptance Criteria:**
+
+Birthday year stats summary:
+- [ ] "Birthday year" period = from person's last birthday date to today (e.g. 17 May 2025 → 16 May 2026); not calendar year
+- [ ] `buildBirthdayContext` in `ContextBuilderService` updated to use exact birthday dates instead of last 365 days
+- [ ] Stats message shows: total meetings in birthday year | total weight (points) in birthday year
+- [ ] Top activities list: up to 8 activities ranked by points in the birthday year; if fewer than 8 exist, show all
+- [ ] Parent categories do NOT inherit points from child categories — only activities directly assigned to meetings count
+- [ ] Each activity row: `[Name] | X pts | +/-Y% vs previous birthday year | Top Z | +/-M places`
+  - Points: sum for current birthday year
+  - % change: vs same activity in previous birthday year (prev birthday -1 year → prev birthday -1 day)
+  - Top Z: rank among all persons for this activity in the current birthday year
+  - +/-M: rank change vs previous birthday year
+
+Default writing style (developer task, not user-facing):
+- [ ] Birthday wish system prompt updated with a style description: warm, informal, references specific shared memories, uses emojis naturally, ~10-20 sentences, structure: gratitude → specific memories → hopes for the future
+- [ ] Style description refined using example messages provided by the developer at implementation time — examples are NOT stored in the codebase or committed to the repository
+
+**Tasks:**
+- [ ] **TASK-115.1:** Refactor `buildBirthdayContext` — compute exact birthday year date range from `Person.birthDayMonth`; fetch meetings for that range and the previous birthday year range — 1h
+- [ ] **TASK-115.2:** Compute per-activity stats for both periods: direct-assignment-only points, % change, cross-person rank, rank change — 2h
+- [ ] **TASK-115.3:** Update `formatBirthdayStats` in `birthday_format_helpers.dart` — new format with birthday-year scope and per-activity rows — 1h
+- [ ] **TASK-115.4:** Update birthday wish system prompt with default style description; developer provides example messages during implementation to calibrate the description — 1h
+
+**Dependencies:** US-087, US-104
+**Blocks:** US-117
+**Implementation order:** 4th (after US-113)
+
+---
+
+### US-116: App UI Localization
+
+**As a** user
+**I want** the app interface to be available in Polish and English
+**So that** I can use the app in my preferred language
+
+**Story Points:** 8
+**Priority:** P3
+**Labels:** `localization`, `ux`, `infrastructure`
+**Status:** 📋 Planned
+
+**Context:**
+Current UI is in English. This US extracts all UI strings into ARB files and adds a language selector independent of Buddy's language (US-113).
+
+**Acceptance Criteria:**
+- [ ] All UI strings (labels, buttons, error messages, empty states) extracted to `app_en.arb` and `app_pl.arb`
+- [ ] Language selector in SettingsScreen: "App Language" — Polish / English — independent from Buddy Language (US-113)
+- [ ] Selected language persisted in SharedPreferences (key: `app_language`)
+- [ ] Language change takes effect immediately without app restart
+- [ ] No date/number format changes in scope — text strings only
+- [ ] `flutter_localizations` and `intl` packages configured
+
+**Tasks:**
+- [ ] **TASK-116.1:** Add `flutter_localizations` and `intl` to `pubspec.yaml`; configure `MaterialApp` with `localizationsDelegates` and `supportedLocales` — 1h
+- [ ] **TASK-116.2:** Audit all screens and extract hardcoded strings to `app_en.arb` and `app_pl.arb` — 4h
+- [ ] **TASK-116.3:** Replace hardcoded strings with `AppLocalizations.of(context)` calls throughout `lib/` — 2h
+- [ ] **TASK-116.4:** Add "App Language" selector tile to SettingsScreen; persist selection to SharedPreferences — 0.5h
+- [ ] **TASK-116.5:** Apply locale change at runtime without restart — 0.5h
+
+**Dependencies:** US-113 (language settings infrastructure)
+**Blocks:** None
+
+---
+
+### US-117: User-Defined Writing Style
+
+**As a** user
+**I want** to adjust Buddy's writing style to match my preferences
+**So that** AI-generated messages feel personal and appropriate for how I communicate with friends
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `ai`, `settings`, `ux`
+**Status:** 📋 Planned
+
+**Acceptance Criteria:**
+- [ ] New section in SettingsScreen → Buddy → "Styl Buddy'ego"
+- [ ] 4 style sliders, each saved independently:
+  - Poważny (0) ↔ Zabawny (10)
+  - Formalny (0) ↔ Nieformalny (10)
+  - Zwięzły (0) ↔ Rozbudowany (10)
+  - Powściągliwy (0) ↔ Ekspresywny (10)
+- [ ] Default slider positions: mid-point (5) for all dimensions
+- [ ] "Paste example messages" option: user provides sample messages → Buddy generates a style description → stored in Hive (key: `buddy_writing_style`) → overrides slider-based description when present
+- [ ] When no examples provided: style description auto-generated from current slider values and injected into every OpenAI prompt
+- [ ] Style applies to ALL AI-generated messages (AIChatScreen responses, birthday wishes) — does NOT affect Dart-computed messages (stats summaries, action button labels, widget CTAs)
+- [ ] Removing examples (reset button) reverts to slider-based style
+- [ ] Style description stored in Hive (key: `buddy_style_description`); regenerated when sliders change
+
+**Tasks:**
+- [ ] **TASK-117.1:** Add `BuddyStyleService` — generates style description string from 4 slider values; reads/writes to Hive — 1h
+- [ ] **TASK-117.2:** Build "Styl Buddy'ego" settings section: 4 labeled sliders + "Paste examples" tile + reset button — 1.5h
+- [ ] **TASK-117.3:** Implement example-based style extraction: open `AIChatScreen` in `buddyStyleSetup` mode (from US-115); on completion save result to `buddy_writing_style` key — 0.5h
+- [ ] **TASK-117.4:** Inject style description (slider-based or example-based) into every OpenAI prompt in `OpenAIService` — 1h
+
+**Dependencies:** US-115
+**Blocks:** None
 
 ---
 

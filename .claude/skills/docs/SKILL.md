@@ -128,6 +128,15 @@ git pull
 git branch -d [branch-name]
 ```
 
+**Step 5 — Observability report**
+```powershell
+tools\observability\report.bat --us US-XXX --sp N
+tools\observability\dashboard.bat
+```
+Replace US-XXX with the US number and N with the Story Points count.
+`report.bat` saves session data (required for SP histograms).
+`dashboard.bat` opens the comparison dashboard in the browser.
+
 Note: Never use `&&` to chain commands — run each command separately.
 PowerShell 5.x (Windows 10 default) does not support `&&`.
 

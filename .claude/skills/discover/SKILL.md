@@ -43,11 +43,12 @@ Gdy US dotyczy pól wejściowych (formularze, selekcja daty/czasu, pickery, dial
 - Jeśli dane są częściowe (np. tylko miesiąc+dzień, tylko rok+miesiąc) — zawsze dopytaj: "Jaki podzbiór danych przechowujemy i jak to wpływa na wybór kontrolki?"
 - Zapisz ustalony wzorzec UX w AC lub Tasks danego US — żeby /planning nie musiał go zgadywać.
 
-Zawsze sprawdzaj czy pomysł nie pokrywa się z istniejącym backlogiem:
-grep -oE "EPIC-[0-9]+|FEATURE-[0-9]+|US-[0-9]+" BACKLOG.md
-
-Przy nowych US zawsze sprawdź najwyższy numer:
-grep -oE "US-[0-9]+" BACKLOG.md | sort -t'-' -k2 -n | tail -5
+Zawsze sprawdzaj czy pomysł nie pokrywa się z istniejącym backlogiem — użyj Grep tool
+(nie Bash, żeby uniknąć pytania o akceptację):
+- Grep pattern `US-[0-9]+` in BACKLOG.md → scan results for existing numbers
+- To find the highest US number: Grep pattern `### US-[0-9]+` output_mode=content in BACKLOG.md,
+  then read the last match manually — pick the highest number from results.
+- Never use Bash grep/sort/tail for this check.
 
 ## Podczas dyskusji
 

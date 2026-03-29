@@ -146,6 +146,34 @@ class MockContextBuilderService extends _i1.Mock
       ) as _i4.Future<_i2.BuddyContext>);
 
   @override
+  _i4.Future<_i2.BuddyContext> buildLapsedFriendContext(
+    String? userId,
+    String? personId, {
+    int? limit = 4,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #buildLapsedFriendContext,
+          [
+            userId,
+            personId,
+          ],
+          {#limit: limit},
+        ),
+        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+          this,
+          Invocation.method(
+            #buildLapsedFriendContext,
+            [
+              userId,
+              personId,
+            ],
+            {#limit: limit},
+          ),
+        )),
+      ) as _i4.Future<_i2.BuddyContext>);
+
+  @override
   String serializeToPrompt(
     _i2.BuddyContext? context, {
     bool? includeNotes = false,

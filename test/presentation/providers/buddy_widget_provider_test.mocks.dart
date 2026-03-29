@@ -193,6 +193,40 @@ class MockMeetingRepository extends _i1.Mock implements _i3.MeetingRepository {
       ) as _i5.Future<List<_i6.Meeting>>);
 
   @override
+  _i5.Future<Set<String>> getPersonIdsSeenSince(
+    String? userId,
+    DateTime? since,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getPersonIdsSeenSince,
+          [
+            userId,
+            since,
+          ],
+        ),
+        returnValue: _i5.Future<Set<String>>.value(<String>{}),
+      ) as _i5.Future<Set<String>>);
+
+  @override
+  _i5.Future<List<_i6.Meeting>> getRecentMeetingsByPerson(
+    String? userId,
+    String? personId, {
+    int? limit = 4,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecentMeetingsByPerson,
+          [
+            userId,
+            personId,
+          ],
+          {#limit: limit},
+        ),
+        returnValue: _i5.Future<List<_i6.Meeting>>.value(<_i6.Meeting>[]),
+      ) as _i5.Future<List<_i6.Meeting>>);
+
+  @override
   _i5.Future<void> removePersonFromMeetings(
     String? userId,
     String? personId,
