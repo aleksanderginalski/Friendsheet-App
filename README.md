@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" now shows top-3 meetings without notes as in-chat action buttons. Remaining US: meeting suggestions (US-105), widget auto-refresh (US-106), language selection (US-107).
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. Remaining US: meeting suggestions (US-105), widget auto-refresh (US-106), language selection (US-107).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (811)
+✅ All tests passing (835)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,14 +174,15 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.2 — US-104: Birthday Reminders via Buddy (March 28, 2026)
-- ✅ Birthday detection in `BuddyWidgetProvider`: urgent (< 5 days) and upcoming modes; per-person days-until computed at startup
-- ✅ `BuddyWidget` redesigned: 2-button layout ("Save Your Memories" + birthday CTA); Column layout fix resolves hit-test clipping bug from US-101
-- ✅ `AIChatProvider` extended with `birthdayList`, `birthdayWishes`, `meetingNotesList` modes; `pendingActions` + `handleAction()` pattern for in-chat action buttons
-- ✅ `_ActionsBubble` in `AIChatScreen`: action buttons rendered as assistant chat bubble (not bottom bar)
-- ✅ `birthday_format_helpers.dart` (NEW): Dart-computed stats message + birthday button label helper
-- ✅ `buildBirthdayContext` in `ContextBuilderService`: 365-day token-optimized context for birthday wishes
-- ✅ 811 Flutter tests passing (+35 new tests)
+### Latest: v4.5.3 — US-102: Proactive Insights in Widget (March 29, 2026)
+- ✅ LTNS detection in `BuddyWidgetProvider`: top-3 friends absent 90+ days; skips recently seen and never-met contacts; `lapsedPersons: List<LapsedPersonInfo>` exposed
+- ✅ "👋 Long time no see — X days" button added to `BuddyWidget`; shows longest-absent friend's days count
+- ✅ `AIChatProvider` extended with `lapsedFriendsList`, `lapsedFriendDetail`, `greeting` modes; `lapsed_select` / `greeting_*` action routing; `buildLapsedFriendContext` streams AI reconnection message
+- ✅ `BuddyMenuScreen` (NEW): sub-screen for Side Menu → Buddy; "AI Assistant" and "API Key" entries; Pacifico AppBar title
+- ✅ Side Menu drawer "Buddy" tile replaces section header; `SettingsScreen` AI entries removed
+- ✅ `AIChatScreen` AppBar uses `GoogleFonts.pacifico` (white, 22px)
+- ✅ `getPersonIdsSeenSince` and `getRecentMeetingsByPerson` added to `MeetingRepository`; `buildLapsedFriendContext` added to `ContextBuilderService`
+- ✅ 835 Flutter tests passing (+24 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

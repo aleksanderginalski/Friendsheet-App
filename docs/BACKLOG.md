@@ -3912,44 +3912,44 @@ login instead of only on first login.
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `ai`, `homescreen`, `ui`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
 
 BuddyWidget — 3 simultaneous insight buttons:
-- [ ] BuddyWidget shows up to 3 buttons simultaneously when conditions are met: birthday CTA (existing, from US-104), "💾 Save Your Memories" (meetings without notes), "👋 Long time no see — X days"
-- [ ] "👋 Long time no see — X days" shows the number of days since the user last saw their longest-absent friend (e.g. "👋 Long time no see — 127 days")
-- [ ] LTNS condition: at least one friend not seen in 90+ days (based on meeting participation)
-- [ ] `BuddyWidgetProvider` exposes `lapsedPersons: List<LapsedPersonInfo>` — top 3 persons ranked by longest absence (person + daysSinceLastMeeting)
-- [ ] `MeetingRepository`: new method `getPersonIdsSeenSince(userId, since)` returning `Set<String>` of personIds appearing in any meeting since that date
+- [x] BuddyWidget shows up to 3 buttons simultaneously when conditions are met: birthday CTA (existing, from US-104), "💾 Save Your Memories" (meetings without notes), "👋 Long time no see — X days"
+- [x] "👋 Long time no see — X days" shows the number of days since the user last saw their longest-absent friend (e.g. "👋 Long time no see — 127 days")
+- [x] LTNS condition: at least one friend not seen in 90+ days (based on meeting participation)
+- [x] `BuddyWidgetProvider` exposes `lapsedPersons: List<LapsedPersonInfo>` — top 3 persons ranked by longest absence (person + daysSinceLastMeeting)
+- [x] `MeetingRepository`: new method `getPersonIdsSeenSince(userId, since)` returning `Set<String>` of personIds appearing in any meeting since that date
 
 AIChatScreen — lapsedFriendsList mode:
-- [ ] Tapping "👋 Long time no see" opens `AIChatScreen` in new `lapsedFriendsList` `BuddyChatMode`
-- [ ] `lapsedFriendsList` mode opens with 3 action buttons in the chat bubble: "[Name] — [X] days" for each of the top 3 lapsed persons
-- [ ] Tapping a person action button switches to `lapsedFriendDetail` mode for that person
-- [ ] `lapsedFriendDetail` mode: Buddy receives context of last 4 meetings with that person (names + activities) and streams a warm message referencing shared memories + suggests planning something new
+- [x] Tapping "👋 Long time no see" opens `AIChatScreen` in new `lapsedFriendsList` `BuddyChatMode`
+- [x] `lapsedFriendsList` mode opens with 3 action buttons in the chat bubble: "[Name] — [X] days" for each of the top 3 lapsed persons
+- [x] Tapping a person action button switches to `lapsedFriendDetail` mode for that person
+- [x] `lapsedFriendDetail` mode: Buddy receives context of last 4 meetings with that person (names + activities) and streams a warm message referencing shared memories + suggests planning something new
 
 AIChatScreen — greeting mode:
-- [ ] New `greeting` `BuddyChatMode`: opens with the same contextual action buttons as BuddyWidget (meetings + birthday + LTNS); each button triggers its respective mode
-- [ ] If no conditions are met: greeting shows "Hey! Can I help you with anything?" with no action buttons (free-query mode)
-- [ ] Tapping the Buddy icon on HomeScreen opens `AIChatScreen` in `greeting` mode (was: free-query mode)
-- [ ] Side Menu → Buddy → AI Assistant navigates to `AIChatScreen` in `greeting` mode
+- [x] New `greeting` `BuddyChatMode`: opens with the same contextual action buttons as BuddyWidget (meetings + birthday + LTNS); each button triggers its respective mode
+- [x] If no conditions are met: greeting shows "Hey! Can I help you with anything?" with no action buttons (free-query mode)
+- [x] Tapping the Buddy icon on HomeScreen opens `AIChatScreen` in `greeting` mode (was: free-query mode)
+- [x] Side Menu → Buddy → AI Assistant navigates to `AIChatScreen` in `greeting` mode
 
 Side Menu — Buddy section:
-- [ ] Side Menu has a new "Buddy" section containing: "AI Assistant" entry (opens `greeting` mode) and "API Key" entry (existing OpenAI key management screen)
-- [ ] Existing Buddy AI Assistant and API Key entries are removed from Settings and replaced by Side Menu → Buddy entries
+- [x] Side Menu has a "Buddy" tile (single entry, like Settings) that opens a `BuddyMenuScreen` sub-screen with "AI Assistant" and "API Key" entries
+- [x] Existing Buddy AI Assistant and API Key entries are removed from Settings and replaced by Side Menu → Buddy entries
 
 Font fix:
-- [ ] `AIChatScreen` AppBar title "Buddy" uses the same font family as the "Friendsheet" main AppBar title, white color
+- [x] `AIChatScreen` AppBar title "Buddy" uses Pacifico font (same as Friendsheet main AppBar), white color
 
 **Tasks:**
-- [ ] **TASK-102.1:** Add `LapsedPersonInfo` data class; add `getPersonIdsSeenSince(userId, since)` to `MeetingRepository`; compute `lapsedPersons` in `BuddyWidgetProvider.initialize()` — 1h
-- [ ] **TASK-102.2:** Update `BuddyWidget`: add `onLongTimeNoSeeTap` callback and "👋 Long time no see — X days" button (X = daysSinceLastMeeting of first lapsed person); button visible when `lapsedPersons.isNotEmpty` — 1h
-- [ ] **TASK-102.3:** Add `lapsedFriendsList` and `lapsedFriendDetail` to `BuddyChatMode`; implement in `AIChatProvider`: action buttons for top 3 lapsed persons → on person tap, fetch last 4 meetings with that person + their activities → stream AI response — 2h
-- [ ] **TASK-102.4:** Add `greeting` to `BuddyChatMode`; `AIChatProvider` in greeting mode builds action buttons from passed-in `suggestedMeetings`, `upcomingBirthdayInfo`, `lapsedPersons`; update `HomeScreen` icon tap + Side Menu → Buddy → AI Assistant to open greeting mode — 1h
-- [ ] **TASK-102.5:** Side Menu restructure — add "Buddy" section with AI Assistant + API Key entries; remove Buddy entries from Settings — 1h
-- [ ] **TASK-102.6:** Fix `AIChatScreen` AppBar title: Friendsheet font family, white color — 0.5h
-- [ ] **TASK-102.7:** Write tests — /qa responsibility
+- [x] **TASK-102.1:** Add `LapsedPersonInfo` data class; add `getPersonIdsSeenSince(userId, since)` to `MeetingRepository`; compute `lapsedPersons` in `BuddyWidgetProvider.initialize()` — 1h
+- [x] **TASK-102.2:** Update `BuddyWidget`: add `onLongTimeNoSeeTap` callback and "👋 Long time no see — X days" button (X = daysSinceLastMeeting of first lapsed person); button visible when `lapsedPersons.isNotEmpty` — 1h
+- [x] **TASK-102.3:** Add `lapsedFriendsList` and `lapsedFriendDetail` to `BuddyChatMode`; implement in `AIChatProvider`: action buttons for top 3 lapsed persons → on person tap, fetch last 4 meetings with that person + their activities → stream AI response — 2h
+- [x] **TASK-102.4:** Add `greeting` to `BuddyChatMode`; `AIChatProvider` in greeting mode builds action buttons from passed-in `suggestedMeetings`, `upcomingBirthdayInfo`, `lapsedPersons`; update `HomeScreen` icon tap + Side Menu → Buddy → AI Assistant to open greeting mode — 1h
+- [x] **TASK-102.5:** Side Menu restructure — single "Buddy" tile opening `BuddyMenuScreen`; remove Buddy entries from Settings — 1h
+- [x] **TASK-102.6:** Fix `AIChatScreen` AppBar title: Pacifico font, white color — 0.5h
+- [x] **TASK-102.7:** Write tests — /qa responsibility
 
 **Dependencies:** US-101, US-104
 **Blocks:** US-118
