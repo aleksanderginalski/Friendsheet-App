@@ -130,7 +130,8 @@ class AIChatProvider extends ChangeNotifier {
     // Greeting: shows all contextual action buttons matching the widget state.
     if (mode == BuddyChatMode.greeting) {
       _context = await _contextBuilderService.buildFullContext(userId);
-      const greeting = 'Hey! 👋 Great to see you! Here\'s what I can help you with:';
+      const greeting =
+          'Hey! 👋 Great to see you! Here\'s what I can help you with:';
       _messages = [const ChatMessage(role: 'assistant', content: greeting)];
       final actions = <BuddyAction>[];
       if (_meetingOptions.isNotEmpty) {

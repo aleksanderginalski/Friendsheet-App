@@ -148,6 +148,33 @@ void main() {
       expect(tapped, isTrue);
     });
 
+    testWidgets('expanded with lapsed persons shows LTNS button',
+        (tester) async {
+      final lapsed = LapsedPersonInfo(
+        person: testPerson,
+        daysSinceLastMeeting: 95,
+      );
+      await tester.pumpWidget(buildWidget(lapsedPersons: [lapsed]));
+
+      expect(find.textContaining('Long time no see'), findsOneWidget);
+      expect(find.textContaining('95 days'), findsOneWidget);
+    });
+
+    testWidgets('tapping LTNS button calls onLongTimeNoSeeTap', (tester) async {
+      var tapped = false;
+      final lapsed = LapsedPersonInfo(
+        person: testPerson,
+        daysSinceLastMeeting: 95,
+      );
+      await tester.pumpWidget(buildWidget(
+        lapsedPersons: [lapsed],
+        onLongTimeNoSeeTap: () => tapped = true,
+      ));
+
+      await tester.tap(find.textContaining('Long time no see'));
+      expect(tapped, isTrue);
+    });
+
     testWidgets('tapping icon calls onIconTap', (tester) async {
       var tapped = false;
       await tester.pumpWidget(buildWidget(onIconTap: () => tapped = true));

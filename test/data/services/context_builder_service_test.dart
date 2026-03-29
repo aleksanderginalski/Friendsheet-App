@@ -520,6 +520,49 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // buildLapsedFriendContext
+  // ---------------------------------------------------------------------------
+
+  group('buildLapsedFriendContext', () {
+    test('happy path — uses getRecentMeetingsByPerson and builds context',
+        () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+
+      final recent = makeMeeting(
+          id: 'r1',
+          date: withinWindow,
+          participantIds: ['p1'],
+          categoryIds: []);
+      when(mockMeetingRepo.getRecentMeetingsByPerson('user-1', 'p1',
+              limit: anyNamed('limit')))
+          .thenAnswer((_) async => [recent]);
+
+      final ctx = await service.buildLapsedFriendContext('user-1', 'p1');
+
+      expect(ctx.meetings.length, 1);
+      expect(ctx.meetings.first.name, 'Meeting r1');
+    });
+
+    test('returns empty context when person has no meetings', () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockMeetingRepo.getRecentMeetingsByPerson('user-1', 'p1',
+              limit: anyNamed('limit')))
+          .thenAnswer((_) async => []);
+
+      final ctx = await service.buildLapsedFriendContext('user-1', 'p1');
+
+      expect(ctx.meetings, isEmpty);
+      expect(ctx.persons, isEmpty);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // buildFullContext — meetingsByYear populated
   // ---------------------------------------------------------------------------
 

@@ -17,7 +17,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -141,7 +140,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await context.read<DeleteAccountProvider>().deleteAccount(userId);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

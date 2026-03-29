@@ -530,6 +530,295 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // initialize — lapsedFriendsList mode
+  // ---------------------------------------------------------------------------
+
+  group('initialize — lapsedFriendsList mode', () {
+    test(
+        'sets greeting about lapsed friends and pendingActions with lapsed person labels',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Marco',
+        createdAt: now,
+      );
+      final lapsedOptions = [
+        LapsedPersonInfo(person: person, daysSinceLastMeeting: 120),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: lapsedOptions,
+      );
+
+      expect(provider.messages.length, 1);
+      expect(provider.messages.first.role, 'assistant');
+      expect(provider.messages.first.content, contains('haven\'t seen'));
+      expect(provider.pendingActions!.length, 1);
+      expect(provider.pendingActions!.first.actionId, 'lapsed_select:p1:120');
+      expect(provider.pendingActions!.first.label, contains('Marco'));
+      expect(provider.pendingActions!.first.label, contains('120'));
+    });
+
+    test('empty lapsedOptions produces empty pendingActions', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: [],
+      );
+
+      expect(provider.pendingActions, isEmpty);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // initialize — greeting mode
+  // ---------------------------------------------------------------------------
+
+  group('initialize — greeting mode', () {
+    test('shows greeting_meetings button when meetingOptions provided',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        meetingOptions: [makeMeeting()],
+      );
+
+      expect(
+        provider.pendingActions!.any((a) => a.actionId == 'greeting_meetings'),
+        isTrue,
+      );
+    });
+
+    test('shows greeting_birthday button when birthdayOptions provided',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Ana',
+        createdAt: now,
+        birthDayMonth: '06-15',
+      );
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        birthdayOptions: [BirthdayPersonInfo(person: person, daysUntil: 2)],
+      );
+
+      expect(
+        provider.pendingActions!.any((a) => a.actionId == 'greeting_birthday'),
+        isTrue,
+      );
+    });
+
+    test('shows greeting_ltns button when lapsedOptions provided', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person =
+          Person(id: 'p1', userId: 'user-1', firstName: 'Ben', createdAt: now);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        lapsedOptions: [
+          LapsedPersonInfo(person: person, daysSinceLastMeeting: 95),
+        ],
+      );
+
+      expect(
+        provider.pendingActions!.any((a) => a.actionId == 'greeting_ltns'),
+        isTrue,
+      );
+    });
+
+    test('shows greeting_free button when no contextual options are available',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize('user-1', mode: BuddyChatMode.greeting);
+
+      expect(provider.pendingActions!.length, 1);
+      expect(provider.pendingActions!.first.actionId, 'greeting_free');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // handleAction — lapsed_select
+  // ---------------------------------------------------------------------------
+
+  group('handleAction — lapsed_select', () {
+    test('calls buildLapsedFriendContext and streams AI recall message',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Marco',
+        createdAt: now,
+      );
+      final lapsedOptions = [
+        LapsedPersonInfo(person: person, daysSinceLastMeeting: 120),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: lapsedOptions,
+      );
+
+      const contextWithMapping = BuddyContext(
+        meetings: [],
+        persons: [],
+        pseudonymToRealName: {'Friend_A': 'Marco'},
+        personIdToPseudonym: {'p1': 'Friend_A'},
+      );
+      when(mockContextBuilder.buildLapsedFriendContext('user-1', 'p1',
+              limit: anyNamed('limit')))
+          .thenAnswer((_) async => contextWithMapping);
+      when(mockContextBuilder.serializeToPrompt(any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenReturn('context');
+      when(mockOpenAI.sendMessage(any, any, any))
+          .thenAnswer((_) => Stream.value('Great memories with Marco!'));
+
+      final action = provider.pendingActions!.first;
+      await provider.handleAction(action);
+
+      expect(provider.pendingActions, isNull);
+      final assistantMsgs =
+          provider.messages.where((m) => m.role == 'assistant').toList();
+      expect(assistantMsgs.any((m) => m.content.contains('Marco')), isTrue);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // handleAction — greeting_*
+  // ---------------------------------------------------------------------------
+
+  group('handleAction — greeting_free', () {
+    test('appends user label and a free-query assistant reply', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize('user-1', mode: BuddyChatMode.greeting);
+
+      final action = provider.pendingActions!
+          .firstWhere((a) => a.actionId == 'greeting_free');
+      await provider.handleAction(action);
+
+      expect(provider.pendingActions, isNull);
+      final msgs = provider.messages;
+      expect(msgs.any((m) => m.role == 'user'), isTrue);
+      expect(
+        msgs.any((m) =>
+            m.role == 'assistant' && m.content.contains('Ask me anything')),
+        isTrue,
+      );
+    });
+  });
+
+  group('handleAction — greeting_meetings', () {
+    test('produces meeting pendingActions for the meeting sub-flow', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        meetingOptions: [makeMeeting(id: 'm1', name: 'Board Meeting')],
+      );
+
+      final action = provider.pendingActions!
+          .firstWhere((a) => a.actionId == 'greeting_meetings');
+      await provider.handleAction(action);
+
+      expect(
+        provider.pendingActions!.any((a) => a.actionId == 'meeting_notes:m1'),
+        isTrue,
+      );
+    });
+  });
+
+  group('handleAction — greeting_birthday', () {
+    test('produces birthday pendingActions for the birthday sub-flow',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Ana',
+        createdAt: now,
+        birthDayMonth: '06-15',
+      );
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        birthdayOptions: [BirthdayPersonInfo(person: person, daysUntil: 2)],
+      );
+
+      final action = provider.pendingActions!
+          .firstWhere((a) => a.actionId == 'greeting_birthday');
+      await provider.handleAction(action);
+
+      expect(
+        provider.pendingActions!
+            .any((a) => a.actionId == 'birthday_list_select:p1'),
+        isTrue,
+      );
+    });
+  });
+
+  group('handleAction — greeting_ltns', () {
+    test('produces lapsed pendingActions for the LTNS sub-flow', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person =
+          Person(id: 'p1', userId: 'user-1', firstName: 'Ben', createdAt: now);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        lapsedOptions: [
+          LapsedPersonInfo(person: person, daysSinceLastMeeting: 95),
+        ],
+      );
+
+      final action = provider.pendingActions!
+          .firstWhere((a) => a.actionId == 'greeting_ltns');
+      await provider.handleAction(action);
+
+      expect(
+        provider.pendingActions!
+            .any((a) => a.actionId.startsWith('lapsed_select:p1:')),
+        isTrue,
+      );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // pseudonym translation — longest match first
   // ---------------------------------------------------------------------------
 
