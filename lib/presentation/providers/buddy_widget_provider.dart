@@ -25,6 +25,7 @@ class BuddyWidgetProvider extends ChangeNotifier {
   List<Person> _urgentBirthdayPersons = [];
   Map<String, int> _daysUntilBirthday = {};
   List<BirthdayPersonInfo> _upcomingBirthdayInfo = [];
+  List<LapsedPersonInfo> _lapsedPersons = [];
   bool _isExpanded = true;
   bool _isInitialized = false;
 
@@ -39,6 +40,9 @@ class BuddyWidgetProvider extends ChangeNotifier {
 
   /// All persons with [Person.birthDayMonth] set, sorted by days until birthday.
   List<BirthdayPersonInfo> get upcomingBirthdayInfo => _upcomingBirthdayInfo;
+
+  /// Top-3 persons not seen in 90+ days, sorted by longest absence first.
+  List<LapsedPersonInfo> get lapsedPersons => _lapsedPersons;
 
   /// True when the widget card is expanded (visible). Collapsed = only icon shown.
   bool get isExpanded => _isExpanded;
@@ -86,6 +90,31 @@ class BuddyWidgetProvider extends ChangeNotifier {
         .where((b) => b.daysUntil < 5)
         .map((b) => b.person)
         .toList();
+
+    // Detect persons not seen in the last 90 days (LTNS — long time no see).
+    final since90 = DateTime.now().subtract(const Duration(days: 90));
+    final recentIds =
+        await _meetingRepository.getPersonIdsSeenSince(userId, since90);
+    // Only include persons who have at least one historical meeting (skip
+    // contacts that were added but never met).
+    final lapsedWithDates = <LapsedPersonInfo>[];
+    for (final person in persons) {
+      if (recentIds.contains(person.id)) continue;
+      final recent = await _meetingRepository.getRecentMeetingsByPerson(
+        userId,
+        person.id,
+        limit: 1,
+      );
+      if (recent.isEmpty) continue;
+      final days = DateTime.now().difference(recent.first.date).inDays;
+      lapsedWithDates.add(
+        LapsedPersonInfo(person: person, daysSinceLastMeeting: days),
+      );
+    }
+    lapsedWithDates.sort(
+      (a, b) => b.daysSinceLastMeeting.compareTo(a.daysSinceLastMeeting),
+    );
+    _lapsedPersons = lapsedWithDates.take(3).toList();
 
     _isInitialized = true;
     notifyListeners();

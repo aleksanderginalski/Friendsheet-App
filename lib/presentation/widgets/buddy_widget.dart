@@ -18,10 +18,12 @@ class BuddyWidget extends StatelessWidget {
     required this.urgentBirthdayPersons,
     required this.daysUntilBirthday,
     required this.upcomingBirthdayInfo,
+    required this.lapsedPersons,
     required this.isExpanded,
     required this.onDismiss,
     required this.onSaveMemoriesTap,
     required this.onBirthdayTap,
+    required this.onLongTimeNoSeeTap,
     required this.onIconTap,
   });
 
@@ -37,6 +39,9 @@ class BuddyWidget extends StatelessWidget {
   /// All persons with a birthday set, sorted by days until birthday.
   final List<BirthdayPersonInfo> upcomingBirthdayInfo;
 
+  /// Top-3 persons not seen in 90+ days, sorted by longest absence.
+  final List<LapsedPersonInfo> lapsedPersons;
+
   /// When true, the chat bubble card is visible above the icon.
   final bool isExpanded;
 
@@ -49,7 +54,10 @@ class BuddyWidget extends StatelessWidget {
   /// Called from the birthday CTA button — opens the appropriate birthday flow.
   final VoidCallback onBirthdayTap;
 
-  /// Called when the user taps the Buddy icon — opens AIChatScreen in free-query mode.
+  /// Called from the 'Long time no see' button — opens LTNS chat mode.
+  final VoidCallback onLongTimeNoSeeTap;
+
+  /// Called when the user taps the Buddy icon — opens AIChatScreen in greeting mode.
   final VoidCallback onIconTap;
 
   static const double _kIconSize = 224.0;
@@ -85,9 +93,11 @@ class BuddyWidget extends StatelessWidget {
                 urgentBirthdayPersons: urgentBirthdayPersons,
                 daysUntilBirthday: daysUntilBirthday,
                 upcomingBirthdayInfo: upcomingBirthdayInfo,
+                lapsedPersons: lapsedPersons,
                 onDismiss: onDismiss,
                 onSaveMemoriesTap: onSaveMemoriesTap,
                 onBirthdayTap: onBirthdayTap,
+                onLongTimeNoSeeTap: onLongTimeNoSeeTap,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 24),
@@ -115,18 +125,22 @@ class _BuddyBubble extends StatelessWidget {
     required this.urgentBirthdayPersons,
     required this.daysUntilBirthday,
     required this.upcomingBirthdayInfo,
+    required this.lapsedPersons,
     required this.onDismiss,
     required this.onSaveMemoriesTap,
     required this.onBirthdayTap,
+    required this.onLongTimeNoSeeTap,
   });
 
   final List<Meeting> suggestedMeetings;
   final List<Person> urgentBirthdayPersons;
   final Map<String, int> daysUntilBirthday;
   final List<BirthdayPersonInfo> upcomingBirthdayInfo;
+  final List<LapsedPersonInfo> lapsedPersons;
   final VoidCallback onDismiss;
   final VoidCallback onSaveMemoriesTap;
   final VoidCallback onBirthdayTap;
+  final VoidCallback onLongTimeNoSeeTap;
 
   static const _buttonStyle = ButtonStyle(
     backgroundColor: WidgetStatePropertyAll(Color(0xFF4CAF50)),
@@ -155,7 +169,8 @@ class _BuddyBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasMeetings = suggestedMeetings.isNotEmpty;
     final hasBirthdays = upcomingBirthdayInfo.isNotEmpty;
-    final showAnyButton = hasMeetings || hasBirthdays;
+    final hasLapsed = lapsedPersons.isNotEmpty;
+    final showAnyButton = hasMeetings || hasBirthdays || hasLapsed;
 
     final message = showAnyButton
         ? 'Hey! Need help? Here\'s what I can do for you:'
@@ -209,6 +224,16 @@ class _BuddyBubble extends StatelessWidget {
                     onPressed: onBirthdayTap,
                     style: _buttonStyle,
                     child: Text(_birthdayButtonLabel()),
+                  ),
+                ],
+                if (hasLapsed) ...[
+                  const SizedBox(height: 6),
+                  ElevatedButton(
+                    onPressed: onLongTimeNoSeeTap,
+                    style: _buttonStyle,
+                    child: Text(
+                      '👋 Long time no see — ${lapsedPersons.first.daysSinceLastMeeting} days',
+                    ),
                   ),
                 ],
               ],

@@ -3909,25 +3909,111 @@ login instead of only on first login.
 **I want to** see Buddy proactively surface social insights beyond just missing notes
 **So that** the widget feels like an intelligent companion, not just a reminder
 
-**Story Points:** 3
+**Story Points:** 8
 **Priority:** P1
 **Labels:** `ai`, `homescreen`, `ui`
+**Status:** 🔄 In Progress
+
+**Acceptance Criteria:**
+
+BuddyWidget — 3 simultaneous insight buttons:
+- [ ] BuddyWidget shows up to 3 buttons simultaneously when conditions are met: birthday CTA (existing, from US-104), "💾 Save Your Memories" (meetings without notes), "👋 Long time no see — X days"
+- [ ] "👋 Long time no see — X days" shows the number of days since the user last saw their longest-absent friend (e.g. "👋 Long time no see — 127 days")
+- [ ] LTNS condition: at least one friend not seen in 90+ days (based on meeting participation)
+- [ ] `BuddyWidgetProvider` exposes `lapsedPersons: List<LapsedPersonInfo>` — top 3 persons ranked by longest absence (person + daysSinceLastMeeting)
+- [ ] `MeetingRepository`: new method `getPersonIdsSeenSince(userId, since)` returning `Set<String>` of personIds appearing in any meeting since that date
+
+AIChatScreen — lapsedFriendsList mode:
+- [ ] Tapping "👋 Long time no see" opens `AIChatScreen` in new `lapsedFriendsList` `BuddyChatMode`
+- [ ] `lapsedFriendsList` mode opens with 3 action buttons in the chat bubble: "[Name] — [X] days" for each of the top 3 lapsed persons
+- [ ] Tapping a person action button switches to `lapsedFriendDetail` mode for that person
+- [ ] `lapsedFriendDetail` mode: Buddy receives context of last 4 meetings with that person (names + activities) and streams a warm message referencing shared memories + suggests planning something new
+
+AIChatScreen — greeting mode:
+- [ ] New `greeting` `BuddyChatMode`: opens with the same contextual action buttons as BuddyWidget (meetings + birthday + LTNS); each button triggers its respective mode
+- [ ] If no conditions are met: greeting shows "Hey! Can I help you with anything?" with no action buttons (free-query mode)
+- [ ] Tapping the Buddy icon on HomeScreen opens `AIChatScreen` in `greeting` mode (was: free-query mode)
+- [ ] Side Menu → Buddy → AI Assistant navigates to `AIChatScreen` in `greeting` mode
+
+Side Menu — Buddy section:
+- [ ] Side Menu has a new "Buddy" section containing: "AI Assistant" entry (opens `greeting` mode) and "API Key" entry (existing OpenAI key management screen)
+- [ ] Existing Buddy AI Assistant and API Key entries are removed from Settings and replaced by Side Menu → Buddy entries
+
+Font fix:
+- [ ] `AIChatScreen` AppBar title "Buddy" uses the same font family as the "Friendsheet" main AppBar title, white color
+
+**Tasks:**
+- [ ] **TASK-102.1:** Add `LapsedPersonInfo` data class; add `getPersonIdsSeenSince(userId, since)` to `MeetingRepository`; compute `lapsedPersons` in `BuddyWidgetProvider.initialize()` — 1h
+- [ ] **TASK-102.2:** Update `BuddyWidget`: add `onLongTimeNoSeeTap` callback and "👋 Long time no see — X days" button (X = daysSinceLastMeeting of first lapsed person); button visible when `lapsedPersons.isNotEmpty` — 1h
+- [ ] **TASK-102.3:** Add `lapsedFriendsList` and `lapsedFriendDetail` to `BuddyChatMode`; implement in `AIChatProvider`: action buttons for top 3 lapsed persons → on person tap, fetch last 4 meetings with that person + their activities → stream AI response — 2h
+- [ ] **TASK-102.4:** Add `greeting` to `BuddyChatMode`; `AIChatProvider` in greeting mode builds action buttons from passed-in `suggestedMeetings`, `upcomingBirthdayInfo`, `lapsedPersons`; update `HomeScreen` icon tap + Side Menu → Buddy → AI Assistant to open greeting mode — 1h
+- [ ] **TASK-102.5:** Side Menu restructure — add "Buddy" section with AI Assistant + API Key entries; remove Buddy entries from Settings — 1h
+- [ ] **TASK-102.6:** Fix `AIChatScreen` AppBar title: Friendsheet font family, white color — 0.5h
+- [ ] **TASK-102.7:** Write tests — /qa responsibility
+
+**Dependencies:** US-101, US-104
+**Blocks:** US-118
+
+---
+
+### US-118: LTNS Exclusion Filter in Buddy
+
+**As a** user
+**I want to** control which friends Buddy includes in Long Time No See reminders
+**So that** I can exclude people I intentionally see less often
+
+**Story Points:** 3
+**Priority:** P2
+**Labels:** `ai`, `settings`, `ui`
 **Status:** 📋 Planned
 
 **Acceptance Criteria:**
-- [ ] If no meeting without notes in last 2 months: widget checks if any friend hasn't been seen in 3+ months
-- [ ] If such a friend exists: widget shows "You haven't seen [Friend_A] in a while — maybe time to catch up?" (real name shown)
-- [ ] If neither condition applies: widget shows default "Can I help you with anything?"
-- [ ] Tapping the friend suggestion opens `AIChatScreen` in free-query mode pre-filled with that friend's name
-- [ ] Priority order: missing notes → long time no see → default
+- [ ] Side Menu → Buddy → "Long time no see" entry opens a new `LtnsFilterScreen`
+- [ ] `LtnsFilterScreen` lists all persons; each has an inclusion toggle (enabled = included in LTNS suggestions)
+- [ ] Default: all persons included (opt-out model)
+- [ ] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
+- [ ] `BuddyWidgetProvider` reads the exclusion list on `initialize()` and filters out excluded persons from `lapsedPersons`
+- [ ] Filter UI reuses the same person-list style as existing filter dialogs in statistics
 
 **Tasks:**
-- [ ] **TASK-102.1:** Extend `BuddyWidget` logic: check last meeting date per person — 1h
-- [ ] **TASK-102.2:** Update widget message variants for each insight type — 0.5h
-- [ ] **TASK-102.3:** Wire friend suggestion tap → `AIChatScreen` with pre-fill — 0.5h
-- [ ] **TASK-102.4:** Write tests for insight priority logic — 1h
+- [ ] **TASK-118.1:** Persist excluded person IDs in SharedPreferences; create `LtnsExclusionService` with `getExcludedIds()` / `setExcluded(personId, excluded)` — 0.5h
+- [ ] **TASK-118.2:** Create `LtnsFilterScreen` — person list with inclusion toggles, SharedPreferences-backed — 1h
+- [ ] **TASK-118.3:** Add "Long time no see" entry under Side Menu → Buddy section (requires US-102 merged); navigate to `LtnsFilterScreen` — 0.5h
+- [ ] **TASK-118.4:** Update `BuddyWidgetProvider.initialize()` to read exclusion list and filter `lapsedPersons` — 0.5h
+- [ ] **TASK-118.5:** Write tests — /qa responsibility
 
-**Dependencies:** US-101
+**Dependencies:** US-102
+**Blocks:** None
+
+---
+
+### US-119: Meeting Notes — Save via Buddy Chat
+
+**As a** user
+**I want to** save notes to a meeting by typing them in the Buddy chat
+**So that** I can capture memories conversationally without leaving the chat
+
+**Story Points:** 2
+**Priority:** P1
+**Labels:** `ai`, `bug`, `notes`
+**Status:** 📋 Planned
+
+**Context:** `AIChatProvider.saveNotes()` and `BuddyWriteService.saveNotes()` exist but are never called from the chat flow. This US wires them up. Bug discovered during US-102 manual verification.
+
+**Acceptance Criteria:**
+- [ ] When Buddy is in `meetingNotes` mode and the user sends a message, that message is automatically saved as a note to the active meeting via `BuddyWriteService.saveNotes()`
+- [ ] Each user message in the session becomes one note entry (one note per send, not split by lines)
+- [ ] After saving, Buddy continues the conversation normally — no interruption to the chat flow
+- [ ] If `saveNotes()` throws, the error is shown via the existing error banner; the user message is still displayed
+- [ ] Notes are not duplicated when the user sends multiple messages in the same session (each message appended individually)
+- [ ] Existing `meetingNotesList` flow (selecting a meeting from the list) then transitions to `meetingNotes` mode — saving works the same way in both entry paths
+
+**Tasks:**
+- [ ] **TASK-119.1:** In `AIChatProvider.sendMessage()`, after a successful AI response, if `_activeMeetingId != null`, call `saveNotes([text])` where `text` is the current user message — 1h
+- [ ] **TASK-119.2:** Write tests for the save-on-send path — /qa responsibility
+- [ ] **TASK-119.3:** Verify that the `meetingNotesList` → meeting selection → `meetingNotes` transition correctly sets `_activeMeetingId` before the first user message is sent — 0.5h
+
+**Dependencies:** US-087, US-102
 **Blocks:** None
 
 ---

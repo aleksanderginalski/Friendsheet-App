@@ -152,6 +152,48 @@ class ContextBuilderService {
     );
   }
 
+  /// Builds context scoped to the [limit] most recent meetings with [personId].
+  /// Used for the Long Time No See reconnection flow in [AIChatProvider].
+  Future<BuddyContext> buildLapsedFriendContext(
+    String userId,
+    String personId, {
+    int limit = 4,
+  }) async {
+    final maps = await _buildMaps(userId);
+    final categoryNames = await _loadCategoryNames(userId);
+
+    final recentMeetings = await _meetingRepository.getRecentMeetingsByPerson(
+      userId,
+      personId,
+      limit: limit,
+    );
+
+    final meetingEntries = recentMeetings
+        .map((m) => _toMeetingEntry(m, maps.personIdToPseudonym, categoryNames))
+        .toList();
+
+    final participantIds = {
+      for (final m in recentMeetings) ...m.participantIds,
+    };
+    final scopedIdToPseudonym = Map.fromEntries(
+      maps.personIdToPseudonym.entries
+          .where((e) => participantIds.contains(e.key)),
+    );
+
+    final personEntries = _buildPersonEntries(
+      recentMeetings,
+      scopedIdToPseudonym,
+      categoryNames,
+    );
+
+    return BuddyContext(
+      meetings: meetingEntries,
+      persons: personEntries,
+      pseudonymToRealName: maps.pseudonymToRealName,
+      personIdToPseudonym: maps.personIdToPseudonym,
+    );
+  }
+
   /// Serializes a [BuddyContext] to a plain-text string ready for use as
   /// AI prompt context.
   ///

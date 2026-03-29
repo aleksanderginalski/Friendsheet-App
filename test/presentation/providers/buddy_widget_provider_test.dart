@@ -33,6 +33,17 @@ void main() {
     // ignore: argument_type_not_assignable
     when(mockPersonRepository.getPersonsByUser(any))
         .thenAnswer((_) async => <Person>[]);
+    // Default stubs for LTNS detection (new in US-102).
+    // ignore: argument_type_not_assignable
+    when(mockMeetingRepository.getPersonIdsSeenSince(any, any))
+        .thenAnswer((_) async => <String>{});
+    // ignore: argument_type_not_assignable
+    when(mockMeetingRepository.getRecentMeetingsByPerson(
+      any,
+      any,
+      // ignore: argument_type_not_assignable
+      limit: anyNamed('limit'),
+    )).thenAnswer((_) async => <Meeting>[]);
   });
 
   tearDown(() {
