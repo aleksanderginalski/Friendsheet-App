@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/person.dart';
+import '../services/local_cache_service.dart';
 import 'cache_invalidator.dart';
 import 'friend_group_repository.dart';
 import 'meeting_repository.dart';
@@ -28,27 +29,39 @@ class PersonRepository {
   CollectionReference _personsRef(String userId) =>
       _firestore.collection('users').doc(userId).collection('persons');
 
-  // Returns all persons belonging to the given user
+  /// Returns all persons belonging to the given user.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<List<Person>> getPersonsByUser(String userId) async {
+    final cached = await LocalCacheService().getAllPersons(userId);
+    if (cached.isNotEmpty) return cached;
     final snapshot = await _personsRef(userId).orderBy('firstName').get();
     return snapshot.docs.map((doc) => Person.fromFirestore(doc)).toList();
   }
 
-  // Saves a new person to Firestore and returns the created instance
-  Future<Person> addPerson(Person person) async {
-    final docRef = await _personsRef(person.userId).add(person.toFirestore());
-    await cacheInvalidator?.invalidatePersonsCache();
-    return person.copyWith(id: docRef.id);
-  }
-
   /// Returns persons matching the given list of IDs from the user's subcollection.
   /// Returns empty list if ids is empty.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<List<Person>> getPersonsByIds(List<String> ids, String userId) async {
     if (ids.isEmpty) return [];
+    final cached = await LocalCacheService().getAllPersons(userId);
+    if (cached.isNotEmpty) {
+      return cached.where((p) => ids.contains(p.id)).toList();
+    }
+    // Firestore fallback — used on first run before cache is populated.
     final snapshot = await _personsRef(userId)
         .where(FieldPath.documentId, whereIn: ids)
         .get();
     return snapshot.docs.map((doc) => Person.fromFirestore(doc)).toList();
+  }
+
+  /// Saves a new person to Firestore and returns the created instance.
+  Future<Person> addPerson(Person person) async {
+    final docRef = await _personsRef(person.userId).add(person.toFirestore());
+    await cacheInvalidator?.invalidatePersonsCache();
+    final persisted = person.copyWith(id: docRef.id);
+    // Write-through: add the persisted person (with generated ID) to local cache.
+    await LocalCacheService().upsertPerson(person.userId, persisted);
+    return persisted;
   }
 
   /// Updates an existing person document in Firestore.
@@ -57,6 +70,8 @@ class PersonRepository {
         .doc(person.id)
         .update(person.toFirestore());
     await cacheInvalidator?.invalidatePersonsCache();
+    // Write-through: update the cached person entry.
+    await LocalCacheService().upsertPerson(person.userId, person);
   }
 
   /// Returns true if another person with the same firstName + lastName exists.
@@ -86,5 +101,7 @@ class PersonRepository {
     ]);
     await _personsRef(userId).doc(personId).delete();
     await cacheInvalidator?.invalidatePersonsCache();
+    // Write-through: remove the person from local cache.
+    await LocalCacheService().removePerson(userId, personId);
   }
 }

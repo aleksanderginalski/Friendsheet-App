@@ -1675,3 +1675,38 @@ Run after every release or hotfix:
 | UT-102-023 | expanded with lapsed persons shows LTNS button | "Long time no see" text visible; "95 days" visible |
 | UT-102-024 | tapping LTNS button calls onLongTimeNoSeeTap | callback invoked |
 
+---
+
+## US-109 — Local Data Cache (Hive)
+
+### Automated tests — `test/data/services/local_cache_service_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-109-001 | meetings — cold cache returns empty list | `getAllMeetings` returns `[]` |
+| UT-109-002 | meetings — upsert inserts new meeting; getAllMeetings returns it | list length 1; id, name, weight match |
+| UT-109-003 | meetings — upsert replaces existing meeting with same id | list length stays 1; name updated |
+| UT-109-004 | meetings — removeMeeting removes by id; unrelated meeting survives | list length 1; surviving id correct |
+| UT-109-005 | meetings — removeMeeting is a no-op for unknown id | list length unchanged |
+| UT-109-006 | persons — cold cache returns empty list | `getAllPersons` returns `[]` |
+| UT-109-007 | persons — upsert inserts new person; getAllPersons returns it | list length 1; firstName matches |
+| UT-109-008 | persons — upsert replaces existing person with same id | list length stays 1; firstName updated |
+| UT-109-009 | persons — removePerson removes by id; unrelated person survives | list length 1; surviving id correct |
+| UT-109-010 | categories — cold cache returns empty list | `getAllCategories` returns `[]` |
+| UT-109-011 | categories — upsert inserts new category; getAllCategories returns it | list length 1; name matches |
+| UT-109-012 | categories — upsert replaces existing category with same id | list length stays 1; name updated |
+| UT-109-013 | categories — removeCategory removes by id; unrelated category survives | list length 1; surviving id correct |
+| UT-109-014 | categories — removeCategoriesByIds batch-removes matching ids | only unmatched id remains |
+| UT-109-015 | resolvePerson — matches by firstName substring (case-insensitive) | 1 result; correct id |
+| UT-109-016 | resolvePerson — matches by lastName substring | 1 result; correct id |
+| UT-109-017 | resolvePerson — matches by nickname | 1 result; correct id |
+| UT-109-018 | resolvePerson — returns empty list when no match | result is empty |
+| UT-109-019 | getMeetingsByPersonAndYear — returns only meetings for given person in given year | 1 result; correct id |
+| UT-109-020 | getMeetingsByPersonAndYear — returns empty list when cache is cold | result is empty |
+| UT-109-021 | getMeetingsByDateRange — inclusive range: in-range included, out-of-range excluded | 3 results matching in1/in2/in3 |
+| UT-109-022 | getMeetingNotes — returns notes for known meetingId | `['Note A', 'Note B']` |
+| UT-109-023 | getMeetingNotes — returns empty list for unknown meetingId | result is empty |
+| UT-109-024 | getPersonSummary — returns null when person not in cache | result is null |
+| UT-109-025 | getPersonSummary — returns null when person has no meetings | result is null |
+| UT-109-026 | getPersonSummary — all summary fields computed correctly | count=2; weight=8; first/lastDate correct; other-person meeting excluded |
+

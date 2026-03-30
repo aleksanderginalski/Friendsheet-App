@@ -18,6 +18,7 @@ import '../../data/services/account_deletion_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/export_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../../data/services/local_cache_service.dart';
 import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
@@ -119,6 +120,8 @@ class _MainScreenState extends State<MainScreen> {
 
       final userId = AuthService().currentUserId;
       if (userId != null) {
+        // Fire-and-forget — do not await; UI must not block on cache warm-up.
+        unawaited(LocalCacheService().syncFromFirestore(userId));
         _homeProvider.initialize(userId);
         _buddyWidgetProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);

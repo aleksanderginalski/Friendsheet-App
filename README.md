@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. Remaining US: meeting suggestions (US-105), widget auto-refresh (US-106), language selection (US-107).
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. US-109 delivered the full-dataset local Hive cache (`LocalCacheService`): fire-and-forget sync on app start, write-through after every repository write, 8 typed read methods — all one-shot Firestore reads now cache-first. Remaining US: meeting suggestions (US-105), widget auto-refresh (US-106), language selection (US-107).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (835)
+✅ All tests passing (861)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,15 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.3 — US-102: Proactive Insights in Widget (March 29, 2026)
-- ✅ LTNS detection in `BuddyWidgetProvider`: top-3 friends absent 90+ days; skips recently seen and never-met contacts; `lapsedPersons: List<LapsedPersonInfo>` exposed
-- ✅ "👋 Long time no see — X days" button added to `BuddyWidget`; shows longest-absent friend's days count
-- ✅ `AIChatProvider` extended with `lapsedFriendsList`, `lapsedFriendDetail`, `greeting` modes; `lapsed_select` / `greeting_*` action routing; `buildLapsedFriendContext` streams AI reconnection message
-- ✅ `BuddyMenuScreen` (NEW): sub-screen for Side Menu → Buddy; "AI Assistant" and "API Key" entries; Pacifico AppBar title
-- ✅ Side Menu drawer "Buddy" tile replaces section header; `SettingsScreen` AI entries removed
-- ✅ `AIChatScreen` AppBar uses `GoogleFonts.pacifico` (white, 22px)
-- ✅ `getPersonIdsSeenSince` and `getRecentMeetingsByPerson` added to `MeetingRepository`; `buildLapsedFriendContext` added to `ContextBuilderService`
-- ✅ 835 Flutter tests passing (+24 new tests)
+### Latest: v4.5.4 — US-109: Local Data Cache (Hive) (March 30, 2026)
+- ✅ `LocalCacheService` (NEW): singleton Hive cache for all meetings, persons, and activity categories; `syncFromFirestore()` fire-and-forget on app start; write-through after every repository add/edit/delete; 8 typed read methods for cache-first queries
+- ✅ All one-shot Firestore `.get()` reads migrated to cache-first: `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; Firestore used only as cold-cache fallback
+- ✅ `HiveService` extended with 3 new boxes (`local_meetings`, `local_persons`, `local_categories`); `clearUserData()` clears all cache tiers on logout
+- ✅ 26 new unit tests for `LocalCacheService` (write-through CRUD, cold-cache, all read methods, `PersonSummary`)
+- ✅ 861 Flutter tests passing (+26 new tests)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

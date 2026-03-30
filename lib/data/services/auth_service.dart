@@ -89,8 +89,7 @@ class AuthService {
   /// Sign out from both Google and Firebase
   Future<void> signOut() async {
     try {
-      // Clear Hive statistics cache before sign-out so that the next user
-      // session does not see stale data from the previous user.
+      // Clears both statistics cache (stats_* boxes) and full-data cache (local_* boxes).
       final userId = _auth.currentUser?.uid;
       if (userId != null) {
         await HiveService.clearUserData(userId);
