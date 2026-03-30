@@ -4873,6 +4873,78 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Dependencies:** US-INF-009 (Skills migration)
 **Blocks:** US-087 and all Epic-007 US
 
+### US-INF-013: Fix Per-Agent Token Counts in Session Comparison Dashboard
+
+**Epic:** EPIC-INF  
+**Feature:** FEATURE-INF-002  
+**Status:** ✅ COMPLETED (March 30, 2026)
+**Story Points:** 2
+**Labels:** `observability`, `bug`, `infrastructure`
+
+**As a** developer reviewing session observability data,  
+**I want** the Session Comparison dashboard to show accurate per-agent token counts,  
+**So that** I can correctly diagnose which agents consume the most tokens.
+
+---
+
+**Problem statement:**
+
+`dashboard.py` computes per-agent token allocations using time-proportional estimation
+(`total_tokens × duration_pct`). This causes severe distortion when a session is
+interrupted by a token rate-limit pause (2–3 hour idle gap mid-agent).
+
+**Observed in US-109 session (f1d89f5f):**
+- `/docs` ran 11:15 → 14:22 (3h 7m), of which ~3h was idle waiting for token quota reset
+- Dashboard showed `/docs`: **~69,000 tokens** (65% of session total × 106,765)
+- Actual token delta: **5,666 tokens** (106,765 − 101,099)
+
+**Root cause:**
+
+`dashboard.py → _compute_timeline()` returns only `duration_sec` per segment — no token
+deltas. `dashboard_html.py` JS always uses `totalTokens * pct` for per-agent labels.
+Meanwhile, `report.py → _compute_timeline()` correctly computes token deltas from
+cumulative `session_end` entries at segment boundaries — but this logic was never
+ported to `dashboard.py`.
+
+---
+
+**Acceptance Criteria:**
+
+- [x] **AC1:** `dashboard.py → _compute_timeline()` computes `token_delta` per segment
+  using the same `_tokens_at()` logic as `report.py` (last `session_end.total_tokens`
+  at or before the segment boundary).
+- [x] **AC2:** Session Comparison panel shows per-agent token counts derived from
+  `token_delta` when available; falls back to `~time-proportional` (with `~` prefix)
+  only when `session_end` data is insufficient.
+- [x] **AC3:** For the US-109 session, `/docs` shows ≤6,000 tokens in the comparison
+  panel (not ~69,000).
+- [x] **AC4:** `flutter analyze` clean (Python-only change — no Dart files affected);
+  `flutter test` passes.
+
+---
+
+**Affected files:**
+- `tools/observability/dashboard.py` — add token delta computation to `_compute_timeline`
+- `tools/observability/dashboard_html.py` — update JS to use `token_delta` when available
+
+**Dependencies:** US-INF-011 (done)
+
+---
+
+**Tasks:**
+
+- [x] **TASK-INF-013.1:** Port `_tokens_at()` helper and token delta logic from
+  `report.py` into `dashboard.py → _compute_timeline()` — add `token_delta` field
+  to each returned segment dict — 30 min
+- [x] **TASK-INF-013.2:** Update `_load_session()` to pass `token_delta` per segment
+  into the JS sessions data structure — 15 min
+- [x] **TASK-INF-013.3:** Update `dashboard_html.py` JS `timelineSVG()` to use
+  `seg.token_delta` when non-null; show `~` prefix on time-proportional fallback — 20 min
+- [x] **TASK-INF-013.4:** Manual verify: run `dashboard.bat`, open US-109 session in
+  comparison, confirm `/docs` shows ~5,666 (not ~69k) — 10 min
+
+
+
 ---
 
 ## ⚙️ FEATURE-INF-003: CI/CD Enhancement

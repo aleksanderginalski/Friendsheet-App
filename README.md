@@ -174,12 +174,10 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.4 — US-109: Local Data Cache (Hive) (March 30, 2026)
-- ✅ `LocalCacheService` (NEW): singleton Hive cache for all meetings, persons, and activity categories; `syncFromFirestore()` fire-and-forget on app start; write-through after every repository add/edit/delete; 8 typed read methods for cache-first queries
-- ✅ All one-shot Firestore `.get()` reads migrated to cache-first: `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; Firestore used only as cold-cache fallback
-- ✅ `HiveService` extended with 3 new boxes (`local_meetings`, `local_persons`, `local_categories`); `clearUserData()` clears all cache tiers on logout
-- ✅ 26 new unit tests for `LocalCacheService` (write-through CRUD, cold-cache, all read methods, `PersonSummary`)
-- ✅ 861 Flutter tests passing (+26 new tests)
+### Latest: v4.5.5 — US-INF-013: Fix Per-Agent Token Counts in Session Comparison Dashboard (March 30, 2026)
+- ✅ `tools/observability/dashboard.py`: `_tokens_at()` helper + token delta computation per segment; bar widths and labels now reflect actual token usage instead of time-proportional estimates
+- ✅ `tools/observability/dashboard_html.py`: JS uses `seg.token_delta` when available; `~` prefix shown on time-proportional fallback
+- ✅ 861 Flutter tests passing (no change — Python-only fix)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
