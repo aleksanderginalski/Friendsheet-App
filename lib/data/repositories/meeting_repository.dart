@@ -80,9 +80,7 @@ class MeetingRepository {
       String userId, String personId) async {
     final cached = await LocalCacheService().getAllMeetings(userId);
     if (cached.isNotEmpty) {
-      return cached
-          .where((m) => m.participantIds.contains(personId))
-          .toList()
+      return cached.where((m) => m.participantIds.contains(personId)).toList()
         ..sort((a, b) => b.date.compareTo(a.date));
     }
     // Firestore fallback — used on first run before cache is populated.
@@ -206,9 +204,7 @@ class MeetingRepository {
   }) async {
     final cached = await LocalCacheService().getAllMeetings(userId);
     if (cached.isNotEmpty) {
-      return (cached
-              .where((m) => m.participantIds.contains(personId))
-              .toList()
+      return (cached.where((m) => m.participantIds.contains(personId)).toList()
             ..sort((a, b) => b.date.compareTo(a.date)))
           .take(limit)
           .toList();

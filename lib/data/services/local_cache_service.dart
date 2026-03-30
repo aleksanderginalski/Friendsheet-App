@@ -65,12 +65,9 @@ class LocalCacheService {
           .collection('activity_categories')
           .get();
 
-      final meetings =
-          meetingsSnap.docs.map(Meeting.fromFirestore).toList();
-      final persons =
-          personsSnap.docs.map(Person.fromFirestore).toList();
-      final cats =
-          catsSnap.docs.map(ActivityCategory.fromFirestore).toList();
+      final meetings = meetingsSnap.docs.map(Meeting.fromFirestore).toList();
+      final persons = personsSnap.docs.map(Person.fromFirestore).toList();
+      final cats = catsSnap.docs.map(ActivityCategory.fromFirestore).toList();
 
       await HiveService.box(HiveService.localMeetingsBox).put(
         userId,
@@ -260,8 +257,8 @@ class LocalCacheService {
     int year,
   ) async {
     return _loadMeetings(userId)
-        .where((m) =>
-            m.participantIds.contains(personId) && m.date.year == year)
+        .where(
+            (m) => m.participantIds.contains(personId) && m.date.year == year)
         .toList();
   }
 
