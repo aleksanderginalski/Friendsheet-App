@@ -15,6 +15,7 @@
 - v2.5 — FR-025 partially implemented: AI Chat Screen (Buddy) delivered (US-087); consent flow (US-085), API key management (US-088), context builder (US-086) all ✅
 - v2.6 — FR-033 added: Tool Calling (US-110) — Buddy queries only relevant data via OpenAI function calling, supports arbitrary date ranges; FR-034 added: Offline-First Mode (US-111) — full CRUD available offline via Firestore SDK write queue + Hive cache (US-109)
 - v2.7 — FR-035 added: Buddy Language Selection (US-113); FR-036 added: Buddy Onboarding (US-114); FR-037 added: Buddy Birthday Message Quality (US-115); FR-038 added: App UI Localization (US-116); FR-039 added: User-Defined Writing Style (US-117)
+- v2.8 — FR-040 added: Catch-up Topics per Person (US-120, US-121); FR-041 added: Couple/Family Link in Social Graph (US-122, US-123); FR-042 added: Friends-Quest pre-meeting tool (US-124, US-125, US-126, US-127)
 
 ---
 
@@ -617,6 +618,17 @@ Users can adjust Buddy's AI writing style via sliders (4 dimensions) or by provi
 - 4 style sliders in SettingsScreen → Buddy → "Styl Buddy'ego": Poważny↔Zabawny, Formalny↔Nieformalny, Zwięzły↔Rozbudowany, Powściągliwy↔Ekspresywny
 - Example messages option: user pastes samples → Buddy extracts style description → stored in Hive → overrides sliders
 - Style injected into every OpenAI prompt; affects all AI-generated messages only
+
+---
+
+### FR-040: Catch-up Topics per Person (M8)
+User can add conversation topics to any person profile, mark them as discussed (archived with timestamp), and permanently delete them. Topics stored in Firestore + Hive cache. Displayed in Person detail screen. Implemented in US-120 (CRUD) and US-121 (archive).
+
+### FR-041: Social Graph — Couple/Family Link (M8)
+User can link two Person records as a couple. Linked persons share all new catch-up topics automatically. Breaking the link triggers a redistribution dialog for shared topics (assign to Person A / share as copy / assign to Person B / delete). Link stored as `partnerId` + `partnerLinkedAt` on Person model. Implemented in US-122 (link) and US-123 (separation).
+
+### FR-042: Friends-Quest — Pre-Meeting Preparation (M8)
+User can create named Friends-Quests (multiple active simultaneously), add participants, and auto-import their catch-up topics as tasks (deduplicated for couples). Tasks can be added, edited (edit propagates to source topic), and deleted (delete does NOT remove source topic). Quest can be linked to a meeting (1 quest : 1 meeting). Completing a quest pushes finished task notes to the linked meeting. Buddy can create and populate quests via "Others → Catch-up topics" flow. Stored locally in Hive only (not synced to Firestore). Accessible from sidebar + optional home widget. Implemented in US-124–US-127.
 
 ---
 
