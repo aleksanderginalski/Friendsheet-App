@@ -4877,7 +4877,7 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 
 **Epic:** EPIC-INF  
 **Feature:** FEATURE-INF-002  
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED (March 30, 2026)
 **Story Points:** 2
 **Labels:** `observability`, `bug`, `infrastructure`
 
@@ -4910,15 +4910,15 @@ ported to `dashboard.py`.
 
 **Acceptance Criteria:**
 
-- [ ] **AC1:** `dashboard.py → _compute_timeline()` computes `token_delta` per segment
+- [x] **AC1:** `dashboard.py → _compute_timeline()` computes `token_delta` per segment
   using the same `_tokens_at()` logic as `report.py` (last `session_end.total_tokens`
   at or before the segment boundary).
-- [ ] **AC2:** Session Comparison panel shows per-agent token counts derived from
+- [x] **AC2:** Session Comparison panel shows per-agent token counts derived from
   `token_delta` when available; falls back to `~time-proportional` (with `~` prefix)
   only when `session_end` data is insufficient.
-- [ ] **AC3:** For the US-109 session, `/docs` shows ≤6,000 tokens in the comparison
+- [x] **AC3:** For the US-109 session, `/docs` shows ≤6,000 tokens in the comparison
   panel (not ~69,000).
-- [ ] **AC4:** `flutter analyze` clean (Python-only change — no Dart files affected);
+- [x] **AC4:** `flutter analyze` clean (Python-only change — no Dart files affected);
   `flutter test` passes.
 
 ---
@@ -4933,14 +4933,14 @@ ported to `dashboard.py`.
 
 **Tasks:**
 
-- [ ] **TASK-INF-013.1:** Port `_tokens_at()` helper and token delta logic from
+- [x] **TASK-INF-013.1:** Port `_tokens_at()` helper and token delta logic from
   `report.py` into `dashboard.py → _compute_timeline()` — add `token_delta` field
   to each returned segment dict — 30 min
-- [ ] **TASK-INF-013.2:** Update `_load_session()` to pass `token_delta` per segment
+- [x] **TASK-INF-013.2:** Update `_load_session()` to pass `token_delta` per segment
   into the JS sessions data structure — 15 min
-- [ ] **TASK-INF-013.3:** Update `dashboard_html.py` JS `timelineSVG()` to use
+- [x] **TASK-INF-013.3:** Update `dashboard_html.py` JS `timelineSVG()` to use
   `seg.token_delta` when non-null; show `~` prefix on time-proportional fallback — 20 min
-- [ ] **TASK-INF-013.4:** Manual verify: run `dashboard.bat`, open US-109 session in
+- [x] **TASK-INF-013.4:** Manual verify: run `dashboard.bat`, open US-109 session in
   comparison, confirm `/docs` shows ~5,666 (not ~69k) — 10 min
 
 

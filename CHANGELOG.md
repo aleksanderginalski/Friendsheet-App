@@ -4,6 +4,13 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.5 — US-INF-013: Fix Per-Agent Token Counts in Session Comparison Dashboard (March 30, 2026)
+- ✅ `tools/observability/dashboard.py` (MODIFIED) — `_tokens_at()` helper added; `_compute_timeline()` extended to compute `token_delta` per segment from cumulative `session_end` entries (mirrors `report.py` logic); expanded segments now retain `start`/`end` timestamps for delta computation; `session_ends_tokens` filtered to non-null entries only
+- ✅ `tools/observability/dashboard_html.py` (MODIFIED) — JS `timelineSVG()` uses `seg.token_delta` for bar width and label when available; falls back to `~time-proportional` (with `~` prefix) only when `session_end` data is insufficient; segments passed to JS now include `token_delta` field
+- ✅ 861 Flutter tests passing (no change — Python-only fix)
+
+---
+
 ### v4.5.4 — US-109: Local Data Cache (Hive) (March 30, 2026)
 - ✅ `lib/services/hive_service.dart` (MODIFIED) — 3 new box constants (`local_meetings`, `local_persons`, `local_categories`); boxes opened in `initialize()`; `clearUserData()` extended to delete userId key from all 3 new boxes
 - ✅ `lib/data/services/local_cache_service.dart` (NEW) — singleton Hive cache; `syncFromFirestore(userId)` fetches all meetings/persons/categories via `.get()` and writes to Hive as JSON; private loaders `_loadMeetings`, `_loadPersons`, `_loadCategories` (return `[]` on cold cache or error); write-through: `upsertMeeting`, `removeMeeting`, `upsertPerson`, `removePerson`, `upsertCategory`, `removeCategory`, `removeCategoriesByIds`; read methods: `getAllMeetings`, `getAllPersons`, `getAllCategories`, `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getMeetingNotes`, `getPersonSummary`; `PersonSummary` plain Dart DTO; lazy Firestore init (safe in tests)
