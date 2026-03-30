@@ -4,6 +4,19 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.4 — US-109: Local Data Cache (Hive) (March 30, 2026)
+- ✅ `lib/services/hive_service.dart` (MODIFIED) — 3 new box constants (`local_meetings`, `local_persons`, `local_categories`); boxes opened in `initialize()`; `clearUserData()` extended to delete userId key from all 3 new boxes
+- ✅ `lib/data/services/local_cache_service.dart` (NEW) — singleton Hive cache; `syncFromFirestore(userId)` fetches all meetings/persons/categories via `.get()` and writes to Hive as JSON; private loaders `_loadMeetings`, `_loadPersons`, `_loadCategories` (return `[]` on cold cache or error); write-through: `upsertMeeting`, `removeMeeting`, `upsertPerson`, `removePerson`, `upsertCategory`, `removeCategory`, `removeCategoriesByIds`; read methods: `getAllMeetings`, `getAllPersons`, `getAllCategories`, `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getMeetingNotes`, `getPersonSummary`; `PersonSummary` plain Dart DTO; lazy Firestore init (safe in tests)
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — write-through after `saveMeeting`, `updateMeeting`, `deleteMeeting`; new `getAllMeetings(userId)` (cache-first → stream fallback); `getMeetingsByParticipant`, `getLastMeetingWithoutNotes`, `getRecentMeetingsWithoutNotes`, `getPersonIdsSeenSince`, `getRecentMeetingsByPerson` migrated to cache-first; stream `getMeetingsByUser` annotated Firestore-primary (US-111); write-helpers annotated not-a-candidate-for-cache
+- ✅ `lib/data/repositories/person_repository.dart` (MODIFIED) — write-through after `addPerson`, `updatePerson`, `deletePerson`; `getPersonsByUser` and `getPersonsByIds` migrated to cache-first
+- ✅ `lib/data/repositories/activity_category_repository.dart` (MODIFIED) — write-through after `addCategory`, `updateCategory`, `deleteCategory`, `deleteWithChildren`, `createSelectableCategory`; `getAllCategories`, `getSelectableCategories`, `getCategoriesByIds` migrated to cache-first; stream `getCategories` annotated Firestore-primary (US-111)
+- ✅ `lib/data/services/auth_service.dart` (MODIFIED) — `signOut()` comment updated to note both cache tiers are cleared
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `unawaited(LocalCacheService().syncFromFirestore(userId))` added in `addPostFrameCallback` after `GoogleCalendarService().ensureInitialized()`
+- ✅ `test/data/services/local_cache_service_test.dart` (NEW) — 26 unit tests: write-through CRUD, cold-cache handling, all 8 read methods, `PersonSummary` computation
+- ✅ 861 Flutter tests passing (+26 new tests)
+
+---
+
 ### v4.5.3 — US-102: Proactive Insights in Widget (March 29, 2026)
 - ✅ `lib/presentation/ai_chat/buddy_chat_mode.dart` (MODIFIED) — `lapsedFriendsList`, `lapsedFriendDetail`, `greeting` values added to `BuddyChatMode` enum; `LapsedPersonInfo` class added (person + daysSinceLastMeeting)
 - ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `getPersonIdsSeenSince(userId, since)` added (returns `Set<String>` of personIds in any meeting since the given date); `getRecentMeetingsByPerson(userId, personId, {int limit = 4})` added (N most recent meetings for a person, client-side sorted)

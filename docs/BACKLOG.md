@@ -4469,7 +4469,7 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `infrastructure`, `performance`, `offline`, `ai`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Context:**
 Spike completed (March 2026 discovery session). Decision: **Hive** (already in project for statistics cache). Max dataset: ~10,000 meetings × 500 B + 250 persons = ~5 MB — trivially fits in device memory and on disk. In-memory filtering in Dart is faster than any Firestore query at this scale. Drift/SQLite would be overkill. This US is a prerequisite for US-110 (Tool Calling) — `LocalCacheService` exposes typed read methods that tool calls use to query data without hitting Firestore. Single-device usage pattern (one user, one phone) means write conflicts are not a concern — write-through cache is the correct strategy.
