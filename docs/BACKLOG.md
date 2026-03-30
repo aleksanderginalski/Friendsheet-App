@@ -4136,7 +4136,7 @@ Interactive action buttons:
 - [ ] User can ask follow-up: "When was the last time I saw [Name]?"
 
 **Tasks:**
-- [ ] **TASK-105.1:** Extend `ContextBuilderService` with meeting frequency analysis per person — 2h
+- [ ] **TASK-105.1:** Extend `ContextBuilderService` with meeting frequency analysis per person; reads from `LocalCacheService` — no direct Firestore calls — 2h
 - [ ] **TASK-105.2:** Add meeting suggestion prompt pattern to `OpenAIService` system prompt — 0.5h
 - [ ] **TASK-105.3:** Write unit tests for frequency analysis — 1h
 
@@ -4386,7 +4386,7 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 
 **Tasks:**
 - [ ] **TASK-106.1:** Create report generation prompt template in `OpenAIService` — 1h
-- [ ] **TASK-106.2:** Extend `ContextBuilderService` with year-scoped full context — 1h
+- [ ] **TASK-106.2:** Extend `ContextBuilderService` with year-scoped full context; reads from `LocalCacheService` — no direct Firestore calls — 1h
 - [ ] **TASK-106.3:** Implement formatted report rendering in chat UI — 2h
 - [ ] **TASK-106.4:** Add share button to report message bubble — 1h
 - [ ] **TASK-106.5:** Write tests — 2h
@@ -4419,7 +4419,7 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 
 **Tasks:**
 - [ ] **TASK-107.1:** Design scoring algorithm (frequency, recency, variety, weight) — 2h
-- [ ] **TASK-107.2:** Implement `RelationshipScoreService` — 3h
+- [ ] **TASK-107.2:** Implement `RelationshipScoreService`; reads all meetings and persons from `LocalCacheService` — no direct Firestore calls — 3h
 - [ ] **TASK-107.3:** Add score indicator widget to `PersonDetailScreen` — 2h
 - [ ] **TASK-107.4:** Wire score explanation to Buddy (prompt template) — 1h
 - [ ] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
@@ -4451,7 +4451,7 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 
 **Tasks:**
 - [ ] **TASK-108.1:** Add sentiment analysis prompt template to `OpenAIService` — 1h
-- [ ] **TASK-108.2:** Extend `ContextBuilderService` to include notes in per-person context — 1h
+- [ ] **TASK-108.2:** Extend `ContextBuilderService` to include notes in per-person context; use `LocalCacheService.getMeetingNotes()` and per-person meeting filter — no direct Firestore calls — 1h
 - [ ] **TASK-108.3:** Implement sparse-data guard (< 3 notes → graceful message) — 0.5h
 - [ ] **TASK-108.4:** Write tests for sparse-data guard and context inclusion — 1.5h
 
@@ -4469,10 +4469,10 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `infrastructure`, `performance`, `offline`, `ai`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Context:**
-Spike completed (March 2026 discovery session). Decision: **Hive** (already in project for statistics cache). Max dataset: ~10,000 meetings × 500 B + 250 persons = ~5 MB — trivially fits in device memory and on disk. In-memory filtering in Dart is faster than any Firestore query at this scale. Drift/SQLite would be overkill. This US is a prerequisite for US-110 (Tool Calling) — `LocalCacheService` exposes typed read methods that tool calls use to query data without hitting Firestore.
+Spike completed (March 2026 discovery session). Decision: **Hive** (already in project for statistics cache). Max dataset: ~10,000 meetings × 500 B + 250 persons = ~5 MB — trivially fits in device memory and on disk. In-memory filtering in Dart is faster than any Firestore query at this scale. Drift/SQLite would be overkill. This US is a prerequisite for US-110 (Tool Calling) — `LocalCacheService` exposes typed read methods that tool calls use to query data without hitting Firestore. Single-device usage pattern (one user, one phone) means write conflicts are not a concern — write-through cache is the correct strategy.
 
 **Acceptance Criteria:**
 - [ ] On app start, all meetings/persons/activity_categories are loaded from Firestore into Hive cache asynchronously without blocking UI
@@ -4480,16 +4480,17 @@ Spike completed (March 2026 discovery session). Decision: **Hive** (already in p
 - [ ] `LocalCacheService` exposes typed read methods: `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getPersonSummary`, `getAllPersons`, `getMeetingNotes`
 - [ ] Cache is user-scoped — cleared on logout and account switch
 - [ ] Cache survives app restart (Hive persists to disk)
+- [ ] Every existing feature that uses a one-shot Firestore `.get()` call reads from `LocalCacheService` instead — Firestore is only the fallback when cache is cold
 - [ ] No visible UI changes for end user
 - [ ] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-109.1:** Configure Hive boxes for meetings/persons/activity_categories — 1h
-- [ ] **TASK-109.2:** Implement sync on app start: load all from Firestore → write to Hive — 2h
-- [ ] **TASK-109.3:** Implement write-through: update cache after every repository write — 2h
-- [ ] **TASK-109.4:** Implement `LocalCacheService` with 6 typed read methods — 2h
-- [ ] **TASK-109.5:** Implement cache clear on logout / account switch — 0.5h
-- [ ] **TASK-109.6:** Audit one-shot Firestore reads (`Future<>`-based `.get()` calls) across repositories and providers; migrate top 2–3 highest-frequency paths to `LocalCacheService`; add `// Firestore-primary: stream-based` comment to stream-driven reads — 2h
+- [ ] **TASK-109.1:** Configure Hive boxes for meetings/persons/activity_categories (`local_meetings`, `local_persons`, `local_categories`) in `HiveService`; extend `clearUserData()` to also clear these boxes — 1h
+- [ ] **TASK-109.2:** Implement sync on app start: trigger `LocalCacheService.syncFromFirestore(userId)` in `MainScreen.initState()` via `addPostFrameCallback` (after `GoogleCalendarService().ensureInitialized()`); full `.get()` fetch of all meetings/persons/categories written to Hive as JSON; non-blocking (UI does not wait) — 2h
+- [ ] **TASK-109.3:** Implement write-through: add `LocalCacheService` as optional dependency to `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; after each add/update/delete, upsert or remove the affected record in the Hive box — do NOT replace existing `CacheInvalidator` (statistics cache remains unchanged) — 2h
+- [ ] **TASK-109.4:** Implement `LocalCacheService` (`lib/data/services/local_cache_service.dart`) with 6 typed read methods and `PersonSummary` plain Dart class (totalMeetingCount, lastMeetingDate, firstMeetingDate, totalWeight, person); `resolvePerson` fuzzy-matches on firstName/lastName/nicknames — 2h
+- [ ] **TASK-109.5:** Implement cache clear on logout / account switch — already covered by TASK-109.1 extension to `HiveService.clearUserData()`; verify `AuthService.signOut()` and `AccountDeletionService._clearLocalData()` both call `HiveService.clearUserData()` — 0.5h
+- [ ] **TASK-109.6:** Audit ALL one-shot Firestore `.get()` calls across all providers and services; migrate each to `LocalCacheService`; add `// Firestore-primary: stream-based` comment to stream-driven reads (streams will be replaced in US-111) — 3h
 
 **Dependencies:** None
 **Blocks:** US-110, US-111

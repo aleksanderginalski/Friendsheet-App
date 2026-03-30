@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/meeting.dart';
+import '../services/local_cache_service.dart';
 import 'cache_invalidator.dart';
 
 /// Handles all Firestore operations for the meetings subcollection.
@@ -24,17 +25,32 @@ class MeetingRepository {
     final docRef =
         await _meetingsRef(meeting.userId).add(meeting.toFirestore());
     await cacheInvalidator?.invalidateMeetingsCache();
+    // Write-through: add the persisted meeting (with generated ID) to local cache.
+    await LocalCacheService().upsertMeeting(
+      meeting.userId,
+      meeting.copyWith(id: docRef.id),
+    );
     return docRef.id;
   }
 
   /// Returns a real-time stream of meetings for a given user,
   /// ordered by date descending (newest first).
+  // Firestore-primary: stream-based — cache-first migration planned in US-111.
   Stream<List<Meeting>> getMeetingsByUser(String userId) {
     return _meetingsRef(userId)
         .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList());
+  }
+
+  /// Returns all meetings for [userId] from local cache; falls back to
+  /// Firestore stream when cache is cold. Prefer this over [getMeetingsByUser]
+  /// for one-shot reads.
+  Future<List<Meeting>> getAllMeetings(String userId) async {
+    final cached = await LocalCacheService().getAllMeetings(userId);
+    if (cached.isNotEmpty) return cached;
+    return getMeetingsByUser(userId).first;
   }
 
   /// Updates an existing meeting document in Firestore.
@@ -45,19 +61,31 @@ class MeetingRepository {
 
     await _meetingsRef(meeting.userId).doc(meeting.id).update(data);
     await cacheInvalidator?.invalidateMeetingsCache();
+    // Write-through: update the cached meeting entry.
+    await LocalCacheService().upsertMeeting(meeting.userId, meeting);
   }
 
   /// Deletes a meeting document from Firestore by its ID.
   Future<void> deleteMeeting(String userId, String meetingId) async {
     await _meetingsRef(userId).doc(meetingId).delete();
     await cacheInvalidator?.invalidateMeetingsCache();
+    // Write-through: remove the meeting from local cache.
+    await LocalCacheService().removeMeeting(userId, meetingId);
   }
 
   /// Returns all meetings for [userId] where [personId] is a participant,
   /// ordered by date descending.
-  /// Sorting is done client-side to avoid requiring a composite Firestore index.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<List<Meeting>> getMeetingsByParticipant(
       String userId, String personId) async {
+    final cached = await LocalCacheService().getAllMeetings(userId);
+    if (cached.isNotEmpty) {
+      return cached
+          .where((m) => m.participantIds.contains(personId))
+          .toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+    }
+    // Firestore fallback — used on first run before cache is populated.
     final snapshot = await _meetingsRef(userId)
         .where('participantIds', arrayContains: personId)
         .get();
@@ -80,6 +108,7 @@ class MeetingRepository {
   /// If [targetId] is already present in a meeting, only [sourceId] is removed.
   Future<void> replaceCategoryInMeetings(
       String userId, String sourceId, String targetId) async {
+    // Write-helper: must read live Firestore state before cascade update — not a candidate for cache.
     final snapshot = await _meetingsRef(userId)
         .where('categoryIds', arrayContains: sourceId)
         .get();
@@ -100,10 +129,19 @@ class MeetingRepository {
   }
 
   /// Returns the most recently dated meeting (within [since]) that has no notes.
-  /// Fetches all meetings since [since] ordered by date descending, filters client-side.
   /// Returns null if every meeting in range has at least one note.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<Meeting?> getLastMeetingWithoutNotes(
       String userId, DateTime since) async {
+    final all = await getAllMeetings(userId);
+    if (all.isNotEmpty) {
+      final candidates = all
+          .where((m) => m.date.isAfter(since) && m.notes.isEmpty)
+          .toList()
+        ..sort((a, b) => b.date.compareTo(a.date));
+      return candidates.isEmpty ? null : candidates.first;
+    }
+    // Firestore fallback.
     final snapshot = await _meetingsRef(userId)
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
         .orderBy('date', descending: true)
@@ -118,13 +156,14 @@ class MeetingRepository {
   /// Returns the [limit] most recent meetings without notes since [since],
   /// ordered by date descending. Used by BuddyWidgetProvider to populate the
   /// 'Save Your Memories' meeting-selection list.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<List<Meeting>> getRecentMeetingsWithoutNotes(
     String userId,
     DateTime since, {
     int limit = 3,
   }) async {
-    final allMeetings = await getMeetingsByUser(userId).first;
-    final candidates = allMeetings
+    final all = await getAllMeetings(userId);
+    final candidates = all
         .where((m) => m.date.isAfter(since) && m.notes.isEmpty)
         .toList()
       ..sort((a, b) => b.date.compareTo(a.date));
@@ -133,8 +172,17 @@ class MeetingRepository {
 
   /// Returns the set of personIds that appear in at least one meeting since [since].
   /// Used by [BuddyWidgetProvider] to identify recently seen contacts.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<Set<String>> getPersonIdsSeenSince(
       String userId, DateTime since) async {
+    final cached = await LocalCacheService().getAllMeetings(userId);
+    if (cached.isNotEmpty) {
+      return cached
+          .where((m) => !m.date.isBefore(since))
+          .expand((m) => m.participantIds)
+          .toSet();
+    }
+    // Firestore fallback.
     final snapshot = await _meetingsRef(userId)
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(since))
         .get();
@@ -149,13 +197,23 @@ class MeetingRepository {
   }
 
   /// Returns the [limit] most recent meetings where [personId] is a participant,
-  /// ordered by date descending. Sorting is done client-side to avoid a
-  /// composite Firestore index (consistent with [getMeetingsByParticipant]).
+  /// ordered by date descending.
+  /// Reads from local cache; falls back to Firestore when cache is cold.
   Future<List<Meeting>> getRecentMeetingsByPerson(
     String userId,
     String personId, {
     int limit = 4,
   }) async {
+    final cached = await LocalCacheService().getAllMeetings(userId);
+    if (cached.isNotEmpty) {
+      return (cached
+              .where((m) => m.participantIds.contains(personId))
+              .toList()
+            ..sort((a, b) => b.date.compareTo(a.date)))
+          .take(limit)
+          .toList();
+    }
+    // Firestore fallback.
     final snapshot = await _meetingsRef(userId)
         .where('participantIds', arrayContains: personId)
         .get();
@@ -169,6 +227,7 @@ class MeetingRepository {
   /// Removes personId from participantIds in all meetings that contain them.
   /// Uses a WriteBatch to apply all updates atomically.
   Future<void> removePersonFromMeetings(String userId, String personId) async {
+    // Write-helper: must read live Firestore state before cascade update — not a candidate for cache.
     final snapshot = await _meetingsRef(userId)
         .where('participantIds', arrayContains: personId)
         .get();
