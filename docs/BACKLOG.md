@@ -3971,23 +3971,23 @@ Font fix:
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `settings`, `ui`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] `LapsedPersonInfo` has `avgDaysBetweenMeetings: int?` — computed from historical meetings with that person
-- [ ] LTNS chat action buttons show full name and frequency: "Michał Biecki — 1291 days · prev. every 82 days" (frequency omitted if null)
-- [ ] Side Menu → Buddy → "LTNS Filters" entry navigates to `LtnsFilterScreen`
-- [ ] `LtnsFilterScreen` lists all persons with inclusion toggles; default: all included (opt-out model); changes persisted immediately
-- [ ] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
-- [ ] `BuddyWidgetProvider.initialize()` reads the exclusion list and filters out excluded persons from `lapsedPersons` before taking top 3
+- [x] `LapsedPersonInfo` has `avgDaysBetweenMeetings: int?` — computed from historical meetings with that person
+- [x] LTNS chat action buttons show full name and frequency: "Michał Biecki — 1291 days · prev. every 82 days" (frequency omitted if null)
+- [x] Side Menu → Buddy → "LTNS Filters" entry navigates to `LtnsFilterScreen`
+- [x] `LtnsFilterScreen` lists all persons with inclusion toggles; default: all included (opt-out model); changes persisted immediately
+- [x] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
+- [x] `BuddyWidgetProvider.initialize()` reads the exclusion list and filters out excluded persons from `lapsedPersons` before taking top 3
 
 **Tasks:**
-- [ ] **TASK-118.1:** Create `LtnsExclusionService` in `lib/data/services/` with `getExcludedIds()` → `Set<String>` and `setExcluded(String personId, bool excluded)` backed by SharedPreferences key `buddy_ltns_excluded_ids` — 0.5h
-- [ ] **TASK-118.2:** Add `avgDaysBetweenMeetings: int?` to `LapsedPersonInfo` in `buddy_chat_mode.dart`; update `BuddyWidgetProvider.initialize()` to fetch recent meetings per lapsed person (limit 10), compute average gap, populate the field; apply exclusion filter from `LtnsExclusionService` before taking top 3 — 1h
-- [ ] **TASK-118.3:** Update LTNS action labels in `AIChatProvider` to use `lp.person.fullName` and append frequency when non-null — 0.5h
-- [ ] **TASK-118.4:** Create `LtnsFilterScreen` in `lib/presentation/screens/` — `StatefulWidget` that loads all persons via `PersonRepository`, renders `SwitchListTile` per person backed by `LtnsExclusionService`; AppBar "LTNS Filters" — 1h
-- [ ] **TASK-118.5:** Add `onLtnsFiltersTap` callback to `BuddyMenuScreen`; add "LTNS Filters" `ListTile` entry; update `MainScreen._openBuddyMenu()` to pass the callback and implement `_openLtnsFilters()` that pushes `LtnsFilterScreen` with userId — 0.5h
-- [ ] **TASK-118.6:** Write tests — /qa responsibility
+- [x] **TASK-118.1:** Create `LtnsExclusionService` in `lib/data/services/` with `getExcludedIds()` → `Set<String>` and `setExcluded(String personId, bool excluded)` backed by SharedPreferences key `buddy_ltns_excluded_ids` — 0.5h
+- [x] **TASK-118.2:** Add `avgDaysBetweenMeetings: int?` to `LapsedPersonInfo` in `buddy_chat_mode.dart`; update `BuddyWidgetProvider.initialize()` to fetch recent meetings per lapsed person (limit 10), compute average gap, populate the field; apply exclusion filter from `LtnsExclusionService` before taking top 3 — 1h
+- [x] **TASK-118.3:** Update LTNS action labels in `AIChatProvider` to use `lp.person.fullName` and append frequency when non-null — 0.5h
+- [x] **TASK-118.4:** Create `LtnsFilterScreen` in `lib/presentation/screens/` — `StatefulWidget` that loads all persons via `PersonRepository`, renders `SwitchListTile` per person backed by `LtnsExclusionService`; AppBar "LTNS Filters" — 1h
+- [x] **TASK-118.5:** Add `onLtnsFiltersTap` callback to `BuddyMenuScreen`; add "LTNS Filters" `ListTile` entry; update `MainScreen._openBuddyMenu()` to pass the callback and implement `_openLtnsFilters()` that pushes `LtnsFilterScreen` with userId — 0.5h
+- [x] **TASK-118.6:** Write tests — /qa responsibility
 
 **Dependencies:** US-102
 **Blocks:** None
@@ -4133,19 +4133,19 @@ Interactive action buttons:
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `insights`
-**Status:** 🔄 In Progress
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] `PersonContextEntry` has `avgDaysBetweenMeetings: int?` — average days between consecutive meetings in the 12-month window; null if < 2 meetings
-- [ ] `PersonContextEntry` has `daysSinceLastMeeting: int?` — computed at context build time from `lastMeetingDate`
-- [ ] `serializeToPrompt()` includes avg cadence and days since last meeting in Friend Summaries section
-- [ ] `OpenAIService` system prompt includes guidance: when asked for meeting suggestions, compare `daysSinceLastMeeting` vs `avgDaysBetweenMeetings` and suggest overdue friends with context (e.g. "you used to meet every X days, it's been Y days")
-- [ ] User can ask "Who should I meet next?" in free-query mode and receive a response referencing specific frequency patterns
+- [x] `PersonContextEntry` has `avgDaysBetweenMeetings: int?` — average days between consecutive meetings in the 12-month window; null if < 2 meetings
+- [x] `PersonContextEntry` has `daysSinceLastMeeting: int?` — computed at context build time from `lastMeetingDate`
+- [x] `serializeToPrompt()` includes avg cadence and days since last meeting in Friend Summaries section
+- [x] `OpenAIService` system prompt includes guidance: when asked for meeting suggestions, compare `daysSinceLastMeeting` vs `avgDaysBetweenMeetings` and suggest overdue friends with context (e.g. "you used to meet every X days, it's been Y days")
+- [x] User can ask "Who should I meet next?" in free-query mode and receive a response referencing specific frequency patterns
 
 **Tasks:**
-- [ ] **TASK-105.1:** Add `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` to `PersonContextEntry` in `buddy_context.dart`; compute in `ContextBuilderService._buildPersonEntries()` (sort meetings by date, compute gaps, average); serialize both fields in `serializeToPrompt()` — 1.5h
-- [ ] **TASK-105.2:** Add meeting suggestion guidance section to `_systemPrompt` in `open_ai_service.dart`: instruct Buddy to compare avg cadence vs days since last meeting when answering "who to meet" queries — 0.5h
-- [ ] **TASK-105.3:** Write unit tests for frequency analysis — /qa responsibility
+- [x] **TASK-105.1:** Add `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` to `PersonContextEntry` in `buddy_context.dart`; compute in `ContextBuilderService._buildPersonEntries()` (sort meetings by date, compute gaps, average); serialize both fields in `serializeToPrompt()` — 1.5h
+- [x] **TASK-105.2:** Add meeting suggestion guidance section to `_systemPrompt` in `open_ai_service.dart`: instruct Buddy to compare avg cadence vs days since last meeting when answering "who to meet" queries — 0.5h
+- [x] **TASK-105.3:** Write unit tests for frequency analysis — /qa responsibility
 
 **Dependencies:** US-086, US-087
 **Blocks:** None

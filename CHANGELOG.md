@@ -4,6 +4,25 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.5 — US-105 + US-118: Meeting Frequency Context & LTNS Exclusion Filter (March 31, 2026)
+- ✅ `lib/data/models/buddy_context.dart` (MODIFIED) — `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` added to `PersonContextEntry`; both nullable (null when < 2 meetings in window for avg, or no last meeting date for days-since)
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `_buildPersonEntries()` computes `avgDaysBetweenMeetings` (sort meetings by date, compute consecutive gaps, average) and `daysSinceLastMeeting` (derived from `lastMeetingDate`); `serializeToPrompt()` emits both fields in Friend Summaries section
+- ✅ `lib/data/services/open_ai_service.dart` (MODIFIED) — `_systemPrompt` extended with meeting suggestion guidance: instructs Buddy to compare `daysSinceLastMeeting` vs `avgDaysBetweenMeetings` and proactively suggest overdue friends with context ("you used to meet every X days, it's been Y days")
+- ✅ `lib/data/services/ltns_exclusion_service.dart` (NEW) — SharedPreferences-backed singleton; `getExcludedIds()` → `Set<String>`, `setExcluded(String personId, bool excluded)` writes immediately; key `buddy_ltns_excluded_ids` (JSON-encoded list)
+- ✅ `lib/presentation/ai_chat/buddy_chat_mode.dart` (MODIFIED) — `LapsedPersonInfo` extended with `avgDaysBetweenMeetings: int?`
+- ✅ `lib/presentation/providers/buddy_widget_provider.dart` (MODIFIED) — `LtnsExclusionService` added as dependency; `initialize()` fetches last 10 meetings per lapsed candidate to compute `avgDaysBetweenMeetings`; applies exclusion filter before taking top 3; LTNS action button labels include full name and frequency suffix
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (MODIFIED) — LTNS action labels use `lp.person.fullName`; frequency suffix ("· prev. every X days") appended when `avgDaysBetweenMeetings` non-null; `_pendingActions` cleared on free-text `sendMessage()`
+- ✅ `lib/presentation/screens/ltns_filter_screen.dart` (NEW) — `StatefulWidget`; loads all persons via `PersonRepository`; `SwitchListTile` per person backed by `LtnsExclusionService`; Polish-aware alphabetical sort; search bar; AppBar "Filtry LTNS"
+- ✅ `lib/presentation/screens/buddy_menu_screen.dart` (MODIFIED) — `onLtnsFiltersTap` callback added; "LTNS Filters" `ListTile` entry added
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `_openLtnsFilters()` State method pushes `LtnsFilterScreen` with userId; `.then()` re-initializes `BuddyWidgetProvider`
+- ✅ `test/data/services/ltns_exclusion_service_test.dart` (NEW) — 7 unit tests: initial empty set, add excluded, remove excluded, multiple ids, persistence across calls, setExcluded false removes, setExcluded true adds
+- ✅ `test/data/services/context_builder_service_test.dart` (MODIFIED) — 5 new tests: `avgDaysBetweenMeetings` computed correctly, null when < 2 meetings, `daysSinceLastMeeting` computed, null when no last meeting, serialized in prompt
+- ✅ `test/presentation/providers/buddy_widget_provider_test.dart` (MODIFIED) — 4 new tests: excluded person filtered from lapsed list, `avgDaysBetweenMeetings` populated, empty exclusion list returns all, frequency label generation
+- ✅ `test/presentation/providers/ai_chat_provider_test.dart` (MODIFIED) — 4 new tests: full name in LTNS action label, frequency suffix when avg non-null, frequency omitted when null, `pendingActions` cleared on free-text send
+- ✅ 881 Flutter tests passing (+20 new tests)
+
+---
+
 ### v4.5.4 — US-109: Local Data Cache (Hive) (March 30, 2026)
 - ✅ `lib/services/hive_service.dart` (MODIFIED) — 3 new box constants (`local_meetings`, `local_persons`, `local_categories`); boxes opened in `initialize()`; `clearUserData()` extended to delete userId key from all 3 new boxes
 - ✅ `lib/data/services/local_cache_service.dart` (NEW) — singleton Hive cache; `syncFromFirestore(userId)` fetches all meetings/persons/categories via `.get()` and writes to Hive as JSON; private loaders `_loadMeetings`, `_loadPersons`, `_loadCategories` (return `[]` on cold cache or error); write-through: `upsertMeeting`, `removeMeeting`, `upsertPerson`, `removePerson`, `upsertCategory`, `removeCategory`, `removeCategoriesByIds`; read methods: `getAllMeetings`, `getAllPersons`, `getAllCategories`, `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getMeetingNotes`, `getPersonSummary`; `PersonSummary` plain Dart DTO; lazy Firestore init (safe in tests)
