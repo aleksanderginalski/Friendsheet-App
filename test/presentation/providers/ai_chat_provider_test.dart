@@ -819,6 +819,152 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // lapsedFriendsList label format — fullName + freq suffix (US-105 + US-118)
+  // ---------------------------------------------------------------------------
+
+  group('lapsedFriendsList label format', () {
+    test('label includes fullName, days, and freq suffix when avgDays set',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Anna',
+        lastName: 'Kowalska',
+        createdAt: now,
+      );
+      final lapsedOptions = [
+        LapsedPersonInfo(
+          person: person,
+          daysSinceLastMeeting: 120,
+          avgDaysBetweenMeetings: 30,
+        ),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: lapsedOptions,
+      );
+
+      final label = provider.pendingActions!.first.label;
+      // Full name (not just firstName).
+      expect(label, contains('Anna Kowalska'));
+      // Days elapsed.
+      expect(label, contains('120'));
+      // Frequency suffix.
+      expect(label, contains('prev. every 30 days'));
+    });
+
+    test('label omits freq suffix when avgDaysBetweenMeetings is null',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Marco',
+        createdAt: now,
+      );
+      final lapsedOptions = [
+        LapsedPersonInfo(
+          person: person,
+          daysSinceLastMeeting: 95,
+          // avgDaysBetweenMeetings intentionally omitted.
+        ),
+      ];
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.lapsedFriendsList,
+        lapsedOptions: lapsedOptions,
+      );
+
+      final label = provider.pendingActions!.first.label;
+      expect(label, isNot(contains('prev. every')));
+    });
+
+    test('greeting_ltns sub-flow label also includes fullName and freq suffix',
+        () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      final person = Person(
+        id: 'p1',
+        userId: 'user-1',
+        firstName: 'Jan',
+        lastName: 'Nowak',
+        createdAt: now,
+      );
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        lapsedOptions: [
+          LapsedPersonInfo(
+            person: person,
+            daysSinceLastMeeting: 95,
+            avgDaysBetweenMeetings: 20,
+          ),
+        ],
+      );
+
+      final ltnsAction = provider.pendingActions!
+          .firstWhere((a) => a.actionId == 'greeting_ltns');
+      await provider.handleAction(ltnsAction);
+
+      final lapsedAction = provider.pendingActions!.first;
+      expect(lapsedAction.label, contains('Jan Nowak'));
+      expect(lapsedAction.label, contains('prev. every 20 days'));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // sendMessage clears pendingActions (US-118)
+  // ---------------------------------------------------------------------------
+
+  group('sendMessage clears pendingActions', () {
+    test('pendingActions is null after sendMessage called', () async {
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => emptyContext);
+
+      await provider.initialize(
+        'user-1',
+        mode: BuddyChatMode.greeting,
+        meetingOptions: [
+          Meeting(
+            id: 'm1',
+            userId: 'user-1',
+            name: 'Coffee',
+            date: now,
+            weight: 3,
+            participantIds: const [],
+            categoryIds: const [],
+            createdAt: now,
+            updatedAt: now,
+          ),
+        ],
+      );
+
+      // Verify pendingActions are set before sendMessage.
+      expect(provider.pendingActions, isNotNull);
+
+      when(mockContextBuilder.serializeToPrompt(any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenReturn('context');
+      when(mockOpenAI.sendMessage(any, any, any))
+          .thenAnswer((_) => Stream.value('Hi!'));
+
+      await provider.sendMessage('Hello');
+
+      expect(provider.pendingActions, isNull);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // pseudonym translation — longest match first
   // ---------------------------------------------------------------------------
 

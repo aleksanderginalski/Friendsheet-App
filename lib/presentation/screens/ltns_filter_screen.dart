@@ -47,7 +47,8 @@ class _LtnsFilterScreenState extends State<LtnsFilterScreen> {
   Future<void> _load() async {
     final persons = await _personRepository.getPersonsByUser(widget.userId);
     final excluded = await _exclusionService.getExcludedIds();
-    persons.sort((a, b) => _normalize(a.fullName).compareTo(_normalize(b.fullName)));
+    persons.sort(
+        (a, b) => _normalize(a.fullName).compareTo(_normalize(b.fullName)));
     if (!mounted) return;
     setState(() {
       _allPersons = persons;

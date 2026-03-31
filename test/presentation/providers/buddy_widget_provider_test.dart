@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
@@ -344,6 +344,185 @@ void main() {
 
         expect(provider.daysUntilBirthday['p-today'], 0);
         expect(provider.urgentBirthdayPersons, contains(person));
+      });
+    });
+
+    group('LTNS exclusion (US-118)', () {
+      Person makeLapsedPerson(String id, String firstName) => Person(
+            id: id,
+            userId: 'user-1',
+            firstName: firstName,
+            createdAt: DateTime(2026, 1, 1),
+          );
+
+      setUp(() {
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsWithoutNotes(any, any))
+            .thenAnswer((_) async => <Meeting>[]);
+      });
+
+      test('excluded person is filtered out of lapsedPersons', () async {
+        final p1 = makeLapsedPerson('p1', 'Alice');
+        final p2 = makeLapsedPerson('p2', 'Bob');
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [p1, p2]);
+        // Neither seen recently.
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getPersonIdsSeenSince(any, any))
+            .thenAnswer((_) async => <String>{});
+        // Both have historical meetings.
+        final oldMeeting1 = testMeeting.copyWith(
+          participantIds: ['p1'],
+          date: DateTime.now().subtract(const Duration(days: 100)),
+        );
+        final oldMeeting2 = testMeeting.copyWith(
+          participantIds: ['p2'],
+          date: DateTime.now().subtract(const Duration(days: 110)),
+        );
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsByPerson(any, 'p1',
+                limit: anyNamed('limit')))
+            .thenAnswer((_) async => [oldMeeting1]);
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsByPerson(any, 'p2',
+                limit: anyNamed('limit')))
+            .thenAnswer((_) async => [oldMeeting2]);
+        // p1 is excluded by the user.
+        when(mockLtnsExclusionService.getExcludedIds())
+            .thenAnswer((_) async => <String>{'p1'});
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
+        );
+        await provider.initialize('user-1');
+
+        expect(
+            provider.lapsedPersons.any((lp) => lp.person.id == 'p1'), isFalse);
+        expect(
+            provider.lapsedPersons.any((lp) => lp.person.id == 'p2'), isTrue);
+      });
+
+      test('lapsedPersons capped at 3 even when more qualify', () async {
+        final persons = List.generate(
+          5,
+          (i) => makeLapsedPerson('p$i', 'Person$i'),
+        );
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => persons);
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getPersonIdsSeenSince(any, any))
+            .thenAnswer((_) async => <String>{});
+        // All have a meeting 100 days ago.
+        for (final p in persons) {
+          final m = testMeeting.copyWith(
+            participantIds: [p.id],
+            date: DateTime.now().subtract(const Duration(days: 100)),
+          );
+          // ignore: argument_type_not_assignable
+          when(mockMeetingRepository.getRecentMeetingsByPerson(any, p.id,
+                  limit: anyNamed('limit')))
+              .thenAnswer((_) async => [m]);
+        }
+        // No exclusions.
+        when(mockLtnsExclusionService.getExcludedIds())
+            .thenAnswer((_) async => <String>{});
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.lapsedPersons.length, lessThanOrEqualTo(3));
+      });
+    });
+
+    group('LTNS avgDaysBetweenMeetings (US-105)', () {
+      Person makeLapsedPerson(String id, String firstName) => Person(
+            id: id,
+            userId: 'user-1',
+            firstName: firstName,
+            createdAt: DateTime(2026, 1, 1),
+          );
+
+      setUp(() {
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsWithoutNotes(any, any))
+            .thenAnswer((_) async => <Meeting>[]);
+      });
+
+      test(
+          'avgDaysBetweenMeetings computed correctly from two historical meetings',
+          () async {
+        final person = makeLapsedPerson('p1', 'Anna');
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [person]);
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getPersonIdsSeenSince(any, any))
+            .thenAnswer((_) async => <String>{});
+
+        final date1 = DateTime(2025, 1, 1);
+        final date2 = DateTime(2025, 1, 21); // 20 days gap
+        final m1 = testMeeting.copyWith(
+          participantIds: ['p1'],
+          date: date2, // newest first from repo
+        );
+        final m2 = testMeeting.copyWith(
+          participantIds: ['p1'],
+          date: date1,
+        );
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsByPerson(any, any,
+                limit: anyNamed('limit')))
+            .thenAnswer((_) async => [m1, m2]);
+        when(mockLtnsExclusionService.getExcludedIds())
+            .thenAnswer((_) async => <String>{});
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.lapsedPersons.length, 1);
+        expect(provider.lapsedPersons.first.avgDaysBetweenMeetings, 20);
+      });
+
+      test('avgDaysBetweenMeetings is null when only one meeting', () async {
+        final person = makeLapsedPerson('p1', 'Anna');
+        // ignore: argument_type_not_assignable
+        when(mockPersonRepository.getPersonsByUser(any))
+            .thenAnswer((_) async => [person]);
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getPersonIdsSeenSince(any, any))
+            .thenAnswer((_) async => <String>{});
+
+        final m = testMeeting.copyWith(
+          participantIds: ['p1'],
+          date: DateTime.now().subtract(const Duration(days: 100)),
+        );
+        // ignore: argument_type_not_assignable
+        when(mockMeetingRepository.getRecentMeetingsByPerson(any, any,
+                limit: anyNamed('limit')))
+            .thenAnswer((_) async => [m]);
+        when(mockLtnsExclusionService.getExcludedIds())
+            .thenAnswer((_) async => <String>{});
+
+        provider = BuddyWidgetProvider(
+          meetingRepository: mockMeetingRepository,
+          personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
+        );
+        await provider.initialize('user-1');
+
+        expect(provider.lapsedPersons.first.avgDaysBetweenMeetings, isNull);
       });
     });
   });

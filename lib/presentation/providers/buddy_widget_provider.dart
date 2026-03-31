@@ -23,8 +23,7 @@ class BuddyWidgetProvider extends ChangeNotifier {
     LtnsExclusionService? ltnsExclusionService,
   })  : _meetingRepository = meetingRepository ?? MeetingRepository(),
         _personRepository = personRepository ?? PersonRepository(),
-        _ltnsExclusionService =
-            ltnsExclusionService ?? LtnsExclusionService();
+        _ltnsExclusionService = ltnsExclusionService ?? LtnsExclusionService();
 
   List<Meeting> _suggestedMeetings = [];
   List<Person> _urgentBirthdayPersons = [];
@@ -117,7 +116,8 @@ class BuddyWidgetProvider extends ChangeNotifier {
       // Compute average days between consecutive meetings (chronological order).
       int? avgDays;
       if (recent.length >= 2) {
-        final sorted = recent.toList()..sort((a, b) => a.date.compareTo(b.date));
+        final sorted = recent.toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
         final gaps = <int>[];
         for (var i = 1; i < sorted.length; i++) {
           gaps.add(sorted[i].date.difference(sorted[i - 1].date).inDays);
@@ -139,8 +139,9 @@ class BuddyWidgetProvider extends ChangeNotifier {
 
     // Filter out persons the user has excluded from LTNS, then take top 3.
     final excluded = await _ltnsExclusionService.getExcludedIds();
-    final filtered =
-        lapsedWithDates.where((lp) => !excluded.contains(lp.person.id)).toList();
+    final filtered = lapsedWithDates
+        .where((lp) => !excluded.contains(lp.person.id))
+        .toList();
     _lapsedPersons = filtered.take(3).toList();
 
     _isInitialized = true;
