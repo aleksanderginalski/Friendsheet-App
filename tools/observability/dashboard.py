@@ -26,25 +26,48 @@ def _parse_ts(ts_str: str) -> datetime:
 _IMPL_AGENTS = {'dev', 'dev-ai', 'debug'}
 
 
+def _tokens_at(session_ends: list[dict], ts: datetime) -> int | None:
+    """Return the last cumulative total_tokens at or before ts, or None.
+
+    session_ends must be sorted ascending by timestamp and contain only entries
+    with non-null total_tokens.
+    """
+    result = None
+    for se in session_ends:
+        if _parse_ts(se['timestamp']) <= ts:
+            result = se.get('total_tokens')
+        else:
+            break
+    return result
+
+
 def _compute_timeline(entries: list[dict]) -> list[dict]:
-    """Build ordered agent segments with durations (mirrors report.py logic).
+    """Build ordered agent segments with durations and token deltas.
 
     Injects a synthetic dev-ai segment when planning is immediately followed
     by a non-implementation agent (continuation session pattern).
+
+    Token deltas are computed from cumulative session_end entries rather than
+    time-proportional approximation — mirrors report.py logic.
     """
     agents = [e for e in entries if e.get('type') == 'agent_start']
-    session_ends = sorted(
+    session_ends_all = sorted(
         [e for e in entries if e.get('type') == 'session_end' and 'timestamp' in e],
         key=lambda e: _parse_ts(e['timestamp']),
     )
+    # Only entries with valid token counts are used for delta computation.
+    session_ends_tokens = [
+        e for e in session_ends_all
+        if e.get('total_tokens') is not None
+    ]
 
     if not agents:
         return []
 
     end_ts = datetime.now()
-    if session_ends:
+    if session_ends_all:
         try:
-            end_ts = _parse_ts(session_ends[-1]['timestamp'])
+            end_ts = _parse_ts(session_ends_all[-1]['timestamp'])
         except (KeyError, ValueError):
             pass
 
@@ -59,7 +82,8 @@ def _compute_timeline(entries: list[dict]) -> list[dict]:
             'end': end,
         })
 
-    segments = []
+    # Build expanded segments retaining start/end for token delta computation.
+    expanded = []
     for i, seg in enumerate(raw):
         is_planning_gap = (
             seg['skill'].lower() == 'planning'
@@ -68,33 +92,55 @@ def _compute_timeline(entries: list[dict]) -> list[dict]:
         )
         if is_planning_gap:
             planning_actual_end = None
-            for se in session_ends:
+            for se in session_ends_all:
                 if _parse_ts(se['timestamp']) > seg['start']:
                     planning_actual_end = _parse_ts(se['timestamp'])
                     break
             if planning_actual_end and planning_actual_end < seg['end']:
-                segments.append({
+                expanded.append({
                     'skill': seg['skill'],
                     'args': seg['args'],
-                    'duration_sec': max(0.0, (planning_actual_end - seg['start']).total_seconds()),
+                    'start': seg['start'],
+                    'end': planning_actual_end,
                 })
-                segments.append({
+                expanded.append({
                     'skill': 'dev-ai',
                     'args': '[estimated]',
-                    'duration_sec': max(0.0, (seg['end'] - planning_actual_end).total_seconds()),
+                    'start': planning_actual_end,
+                    'end': seg['end'],
                 })
             else:
-                segments.append({
+                expanded.append({
                     'skill': seg['skill'],
                     'args': seg['args'],
-                    'duration_sec': max(0.0, (seg['end'] - seg['start']).total_seconds()),
+                    'start': seg['start'],
+                    'end': seg['end'],
                 })
         else:
-            segments.append({
+            expanded.append({
                 'skill': seg['skill'],
                 'args': seg['args'],
-                'duration_sec': max(0.0, (seg['end'] - seg['start']).total_seconds()),
+                'start': seg['start'],
+                'end': seg['end'],
             })
+
+    # Compute duration and token delta for each segment.
+    segments = []
+    for seg in expanded:
+        duration_sec = max(0.0, (seg['end'] - seg['start']).total_seconds())
+        tok_start = _tokens_at(session_ends_tokens, seg['start'])
+        tok_end = _tokens_at(session_ends_tokens, seg['end'])
+        token_delta = (
+            max(0, tok_end - tok_start)
+            if tok_start is not None and tok_end is not None
+            else None
+        )
+        segments.append({
+            'skill': seg['skill'],
+            'args': seg['args'],
+            'duration_sec': duration_sec,
+            'token_delta': token_delta,
+        })
     return segments
 
 

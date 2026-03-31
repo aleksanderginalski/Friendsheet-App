@@ -188,7 +188,11 @@ def _comparison_section(sessions: list[dict]) -> str:
             'planning_count': s['planning_count'],
             'total_sec': total_sec,
             'segments': [
-                {'skill': seg['skill'], 'duration_sec': seg['duration_sec']}
+                {
+                    'skill': seg['skill'],
+                    'duration_sec': seg['duration_sec'],
+                    'token_delta': seg.get('token_delta'),
+                }
                 for seg in s['segments']
             ],
         })
@@ -221,9 +225,9 @@ function timelineSVG(segs,total,totalTokens){{
   const sh=segs.length*(bh+gap)+10;
   let o=[`<svg xmlns="http://www.w3.org/2000/svg" width="${{lw+cw+60}}" height="${{sh}}" style="font-family:monospace;font-size:11px;">`];
   segs.forEach((seg,i)=>{{
-    const y=i*(bh+gap)+4,pct=total>0?seg.duration_sec/total:0,bw=Math.max(4,Math.round(pct*cw));
+    const y=i*(bh+gap)+4,timePct=total>0?seg.duration_sec/total:0,pct=(seg.token_delta!=null&&totalTokens)?seg.token_delta/totalTokens:timePct,bw=Math.max(4,Math.round(pct*cw));
     const c=COLORS[seg.skill]||DC;
-    const lbl=totalTokens!=null?fmtTok(Math.round(totalTokens*pct)):fmtDur(seg.duration_sec);
+    let lbl;if(seg.token_delta!=null){{lbl=fmtTok(seg.token_delta);}}else if(totalTokens!=null){{lbl='~'+fmtTok(Math.round(totalTokens*pct));}}else{{lbl=fmtDur(seg.duration_sec);}}
     o.push(`<text x="${{lw-6}}" y="${{y+bh/2+4}}" text-anchor="end" fill="#333">/${{seg.skill}}</text>`);
     o.push(`<rect x="${{lw}}" y="${{y}}" width="${{bw}}" height="${{bh}}" fill="${{c}}" rx="3"/>`);
     o.push(`<text x="${{lw+bw+6}}" y="${{y+bh/2+4}}" fill="#555">${{lbl}}</text>`);
