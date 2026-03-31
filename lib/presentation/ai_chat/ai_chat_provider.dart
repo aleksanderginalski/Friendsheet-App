@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/ai_exceptions.dart';
@@ -116,8 +116,10 @@ class AIChatProvider extends ChangeNotifier {
       _messages = [const ChatMessage(role: 'assistant', content: greeting)];
       _pendingActions = _lapsedOptions.map((lp) {
         final days = lp.daysSinceLastMeeting;
+        final freq = lp.avgDaysBetweenMeetings;
+        final freqSuffix = freq != null ? ' · prev. every $freq days' : '';
         final label =
-            '${lp.person.firstName} — $days ${days == 1 ? 'day' : 'days'}';
+            '${lp.person.fullName} — $days ${days == 1 ? 'day' : 'days'}$freqSuffix';
         return BuddyAction(
           label: label,
           actionId: 'lapsed_select:${lp.person.id}:$days',
@@ -285,8 +287,10 @@ class AIChatProvider extends ChangeNotifier {
       ];
       _pendingActions = _lapsedOptions.map((lp) {
         final days = lp.daysSinceLastMeeting;
+        final freq = lp.avgDaysBetweenMeetings;
+        final freqSuffix = freq != null ? ' · prev. every $freq days' : '';
         final label =
-            '${lp.person.firstName} — $days ${days == 1 ? 'day' : 'days'}';
+            '${lp.person.fullName} — $days ${days == 1 ? 'day' : 'days'}$freqSuffix';
         return BuddyAction(
           label: label,
           actionId: 'lapsed_select:${lp.person.id}:$days',
@@ -436,7 +440,9 @@ class AIChatProvider extends ChangeNotifier {
   }
 
   /// Sends [text] to the AI and streams the response into a new message bubble.
+  /// Clears any pending action buttons — a free-text message dismisses them.
   Future<void> sendMessage(String text) async {
+    _pendingActions = null;
     _messages = [..._messages, ChatMessage(role: 'user', content: text)];
     _isLoading = true;
     _errorMessage = null;

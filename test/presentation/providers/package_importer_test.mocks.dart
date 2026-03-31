@@ -95,6 +95,16 @@ class MockMeetingRepository extends _i1.Mock implements _i4.MeetingRepository {
       ) as _i6.Stream<List<_i7.Meeting>>);
 
   @override
+  _i6.Future<List<_i7.Meeting>> getAllMeetings(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllMeetings,
+          [userId],
+        ),
+        returnValue: _i6.Future<List<_i7.Meeting>>.value(<_i7.Meeting>[]),
+      ) as _i6.Future<List<_i7.Meeting>>);
+
+  @override
   _i6.Future<void> updateMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
         Invocation.method(
           #updateMeeting,
@@ -287,21 +297,6 @@ class MockPersonRepository extends _i1.Mock implements _i9.PersonRepository {
       ) as _i6.Future<List<_i2.Person>>);
 
   @override
-  _i6.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
-        Invocation.method(
-          #addPerson,
-          [person],
-        ),
-        returnValue: _i6.Future<_i2.Person>.value(_FakePerson_0(
-          this,
-          Invocation.method(
-            #addPerson,
-            [person],
-          ),
-        )),
-      ) as _i6.Future<_i2.Person>);
-
-  @override
   _i6.Future<List<_i2.Person>> getPersonsByIds(
     List<String>? ids,
     String? userId,
@@ -316,6 +311,21 @@ class MockPersonRepository extends _i1.Mock implements _i9.PersonRepository {
         ),
         returnValue: _i6.Future<List<_i2.Person>>.value(<_i2.Person>[]),
       ) as _i6.Future<List<_i2.Person>>);
+
+  @override
+  _i6.Future<_i2.Person> addPerson(_i2.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #addPerson,
+          [person],
+        ),
+        returnValue: _i6.Future<_i2.Person>.value(_FakePerson_0(
+          this,
+          Invocation.method(
+            #addPerson,
+            [person],
+          ),
+        )),
+      ) as _i6.Future<_i2.Person>);
 
   @override
   _i6.Future<void> updatePerson(_i2.Person? person) => (super.noSuchMethod(

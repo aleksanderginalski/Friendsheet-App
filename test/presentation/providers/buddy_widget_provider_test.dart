@@ -1,18 +1,20 @@
-import 'package:flutter_test/flutter_test.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/data/services/ltns_exclusion_service.dart';
 import 'package:friendsheet/presentation/providers/buddy_widget_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'buddy_widget_provider_test.mocks.dart';
 
-@GenerateMocks([MeetingRepository, PersonRepository])
+@GenerateMocks([MeetingRepository, PersonRepository, LtnsExclusionService])
 void main() {
   late MockMeetingRepository mockMeetingRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockLtnsExclusionService mockLtnsExclusionService;
   late BuddyWidgetProvider provider;
 
   final testMeeting = Meeting(
@@ -29,6 +31,7 @@ void main() {
   setUp(() {
     mockMeetingRepository = MockMeetingRepository();
     mockPersonRepository = MockPersonRepository();
+    mockLtnsExclusionService = MockLtnsExclusionService();
     // Default stub: no persons — no birthday logic runs.
     // ignore: argument_type_not_assignable
     when(mockPersonRepository.getPersonsByUser(any))
@@ -44,6 +47,9 @@ void main() {
       // ignore: argument_type_not_assignable
       limit: anyNamed('limit'),
     )).thenAnswer((_) async => <Meeting>[]);
+    // Default stub: no exclusions (US-118).
+    when(mockLtnsExclusionService.getExcludedIds())
+        .thenAnswer((_) async => <String>{});
   });
 
   tearDown(() {
@@ -55,6 +61,7 @@ void main() {
       provider = BuddyWidgetProvider(
         meetingRepository: mockMeetingRepository,
         personRepository: mockPersonRepository,
+        ltnsExclusionService: mockLtnsExclusionService,
       );
 
       expect(provider.isInitialized, isFalse);
@@ -72,6 +79,7 @@ void main() {
       provider = BuddyWidgetProvider(
         meetingRepository: mockMeetingRepository,
         personRepository: mockPersonRepository,
+        ltnsExclusionService: mockLtnsExclusionService,
       );
       await provider.initialize('user-1');
 
@@ -88,6 +96,7 @@ void main() {
       provider = BuddyWidgetProvider(
         meetingRepository: mockMeetingRepository,
         personRepository: mockPersonRepository,
+        ltnsExclusionService: mockLtnsExclusionService,
       );
       await provider.initialize('user-1');
 
@@ -103,6 +112,7 @@ void main() {
       provider = BuddyWidgetProvider(
         meetingRepository: mockMeetingRepository,
         personRepository: mockPersonRepository,
+        ltnsExclusionService: mockLtnsExclusionService,
       );
       await provider.initialize('user-1');
 
@@ -119,6 +129,7 @@ void main() {
       provider = BuddyWidgetProvider(
         meetingRepository: mockMeetingRepository,
         personRepository: mockPersonRepository,
+        ltnsExclusionService: mockLtnsExclusionService,
       );
       await provider.initialize('user-1');
       provider.collapse();
@@ -167,6 +178,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 
@@ -189,6 +201,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 
@@ -217,6 +230,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 
@@ -274,6 +288,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 
@@ -300,6 +315,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 
@@ -322,6 +338,7 @@ void main() {
         provider = BuddyWidgetProvider(
           meetingRepository: mockMeetingRepository,
           personRepository: mockPersonRepository,
+          ltnsExclusionService: mockLtnsExclusionService,
         );
         await provider.initialize('user-1');
 

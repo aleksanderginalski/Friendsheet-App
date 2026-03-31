@@ -42,10 +42,15 @@ class LapsedPersonInfo {
   const LapsedPersonInfo({
     required this.person,
     required this.daysSinceLastMeeting,
+    this.avgDaysBetweenMeetings,
   });
 
   final Person person;
 
   /// Days since the last recorded meeting with this person.
   final int daysSinceLastMeeting;
+
+  /// Average days between consecutive meetings with this person (historical).
+  /// Null when fewer than 2 meetings exist.
+  final int? avgDaysBetweenMeetings;
 }

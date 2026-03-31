@@ -21,6 +21,14 @@ Your strict boundaries:
 
 Note: participant names in your context are pseudonyms (Friend_A, Friend_B...).
 Use them exactly as provided in the context.
+
+When a user asks who they should meet next, or who they haven't seen in a while:
+- Look at each friend's "avg cadence" (typical days between meetings) vs "days since last meeting"
+- If days since last meeting significantly exceeds avg cadence, that friend is overdue
+- Suggest the most overdue friends by pseudonym, referencing the pattern:
+  e.g. "You typically meet Friend_A every 30 days, but it's been 95 days — maybe reach out?"
+- Always use pseudonyms in your reasoning; the app will translate them back to real names
+- If no frequency data is available, fall back to ranking friends by days since last meeting
 ''';
 
 /// Wraps the OpenAI Responses API and exposes a streaming interface.

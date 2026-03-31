@@ -529,21 +529,6 @@ class MockPersonRepository extends _i1.Mock implements _i12.PersonRepository {
       ) as _i6.Future<List<_i4.Person>>);
 
   @override
-  _i6.Future<_i4.Person> addPerson(_i4.Person? person) => (super.noSuchMethod(
-        Invocation.method(
-          #addPerson,
-          [person],
-        ),
-        returnValue: _i6.Future<_i4.Person>.value(_FakePerson_2(
-          this,
-          Invocation.method(
-            #addPerson,
-            [person],
-          ),
-        )),
-      ) as _i6.Future<_i4.Person>);
-
-  @override
   _i6.Future<List<_i4.Person>> getPersonsByIds(
     List<String>? ids,
     String? userId,
@@ -558,6 +543,21 @@ class MockPersonRepository extends _i1.Mock implements _i12.PersonRepository {
         ),
         returnValue: _i6.Future<List<_i4.Person>>.value(<_i4.Person>[]),
       ) as _i6.Future<List<_i4.Person>>);
+
+  @override
+  _i6.Future<_i4.Person> addPerson(_i4.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #addPerson,
+          [person],
+        ),
+        returnValue: _i6.Future<_i4.Person>.value(_FakePerson_2(
+          this,
+          Invocation.method(
+            #addPerson,
+            [person],
+          ),
+        )),
+      ) as _i6.Future<_i4.Person>);
 
   @override
   _i6.Future<void> updatePerson(_i4.Person? person) => (super.noSuchMethod(

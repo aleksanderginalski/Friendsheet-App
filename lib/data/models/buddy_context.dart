@@ -34,6 +34,8 @@ class PersonContextEntry {
     this.mostActivePeriod,
     this.meetingsByYear = const {},
     this.totalWeight = 0,
+    this.avgDaysBetweenMeetings,
+    this.daysSinceLastMeeting,
   });
 
   /// Pseudonym assigned to this person, e.g. 'Friend_A'.
@@ -59,6 +61,14 @@ class PersonContextEntry {
   /// Sum of [Meeting.weight] values across all meetings with this person
   /// in the current context window. Used for birthday stats display.
   final int totalWeight;
+
+  /// Average days between consecutive meetings in the context window.
+  /// Null when fewer than 2 meetings exist (cannot compute a gap).
+  final int? avgDaysBetweenMeetings;
+
+  /// Days since the last recorded meeting with this person.
+  /// Computed at context-build time; null if no meetings in the window.
+  final int? daysSinceLastMeeting;
 }
 
 /// The full anonymized context bundle passed to the AI prompt serializer.

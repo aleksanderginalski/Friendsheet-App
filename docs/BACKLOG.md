@@ -3965,28 +3965,29 @@ Font fix:
 ### US-118: LTNS Exclusion Filter in Buddy
 
 **As a** user
-**I want to** control which friends Buddy includes in Long Time No See reminders
-**So that** I can exclude people I intentionally see less often
+**I want to** control which friends Buddy includes in Long Time No See reminders, and see richer information about each friend's meeting history
+**So that** I can exclude people I intentionally see less often and understand my friendship patterns at a glance
 
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `settings`, `ui`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Acceptance Criteria:**
-- [ ] Side Menu → Buddy → "Long time no see" entry opens a new `LtnsFilterScreen`
-- [ ] `LtnsFilterScreen` lists all persons; each has an inclusion toggle (enabled = included in LTNS suggestions)
-- [ ] Default: all persons included (opt-out model)
+- [ ] `LapsedPersonInfo` has `avgDaysBetweenMeetings: int?` — computed from historical meetings with that person
+- [ ] LTNS chat action buttons show full name and frequency: "Michał Biecki — 1291 days · prev. every 82 days" (frequency omitted if null)
+- [ ] Side Menu → Buddy → "LTNS Filters" entry navigates to `LtnsFilterScreen`
+- [ ] `LtnsFilterScreen` lists all persons with inclusion toggles; default: all included (opt-out model); changes persisted immediately
 - [ ] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
-- [ ] `BuddyWidgetProvider` reads the exclusion list on `initialize()` and filters out excluded persons from `lapsedPersons`
-- [ ] Filter UI reuses the same person-list style as existing filter dialogs in statistics
+- [ ] `BuddyWidgetProvider.initialize()` reads the exclusion list and filters out excluded persons from `lapsedPersons` before taking top 3
 
 **Tasks:**
-- [ ] **TASK-118.1:** Persist excluded person IDs in SharedPreferences; create `LtnsExclusionService` with `getExcludedIds()` / `setExcluded(personId, excluded)` — 0.5h
-- [ ] **TASK-118.2:** Create `LtnsFilterScreen` — person list with inclusion toggles, SharedPreferences-backed — 1h
-- [ ] **TASK-118.3:** Add "Long time no see" entry under Side Menu → Buddy section (requires US-102 merged); navigate to `LtnsFilterScreen` — 0.5h
-- [ ] **TASK-118.4:** Update `BuddyWidgetProvider.initialize()` to read exclusion list and filter `lapsedPersons` — 0.5h
-- [ ] **TASK-118.5:** Write tests — /qa responsibility
+- [ ] **TASK-118.1:** Create `LtnsExclusionService` in `lib/data/services/` with `getExcludedIds()` → `Set<String>` and `setExcluded(String personId, bool excluded)` backed by SharedPreferences key `buddy_ltns_excluded_ids` — 0.5h
+- [ ] **TASK-118.2:** Add `avgDaysBetweenMeetings: int?` to `LapsedPersonInfo` in `buddy_chat_mode.dart`; update `BuddyWidgetProvider.initialize()` to fetch recent meetings per lapsed person (limit 10), compute average gap, populate the field; apply exclusion filter from `LtnsExclusionService` before taking top 3 — 1h
+- [ ] **TASK-118.3:** Update LTNS action labels in `AIChatProvider` to use `lp.person.fullName` and append frequency when non-null — 0.5h
+- [ ] **TASK-118.4:** Create `LtnsFilterScreen` in `lib/presentation/screens/` — `StatefulWidget` that loads all persons via `PersonRepository`, renders `SwitchListTile` per person backed by `LtnsExclusionService`; AppBar "LTNS Filters" — 1h
+- [ ] **TASK-118.5:** Add `onLtnsFiltersTap` callback to `BuddyMenuScreen`; add "LTNS Filters" `ListTile` entry; update `MainScreen._openBuddyMenu()` to pass the callback and implement `_openLtnsFilters()` that pushes `LtnsFilterScreen` with userId — 0.5h
+- [ ] **TASK-118.6:** Write tests — /qa responsibility
 
 **Dependencies:** US-102
 **Blocks:** None
@@ -4132,19 +4133,19 @@ Interactive action buttons:
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `insights`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Acceptance Criteria:**
-- [ ] User can ask Buddy "Who should I meet next?" or similar
-- [ ] Buddy analyzes meeting frequency patterns per person (last 12 months)
-- [ ] Buddy identifies friends who used to be met regularly but haven't been seen recently
-- [ ] Response includes personalized suggestion with context: "You used to meet [Name] every month, but it's been 3 months — maybe reach out?"
-- [ ] User can ask follow-up: "When was the last time I saw [Name]?"
+- [ ] `PersonContextEntry` has `avgDaysBetweenMeetings: int?` — average days between consecutive meetings in the 12-month window; null if < 2 meetings
+- [ ] `PersonContextEntry` has `daysSinceLastMeeting: int?` — computed at context build time from `lastMeetingDate`
+- [ ] `serializeToPrompt()` includes avg cadence and days since last meeting in Friend Summaries section
+- [ ] `OpenAIService` system prompt includes guidance: when asked for meeting suggestions, compare `daysSinceLastMeeting` vs `avgDaysBetweenMeetings` and suggest overdue friends with context (e.g. "you used to meet every X days, it's been Y days")
+- [ ] User can ask "Who should I meet next?" in free-query mode and receive a response referencing specific frequency patterns
 
 **Tasks:**
-- [ ] **TASK-105.1:** Extend `ContextBuilderService` with meeting frequency analysis per person; reads from `LocalCacheService` — no direct Firestore calls — 2h
-- [ ] **TASK-105.2:** Add meeting suggestion prompt pattern to `OpenAIService` system prompt — 0.5h
-- [ ] **TASK-105.3:** Write unit tests for frequency analysis — 1h
+- [ ] **TASK-105.1:** Add `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` to `PersonContextEntry` in `buddy_context.dart`; compute in `ContextBuilderService._buildPersonEntries()` (sort meetings by date, compute gaps, average); serialize both fields in `serializeToPrompt()` — 1.5h
+- [ ] **TASK-105.2:** Add meeting suggestion guidance section to `_systemPrompt` in `open_ai_service.dart`: instruct Buddy to compare avg cadence vs days since last meeting when answering "who to meet" queries — 0.5h
+- [ ] **TASK-105.3:** Write unit tests for frequency analysis — /qa responsibility
 
 **Dependencies:** US-086, US-087
 **Blocks:** None
