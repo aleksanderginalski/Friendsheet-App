@@ -42,6 +42,7 @@ import 'buddy_menu_screen.dart';
 import 'calendar_events_screen.dart';
 import 'calendar_permission_screen.dart';
 import 'home_screen.dart';
+import 'ltns_filter_screen.dart';
 import 'meetings_list_screen.dart';
 import 'persons_list_screen.dart';
 import 'settings_screen.dart';
@@ -179,9 +180,27 @@ class _MainScreenState extends State<MainScreen> {
         builder: (_) => BuddyMenuScreen(
           onAIAssistantTap: _openBuddyGreeting,
           onAPIKeyTap: _openAISettings,
+          onLtnsFiltersTap: _openLtnsFilters,
         ),
       ),
     );
+  }
+
+  /// Opens LtnsFilterScreen — lets user choose who appears in LTNS reminders.
+  /// Re-initializes BuddyWidgetProvider on return so the filter is applied
+  /// immediately without requiring an app restart.
+  void _openLtnsFilters() {
+    final userId = AuthService().currentUserId;
+    if (userId == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LtnsFilterScreen(userId: userId),
+      ),
+    ).then((_) {
+      if (!mounted) return;
+      _buddyWidgetProvider.initialize(userId);
+    });
   }
 
   /// Opens AIChatScreen in greeting mode via the Buddy drawer entry.

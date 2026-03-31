@@ -257,6 +257,12 @@ class ContextBuilderService {
         if (p.mostActivePeriod != null) {
           sb.write(', most active: ${p.mostActivePeriod}');
         }
+        if (p.avgDaysBetweenMeetings != null) {
+          sb.write(', avg cadence: every ${p.avgDaysBetweenMeetings} days');
+        }
+        if (p.daysSinceLastMeeting != null) {
+          sb.write(', days since last meeting: ${p.daysSinceLastMeeting}');
+        }
         buffer.writeln(sb.toString());
       }
     }
@@ -400,6 +406,22 @@ class ContextBuilderService {
         (a, b) => a.date.isAfter(b.date) ? a : b,
       );
 
+      // Average days between consecutive meetings (chronological order).
+      // Requires at least 2 meetings; null otherwise.
+      final chronological = personMeetings.toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
+      int? avgDays;
+      if (chronological.length >= 2) {
+        final gaps = <int>[];
+        for (var i = 1; i < chronological.length; i++) {
+          gaps.add(
+            chronological[i].date.difference(chronological[i - 1].date).inDays,
+          );
+        }
+        avgDays = (gaps.reduce((a, b) => a + b) / gaps.length).round();
+      }
+      final daysSince = DateTime.now().difference(lastMeeting.date).inDays;
+
       // Most active month: count meetings per 'MMMM yyyy' label.
       final monthCount = <String, int>{};
       for (final m in personMeetings) {
@@ -427,6 +449,8 @@ class ContextBuilderService {
         mostActivePeriod: mostActive.key,
         meetingsByYear: meetingsByYear,
         totalWeight: totalWeight,
+        avgDaysBetweenMeetings: avgDays,
+        daysSinceLastMeeting: daysSince,
       );
     }).toList();
   }

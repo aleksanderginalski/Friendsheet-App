@@ -984,3 +984,113 @@ LoginScreen
 
 *This document reflects the implemented state of Friendsheet as of US-099. Screens 15–17 planned for M7.*
 *Update when new screens or significant UI changes are shipped.*
+
+---
+
+## Screen 7 (updated): PersonDetailScreen — M8 additions (US-120, US-121, US-122)
+
+Updated layout with Catch-up List section and Couple Link:
+
+```
+┌─────────────────────────────────────┐
+│  ← Person Detail            ✏️  🗑  │
+├─────────────────────────────────────┤
+│                                     │
+│         AB                          │
+│      Anna Bogucka                   │
+│                                     │
+│  Meetings together: 7  🔍           │
+│                                     │
+│  ─────────────────────────────────  │
+│  Catch-up List                      │  ← new section (US-120, US-121)
+│  ┌───────────────────────────────┐  │
+│  │  July — Japan trip        ✓  │  │  ← ✓ = Mark as discussed
+│  │  September — new apartment    │  │
+│  └───────────────────────────────┘  │
+│  [+ Add topic]                      │
+│                                     │
+│  ▸ History (2)                      │  ← collapsible archived topics (US-121)
+│                                     │
+│  ─────────────────────────────────  │
+│  Partner                            │  ← Couple Link section (US-122)
+│  Linked with: Tomek W.     [Unlink] │  ← or [Link as couple] if unlinked
+│                                     │
+│  ─────────────────────────────────  │
+│  Nicknames                          │
+│  [Ania ✕]  [Anka ✕]  [+ add]       │
+│                                     │
+│  ─────────────────────────────────  │
+│  Groups                             │
+│  ☑  🏃 Running Crew                 │
+│  ☐  ☕ Coffee Friends               │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Catch-up List behavior:**
+- Tapping `✓` → marks topic as discussed → moves to History with `archivedAt` timestamp
+- `[+ Add topic]` → inline text field dialog
+- Long-press or swipe on topic → delete (permanent, confirmation required)
+- "History" → collapsible section, read-only, sorted by `archivedAt` desc
+
+**Partner section behavior:**
+- If no partner linked: shows `[Link as couple]` button → person picker → merge dialog
+- If partner linked: shows partner name + `[Unlink]` → separation flow dialog
+
+---
+
+## Screen 18: FriendsQuestListScreen — US-124
+
+```
+┌─────────────────────────────────────┐
+│  ←  Friends-Quest                   │
+├─────────────────────────────────────┤
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  🗂 Weekend in Kraków         │  │
+│  │  Tomek, Jola · 5 tasks left   │  │  ← active quest card
+│  └───────────────────────────────┘  │
+│                                     │
+│  ┌───────────────────────────────┐  │
+│  │  🗂 Robert's visit            │  │
+│  │  Robert · 2 tasks left        │  │
+│  └───────────────────────────────┘  │
+│                                     │
+│                              [＋]   │  ← FAB — create new quest
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Empty state:** "No active Friends-Quests. Tap + to prepare for your next meeting."
+
+---
+
+## Screen 19: FriendsQuestDetailScreen — US-125, US-126
+
+```
+┌─────────────────────────────────────┐
+│  ← Weekend in Kraków       [⋮ menu] │
+├─────────────────────────────────────┤
+│  Participants: Tomek W., Jola K.    │
+│  Meeting: Coffee break Mar 10  [+]  │  ← link to meeting (US-126)
+│                                     │
+│  Tasks                              │
+│  ☐  Tomek — new job update          │
+│  ☐  Jola — new apartment            │  ← shared topic (deduplicated)
+│  ☑  Tomek — Italy photos            │  ← completed task
+│  ☐  General — board game night      │  ← manual task, no person
+│                                     │
+│  [+ Add task]                       │
+│                                     │
+│  ──────────────────────────────     │
+│  [Complete Quest]                   │  ← pushes notes to linked meeting
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Task behavior:**
+- ☐ → ☑ tapping completes task; archives source Catch-up Topic on person profile
+- Long-press task → edit text / delete
+- Edit propagates to source topic (and partner if couple-linked)
+- Delete removes from quest only; source topic unchanged
+- `[⋮ menu]` → manage participants / delete quest

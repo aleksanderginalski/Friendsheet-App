@@ -4,6 +4,7 @@ import '../../data/models/meeting.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../data/services/ltns_exclusion_service.dart';
 import '../ai_chat/buddy_chat_mode.dart';
 
 /// Manages state for the HomeScreen Buddy widget.
@@ -14,12 +15,15 @@ import '../ai_chat/buddy_chat_mode.dart';
 class BuddyWidgetProvider extends ChangeNotifier {
   final MeetingRepository _meetingRepository;
   final PersonRepository _personRepository;
+  final LtnsExclusionService _ltnsExclusionService;
 
   BuddyWidgetProvider({
     MeetingRepository? meetingRepository,
     PersonRepository? personRepository,
+    LtnsExclusionService? ltnsExclusionService,
   })  : _meetingRepository = meetingRepository ?? MeetingRepository(),
-        _personRepository = personRepository ?? PersonRepository();
+        _personRepository = personRepository ?? PersonRepository(),
+        _ltnsExclusionService = ltnsExclusionService ?? LtnsExclusionService();
 
   List<Meeting> _suggestedMeetings = [];
   List<Person> _urgentBirthdayPersons = [];
@@ -100,21 +104,45 @@ class BuddyWidgetProvider extends ChangeNotifier {
     final lapsedWithDates = <LapsedPersonInfo>[];
     for (final person in persons) {
       if (recentIds.contains(person.id)) continue;
+      // Fetch up to 10 recent meetings to compute average cadence.
       final recent = await _meetingRepository.getRecentMeetingsByPerson(
         userId,
         person.id,
-        limit: 1,
+        limit: 10,
       );
       if (recent.isEmpty) continue;
       final days = DateTime.now().difference(recent.first.date).inDays;
+
+      // Compute average days between consecutive meetings (chronological order).
+      int? avgDays;
+      if (recent.length >= 2) {
+        final sorted = recent.toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+        final gaps = <int>[];
+        for (var i = 1; i < sorted.length; i++) {
+          gaps.add(sorted[i].date.difference(sorted[i - 1].date).inDays);
+        }
+        avgDays = (gaps.reduce((a, b) => a + b) / gaps.length).round();
+      }
+
       lapsedWithDates.add(
-        LapsedPersonInfo(person: person, daysSinceLastMeeting: days),
+        LapsedPersonInfo(
+          person: person,
+          daysSinceLastMeeting: days,
+          avgDaysBetweenMeetings: avgDays,
+        ),
       );
     }
     lapsedWithDates.sort(
       (a, b) => b.daysSinceLastMeeting.compareTo(a.daysSinceLastMeeting),
     );
-    _lapsedPersons = lapsedWithDates.take(3).toList();
+
+    // Filter out persons the user has excluded from LTNS, then take top 3.
+    final excluded = await _ltnsExclusionService.getExcludedIds();
+    final filtered = lapsedWithDates
+        .where((lp) => !excluded.contains(lp.person.id))
+        .toList();
+    _lapsedPersons = filtered.take(3).toList();
 
     _isInitialized = true;
     notifyListeners();

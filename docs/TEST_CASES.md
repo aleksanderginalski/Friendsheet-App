@@ -1710,3 +1710,54 @@ Run after every release or hotfix:
 | UT-109-025 | getPersonSummary — returns null when person has no meetings | result is null |
 | UT-109-026 | getPersonSummary — all summary fields computed correctly | count=2; weight=8; first/lastDate correct; other-person meeting excluded |
 
+---
+
+## US-118 — LTNS Exclusion Service
+
+### Automated tests — `test/data/services/ltns_exclusion_service_test.dart`
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-118-001 | getExcludedIds — returns empty set when no exclusions saved | empty set |
+| UT-118-002 | setExcluded true — adds person to exclusion set | set contains 'p1' |
+| UT-118-003 | setExcluded false — removes person from exclusion set | 'p1' not in set |
+| UT-118-004 | toggle full cycle — add two, remove one, remaining in set | 'p2' in set; 'p1' not in set |
+| UT-118-005 | multiple persons — only excluded ones are in the set | set size 2; contains p1 and p2 |
+| UT-118-006 | setExcluded false on non-excluded person — no error, set unchanged | no crash; set unchanged |
+| UT-118-007 | persists across separate service instances using same prefs | second instance reads 'p1' |
+
+### Automated tests — `test/presentation/providers/buddy_widget_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-118-008 | excluded person is filtered out of lapsedPersons | p1 absent; p2 present |
+| UT-118-009 | lapsedPersons capped at 3 even when more qualify | length ≤ 3 |
+
+## US-105 — Meeting Frequency Fields in Context
+
+### Automated tests — `test/data/services/context_builder_service_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-105-001 | frequency fields happy path — avgDaysBetweenMeetings and daysSinceLastMeeting computed | avgDays == 10; daysSince > 0 |
+| UT-105-002 | single meeting — avgDaysBetweenMeetings is null | avgDays null; daysSince not null |
+| UT-105-003 | no meetings — both frequency fields null | avgDays null; daysSince null |
+| UT-105-004 | serializeToPrompt includes avg cadence and days since last meeting | output contains 'avg cadence: every 14 days'; 'days since last meeting: 100' |
+| UT-105-005 | serializeToPrompt omits cadence fields when null | output does not contain 'avg cadence'; 'days since last meeting' |
+
+### Automated tests — `test/presentation/providers/buddy_widget_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-105-006 | avgDaysBetweenMeetings computed correctly from two historical meetings | avgDays == 20 |
+| UT-105-007 | avgDaysBetweenMeetings is null when only one meeting | avgDays null |
+
+### Automated tests — `test/presentation/providers/ai_chat_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-105-008 | lapsedFriendsList label includes fullName, days, and freq suffix | label contains 'Anna Kowalska'; '120'; 'prev. every 30 days' |
+| UT-105-009 | lapsedFriendsList label omits freq suffix when avgDays null | label does not contain 'prev. every' |
+| UT-105-010 | greeting_ltns sub-flow label includes fullName and freq suffix | label contains 'Jan Nowak'; 'prev. every 20 days' |
+| UT-105-011 | sendMessage clears pendingActions | pendingActions null after sendMessage |
+

@@ -71,6 +71,16 @@ class MockMeetingRepository extends _i1.Mock implements _i2.MeetingRepository {
       ) as _i4.Stream<List<_i5.Meeting>>);
 
   @override
+  _i4.Future<List<_i5.Meeting>> getAllMeetings(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllMeetings,
+          [userId],
+        ),
+        returnValue: _i4.Future<List<_i5.Meeting>>.value(<_i5.Meeting>[]),
+      ) as _i4.Future<List<_i5.Meeting>>);
+
+  @override
   _i4.Future<void> updateMeeting(_i5.Meeting? meeting) => (super.noSuchMethod(
         Invocation.method(
           #updateMeeting,

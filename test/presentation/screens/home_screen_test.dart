@@ -8,6 +8,7 @@ import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/data/services/ltns_exclusion_service.dart';
 import 'package:friendsheet/presentation/providers/buddy_widget_provider.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -79,6 +80,7 @@ const Widget _stubImage = SizedBox(key: Key('stub_image'), height: 120);
   ActivityCategoryRepository,
   PersonRepository,
   MeetingRepository,
+  LtnsExclusionService,
 ])
 void main() {
   late MockStatisticsRepository mockRepository;
@@ -86,6 +88,7 @@ void main() {
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
   late MockMeetingRepository mockMeetingRepository;
+  late MockLtnsExclusionService mockLtnsExclusionService;
   late StatisticsProvider statisticsProvider;
   late HomeProvider homeProvider;
   late BuddyWidgetProvider buddyWidgetProvider;
@@ -97,6 +100,7 @@ void main() {
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
     mockMeetingRepository = MockMeetingRepository();
+    mockLtnsExclusionService = MockLtnsExclusionService();
     // Default stub: never-completing stream — count stays 0.
     // ignore: argument_type_not_assignable
     when(mockMeetingRepository.getMeetingsByUser(any))
@@ -109,10 +113,14 @@ void main() {
     // ignore: argument_type_not_assignable
     when(mockPersonRepository.getPersonsByUser(any))
         .thenAnswer((_) async => []);
+    // Default stub: no LTNS exclusions (US-118).
+    when(mockLtnsExclusionService.getExcludedIds())
+        .thenAnswer((_) async => <String>{});
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
     buddyWidgetProvider = BuddyWidgetProvider(
       meetingRepository: mockMeetingRepository,
       personRepository: mockPersonRepository,
+      ltnsExclusionService: mockLtnsExclusionService,
     );
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,

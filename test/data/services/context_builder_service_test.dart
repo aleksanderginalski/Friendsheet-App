@@ -600,4 +600,125 @@ void main() {
       expect(p.meetingsByYear[2026], 1);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Frequency fields — avgDaysBetweenMeetings + daysSinceLastMeeting (US-105)
+  // ---------------------------------------------------------------------------
+
+  group('frequency fields', () {
+    test(
+        'happy path — avgDaysBetweenMeetings and daysSinceLastMeeting computed',
+        () async {
+      // Two meetings exactly 10 days apart.
+      final date1 = DateTime(2026, 1, 1);
+      final date2 = DateTime(2026, 1, 11);
+
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockMeetingRepo.getMeetingsByUser('user-1')).thenAnswer(
+        (_) => Stream.value([
+          makeMeeting(
+              id: 'm1', date: date1, participantIds: ['p1'], categoryIds: []),
+          makeMeeting(
+              id: 'm2', date: date2, participantIds: ['p1'], categoryIds: []),
+        ]),
+      );
+
+      final ctx =
+          await service.buildFullContext('user-1', from: DateTime(2025, 1, 1));
+
+      final p = ctx.persons.first;
+      // Gap between date1 and date2 = 10 days → avg = 10.
+      expect(p.avgDaysBetweenMeetings, 10);
+      // daysSinceLastMeeting is computed from DateTime.now() — just verify it
+      // is a positive number (last meeting was date2 which is in the past).
+      expect(p.daysSinceLastMeeting, isNotNull);
+      expect(p.daysSinceLastMeeting!, greaterThan(0));
+    });
+
+    test('single meeting — avgDaysBetweenMeetings is null', () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      when(mockMeetingRepo.getMeetingsByUser('user-1')).thenAnswer(
+        (_) => Stream.value([
+          makeMeeting(
+              id: 'm1',
+              date: withinWindow,
+              participantIds: ['p1'],
+              categoryIds: []),
+        ]),
+      );
+
+      final ctx = await service.buildFullContext('user-1', from: outsideWindow);
+
+      final p = ctx.persons.first;
+      expect(p.avgDaysBetweenMeetings, isNull);
+      expect(p.daysSinceLastMeeting, isNotNull);
+    });
+
+    test('no meetings — avgDaysBetweenMeetings and daysSinceLastMeeting null',
+        () async {
+      when(mockPersonRepo.getPersonsByUser('user-1'))
+          .thenAnswer((_) async => [makePerson('p1', 'Anna')]);
+      when(mockCategoryRepo.getCategories('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+      // No meetings at all.
+      when(mockMeetingRepo.getMeetingsByUser('user-1'))
+          .thenAnswer((_) => Stream.value([]));
+
+      final ctx = await service.buildFullContext('user-1', from: outsideWindow);
+
+      final p = ctx.persons.first;
+      expect(p.avgDaysBetweenMeetings, isNull);
+      expect(p.daysSinceLastMeeting, isNull);
+    });
+
+    test('serializeToPrompt includes avg cadence and days since last meeting',
+        () {
+      const ctx = BuddyContext(
+        meetings: [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 3,
+            topActivities: [],
+            avgDaysBetweenMeetings: 14,
+            daysSinceLastMeeting: 100,
+          ),
+        ],
+        pseudonymToRealName: {},
+        personIdToPseudonym: {},
+      );
+
+      final output = service.serializeToPrompt(ctx);
+
+      expect(output, contains('avg cadence: every 14 days'));
+      expect(output, contains('days since last meeting: 100'));
+    });
+
+    test('serializeToPrompt omits cadence fields when null', () {
+      const ctx = BuddyContext(
+        meetings: [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 1,
+            topActivities: [],
+            // avgDaysBetweenMeetings and daysSinceLastMeeting left null.
+          ),
+        ],
+        pseudonymToRealName: {},
+        personIdToPseudonym: {},
+      );
+
+      final output = service.serializeToPrompt(ctx);
+
+      expect(output, isNot(contains('avg cadence')));
+      expect(output, isNot(contains('days since last meeting')));
+    });
+  });
 }

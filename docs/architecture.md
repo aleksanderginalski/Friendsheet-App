@@ -61,6 +61,8 @@ erDiagram
     ACTIVITY }o--o| ACTIVITY_CATEGORY : belongs_to
     ACTIVITY_CATEGORY }o--o| ACTIVITY_CATEGORY : has_parent
     FRIEND_GROUP }o--o{ PERSON : contains
+    PERSON ||--o{ CATCH_UP_TOPIC : has
+    PERSON }o--o| PERSON : couple_link
 
     USER {
         string uid PK
@@ -90,6 +92,18 @@ erDiagram
         array nicknames
         string linkedUserId "nullable, Friendsheet uid of linked friend account (US-090)"
         date birthDate "nullable, used for Buddy birthday reminders (US-103)"
+        string partnerId "nullable, Person.id of linked couple partner (US-122)"
+        datetime partnerLinkedAt "nullable, date couple link was established (US-122)"
+        datetime createdAt
+    }
+
+    CATCH_UP_TOPIC {
+        string id PK
+        string personId FK
+        string userId FK
+        string text
+        bool isArchived
+        datetime archivedAt "nullable"
         datetime createdAt
     }
     
@@ -559,14 +573,16 @@ AIChatScreen
 - **Mode 3 — Free query (default):** `buildFullContext()` without notes; Buddy answers social-history questions
 
 **Key services:**
-- `ContextBuilderService` ✅ — pseudonymization, per-person filtering, prompt serialization with `includeNotes` flag (`lib/data/services/context_builder_service.dart`)
-- `OpenAIService` ✅ — `openai_dart`-based streaming client; hardcoded `_systemPrompt` (Buddy character + guardrails); maps API errors to typed exceptions (`lib/data/services/open_ai_service.dart`)
+- `ContextBuilderService` ✅ — pseudonymization, per-person filtering, prompt serialization with `includeNotes` flag; computes `avgDaysBetweenMeetings` and `daysSinceLastMeeting` per person entry (US-105) (`lib/data/services/context_builder_service.dart`)
+- `OpenAIService` ✅ — `openai_dart`-based streaming client; `_systemPrompt` includes meeting suggestion guidance: compare avg cadence vs elapsed time to surface overdue friends (US-105) (`lib/data/services/open_ai_service.dart`)
 - `BuddyWriteService` ✅ — single write surface: `saveNotes(userId, meetingId, notes)` only (`lib/data/services/buddy_write_service.dart`)
-- `AIChatProvider` ✅ — ChangeNotifier managing chat session: `BuddyChatMode`-based initialization paths (`freeQuery`, `meetingNotes`, `meetingNotesList`, `birthdayList`, `birthdayWishes`); `pendingActions: List<BuddyAction>?` for in-chat action buttons; `handleAction()` continues flow after user tap; `_initBirthdayWishes()` streams Dart stats + AI wish; streaming accumulation, pseudonym back-translation, retry logic (`lib/presentation/ai_chat/ai_chat_provider.dart`)
-- `BuddyWidgetProvider` ✅ — ChangeNotifier for HomeScreen floating widget; detects upcoming birthdays via `PersonRepository` (days-until computation, 5-day urgency threshold); fetches top-3 `getRecentMeetingsWithoutNotes` (60-day window); exposes `urgentBirthdayPersons`, `daysUntilBirthday`, `upcomingBirthdayInfo`, `suggestedMeetings`, `isExpanded`; created and owned by `MainScreen` (`lib/presentation/providers/buddy_widget_provider.dart`)
-- `BuddyWidget` ✅ — purely presentational floating widget; `Column([bubble, icon])` layout for correct hit-test bounds; 2-button layout: "💾 Save Your Memories" + birthday CTA variant; `_TailPainter` CustomPainter triangle; callbacks route to `AIChatScreen` in mode-specific flows (`lib/presentation/widgets/buddy_widget.dart`)
+- `LtnsExclusionService` ✅ — SharedPreferences-backed singleton; `getExcludedIds()` → `Set<String>`, `setExcluded(personId, bool)` persists immediately; key `buddy_ltns_excluded_ids` (US-118) (`lib/data/services/ltns_exclusion_service.dart`)
+- `AIChatProvider` ✅ — ChangeNotifier managing chat session: `BuddyChatMode`-based initialization paths (`freeQuery`, `meetingNotes`, `meetingNotesList`, `birthdayList`, `birthdayWishes`, `lapsedFriendsList`, `lapsedFriendDetail`, `greeting`); LTNS labels show full name + frequency suffix (US-118); `_pendingActions` cleared on free-text send; `pendingActions: List<BuddyAction>?` for in-chat action buttons; `handleAction()` continues flow (`lib/presentation/ai_chat/ai_chat_provider.dart`)
+- `BuddyWidgetProvider` ✅ — ChangeNotifier for HomeScreen floating widget; birthday detection (5-day urgency threshold); LTNS detection with `LtnsExclusionService` exclusion filter and `avgDaysBetweenMeetings` computation (US-118); exposes `urgentBirthdayPersons`, `daysUntilBirthday`, `upcomingBirthdayInfo`, `suggestedMeetings`, `lapsedPersons`, `isExpanded`; created and owned by `MainScreen` (`lib/presentation/providers/buddy_widget_provider.dart`)
+- `BuddyWidget` ✅ — purely presentational floating widget; `Column([bubble, icon])` layout for correct hit-test bounds; 2-button layout: "💾 Save Your Memories" + birthday CTA variant; LTNS button; `_TailPainter` CustomPainter triangle (`lib/presentation/widgets/buddy_widget.dart`)
+- `LtnsFilterScreen` ✅ — `StatefulWidget`; `SwitchListTile` per person backed by `LtnsExclusionService`; Polish-aware alphabetical sort; search bar; AppBar "Filtry LTNS"; navigated from `BuddyMenuScreen` via `MainScreen._openLtnsFilters()` (US-118) (`lib/presentation/screens/ltns_filter_screen.dart`)
 - `birthday_format_helpers.dart` ✅ — pure functions: `formatBirthdayStats()`, `buildBirthdayListGreeting()`, `birthdayActionLabel()` (`lib/presentation/ai_chat/birthday_format_helpers.dart`)
-- `LocalCacheService` 📋 — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109)
+- `LocalCacheService` ✅ — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109) (`lib/data/services/local_cache_service.dart`)
 - `ConnectivityService` 📋 — singleton with `ValueNotifier<ConnectivityStatus>`; drives offline banner and graceful degradation (US-111)
 - `RelationshipScoreService` 📋 — local scoring algorithm, no API calls (US-107)
 - `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
@@ -657,6 +673,68 @@ getMeetingNotes(String meetingId) → List<String>
 
 ---
 
+### M8 — Social Intelligence & Friends-Quest (EPIC-010)
+
+**Status:** 📋 Planned (US-120 → US-127)
+
+#### Catch-up Topics (US-120, US-121)
+
+**Storage:** Firestore subcollection `users/{uid}/persons/{personId}/catch_up_topics/{topicId}` + Hive cache via `LocalCacheService`.
+
+**Data model:**
+- `CatchUpTopic`: id, text, isArchived, archivedAt?, createdAt
+
+**Key services:**
+- `CatchUpTopicRepository` — CRUD on Firestore subcollection + write-through to Hive
+- `CatchUpTopicsProvider` — ChangeNotifier; load, add, archive, delete
+
+**UI placement:** `PersonDetailScreen` — new `CatchUpListSection` below "Meetings together", above "Nicknames".
+
+---
+
+#### Social Graph — Couple/Family Link (US-122, US-123)
+
+**Storage:** `partnerId: String?` and `partnerLinkedAt: DateTime?` fields on `Person` model in Firestore + Hive.
+
+**Write-through rule:** When a new `CatchUpTopic` is added for Person A and `Person.partnerId != null`, the same topic is written to Person B's subcollection automatically (inside `CatchUpTopicsProvider.addTopic()`).
+
+**Deduplication rule:** A topic that exists on both linked persons is considered shared — displayed once in Friends-Quest, with `sourceTopicId` pointing to the canonical version.
+
+**Separation rule:** Topics created BEFORE `partnerLinkedAt` → auto-return to original owner. Topics created AFTER `partnerLinkedAt` → redistribution dialog (Person A / Shared copy / Person B / Delete).
+
+---
+
+#### Friends-Quest (US-124, US-125, US-126)
+
+**Storage:** Hive only — `friends_quests` box. NOT synced to Firestore. Quest pushes data to Firestore only at completion (via `MeetingRepository.addNotes()`).
+
+**Data models (Hive):**
+- `FriendsQuest`: id, name, participantIds, linkedMeetingId?, createdAt, isCompleted
+- `FriendsQuestTask`: id, text, sourceTopicId?, assignedPersonIds, isCompleted
+
+**Cardinality:** 1 quest : 1 meeting (max); 1 meeting : N quests (allowed).
+
+**Task sync rules:**
+- Edit task with `sourceTopicId` → propagates to original `CatchUpTopic` (and partner if couple-linked)
+- Delete task with `sourceTopicId` → local removal only; `CatchUpTopic` NOT deleted
+- Complete task with `sourceTopicId` → `CatchUpTopic.isArchived = true`
+
+**UI entry points:** Side Menu tile + optional HomeScreen widget.
+
+---
+
+#### Buddy "Others" Integration (US-127)
+
+**New Buddy chat mode:** `BuddyChatMode.catchUpTopics` — two sub-paths:
+- Chat mode: display topics in-chat, no quest creation
+- Friends-Quest mode: create or update a quest via natural conversation
+
+**Person search:** firstName + lastName + all nicknames — shared utility across all Buddy scenarios.
+
+**Write surface:** Buddy adds tasks to `FriendsQuestRepository` (Hive only) — not to Firestore directly. No extension of `BuddyWriteService` needed for Hive writes.
+
+---
+
 ## 5. Firestore Data Structure
 
 ```mermaid
@@ -674,12 +752,15 @@ graph LR
     U --> UP["persons/ (subcollection)"]
     U --> UFG["friend_groups/ (subcollection)"]
     U --> UST["sharing_tokens/ (subcollection)"]
+    UP --> UCT["catch_up_topics/ (subcollection)"]
 
     UAC --> UAC1["{categoryId}<br/>- isGlobal: false<br/>- userId: String<br/>- name<br/>- iconIdentifier<br/>- parentCategoryId?<br/>- isSelectableAsActivity<br/>- copiedFromId?"]
 
     UM --> UM1["{meetingId}<br/>- userId<br/>- name<br/>- date<br/>- weight<br/>- participantIds[]<br/>- categoryIds[]<br/>- createdAt<br/>- updatedAt"]
 
-    UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- nicknames[]<br/>- createdAt"]
+    UP --> UP1["{personId}<br/>- userId<br/>- firstName<br/>- lastName?<br/>- nicknames[]<br/>- partnerId?<br/>- partnerLinkedAt?<br/>- createdAt"]
+
+    UCT --> UCT1["{topicId}<br/>- text<br/>- isArchived: bool<br/>- archivedAt?<br/>- createdAt"]
 
     UFG --> UFG1["{groupId}<br/>- name<br/>- iconIdentifier?<br/>- personIds[]<br/>- createdAt"]
 

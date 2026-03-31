@@ -10,6 +10,7 @@ class BuddyMenuScreen extends StatelessWidget {
     super.key,
     required this.onAIAssistantTap,
     required this.onAPIKeyTap,
+    required this.onLtnsFiltersTap,
   });
 
   /// Called when the user taps "AI Assistant" — opens greeting mode chat.
@@ -17,6 +18,9 @@ class BuddyMenuScreen extends StatelessWidget {
 
   /// Called when the user taps "API Key" — opens AI settings screen.
   final VoidCallback onAPIKeyTap;
+
+  /// Called when the user taps "LTNS Filters" — opens the filter screen.
+  final VoidCallback onLtnsFiltersTap;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +54,17 @@ class BuddyMenuScreen extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               onAPIKeyTap();
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.filter_list_outlined),
+            title: const Text('LTNS Filters'),
+            subtitle: const Text('Choose who appears in Long Time No See'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.pop(context);
+              onLtnsFiltersTap();
             },
           ),
         ],

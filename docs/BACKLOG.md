@@ -2,7 +2,7 @@
 
 **Project:** Friendsheet  
 **Version:** 2.1  
-**Last Updated:** March 22, 2026  
+**Last Updated:** March 30, 2026  
 **Product Owner:** Aleksander Ginalski  
 
 ---
@@ -19,6 +19,7 @@
 | M5 | Meeting Import Hub | 🔄 In Progress |
 | M6 | Custom Dashboard | 📋 Planned |
 | M7 | AI Assistant | 🔄 In Progress |
+| M8 | Social Intelligence & Friends-Quest | 📋 Planned |
 ---
 
 ## 🎯 Epic Structure
@@ -67,6 +68,11 @@ EPIC-007: Friendsheet M7 - AI Assistant (Buddy)
 ├── FEATURE-027: HomeScreen AI Widget
 ├── FEATURE-028: Social Intelligence
 └── FEATURE-029: Advanced Analytics
+
+EPIC-010: Friendsheet M8 — Social Intelligence & Friends-Quest
+├── FEATURE-030: Catch-up Topics
+├── FEATURE-031: Social Graph — Couple/Family Link
+└── FEATURE-032: Friends-Quest
 ```
 
 
@@ -3959,28 +3965,29 @@ Font fix:
 ### US-118: LTNS Exclusion Filter in Buddy
 
 **As a** user
-**I want to** control which friends Buddy includes in Long Time No See reminders
-**So that** I can exclude people I intentionally see less often
+**I want to** control which friends Buddy includes in Long Time No See reminders, and see richer information about each friend's meeting history
+**So that** I can exclude people I intentionally see less often and understand my friendship patterns at a glance
 
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `settings`, `ui`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] Side Menu → Buddy → "Long time no see" entry opens a new `LtnsFilterScreen`
-- [ ] `LtnsFilterScreen` lists all persons; each has an inclusion toggle (enabled = included in LTNS suggestions)
-- [ ] Default: all persons included (opt-out model)
-- [ ] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
-- [ ] `BuddyWidgetProvider` reads the exclusion list on `initialize()` and filters out excluded persons from `lapsedPersons`
-- [ ] Filter UI reuses the same person-list style as existing filter dialogs in statistics
+- [x] `LapsedPersonInfo` has `avgDaysBetweenMeetings: int?` — computed from historical meetings with that person
+- [x] LTNS chat action buttons show full name and frequency: "Michał Biecki — 1291 days · prev. every 82 days" (frequency omitted if null)
+- [x] Side Menu → Buddy → "LTNS Filters" entry navigates to `LtnsFilterScreen`
+- [x] `LtnsFilterScreen` lists all persons with inclusion toggles; default: all included (opt-out model); changes persisted immediately
+- [x] Exclusion list persisted in SharedPreferences (key: `buddy_ltns_excluded_ids`)
+- [x] `BuddyWidgetProvider.initialize()` reads the exclusion list and filters out excluded persons from `lapsedPersons` before taking top 3
 
 **Tasks:**
-- [ ] **TASK-118.1:** Persist excluded person IDs in SharedPreferences; create `LtnsExclusionService` with `getExcludedIds()` / `setExcluded(personId, excluded)` — 0.5h
-- [ ] **TASK-118.2:** Create `LtnsFilterScreen` — person list with inclusion toggles, SharedPreferences-backed — 1h
-- [ ] **TASK-118.3:** Add "Long time no see" entry under Side Menu → Buddy section (requires US-102 merged); navigate to `LtnsFilterScreen` — 0.5h
-- [ ] **TASK-118.4:** Update `BuddyWidgetProvider.initialize()` to read exclusion list and filter `lapsedPersons` — 0.5h
-- [ ] **TASK-118.5:** Write tests — /qa responsibility
+- [x] **TASK-118.1:** Create `LtnsExclusionService` in `lib/data/services/` with `getExcludedIds()` → `Set<String>` and `setExcluded(String personId, bool excluded)` backed by SharedPreferences key `buddy_ltns_excluded_ids` — 0.5h
+- [x] **TASK-118.2:** Add `avgDaysBetweenMeetings: int?` to `LapsedPersonInfo` in `buddy_chat_mode.dart`; update `BuddyWidgetProvider.initialize()` to fetch recent meetings per lapsed person (limit 10), compute average gap, populate the field; apply exclusion filter from `LtnsExclusionService` before taking top 3 — 1h
+- [x] **TASK-118.3:** Update LTNS action labels in `AIChatProvider` to use `lp.person.fullName` and append frequency when non-null — 0.5h
+- [x] **TASK-118.4:** Create `LtnsFilterScreen` in `lib/presentation/screens/` — `StatefulWidget` that loads all persons via `PersonRepository`, renders `SwitchListTile` per person backed by `LtnsExclusionService`; AppBar "LTNS Filters" — 1h
+- [x] **TASK-118.5:** Add `onLtnsFiltersTap` callback to `BuddyMenuScreen`; add "LTNS Filters" `ListTile` entry; update `MainScreen._openBuddyMenu()` to pass the callback and implement `_openLtnsFilters()` that pushes `LtnsFilterScreen` with userId — 0.5h
+- [x] **TASK-118.6:** Write tests — /qa responsibility
 
 **Dependencies:** US-102
 **Blocks:** None
@@ -4126,19 +4133,19 @@ Interactive action buttons:
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `ai`, `insights`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Acceptance Criteria:**
-- [ ] User can ask Buddy "Who should I meet next?" or similar
-- [ ] Buddy analyzes meeting frequency patterns per person (last 12 months)
-- [ ] Buddy identifies friends who used to be met regularly but haven't been seen recently
-- [ ] Response includes personalized suggestion with context: "You used to meet [Name] every month, but it's been 3 months — maybe reach out?"
-- [ ] User can ask follow-up: "When was the last time I saw [Name]?"
+- [x] `PersonContextEntry` has `avgDaysBetweenMeetings: int?` — average days between consecutive meetings in the 12-month window; null if < 2 meetings
+- [x] `PersonContextEntry` has `daysSinceLastMeeting: int?` — computed at context build time from `lastMeetingDate`
+- [x] `serializeToPrompt()` includes avg cadence and days since last meeting in Friend Summaries section
+- [x] `OpenAIService` system prompt includes guidance: when asked for meeting suggestions, compare `daysSinceLastMeeting` vs `avgDaysBetweenMeetings` and suggest overdue friends with context (e.g. "you used to meet every X days, it's been Y days")
+- [x] User can ask "Who should I meet next?" in free-query mode and receive a response referencing specific frequency patterns
 
 **Tasks:**
-- [ ] **TASK-105.1:** Extend `ContextBuilderService` with meeting frequency analysis per person; reads from `LocalCacheService` — no direct Firestore calls — 2h
-- [ ] **TASK-105.2:** Add meeting suggestion prompt pattern to `OpenAIService` system prompt — 0.5h
-- [ ] **TASK-105.3:** Write unit tests for frequency analysis — 1h
+- [x] **TASK-105.1:** Add `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` to `PersonContextEntry` in `buddy_context.dart`; compute in `ContextBuilderService._buildPersonEntries()` (sort meetings by date, compute gaps, average); serialize both fields in `serializeToPrompt()` — 1.5h
+- [x] **TASK-105.2:** Add meeting suggestion guidance section to `_systemPrompt` in `open_ai_service.dart`: instruct Buddy to compare avg cadence vs days since last meeting when answering "who to meet" queries — 0.5h
+- [x] **TASK-105.3:** Write unit tests for frequency analysis — /qa responsibility
 
 **Dependencies:** US-086, US-087
 **Blocks:** None
@@ -4578,6 +4585,334 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 - [ ] **TASK-111.7:** Write tests for connectivity state transitions and cache-first read paths — 2h
 
 **Dependencies:** US-109
+**Blocks:** None
+
+---
+
+# 📦 EPIC-010: Friendsheet M8 — Social Intelligence & Friends-Quest
+
+**Goal:** Extend the social graph with per-person conversation topics (Catch-up List), couple/family linking with shared topics, and a pre-meeting preparation tool (Friends-Quest) powered by Buddy AI.
+
+**Business Value:** Users can track life updates for every friend, prepare structured briefings before meetings, and coordinate conversation topics with a partner — reducing the mental overhead of maintaining close friendships.
+
+**Status:** 📋 Planned
+
+---
+
+## 📋 FEATURE-030: Catch-up Topics
+
+**Description:** Per-person list of conversation topics to remember for the next meeting. Topics can be archived (mark as discussed) or permanently deleted. Displayed on Person detail screen below "Meetings together", above "Nicknames". Stored in Firestore and cached in Hive.
+**Priority:** P2
+**Role:** User
+**Status:** 📋 Planned
+
+---
+
+### US-120: Per-Person Catch-up Topics (CRUD)
+
+**As a** user
+**I want to** add conversation topics to a friend's profile
+**So that** I remember what to ask about next time we meet
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `social`, `persons`, `catch-up`
+**Status:** 📋 Planned
+**Feature:** FEATURE-030: Catch-up Topics
+
+**Acceptance Criteria:**
+- [ ] On Person detail screen, new "Catch-up List" section visible below "Meetings together" and above "Nicknames"
+- [ ] User can add a new topic (text field, optional context label e.g. "July — Japan trip")
+- [ ] Active topics displayed as a list ordered by creation date (newest first)
+- [ ] User can permanently delete a topic — no effect on archives
+- [ ] Topics stored in Firestore (`users/{uid}/persons/{personId}/catch_up_topics/`) and cached in Hive
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-120.1:** Add `CatchUpTopic` Freezed model (id, text, createdAt, isArchived, archivedAt?) — 1h
+- [ ] **TASK-120.2:** Add `CatchUpTopicRepository` with `catch_up_topics` subcollection (add, getActive, delete) — 2h
+- [ ] **TASK-120.3:** Extend `LocalCacheService` with catch-up topic cache read/write methods — 1h
+- [ ] **TASK-120.4:** Implement `CatchUpTopicsProvider` (load, add, delete) — 1.5h
+- [ ] **TASK-120.5:** Build `CatchUpListSection` widget on `PersonDetailScreen` — 2h
+- [ ] **TASK-120.6:** Add topic input dialog (text field, confirm/cancel) — 1h
+
+**Dependencies:** None
+**Blocks:** US-121, US-122, US-124
+
+---
+
+### US-121: Mark Topic as Discussed
+
+**As a** user
+**I want to** mark a conversation topic as discussed
+**So that** it moves to history and I can look back at it later
+
+**Story Points:** 3
+**Priority:** P2
+**Labels:** `social`, `persons`, `catch-up`
+**Status:** 📋 Planned
+**Feature:** FEATURE-030: Catch-up Topics
+
+**Acceptance Criteria:**
+- [ ] Each active topic has a "Mark as discussed" action (checkbox or swipe gesture)
+- [ ] Marking sets `isArchived: true` and records `archivedAt` timestamp in Firestore + Hive
+- [ ] Archived topics visible in a collapsible "History" section on Person detail screen
+- [ ] Archived topics are read-only (no edit; permanent delete allowed)
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-121.1:** Add `archive()` method to `CatchUpTopicRepository` (sets isArchived + archivedAt in Firestore + Hive) — 1h
+- [ ] **TASK-121.2:** Add `archiveTopic(topicId)` to `CatchUpTopicsProvider` — 0.5h
+- [ ] **TASK-121.3:** Add "Mark as discussed" UI interaction to `CatchUpListSection` — 1h
+- [ ] **TASK-121.4:** Build collapsible "History" section showing archived topics — 1.5h
+
+**Dependencies:** US-120
+**Blocks:** US-125, US-126
+
+---
+
+## 🔗 FEATURE-031: Social Graph — Couple/Family Link
+
+**Description:** Users can link two Person records as a couple or family unit. Linked persons share new catch-up topics automatically. Breaking the link triggers a topic redistribution dialog.
+**Priority:** P3
+**Role:** User
+**Status:** 📋 Planned
+
+---
+
+### US-122: Couple Link
+
+**As a** user
+**I want to** mark two friends as a couple
+**So that** their conversation topics are automatically shared and I avoid duplicating notes about shared life events
+
+**Story Points:** 8
+**Priority:** P3
+**Labels:** `social`, `persons`, `social-graph`
+**Status:** 📋 Planned
+**Feature:** FEATURE-031: Social Graph — Couple/Family Link
+
+**Acceptance Criteria:**
+- [ ] On Person detail screen: "Link as couple" button
+- [ ] User picks a second person from their contacts list
+- [ ] App asks: "Merge existing topics?" — Scenario 1.0 (Yes) or Scenario 2.0 (No)
+- [ ] Scenario 1.0 (merge): both persons receive all topics from both sides; duplicates removed
+- [ ] Scenario 2.0 (no merge): existing topics remain individual; only future new topics are shared
+- [ ] From link date forward: new topic added to one person → automatically added to the other
+- [ ] Couple link date (`partnerLinkedAt`) recorded in Firestore + Hive (required for Separation flow)
+- [ ] Link visible on both Person detail screens
+- [ ] Stored via `partnerId: String?` and `partnerLinkedAt: DateTime?` on Person model in Firestore + Hive
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-122.1:** Add `partnerId: String?` and `partnerLinkedAt: DateTime?` to `Person` Freezed model; run build_runner — 1h
+- [ ] **TASK-122.2:** Add `linkPartner(personId, partnerId)` and `getPartner(personId)` to `PersonRepository` — 1.5h
+- [ ] **TASK-122.3:** Implement topic merge/share logic in `CatchUpTopicRepository.linkPartner()` — 2h
+- [ ] **TASK-122.4:** Build "Link as couple" UI on `PersonDetailScreen` — person picker dialog + confirmation — 2h
+- [ ] **TASK-122.5:** Build merge-or-not dialog (Scenario 1.0 vs 2.0 choice) — 1h
+- [ ] **TASK-122.6:** Implement write-through: new topic creation propagates to partner (in `CatchUpTopicsProvider.addTopic()`) — 1.5h
+
+**Dependencies:** US-120
+**Blocks:** US-123, US-125
+
+---
+
+### US-123: Couple Separation Flow
+
+**As a** user
+**I want to** unlink two persons who are no longer a couple
+**So that** their topics are redistributed correctly and I maintain accurate social history
+
+**Story Points:** 8
+**Priority:** P3
+**Labels:** `social`, `persons`, `social-graph`
+**Status:** 📋 Planned
+**Feature:** FEATURE-031: Social Graph — Couple/Family Link
+
+**Acceptance Criteria:**
+- [ ] On Person detail screen, the couple link section has an "Unlink" option
+- [ ] Topics created BEFORE `partnerLinkedAt` → automatically returned to their original individual owner
+- [ ] Topics created AFTER `partnerLinkedAt` → redistribution dialog shown per topic
+- [ ] Redistribution dialog: 4-option switch per topic: `[Person A] | [Shared — copy] | [Person B] | [Delete]`
+  - Person A → assigned only to Person A
+  - Shared → kept as copy on both
+  - Person B → assigned only to Person B
+  - Delete → permanently removed
+- [ ] After redistribution: `partnerId` and `partnerLinkedAt` cleared on both persons in Firestore + Hive
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-123.1:** Implement `unlinkPartner()` in `PersonRepository` (clear `partnerId` + `partnerLinkedAt` on both persons in Firestore + Hive) — 1h
+- [ ] **TASK-123.2:** Implement topic split logic: filter topics by `createdAt` vs `partnerLinkedAt` to determine auto-return vs dialog topics — 1.5h
+- [ ] **TASK-123.3:** Build redistribution dialog — scrollable list of topics, 4-state switch per item — 3h
+- [ ] **TASK-123.4:** Apply redistribution decisions (move/copy/delete in Firestore + Hive) — 2h
+- [ ] **TASK-123.5:** Trigger redistribution flow on "Unlink" confirmation — 0.5h
+
+**Dependencies:** US-122
+**Blocks:** None
+
+---
+
+## 🗂️ FEATURE-032: Friends-Quest
+
+**Description:** A local, device-only (Hive) pre-meeting preparation tool. Users create named Friends-Quests, add participants, and auto-import their Catch-up Topics as tasks. Multiple quests can be active simultaneously. Buddy AI can create and populate quests via chat. Completed quests push finished task notes to linked meetings.
+**Priority:** P2
+**Role:** User
+**Status:** 📋 Planned
+
+---
+
+### US-124: Friends-Quest List & Creation
+
+**As a** user
+**I want to** create a Friends-Quest — a named list of participants and tasks — before meeting a group of friends
+**So that** I can prepare conversation topics and track them in one place
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `friends-quest`, `planning`, `ux`
+**Status:** 📋 Planned
+**Feature:** FEATURE-032: Friends-Quest
+
+**Acceptance Criteria:**
+- [ ] New "Friends-Quest" entry in app sidebar (Side Menu), alongside existing items
+- [ ] Friends-Quest list screen shows all active quests (name, participant count, pending task count)
+- [ ] User can create a new quest: enter name + select participants from contacts
+- [ ] User can delete a quest (with confirmation dialog)
+- [ ] Optional home screen widget showing active quests (name + pending task count)
+- [ ] Friends-Quest data stored locally in Hive only (`friends_quests` box) — NOT synced to Firestore
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-124.1:** Define `FriendsQuest` Hive model (id, name, participantIds, linkedMeetingId?, createdAt, isCompleted) — 1h
+- [ ] **TASK-124.2:** Define `FriendsQuestTask` Hive model (id, text, sourceTopicId?, assignedPersonIds, isCompleted) — 1h
+- [ ] **TASK-124.3:** Add `friends_quests` box to `HiveService`; implement `FriendsQuestRepository` (create, getAll, delete) — 2h
+- [ ] **TASK-124.4:** Implement `FriendsQuestProvider` (load, create, delete) — 1h
+- [ ] **TASK-124.5:** Build `FriendsQuestListScreen` (list + empty state + FAB for new quest) — 2h
+- [ ] **TASK-124.6:** Build new quest creation dialog (name field + person multi-picker) — 1.5h
+- [ ] **TASK-124.7:** Add "Friends-Quest" tile to `SideMenu` — 0.5h
+- [ ] **TASK-124.8:** Build optional home screen widget (active quest summary) — 2h
+
+**Dependencies:** US-120
+**Blocks:** US-125, US-126
+
+---
+
+### US-125: Friends-Quest Tasks
+
+**As a** user
+**I want** catch-up topics from participants to be imported as tasks in my Friends-Quest
+**So that** I have a complete, deduplicated action list ready for our meeting
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `friends-quest`, `tasks`, `sync`
+**Status:** 📋 Planned
+**Feature:** FEATURE-032: Friends-Quest
+
+**Acceptance Criteria:**
+- [ ] On quest creation: active Catch-up Topics for all participants auto-imported as tasks
+- [ ] Deduplication: if two participants are linked as a couple and share a topic, it appears only once
+- [ ] Edge case: if only one person of a couple is in the quest, their shared topics are still visible (couple treated as unit for topic ownership)
+- [ ] User can manually add a task (text + optional person assignment from participants list)
+  - If person assigned: task also saved as a new Catch-up Topic for that person
+- [ ] Edit task with `sourceTopicId`: edit propagates to original Catch-up Topic (and to partner if couple-linked — both updated)
+- [ ] Edit task without `sourceTopicId`: local edit only
+- [ ] Delete task with `sourceTopicId`: original Catch-up Topic is NOT deleted
+- [ ] Delete task without `sourceTopicId`: deleted locally
+- [ ] User can manage quest participants (add/remove); catch-up topics re-synced after change
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-125.1:** Implement `importTopicsAsTasksForQuest(questId)` — loads active topics for all participants, applies couple-deduplication, creates `FriendsQuestTask` entries — 3h
+- [ ] **TASK-125.2:** Implement `addTask(questId, text, personIds)` — creates task + optional Catch-up Topic propagation — 1.5h
+- [ ] **TASK-125.3:** Implement `editTask(questId, taskId, newText)` — propagates to `sourceTopicId` if present (and partner if couple-linked) — 2h
+- [ ] **TASK-125.4:** Implement `deleteTask(questId, taskId)` — local removal only; never touches `sourceTopicId` — 0.5h
+- [ ] **TASK-125.5:** Implement `updateParticipants(questId, personIds)` — re-imports topics after participant change — 1h
+- [ ] **TASK-125.6:** Build `FriendsQuestDetailScreen` — task list, add/edit/delete UI, participant management — 3h
+
+**Dependencies:** US-121, US-122, US-124
+**Blocks:** US-126
+
+---
+
+### US-126: Friends-Quest Completion & Meeting Link
+
+**As a** user
+**I want to** link my Friends-Quest to a meeting and complete it
+**So that** discussed topics are archived on person profiles and meeting notes updated automatically
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `friends-quest`, `meetings`, `completion`
+**Status:** 📋 Planned
+**Feature:** FEATURE-032: Friends-Quest
+
+**Acceptance Criteria:**
+- [ ] User can link a quest to an existing meeting (1 quest : 1 meeting; 1 meeting can have N quests)
+- [ ] Completing a task in the quest → corresponding Catch-up Topic archived on person profile (`isArchived: true`)
+- [ ] "Complete Quest" action on `FriendsQuestDetailScreen`
+- [ ] If quest linked to meeting: all completed tasks added as notes to the linked meeting (via `MeetingRepository`)
+- [ ] If quest NOT linked to meeting: dialog — "Delete all notes?" or "Select a meeting to attach notes"
+- [ ] Completed quest removed from active list (or shown in read-only completed state)
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-126.1:** Implement `linkToMeeting(questId, meetingId)` — validate 1-quest:1-meeting; allow N-quests:1-meeting — 1h
+- [ ] **TASK-126.2:** Add meeting picker UI to `FriendsQuestDetailScreen` — 1.5h
+- [ ] **TASK-126.3:** Implement `completeTask(questId, taskId)` — archives `sourceTopicId` if present — 1h
+- [ ] **TASK-126.4:** Implement `completeQuest(questId)` — push completed tasks as meeting notes via `MeetingRepository`; mark quest completed — 2h
+- [ ] **TASK-126.5:** Build "no meeting linked" completion dialog (delete / select meeting) — 1.5h
+- [ ] **TASK-126.6:** Show completed quest summary (read-only) or remove from active list — 1h
+
+**Dependencies:** US-121, US-125
+**Blocks:** US-127
+
+---
+
+### US-127: Buddy "Others" — Friends-Quest Integration
+
+**As a** user
+**I want to** access Friends-Quest creation and management via Buddy
+**So that** I can prepare for meetings naturally through conversation
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `friends-quest`, `buddy`, `ai`
+**Status:** 📋 Planned
+**Feature:** FEATURE-032: Friends-Quest
+
+**Acceptance Criteria:**
+- [ ] Buddy welcome screen: "Others" tile visible
+- [ ] "Others" → "Catch-up topics" option
+- [ ] Buddy asks: "Chat mode or Friends-Quest?"
+- [ ] **Scenario 1 — Chat mode:**
+  - User selects persons (search by name + nicknames)
+  - Buddy displays their active Catch-up Topics as a list in chat
+  - Conversation can continue with Buddy
+- [ ] **Scenario 2.1 — Existing quest:**
+  - App shows list of existing quests; user selects one
+  - Buddy displays current tasks + participants
+  - User can add tasks via chat → Buddy adds them to the quest
+  - User can add participants → Buddy suggests their catch-up topics for user acceptance/edit
+  - "Edit tasks" redirects to `FriendsQuestDetailScreen`
+- [ ] **Scenario 2.2 — New quest:**
+  - User provides quest name via chat
+  - User selects participants (search by name + nicknames)
+  - Quest created; Buddy auto-imports catch-up topics
+  - User can add additional tasks via chat → Buddy adds them
+- [ ] Person search across all scenarios: full-text on firstName + lastName + all nicknames
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-127.1:** Add "Others" tile to Buddy welcome screen — 0.5h
+- [ ] **TASK-127.2:** Implement "Catch-up topics" routing (mode picker: Chat vs Friends-Quest) — 1h
+- [ ] **TASK-127.3:** Implement Scenario 1 — person picker with nickname search + topic list display in chat — 2h
+- [ ] **TASK-127.4:** Implement Scenario 2.1 — quest picker, task/participant display, add-via-chat, redirect to detail screen — 3h
+- [ ] **TASK-127.5:** Implement Scenario 2.2 — create quest via chat (name + participants + auto-import) — 2.5h
+- [ ] **TASK-127.6:** Shared person search utility: firstName + lastName + nicknames, used across all Buddy scenarios — 1h
+
+**Dependencies:** US-124, US-125, US-126
 **Blocks:** None
 
 ---

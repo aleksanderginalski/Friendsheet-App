@@ -18,6 +18,7 @@ import 'package:friendsheet/data/repositories/person_repository.dart' as _i12;
 import 'package:friendsheet/data/repositories/statistics_repository.dart'
     as _i5;
 import 'package:friendsheet/data/services/auth_service.dart' as _i8;
+import 'package:friendsheet/data/services/ltns_exclusion_service.dart' as _i15;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i14;
 
@@ -531,21 +532,6 @@ class MockPersonRepository extends _i1.Mock implements _i12.PersonRepository {
       ) as _i6.Future<List<_i4.Person>>);
 
   @override
-  _i6.Future<_i4.Person> addPerson(_i4.Person? person) => (super.noSuchMethod(
-        Invocation.method(
-          #addPerson,
-          [person],
-        ),
-        returnValue: _i6.Future<_i4.Person>.value(_FakePerson_2(
-          this,
-          Invocation.method(
-            #addPerson,
-            [person],
-          ),
-        )),
-      ) as _i6.Future<_i4.Person>);
-
-  @override
   _i6.Future<List<_i4.Person>> getPersonsByIds(
     List<String>? ids,
     String? userId,
@@ -560,6 +546,21 @@ class MockPersonRepository extends _i1.Mock implements _i12.PersonRepository {
         ),
         returnValue: _i6.Future<List<_i4.Person>>.value(<_i4.Person>[]),
       ) as _i6.Future<List<_i4.Person>>);
+
+  @override
+  _i6.Future<_i4.Person> addPerson(_i4.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #addPerson,
+          [person],
+        ),
+        returnValue: _i6.Future<_i4.Person>.value(_FakePerson_2(
+          this,
+          Invocation.method(
+            #addPerson,
+            [person],
+          ),
+        )),
+      ) as _i6.Future<_i4.Person>);
 
   @override
   _i6.Future<void> updatePerson(_i4.Person? person) => (super.noSuchMethod(
@@ -651,6 +652,16 @@ class MockMeetingRepository extends _i1.Mock implements _i13.MeetingRepository {
         ),
         returnValue: _i6.Stream<List<_i7.Meeting>>.empty(),
       ) as _i6.Stream<List<_i7.Meeting>>);
+
+  @override
+  _i6.Future<List<_i7.Meeting>> getAllMeetings(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getAllMeetings,
+          [userId],
+        ),
+        returnValue: _i6.Future<List<_i7.Meeting>>.value(<_i7.Meeting>[]),
+      ) as _i6.Future<List<_i7.Meeting>>);
 
   @override
   _i6.Future<void> updateMeeting(_i7.Meeting? meeting) => (super.noSuchMethod(
@@ -810,6 +821,40 @@ class MockMeetingRepository extends _i1.Mock implements _i13.MeetingRepository {
             userId,
             personId,
           ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+}
+
+/// A class which mocks [LtnsExclusionService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockLtnsExclusionService extends _i1.Mock
+    implements _i15.LtnsExclusionService {
+  MockLtnsExclusionService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i6.Future<Set<String>> getExcludedIds() => (super.noSuchMethod(
+        Invocation.method(
+          #getExcludedIds,
+          [],
+        ),
+        returnValue: _i6.Future<Set<String>>.value(<String>{}),
+      ) as _i6.Future<Set<String>>);
+
+  @override
+  _i6.Future<void> setExcluded(
+    String? personId, {
+    required bool? excluded,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setExcluded,
+          [personId],
+          {#excluded: excluded},
         ),
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
