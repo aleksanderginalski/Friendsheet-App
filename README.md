@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. US-109 delivered the full-dataset local Hive cache (`LocalCacheService`): fire-and-forget sync on app start, write-through after every repository write, 8 typed read methods — all one-shot Firestore reads now cache-first. US-105 added meeting frequency context: `PersonContextEntry` carries `avgDaysBetweenMeetings` and `daysSinceLastMeeting`; system prompt guides Buddy to suggest overdue friends. US-118 added LTNS Exclusion Filter: `LtnsExclusionService` + `LtnsFilterScreen` allow opt-out of specific friends from LTNS reminders; action buttons show full name and meeting frequency. Remaining US: widget auto-refresh (US-112), language selection (US-113).
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. US-109 delivered the full-dataset local Hive cache (`LocalCacheService`): fire-and-forget sync on app start, write-through after every repository write, 8 typed read methods — all one-shot Firestore reads now cache-first. US-105 added meeting frequency context: `PersonContextEntry` carries `avgDaysBetweenMeetings` and `daysSinceLastMeeting`; system prompt guides Buddy to suggest overdue friends. US-118 added LTNS Exclusion Filter: `LtnsExclusionService` + `LtnsFilterScreen` allow opt-out of specific friends from LTNS reminders; action buttons show full name and meeting frequency. US-107 added Relationship Strength Indicator: `RelationshipScoreService` computes a 0–100 score (frequency/recency/variety/weight variety) from the Hive cache; `RelationshipStrengthWidget` shows a colored progress bar on `PersonDetailScreen`; `serializeToPromptWithScores` appends per-person partial scores so Buddy can explain them; smart person name disambiguation — when a user types a real name Buddy resolves it via substring match and shows disambiguation buttons with scores if multiple persons match. Remaining US: widget auto-refresh (US-112), language selection (US-113).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (881)
+✅ All tests passing (895)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,13 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.5 — US-105 + US-118: Meeting Frequency Context & LTNS Exclusion Filter (March 31, 2026)
-- ✅ `PersonContextEntry` extended with `avgDaysBetweenMeetings` and `daysSinceLastMeeting`; both fields serialized into the AI prompt so Buddy can compare meeting cadence vs elapsed time and suggest overdue friends
-- ✅ `OpenAIService` system prompt extended with meeting suggestion guidance ("Who should I meet next?" queries now reference specific frequency patterns)
-- ✅ `LtnsExclusionService` (NEW): SharedPreferences-backed opt-out filter; users can exclude specific friends from LTNS reminders via the new LTNS Filters screen
-- ✅ `LtnsFilterScreen` (NEW): `StatefulWidget` with `SwitchListTile` per person, Polish-aware sorting, search bar, and immediate persistence
-- ✅ LTNS action buttons now show full name + frequency suffix ("· prev. every X days") when cadence data is available
-- ✅ 20 new unit tests (881 total)
+### Latest: v4.5.6 — US-107: Relationship Strength Indicator (April 1, 2026)
+- ✅ `RelationshipScoreService` (NEW): local 0–100 scoring — frequency 35%, recency 30%, category variety 20%, weight variety 15%; reads from Hive cache only
+- ✅ `RelationshipStrengthWidget` (NEW): colored progress bar with score/100 and label shown on `PersonDetailScreen`
+- ✅ `serializeToPromptWithScores`: async variant appending `### Relationship Scores` section so Buddy can explain scores
+- ✅ Smart person name disambiguation in Buddy chat: substring match on firstName/lastName/nicknames; 1 match → auto-pseudonymize; 2+ matches → disambiguation prompt with score buttons
+- ✅ 13 new unit/widget tests (895 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

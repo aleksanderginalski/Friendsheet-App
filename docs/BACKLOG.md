@@ -4414,15 +4414,15 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 **Story Points:** 13
 **Priority:** P2
 **Labels:** `ai`, `analytics`, `persons`
-**Status:** 🔄 In Progress
+**Status:** ✅ Completed
 
 **Acceptance Criteria:**
-- [ ] Relationship strength score calculated per person (0–100)
-- [ ] Score factors: meeting frequency (2y), recency, category variety (2y), weight variety (2y)
-- [ ] Score displayed on `PersonDetailScreen` as a visual indicator (progress bar + label)
-- [ ] Buddy can explain the score on request: "Why is my score with Tomek 62?"
-- [ ] Score recomputed on every `PersonDetailScreen` open (cache-based, no loading flicker)
-- [ ] Score calculation is local (no API call required) — `RelationshipScoreService` reads from `LocalCacheService`
+- [x] Relationship strength score calculated per person (0–100)
+- [x] Score factors: meeting frequency (2y), recency, category variety (2y), weight variety (2y)
+- [x] Score displayed on `PersonDetailScreen` as a visual indicator (progress bar + label)
+- [x] Buddy can explain the score on request: "Why is my score with Tomek 62?"
+- [x] Score recomputed on every `PersonDetailScreen` open (cache-based, no loading flicker)
+- [x] Score calculation is local (no API call required) — `RelationshipScoreService` reads from `LocalCacheService`
 
 **Scoring Algorithm (finalised in planning):**
 
@@ -4444,11 +4444,11 @@ Score labels: 80–100 → "Very close" · 60–79 → "Strong" · 40–59 → "
 
 **Tasks:**
 - [x] **TASK-107.1:** Design scoring algorithm (finalised in planning session) — 2h
-- [ ] **TASK-107.2:** Implement `RelationshipScoreService` in `lib/data/services/`; reads from `LocalCacheService` only — 3h
-- [ ] **TASK-107.3:** Add `RelationshipStrengthWidget` to `lib/presentation/persons/`; display in `PersonDetailScreen._PersonDetailBody` — 2h
-- [ ] **TASK-107.4:** Inject score breakdown into `ContextBuilderService.serializeToPrompt` per person so Buddy can explain it — 1h
-- [ ] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
-- [ ] **TASK-107.6:** Write widget tests for score indicator — 2h
+- [x] **TASK-107.2:** Implement `RelationshipScoreService` in `lib/data/services/`; reads from `LocalCacheService` only — 3h
+- [x] **TASK-107.3:** Add `RelationshipStrengthWidget` to `lib/presentation/persons/`; display in `PersonDetailScreen._PersonDetailBody` — 2h
+- [x] **TASK-107.4:** Inject score breakdown into `ContextBuilderService.serializeToPromptWithScores` per person so Buddy can explain it — 1h
+- [x] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
+- [x] **TASK-107.6:** Write widget tests for score indicator — 2h
 
 **Dependencies:** US-086, US-087, US-109
 **Blocks:** None
