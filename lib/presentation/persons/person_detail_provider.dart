@@ -5,6 +5,7 @@ import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/sharing_token_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/relationship_score_service.dart';
 
 // PersonDetailProvider manages state for PersonDetailScreen.
 // Responsibilities: hold person data, fetch meeting count, update, delete, link account.
@@ -13,20 +14,25 @@ class PersonDetailProvider extends ChangeNotifier {
   final MeetingRepository _meetingRepository;
   final AuthService _authService;
   final SharingTokenRepository _sharingTokenRepository;
+  final RelationshipScoreService _relationshipScoreService;
 
   PersonDetailProvider({
     required PersonRepository personRepository,
     required MeetingRepository meetingRepository,
     required AuthService authService,
     SharingTokenRepository? sharingTokenRepository,
+    RelationshipScoreService? relationshipScoreService,
   })  : _personRepository = personRepository,
         _meetingRepository = meetingRepository,
         _authService = authService,
         _sharingTokenRepository =
-            sharingTokenRepository ?? SharingTokenRepository();
+            sharingTokenRepository ?? SharingTokenRepository(),
+        _relationshipScoreService =
+            relationshipScoreService ?? RelationshipScoreService();
 
   Person? _person;
   int _meetingCount = 0;
+  RelationshipScore? _score;
   bool _isLoading = false;
   bool _isDeleting = false;
   bool _isLinking = false;
@@ -34,12 +40,13 @@ class PersonDetailProvider extends ChangeNotifier {
 
   Person? get person => _person;
   int get meetingCount => _meetingCount;
+  RelationshipScore? get score => _score;
   bool get isLoading => _isLoading;
   bool get isDeleting => _isDeleting;
   bool get isLinking => _isLinking;
   String? get errorMessage => _errorMessage;
 
-  // Stores the person and fetches the meeting count for them.
+  // Stores the person, fetches the meeting count, and computes the relationship score.
   Future<void> initialize(Person person) async {
     _person = person;
     _isLoading = true;
@@ -50,6 +57,7 @@ class PersonDetailProvider extends ChangeNotifier {
       final userId = _authService.currentUserId!;
       _meetingCount =
           await _meetingRepository.getMeetingsCountForPerson(userId, person.id);
+      _score = await _relationshipScoreService.computeScore(userId, person.id);
     } catch (e) {
       _errorMessage = e.toString();
     } finally {

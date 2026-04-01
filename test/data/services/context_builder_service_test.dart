@@ -7,13 +7,18 @@ import 'package:friendsheet/data/repositories/activity_category_repository.dart'
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/services/context_builder_service.dart';
+import 'package:friendsheet/data/services/relationship_score_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'context_builder_service_test.mocks.dart';
 
-@GenerateMocks(
-    [MeetingRepository, PersonRepository, ActivityCategoryRepository])
+@GenerateMocks([
+  MeetingRepository,
+  PersonRepository,
+  ActivityCategoryRepository,
+  RelationshipScoreService,
+])
 void main() {
   late MockMeetingRepository mockMeetingRepo;
   late MockPersonRepository mockPersonRepo;
@@ -719,6 +724,74 @@ void main() {
 
       expect(output, isNot(contains('avg cadence')));
       expect(output, isNot(contains('days since last meeting')));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // serializeToPromptWithScores
+  // ---------------------------------------------------------------------------
+
+  group('serializeToPromptWithScores', () {
+    late MockRelationshipScoreService mockScoreService;
+    late ContextBuilderService serviceWithScores;
+
+    const stubScore = RelationshipScore(
+      score: 55,
+      label: 'Good',
+      meetingsIn2y: 10,
+      daysSinceLast: 30,
+      distinctCategories2y: 3,
+      distinctWeights2y: 2,
+    );
+
+    setUp(() {
+      mockScoreService = MockRelationshipScoreService();
+      serviceWithScores = ContextBuilderService(
+        meetingRepository: mockMeetingRepo,
+        personRepository: mockPersonRepo,
+        activityCategoryRepository: mockCategoryRepo,
+        relationshipScoreService: mockScoreService,
+      );
+    });
+
+    test('appends Relationship Scores section with pseudonym and score',
+        () async {
+      when(mockScoreService.computeScore(any, any))
+          .thenAnswer((_) async => stubScore);
+
+      const ctx = BuddyContext(
+        meetings: [],
+        persons: [
+          PersonContextEntry(
+            pseudonym: 'Friend_A',
+            meetingCount: 10,
+            topActivities: [],
+          ),
+        ],
+        pseudonymToRealName: {'Friend_A': 'Anna Kowalska'},
+        personIdToPseudonym: {'p1': 'Friend_A'},
+      );
+
+      final output =
+          await serviceWithScores.serializeToPromptWithScores(ctx, 'user-1');
+
+      expect(output, contains('### Relationship Scores'));
+      expect(output, contains('Friend_A: score 55/100 (Good)'));
+    });
+
+    test('returns base prompt only when persons list is empty', () async {
+      const emptyCtx = BuddyContext(
+        meetings: [],
+        persons: [],
+        pseudonymToRealName: {},
+        personIdToPseudonym: {},
+      );
+
+      final output = await serviceWithScores.serializeToPromptWithScores(
+          emptyCtx, 'user-1');
+
+      expect(output, isNot(contains('### Relationship Scores')));
+      verifyNever(mockScoreService.computeScore(any, any));
     });
   });
 }

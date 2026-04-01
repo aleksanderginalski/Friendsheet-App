@@ -4414,25 +4414,43 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 **Story Points:** 13
 **Priority:** P2
 **Labels:** `ai`, `analytics`, `persons`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 
 **Acceptance Criteria:**
-- [ ] Relationship strength score calculated per person (0–100)
-- [ ] Score factors: meeting frequency, recency, variety of activities, meeting weight
-- [ ] Score displayed on `PersonDetailScreen` as a visual indicator
-- [ ] Buddy can explain the score on request: "Why is my score with Tomek 62?"
-- [ ] Score updated after each new meeting or note change
-- [ ] Score calculation is local (no API call required) — `ContextBuilderService` computes it
+- [x] Relationship strength score calculated per person (0–100)
+- [x] Score factors: meeting frequency (2y), recency, category variety (2y), weight variety (2y)
+- [x] Score displayed on `PersonDetailScreen` as a visual indicator (progress bar + label)
+- [x] Buddy can explain the score on request: "Why is my score with Tomek 62?"
+- [x] Score recomputed on every `PersonDetailScreen` open (cache-based, no loading flicker)
+- [x] Score calculation is local (no API call required) — `RelationshipScoreService` reads from `LocalCacheService`
+
+**Scoring Algorithm (finalised in planning):**
+
+| Factor | Window | Cap | Weight |
+|---|---|---|---|
+| Frequency | meetings with person in last 730 days | ≥ 48 (2/month) | 35% |
+| Recency | days since last meeting (all time) | ≤ 14 days = 100%, 0 at 360 days | 30% |
+| Category variety | distinct category IDs in meetings (730 days) | ≥ 10 categories | 20% |
+| Weight variety | distinct weight values used in meetings (730 days) from {1,2,3,5,8,13,21} | ≥ 3 distinct values | 15% |
+
+Formulas:
+- `frequency = min(count2y, 48) / 48`
+- `recency = max(0.0, (360 - daysSince) / 360)` — effectively 1.0 when daysSince ≤ 14
+- `variety = min(distinctCategories2y, 10) / 10`
+- `weightVariety = min(distinctWeights2y, 3) / 3`
+- `score = (frequency×35 + recency×30 + variety×20 + weightVariety×15).round()`
+
+Score labels: 80–100 → "Very close" · 60–79 → "Strong" · 40–59 → "Good" · 20–39 → "Fading" · 0–19 → "Distant"
 
 **Tasks:**
-- [ ] **TASK-107.1:** Design scoring algorithm (frequency, recency, variety, weight) — 2h
-- [ ] **TASK-107.2:** Implement `RelationshipScoreService`; reads all meetings and persons from `LocalCacheService` — no direct Firestore calls — 3h
-- [ ] **TASK-107.3:** Add score indicator widget to `PersonDetailScreen` — 2h
-- [ ] **TASK-107.4:** Wire score explanation to Buddy (prompt template) — 1h
-- [ ] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
-- [ ] **TASK-107.6:** Write widget tests for score indicator — 2h
+- [x] **TASK-107.1:** Design scoring algorithm (finalised in planning session) — 2h
+- [x] **TASK-107.2:** Implement `RelationshipScoreService` in `lib/data/services/`; reads from `LocalCacheService` only — 3h
+- [x] **TASK-107.3:** Add `RelationshipStrengthWidget` to `lib/presentation/persons/`; display in `PersonDetailScreen._PersonDetailBody` — 2h
+- [x] **TASK-107.4:** Inject score breakdown into `ContextBuilderService.serializeToPromptWithScores` per person so Buddy can explain it — 1h
+- [x] **TASK-107.5:** Write unit tests for scoring algorithm — 3h
+- [x] **TASK-107.6:** Write widget tests for score indicator — 2h
 
-**Dependencies:** US-086, US-087
+**Dependencies:** US-086, US-087, US-109
 **Blocks:** None
 
 ---

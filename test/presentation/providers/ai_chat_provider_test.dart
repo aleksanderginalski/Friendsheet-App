@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/ai_exceptions.dart';
 import 'package:friendsheet/data/models/buddy_context.dart';
@@ -5,19 +7,29 @@ import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/services/buddy_write_service.dart';
 import 'package:friendsheet/data/services/context_builder_service.dart';
+import 'package:friendsheet/data/services/local_cache_service.dart';
 import 'package:friendsheet/data/services/open_ai_service.dart';
+import 'package:friendsheet/data/services/relationship_score_service.dart';
 import 'package:friendsheet/presentation/ai_chat/ai_chat_provider.dart';
 import 'package:friendsheet/presentation/ai_chat/buddy_chat_mode.dart';
+import 'package:friendsheet/services/hive_service.dart';
+import 'package:hive/hive.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'ai_chat_provider_test.mocks.dart';
 
-@GenerateMocks([OpenAIService, ContextBuilderService, BuddyWriteService])
+@GenerateMocks([
+  OpenAIService,
+  ContextBuilderService,
+  BuddyWriteService,
+  RelationshipScoreService
+])
 void main() {
   late MockOpenAIService mockOpenAI;
   late MockContextBuilderService mockContextBuilder;
   late MockBuddyWriteService mockBuddyWrite;
+  late MockRelationshipScoreService mockRelationshipScore;
   late AIChatProvider provider;
 
   final now = DateTime(2026, 3, 10);
@@ -51,11 +63,13 @@ void main() {
     mockOpenAI = MockOpenAIService();
     mockContextBuilder = MockContextBuilderService();
     mockBuddyWrite = MockBuddyWriteService();
+    mockRelationshipScore = MockRelationshipScoreService();
 
     provider = AIChatProvider(
       openAIService: mockOpenAI,
       contextBuilderService: mockContextBuilder,
       buddyWriteService: mockBuddyWrite,
+      relationshipScoreService: mockRelationshipScore,
     );
   });
 
@@ -163,6 +177,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('## Social Context\n');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => '## Social Context\n');
       await provider.initialize('user-1');
     });
 
@@ -195,6 +212,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockContextBuilder.findMostRecentMeetingWithoutNotes(any))
           .thenAnswer((_) async => null);
 
@@ -203,6 +223,7 @@ void main() {
         openAIService: mockOpenAI,
         contextBuilderService: mockContextBuilder,
         buddyWriteService: mockBuddyWrite,
+        relationshipScoreService: mockRelationshipScore,
       );
       await providerWithMapping.initialize('user-1');
 
@@ -267,6 +288,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       await provider.initialize('user-1');
     });
 
@@ -697,6 +721,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockOpenAI.sendMessage(any, any, any))
           .thenAnswer((_) => Stream.value('Great memories with Marco!'));
 
@@ -955,6 +982,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockOpenAI.sendMessage(any, any, any))
           .thenAnswer((_) => Stream.value('Hi!'));
 
@@ -986,6 +1016,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockContextBuilder.findMostRecentMeetingWithoutNotes(any))
           .thenAnswer((_) async => null);
 
@@ -993,6 +1026,7 @@ void main() {
         openAIService: mockOpenAI,
         contextBuilderService: mockContextBuilder,
         buddyWriteService: mockBuddyWrite,
+        relationshipScoreService: mockRelationshipScore,
       );
       await p.initialize('user-1');
 
@@ -1007,6 +1041,117 @@ void main() {
       expect(reply, contains('Anna'));
       // No leftover pseudonym fragments
       expect(reply, isNot(contains('Friend_')));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // sendMessage — person disambiguation
+  // ---------------------------------------------------------------------------
+
+  group('sendMessage — person disambiguation', () {
+    late Directory tempDir;
+
+    final annaK = Person(
+      id: 'p1',
+      userId: 'user-1',
+      firstName: 'Anna',
+      lastName: 'Kowalska',
+      createdAt: DateTime(2026, 1, 1),
+    );
+    final annaN = Person(
+      id: 'p2',
+      userId: 'user-1',
+      firstName: 'Anna',
+      lastName: 'Nowak',
+      createdAt: DateTime(2026, 1, 1),
+    );
+
+    const ambigCtx = BuddyContext(
+      meetings: [],
+      persons: [],
+      pseudonymToRealName: {
+        'Friend_A': 'Anna Kowalska',
+        'Friend_B': 'Anna Nowak',
+      },
+      personIdToPseudonym: {'p1': 'Friend_A', 'p2': 'Friend_B'},
+    );
+
+    const stubScore = RelationshipScore(
+      score: 55,
+      label: 'Good',
+      meetingsIn2y: 10,
+      daysSinceLast: 30,
+      distinctCategories2y: 3,
+      distinctWeights2y: 2,
+    );
+
+    setUpAll(() async {
+      tempDir = await Directory.systemTemp.createTemp('hive_disamb_test_');
+      await HiveService.initialize(testPath: tempDir.path);
+    });
+
+    tearDownAll(() async {
+      await Hive.close();
+      await tempDir.delete(recursive: true);
+    });
+
+    setUp(() async {
+      await HiveService.clearUserData('user-1');
+      when(mockContextBuilder.buildFullContext(any))
+          .thenAnswer((_) async => ambigCtx);
+      when(mockContextBuilder.findMostRecentMeetingWithoutNotes(any))
+          .thenAnswer((_) async => null);
+      when(mockRelationshipScore.computeScore(any, any))
+          .thenAnswer((_) async => stubScore);
+      await provider.initialize('user-1');
+    });
+
+    test(
+        '2 persons match → disambiguation message + 2 action buttons, no AI call',
+        () async {
+      await LocalCacheService().upsertPerson('user-1', annaK);
+      await LocalCacheService().upsertPerson('user-1', annaN);
+
+      await provider.sendMessage('Why is Anna score 57?');
+
+      // [greeting, user message, disambiguation assistant message]
+      expect(provider.messages.length, 3);
+      expect(provider.messages[2].role, 'assistant');
+      expect(
+          provider.messages[2].content, contains("I'm not sure who you mean"));
+      expect(provider.isLoading, isFalse);
+      expect(provider.pendingActions, hasLength(2));
+      expect(
+          provider.pendingActions!
+              .any((a) => a.actionId == 'disambiguate_person:p1'),
+          isTrue);
+      expect(
+          provider.pendingActions!
+              .any((a) => a.actionId == 'disambiguate_person:p2'),
+          isTrue);
+      verifyNever(mockOpenAI.sendMessage(any, any, any));
+    });
+
+    test('disambiguate_person action sends pseudonymized text to AI', () async {
+      await LocalCacheService().upsertPerson('user-1', annaK);
+      await LocalCacheService().upsertPerson('user-1', annaN);
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
+      when(mockOpenAI.sendMessage(any, any, any))
+          .thenAnswer((_) => Stream.value('Friend_A has score 55'));
+
+      await provider.sendMessage('Why is Anna score 57?');
+
+      // User selects Anna Kowalska — AI response translates Friend_A → Anna Kowalska.
+      await provider.handleAction(const BuddyAction(
+        label: 'Anna Kowalska — score 55/100',
+        actionId: 'disambiguate_person:p1',
+      ));
+
+      expect(provider.isLoading, isFalse);
+      expect(provider.messages.last.role, 'assistant');
+      expect(provider.messages.last.content, contains('Anna Kowalska'));
     });
   });
 }

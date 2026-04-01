@@ -584,7 +584,7 @@ AIChatScreen
 - `birthday_format_helpers.dart` ✅ — pure functions: `formatBirthdayStats()`, `buildBirthdayListGreeting()`, `birthdayActionLabel()` (`lib/presentation/ai_chat/birthday_format_helpers.dart`)
 - `LocalCacheService` ✅ — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109) (`lib/data/services/local_cache_service.dart`)
 - `ConnectivityService` 📋 — singleton with `ValueNotifier<ConnectivityStatus>`; drives offline banner and graceful degradation (US-111)
-- `RelationshipScoreService` 📋 — local scoring algorithm, no API calls (US-107)
+- `RelationshipScoreService` ✅ — local 0–100 scoring algorithm (frequency 35%, recency 30%, category variety 20%, weight variety 15%); reads exclusively from `LocalCacheService`, no API calls (US-107) (`lib/data/services/relationship_score_service.dart`)
 - `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
 
 **New packages (US-087):**
@@ -689,6 +689,18 @@ getMeetingNotes(String meetingId) → List<String>
 - `CatchUpTopicsProvider` — ChangeNotifier; load, add, archive, delete
 
 **UI placement:** `PersonDetailScreen` — new `CatchUpListSection` below "Meetings together", above "Nicknames".
+
+---
+
+### RelationshipStrengthWidget (US-107)
+
+`lib/presentation/persons/relationship_strength_widget.dart` — `StatelessWidget`; displays relationship score as a colored `LinearProgressIndicator` with score/100 and label.
+
+Color scale: green (≥80), lightGreen (≥60), amber (≥40), orange (≥20), red (<20).
+
+Score computed by `RelationshipScoreService.computeScore()` in `PersonDetailProvider.initialize()`; injected via `RelationshipScoreService` constructor param.
+
+**UI placement:** `PersonDetailScreen` — first item in the `ListView` body, above meeting list.
 
 ---
 

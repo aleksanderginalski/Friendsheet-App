@@ -4,6 +4,22 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.6 — US-107: Relationship Strength Indicator (April 1, 2026)
+- ✅ `lib/data/services/relationship_score_service.dart` (NEW) — `RelationshipScore` data class + `RelationshipScoreService.computeScore(userId, personId)`; 4-factor algorithm: frequency 35% (cap 48/2y), recency 30% (all-time last meeting, 0 at 360d), category variety 20% (cap 10/2y), weight variety 15% (cap 3/2y); labels: Very close / Strong / Good / Fading / Distant; reads from `LocalCacheService` only — no Firestore
+- ✅ `lib/presentation/persons/relationship_strength_widget.dart` (NEW) — `StatelessWidget`; colored `LinearProgressIndicator` (green ≥80, lightGreen ≥60, amber ≥40, orange ≥20, red <20) + score/100 + label
+- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — optional `RelationshipScoreService` constructor param; `_score: RelationshipScore?` field + `get score` getter; `initialize()` calls `computeScore` after meeting count fetch
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — `RelationshipStrengthWidget` added as first `ListView` child when `provider.score != null`
+- ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — optional `RelationshipScoreService` constructor param; `serializeToPromptWithScores(BuddyContext, userId)` async method appends `### Relationship Scores` section with per-person partial scores (freq/35, recency/30, variety/20, weight_variety/15)
+- ✅ `lib/data/services/open_ai_service.dart` (MODIFIED) — `_systemPrompt` extended with Relationship Scores interpretation instructions, partial score format example, and meeting suggestion guidance (familiar top activity + fresh rare/new activity)
+- ✅ `lib/presentation/ai_chat/ai_chat_provider.dart` (MODIFIED) — `sendMessage()` replaced with disambiguation-aware flow: `_findMatchingPersons()` (substring match on firstName/lastName/nicknames via `LocalCacheService`); 0 matches → exact full-name fallback; 1 match → pseudonymize + send; 2+ matches → disambiguation prompt + action buttons showing score; `_sendToBuddy()` extracted helper; `_showPersonDisambiguation()` streams disambiguation message + buttons; `handleAction` handles `disambiguate_person:personId`
+- ✅ `test/data/services/relationship_score_service_test.dart` (NEW) — 5 unit tests: no meetings, happy path (full score+fields), all-time recency, max score 100, Fading boundary; uses Hive with temp directory
+- ✅ `test/presentation/persons/relationship_strength_widget_test.dart` (NEW) — 4 widget tests: renders score/label/title/bar, progress bar value, green color ≥80, red color <20
+- ✅ `test/data/services/context_builder_service_test.dart` (MODIFIED) — 2 new tests: `serializeToPromptWithScores` appends Scores section, returns base only when no persons
+- ✅ `test/presentation/providers/ai_chat_provider_test.dart` (MODIFIED) — 2 new tests: 2-person ambiguity → disambiguation message+buttons (no AI call), disambiguate_person action → AI called with pseudonymized text
+- ✅ 895 Flutter tests passing (+13 new tests)
+
+---
+
 ### v4.5.5 — US-105 + US-118: Meeting Frequency Context & LTNS Exclusion Filter (March 31, 2026)
 - ✅ `lib/data/models/buddy_context.dart` (MODIFIED) — `avgDaysBetweenMeetings: int?` and `daysSinceLastMeeting: int?` added to `PersonContextEntry`; both nullable (null when < 2 meetings in window for avg, or no last meeting date for days-since)
 - ✅ `lib/data/services/context_builder_service.dart` (MODIFIED) — `_buildPersonEntries()` computes `avgDaysBetweenMeetings` (sort meetings by date, compute consecutive gaps, average) and `daysSinceLastMeeting` (derived from `lastMeetingDate`); `serializeToPrompt()` emits both fields in Friend Summaries section

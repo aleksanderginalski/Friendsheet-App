@@ -1761,3 +1761,39 @@ Run after every release or hotfix:
 | UT-105-010 | greeting_ltns sub-flow label includes fullName and freq suffix | label contains 'Jan Nowak'; 'prev. every 20 days' |
 | UT-105-011 | sendMessage clears pendingActions | pendingActions null after sendMessage |
 
+
+
+## US-107 — Relationship Strength Indicator
+
+### Automated tests — `test/data/services/relationship_score_service_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-107-001 | returns Distant/0 with -1 daysSinceLast when no meetings | score=0, label=Distant, daysSinceLast=-1, all counters=0 |
+| UT-107-002 | computes correct score and fields for meetings within 2y window | score=55, label=Good, meetingsIn2y=12, daysSinceLast=0, cats=3, weights=2 |
+| UT-107-003 | uses all-time last meeting for recency — not limited to 2y window | daysSinceLast=800 (not -1), meetingsIn2y=0 |
+| UT-107-004 | returns Very close / 100 when all factors hit their caps | score=100, label=Very close |
+| UT-107-005 | score label Fading for score 20–39 | score in [20,39], label=Fading |
+
+### Automated tests — `test/presentation/persons/relationship_strength_widget_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-107-006 | renders score, label, title and progress bar | finds '55/100', 'Good', 'Relationship Strength', LinearProgressIndicator |
+| UT-107-007 | progress bar value equals score/100 | indicator.value ≈ 0.75 |
+| UT-107-008 | bar color is green for score >= 80 | indicator.color == Colors.green |
+| UT-107-009 | bar color is red for score < 20 | indicator.color == Colors.red |
+
+### Automated tests — `test/data/services/context_builder_service_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-107-010 | serializeToPromptWithScores appends Relationship Scores section | output contains '### Relationship Scores'; 'Friend_A: score 55/100 (Good)' |
+| UT-107-011 | serializeToPromptWithScores returns base prompt only when no persons | output does not contain '### Relationship Scores'; computeScore never called |
+
+### Automated tests — `test/presentation/providers/ai_chat_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-107-012 | 2 persons match → disambiguation message + 2 action buttons, no AI call | messages[2] contains "I'm not sure who you mean"; pendingActions length=2; OpenAI not called |
+| UT-107-013 | disambiguate_person action sends pseudonymized text to AI | last message is assistant; content contains real name (pseudonym translated back) |
