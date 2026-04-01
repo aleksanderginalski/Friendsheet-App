@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/ai_exceptions.dart';
@@ -508,8 +508,8 @@ class AIChatProvider extends ChangeNotifier {
           : text;
     } else {
       // No cache match — fall back to exact full-name replacement from context.
-      effectiveText = _translateRealNamesToPseudonyms(
-          text, _context!.pseudonymToRealName);
+      effectiveText =
+          _translateRealNamesToPseudonyms(text, _context!.pseudonymToRealName);
     }
 
     await _sendToBuddy(effectiveText);

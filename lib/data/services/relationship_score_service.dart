@@ -39,9 +39,8 @@ class RelationshipScoreService {
     String personId,
   ) async {
     final allMeetings = await LocalCacheService().getAllMeetings(userId);
-    final personMeetings = allMeetings
-        .where((m) => m.participantIds.contains(personId))
-        .toList();
+    final personMeetings =
+        allMeetings.where((m) => m.participantIds.contains(personId)).toList();
 
     if (personMeetings.isEmpty) {
       return const RelationshipScore(
@@ -86,8 +85,7 @@ class RelationshipScoreService {
     final weightVar = min(weightValues2y.length, 3) / 3;
 
     final score =
-        (frequency * 35 + recency * 30 + variety * 20 + weightVar * 15)
-            .round();
+        (frequency * 35 + recency * 30 + variety * 20 + weightVar * 15).round();
 
     return RelationshipScore(
       score: score,
