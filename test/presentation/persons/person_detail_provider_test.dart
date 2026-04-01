@@ -4,20 +4,36 @@ import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/sharing_token_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/data/services/relationship_score_service.dart';
 import 'package:friendsheet/presentation/persons/person_detail_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'person_detail_provider_test.mocks.dart';
 
-@GenerateMocks(
-    [PersonRepository, MeetingRepository, AuthService, SharingTokenRepository])
+@GenerateMocks([
+  PersonRepository,
+  MeetingRepository,
+  AuthService,
+  SharingTokenRepository,
+  RelationshipScoreService,
+])
 void main() {
   late MockPersonRepository mockPersonRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockAuthService mockAuthService;
   late MockSharingTokenRepository mockSharingTokenRepository;
+  late MockRelationshipScoreService mockRelationshipScoreService;
   late PersonDetailProvider provider;
+
+  const stubScore = RelationshipScore(
+    score: 50,
+    label: 'Good',
+    meetingsIn2y: 10,
+    daysSinceLast: 30,
+    distinctCategories2y: 3,
+    distinctWeights2y: 2,
+  );
 
   final testPerson = Person(
     id: 'p1',
@@ -32,12 +48,16 @@ void main() {
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
     mockSharingTokenRepository = MockSharingTokenRepository();
+    mockRelationshipScoreService = MockRelationshipScoreService();
     when(mockAuthService.currentUserId).thenReturn('u1');
+    when(mockRelationshipScoreService.computeScore(any, any))
+        .thenAnswer((_) async => stubScore);
     provider = PersonDetailProvider(
       personRepository: mockPersonRepository,
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,
       sharingTokenRepository: mockSharingTokenRepository,
+      relationshipScoreService: mockRelationshipScoreService,
     );
   });
 
@@ -60,6 +80,15 @@ void main() {
       await provider.initialize(testPerson);
 
       expect(provider.person, equals(testPerson));
+    });
+
+    test('initialize computes and stores relationship score', () async {
+      when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+          .thenAnswer((_) async => 0);
+
+      await provider.initialize(testPerson);
+
+      expect(provider.score, equals(stubScore));
     });
 
     test('updatePerson calls repository and updates _person on success',

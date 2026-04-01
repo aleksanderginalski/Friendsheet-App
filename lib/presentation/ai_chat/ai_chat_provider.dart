@@ -5,9 +5,12 @@ import '../../data/models/ai_exceptions.dart';
 import '../../data/models/buddy_context.dart';
 import '../../data/models/chat_message.dart';
 import '../../data/models/meeting.dart';
+import '../../data/models/person.dart';
 import '../../data/services/buddy_write_service.dart';
 import '../../data/services/context_builder_service.dart';
+import '../../data/services/local_cache_service.dart';
 import '../../data/services/open_ai_service.dart';
+import '../../data/services/relationship_score_service.dart';
 import 'birthday_format_helpers.dart';
 import 'buddy_chat_mode.dart';
 
@@ -19,14 +22,18 @@ class AIChatProvider extends ChangeNotifier {
     OpenAIService? openAIService,
     ContextBuilderService? contextBuilderService,
     BuddyWriteService? buddyWriteService,
+    RelationshipScoreService? relationshipScoreService,
   })  : _openAIService = openAIService ?? OpenAIService(),
         _contextBuilderService =
             contextBuilderService ?? ContextBuilderService(),
-        _buddyWriteService = buddyWriteService ?? BuddyWriteService();
+        _buddyWriteService = buddyWriteService ?? BuddyWriteService(),
+        _relationshipScoreService =
+            relationshipScoreService ?? RelationshipScoreService();
 
   final OpenAIService _openAIService;
   final ContextBuilderService _contextBuilderService;
   final BuddyWriteService _buddyWriteService;
+  final RelationshipScoreService _relationshipScoreService;
 
   static final _dateFormat = DateFormat('dd MMM yyyy');
 
@@ -41,6 +48,8 @@ class AIChatProvider extends ChangeNotifier {
   bool _disposed = false;
 
   List<BuddyAction>? _pendingActions;
+  String? _pendingDisambiguationMessage;
+  List<Person> _pendingDisambiguationPersons = [];
   List<Meeting> _meetingOptions = [];
   List<BirthdayPersonInfo> _birthdayOptions = [];
   List<LapsedPersonInfo> _lapsedOptions = [];
@@ -314,6 +323,37 @@ class AIChatProvider extends ChangeNotifier {
       _safeNotify();
       return;
     }
+
+    // User selected the correct person from a disambiguation prompt.
+    if (action.actionId.startsWith('disambiguate_person:')) {
+      final personId = action.actionId.split(':')[1];
+      final text = _pendingDisambiguationMessage ?? '';
+      final matchedPersons = List<Person>.from(_pendingDisambiguationPersons);
+      _pendingDisambiguationMessage = null;
+      _pendingDisambiguationPersons = [];
+
+      _messages = [
+        ..._messages,
+        ChatMessage(role: 'user', content: action.label),
+      ];
+      _isLoading = true;
+      _safeNotify();
+
+      Person? person;
+      for (final p in matchedPersons) {
+        if (p.id == personId) {
+          person = p;
+          break;
+        }
+      }
+      final pseudonym = _context!.personIdToPseudonym[personId] ?? '';
+      final effectiveText = (person != null && pseudonym.isNotEmpty)
+          ? _replacePersonInText(text, person, pseudonym)
+          : text;
+
+      await _sendToBuddy(effectiveText);
+      return;
+    }
   }
 
   Future<String> _buildGreeting() async {
@@ -441,6 +481,8 @@ class AIChatProvider extends ChangeNotifier {
 
   /// Sends [text] to the AI and streams the response into a new message bubble.
   /// Clears any pending action buttons — a free-text message dismisses them.
+  /// If the text mentions a person ambiguously (multiple matches), shows
+  /// disambiguation buttons instead of sending immediately.
   Future<void> sendMessage(String text) async {
     _pendingActions = null;
     _messages = [..._messages, ChatMessage(role: 'user', content: text)];
@@ -448,29 +490,53 @@ class AIChatProvider extends ChangeNotifier {
     _errorMessage = null;
     _safeNotify();
 
+    final matches = await _findMatchingPersons(text);
+
+    if (matches.length > 1) {
+      // Ambiguous name — ask the user to pick before sending to AI.
+      _isLoading = false;
+      await _showPersonDisambiguation(text, matches);
+      return;
+    }
+
+    String effectiveText;
+    if (matches.length == 1) {
+      final person = matches.first;
+      final pseudonym = _context!.personIdToPseudonym[person.id] ?? '';
+      effectiveText = pseudonym.isNotEmpty
+          ? _replacePersonInText(text, person, pseudonym)
+          : text;
+    } else {
+      // No cache match — fall back to exact full-name replacement from context.
+      effectiveText = _translateRealNamesToPseudonyms(
+          text, _context!.pseudonymToRealName);
+    }
+
+    await _sendToBuddy(effectiveText);
+  }
+
+  /// Sends [effectiveText] (already pseudonymised) to the AI and appends
+  /// the translated response as a new assistant message.
+  Future<void> _sendToBuddy(String effectiveText) async {
     try {
-      final contextPrompt = _contextBuilderService.serializeToPrompt(
+      final contextPrompt =
+          await _contextBuilderService.serializeToPromptWithScores(
         _context!,
+        _userId!,
         includeNotes: _activeMeetingId != null,
       );
-
-      // History = all messages except the initial Buddy greeting (index 0).
       final history =
           _messages.length > 1 ? _messages.sublist(1) : <ChatMessage>[];
-
       final buffer = StringBuffer();
       await for (final chunk in _openAIService.sendMessage(
         contextPrompt,
         history,
-        text,
+        effectiveText,
       )) {
         buffer.write(chunk);
       }
-
       final translated = _translatePseudonyms(
-        buffer.toString(),
-        _context!.pseudonymToRealName,
-      );
+          buffer.toString(), _context!.pseudonymToRealName);
       _messages = [
         ..._messages,
         ChatMessage(role: 'assistant', content: translated),
@@ -520,11 +586,100 @@ class AIChatProvider extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
+  /// Returns persons from the current context whose name tokens (firstName,
+  /// lastName, nicknames ≥ 3 chars) appear as substrings in [text].
+  Future<List<Person>> _findMatchingPersons(String text) async {
+    if (_context == null || _userId == null) return [];
+    final allPersons = await LocalCacheService().getAllPersons(_userId!);
+    final contextIds = _context!.personIdToPseudonym.keys.toSet();
+    final lower = text.toLowerCase();
+    final result = <Person>[];
+    for (final person in allPersons) {
+      if (!contextIds.contains(person.id)) continue;
+      final tokens = [
+        person.firstName,
+        if (person.lastName != null) person.lastName!,
+        ...person.nicknames,
+      ].where((t) => t.length >= 3);
+      if (tokens.any((t) => lower.contains(t.toLowerCase()))) {
+        result.add(person);
+      }
+    }
+    return result;
+  }
+
+  /// Replaces all name variants of [person] in [text] with [pseudonym].
+  /// Longest variants are replaced first to avoid partial replacements.
+  String _replacePersonInText(String text, Person person, String pseudonym) {
+    final variants = [
+      person.fullName,
+      person.firstName,
+      if (person.lastName != null) person.lastName!,
+      ...person.nicknames,
+    ]..sort((a, b) => b.length.compareTo(a.length));
+    var result = text;
+    for (final v in variants) {
+      result = result.replaceAll(
+        RegExp(RegExp.escape(v), caseSensitive: false),
+        pseudonym,
+      );
+    }
+    return result;
+  }
+
+  /// Shows an assistant message asking the user to clarify which person they
+  /// meant, with one action button per candidate (showing their score).
+  Future<void> _showPersonDisambiguation(
+      String text, List<Person> persons) async {
+    _pendingDisambiguationMessage = text;
+    _pendingDisambiguationPersons = List<Person>.from(persons);
+    const reply = "I'm not sure who you mean — did you mean:";
+    _messages = [
+      ..._messages,
+      const ChatMessage(role: 'assistant', content: reply),
+    ];
+    final actions = <BuddyAction>[];
+    for (final person in persons) {
+      RelationshipScore? score;
+      try {
+        score =
+            await _relationshipScoreService.computeScore(_userId!, person.id);
+      } catch (_) {
+        // Show button without score if computation fails.
+      }
+      final scoreStr = score != null ? ' — score ${score.score}/100' : '';
+      actions.add(BuddyAction(
+        label: '${person.fullName}$scoreStr',
+        actionId: 'disambiguate_person:${person.id}',
+      ));
+    }
+    _pendingActions = actions;
+    _safeNotify();
+  }
+
   String _translatePseudonyms(
       String text, Map<String, String> pseudonymToReal) {
     // Sort longest-first to prevent shorter pseudonyms (Friend_A) from
     // partially replacing longer ones (Friend_AH → "Ada MachuraH").
     final sorted = pseudonymToReal.entries.toList()
+      ..sort((a, b) => b.key.length.compareTo(a.key.length));
+    var result = text;
+    for (final entry in sorted) {
+      result = result.replaceAll(entry.key, entry.value);
+    }
+    return result;
+  }
+
+  // Translates real names in user input to pseudonyms before sending to AI.
+  // This is the inverse of _translatePseudonyms and ensures Buddy can match
+  // names the user types (e.g. "Anna Hill") to the pseudonyms in its context.
+  // Longest real names are replaced first to avoid partial matches.
+  String _translateRealNamesToPseudonyms(
+      String text, Map<String, String> pseudonymToReal) {
+    final realToPseudonym = {
+      for (final e in pseudonymToReal.entries) e.value: e.key,
+    };
+    final sorted = realToPseudonym.entries.toList()
       ..sort((a, b) => b.key.length.compareTo(a.key.length));
     var result = text;
     for (final entry in sorted) {

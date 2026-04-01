@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:intl/intl.dart';
 
 import '../models/buddy_context.dart';
@@ -5,6 +7,7 @@ import '../models/meeting.dart';
 import '../repositories/activity_category_repository.dart';
 import '../repositories/meeting_repository.dart';
 import '../repositories/person_repository.dart';
+import 'relationship_score_service.dart';
 
 /// Converts the user's social data from Firestore into an anonymized AI
 /// prompt context. Real participant names are replaced with pseudonyms
@@ -17,14 +20,18 @@ class ContextBuilderService {
     MeetingRepository? meetingRepository,
     PersonRepository? personRepository,
     ActivityCategoryRepository? activityCategoryRepository,
+    RelationshipScoreService? relationshipScoreService,
   })  : _meetingRepository = meetingRepository ?? MeetingRepository(),
         _personRepository = personRepository ?? PersonRepository(),
         _activityCategoryRepository =
-            activityCategoryRepository ?? ActivityCategoryRepository();
+            activityCategoryRepository ?? ActivityCategoryRepository(),
+        _relationshipScoreService =
+            relationshipScoreService ?? RelationshipScoreService();
 
   final MeetingRepository _meetingRepository;
   final PersonRepository _personRepository;
   final ActivityCategoryRepository _activityCategoryRepository;
+  final RelationshipScoreService _relationshipScoreService;
 
   static final _monthFormat = DateFormat('MMMM yyyy');
   static final _dateFormat = DateFormat('dd MMM yyyy');
@@ -268,6 +275,50 @@ class ContextBuilderService {
     }
 
     return buffer.toString().trimRight();
+  }
+
+  /// Async variant of [serializeToPrompt] that appends a Relationship Scores
+  /// section so Buddy can explain individual scores on request.
+  ///
+  /// Uses [_relationshipScoreService] to compute a score per person in [context].
+  /// Falls back to plain [serializeToPrompt] output if no persons are present.
+  Future<String> serializeToPromptWithScores(
+    BuddyContext context,
+    String userId, {
+    bool includeNotes = false,
+  }) async {
+    final base = serializeToPrompt(context, includeNotes: includeNotes);
+    if (context.persons.isEmpty) return base;
+
+    // Build inverse map: pseudonym → personId for score lookup.
+    final pseudonymToPersonId = {
+      for (final e in context.personIdToPseudonym.entries) e.value: e.key,
+    };
+
+    final scoreBuffer = StringBuffer('\n\n### Relationship Scores');
+    for (final p in context.persons) {
+      final personId = pseudonymToPersonId[p.pseudonym];
+      if (personId == null) continue;
+      final s = await _relationshipScoreService.computeScore(userId, personId);
+
+      // Compute partial scores matching the four factors.
+      final freqPts = (min(s.meetingsIn2y, 48) / 48 * 35).round();
+      final recencyPts = s.daysSinceLast == -1
+          ? 0
+          : (max(0.0, (360 - s.daysSinceLast) / 360) * 30).round();
+      final varietyPts = (min(s.distinctCategories2y, 10) / 10 * 20).round();
+      final weightPts = (min(s.distinctWeights2y, 3) / 3 * 15).round();
+
+      scoreBuffer.write(
+        '\n- ${p.pseudonym}: score ${s.score}/100 (${s.label})'
+        ' — freq: $freqPts/35 (${s.meetingsIn2y} meetings/2y)'
+        ', recency: $recencyPts/30 (${s.daysSinceLast == -1 ? 'never met' : '${s.daysSinceLast} days ago'})'
+        ', variety: $varietyPts/20 (${s.distinctCategories2y} categories)'
+        ', weight_variety: $weightPts/15 (${s.distinctWeights2y} weight types)',
+      );
+    }
+
+    return base + scoreBuffer.toString();
   }
 
   /// Returns the meeting with [meetingId], or null if not found.

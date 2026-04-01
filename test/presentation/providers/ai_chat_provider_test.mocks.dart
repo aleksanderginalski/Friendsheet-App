@@ -3,16 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
 import 'package:friendsheet/data/models/buddy_context.dart' as _i2;
-import 'package:friendsheet/data/models/chat_message.dart' as _i5;
-import 'package:friendsheet/data/models/meeting.dart' as _i8;
-import 'package:friendsheet/data/services/buddy_write_service.dart' as _i9;
-import 'package:friendsheet/data/services/context_builder_service.dart' as _i6;
-import 'package:friendsheet/data/services/open_ai_service.dart' as _i3;
+import 'package:friendsheet/data/models/chat_message.dart' as _i6;
+import 'package:friendsheet/data/models/meeting.dart' as _i9;
+import 'package:friendsheet/data/services/buddy_write_service.dart' as _i10;
+import 'package:friendsheet/data/services/context_builder_service.dart' as _i7;
+import 'package:friendsheet/data/services/open_ai_service.dart' as _i4;
+import 'package:friendsheet/data/services/relationship_score_service.dart'
+    as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i7;
+import 'package:mockito/src/dummies.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -38,18 +40,29 @@ class _FakeBuddyContext_0 extends _i1.SmartFake implements _i2.BuddyContext {
         );
 }
 
+class _FakeRelationshipScore_1 extends _i1.SmartFake
+    implements _i3.RelationshipScore {
+  _FakeRelationshipScore_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [OpenAIService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockOpenAIService extends _i1.Mock implements _i3.OpenAIService {
+class MockOpenAIService extends _i1.Mock implements _i4.OpenAIService {
   MockOpenAIService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Stream<String> sendMessage(
+  _i5.Stream<String> sendMessage(
     String? contextPrompt,
-    List<_i5.ChatMessage>? history,
+    List<_i6.ChatMessage>? history,
     String? userMessage,
   ) =>
       (super.noSuchMethod(
@@ -61,21 +74,21 @@ class MockOpenAIService extends _i1.Mock implements _i3.OpenAIService {
             userMessage,
           ],
         ),
-        returnValue: _i4.Stream<String>.empty(),
-      ) as _i4.Stream<String>);
+        returnValue: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
 }
 
 /// A class which mocks [ContextBuilderService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockContextBuilderService extends _i1.Mock
-    implements _i6.ContextBuilderService {
+    implements _i7.ContextBuilderService {
   MockContextBuilderService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<_i2.BuddyContext> buildFullContext(
+  _i5.Future<_i2.BuddyContext> buildFullContext(
     String? userId, {
     DateTime? from,
   }) =>
@@ -85,7 +98,7 @@ class MockContextBuilderService extends _i1.Mock
           [userId],
           {#from: from},
         ),
-        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+        returnValue: _i5.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
           this,
           Invocation.method(
             #buildFullContext,
@@ -93,10 +106,10 @@ class MockContextBuilderService extends _i1.Mock
             {#from: from},
           ),
         )),
-      ) as _i4.Future<_i2.BuddyContext>);
+      ) as _i5.Future<_i2.BuddyContext>);
 
   @override
-  _i4.Future<_i2.BuddyContext> buildPersonContext(
+  _i5.Future<_i2.BuddyContext> buildPersonContext(
     String? userId,
     String? personId,
   ) =>
@@ -108,7 +121,7 @@ class MockContextBuilderService extends _i1.Mock
             personId,
           ],
         ),
-        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+        returnValue: _i5.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
           this,
           Invocation.method(
             #buildPersonContext,
@@ -118,10 +131,10 @@ class MockContextBuilderService extends _i1.Mock
             ],
           ),
         )),
-      ) as _i4.Future<_i2.BuddyContext>);
+      ) as _i5.Future<_i2.BuddyContext>);
 
   @override
-  _i4.Future<_i2.BuddyContext> buildBirthdayContext(
+  _i5.Future<_i2.BuddyContext> buildBirthdayContext(
     String? userId,
     String? personId,
   ) =>
@@ -133,7 +146,7 @@ class MockContextBuilderService extends _i1.Mock
             personId,
           ],
         ),
-        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+        returnValue: _i5.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
           this,
           Invocation.method(
             #buildBirthdayContext,
@@ -143,10 +156,10 @@ class MockContextBuilderService extends _i1.Mock
             ],
           ),
         )),
-      ) as _i4.Future<_i2.BuddyContext>);
+      ) as _i5.Future<_i2.BuddyContext>);
 
   @override
-  _i4.Future<_i2.BuddyContext> buildLapsedFriendContext(
+  _i5.Future<_i2.BuddyContext> buildLapsedFriendContext(
     String? userId,
     String? personId, {
     int? limit = 4,
@@ -160,7 +173,7 @@ class MockContextBuilderService extends _i1.Mock
           ],
           {#limit: limit},
         ),
-        returnValue: _i4.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
+        returnValue: _i5.Future<_i2.BuddyContext>.value(_FakeBuddyContext_0(
           this,
           Invocation.method(
             #buildLapsedFriendContext,
@@ -171,7 +184,7 @@ class MockContextBuilderService extends _i1.Mock
             {#limit: limit},
           ),
         )),
-      ) as _i4.Future<_i2.BuddyContext>);
+      ) as _i5.Future<_i2.BuddyContext>);
 
   @override
   String serializeToPrompt(
@@ -184,7 +197,7 @@ class MockContextBuilderService extends _i1.Mock
           [context],
           {#includeNotes: includeNotes},
         ),
-        returnValue: _i7.dummyValue<String>(
+        returnValue: _i8.dummyValue<String>(
           this,
           Invocation.method(
             #serializeToPrompt,
@@ -195,7 +208,35 @@ class MockContextBuilderService extends _i1.Mock
       ) as String);
 
   @override
-  _i4.Future<_i8.Meeting?> getMeetingById(
+  _i5.Future<String> serializeToPromptWithScores(
+    _i2.BuddyContext? context,
+    String? userId, {
+    bool? includeNotes = false,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #serializeToPromptWithScores,
+          [
+            context,
+            userId,
+          ],
+          {#includeNotes: includeNotes},
+        ),
+        returnValue: _i5.Future<String>.value(_i8.dummyValue<String>(
+          this,
+          Invocation.method(
+            #serializeToPromptWithScores,
+            [
+              context,
+              userId,
+            ],
+            {#includeNotes: includeNotes},
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Future<_i9.Meeting?> getMeetingById(
     String? userId,
     String? meetingId,
   ) =>
@@ -207,11 +248,11 @@ class MockContextBuilderService extends _i1.Mock
             meetingId,
           ],
         ),
-        returnValue: _i4.Future<_i8.Meeting?>.value(),
-      ) as _i4.Future<_i8.Meeting?>);
+        returnValue: _i5.Future<_i9.Meeting?>.value(),
+      ) as _i5.Future<_i9.Meeting?>);
 
   @override
-  _i4.Future<_i8.Meeting?> findMostRecentMeetingWithoutNotes(
+  _i5.Future<_i9.Meeting?> findMostRecentMeetingWithoutNotes(
     String? userId, {
     int? withinDays = 30,
   }) =>
@@ -221,20 +262,20 @@ class MockContextBuilderService extends _i1.Mock
           [userId],
           {#withinDays: withinDays},
         ),
-        returnValue: _i4.Future<_i8.Meeting?>.value(),
-      ) as _i4.Future<_i8.Meeting?>);
+        returnValue: _i5.Future<_i9.Meeting?>.value(),
+      ) as _i5.Future<_i9.Meeting?>);
 }
 
 /// A class which mocks [BuddyWriteService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockBuddyWriteService extends _i1.Mock implements _i9.BuddyWriteService {
+class MockBuddyWriteService extends _i1.Mock implements _i10.BuddyWriteService {
   MockBuddyWriteService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<void> saveNotes(
+  _i5.Future<void> saveNotes(
     String? userId,
     String? meetingId,
     List<String>? notes,
@@ -248,7 +289,43 @@ class MockBuddyWriteService extends _i1.Mock implements _i9.BuddyWriteService {
             notes,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [RelationshipScoreService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockRelationshipScoreService extends _i1.Mock
+    implements _i3.RelationshipScoreService {
+  MockRelationshipScoreService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<_i3.RelationshipScore> computeScore(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #computeScore,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue:
+            _i5.Future<_i3.RelationshipScore>.value(_FakeRelationshipScore_1(
+          this,
+          Invocation.method(
+            #computeScore,
+            [
+              userId,
+              personId,
+            ],
+          ),
+        )),
+      ) as _i5.Future<_i3.RelationshipScore>);
 }

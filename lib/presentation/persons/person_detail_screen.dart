@@ -16,6 +16,7 @@ import 'friend_groups_provider.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
 import 'person_meetings_screen.dart';
+import 'relationship_strength_widget.dart';
 
 /// Displays full details of a single person and supports edit, delete, and account linking.
 class PersonDetailScreen extends StatefulWidget {
@@ -537,6 +538,8 @@ class _PersonDetailBody extends StatelessWidget {
 
     return ListView(
       children: [
+        if (provider.score != null)
+          RelationshipStrengthWidget(score: provider.score!),
         ListTile(
           title: const Text('First Name'),
           subtitle: Text(person.firstName),

@@ -6,6 +6,7 @@ import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/services/buddy_write_service.dart';
 import 'package:friendsheet/data/services/context_builder_service.dart';
 import 'package:friendsheet/data/services/open_ai_service.dart';
+import 'package:friendsheet/data/services/relationship_score_service.dart';
 import 'package:friendsheet/presentation/ai_chat/ai_chat_provider.dart';
 import 'package:friendsheet/presentation/ai_chat/buddy_chat_mode.dart';
 import 'package:mockito/annotations.dart';
@@ -13,11 +14,12 @@ import 'package:mockito/mockito.dart';
 
 import 'ai_chat_provider_test.mocks.dart';
 
-@GenerateMocks([OpenAIService, ContextBuilderService, BuddyWriteService])
+@GenerateMocks([OpenAIService, ContextBuilderService, BuddyWriteService, RelationshipScoreService])
 void main() {
   late MockOpenAIService mockOpenAI;
   late MockContextBuilderService mockContextBuilder;
   late MockBuddyWriteService mockBuddyWrite;
+  late MockRelationshipScoreService mockRelationshipScore;
   late AIChatProvider provider;
 
   final now = DateTime(2026, 3, 10);
@@ -51,11 +53,13 @@ void main() {
     mockOpenAI = MockOpenAIService();
     mockContextBuilder = MockContextBuilderService();
     mockBuddyWrite = MockBuddyWriteService();
+    mockRelationshipScore = MockRelationshipScoreService();
 
     provider = AIChatProvider(
       openAIService: mockOpenAI,
       contextBuilderService: mockContextBuilder,
       buddyWriteService: mockBuddyWrite,
+      relationshipScoreService: mockRelationshipScore,
     );
   });
 
@@ -163,6 +167,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('## Social Context\n');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => '## Social Context\n');
       await provider.initialize('user-1');
     });
 
@@ -195,6 +202,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockContextBuilder.findMostRecentMeetingWithoutNotes(any))
           .thenAnswer((_) async => null);
 
@@ -203,6 +213,7 @@ void main() {
         openAIService: mockOpenAI,
         contextBuilderService: mockContextBuilder,
         buddyWriteService: mockBuddyWrite,
+        relationshipScoreService: mockRelationshipScore,
       );
       await providerWithMapping.initialize('user-1');
 
@@ -267,6 +278,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       await provider.initialize('user-1');
     });
 
@@ -697,6 +711,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockOpenAI.sendMessage(any, any, any))
           .thenAnswer((_) => Stream.value('Great memories with Marco!'));
 
@@ -955,6 +972,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockOpenAI.sendMessage(any, any, any))
           .thenAnswer((_) => Stream.value('Hi!'));
 
@@ -986,6 +1006,9 @@ void main() {
       when(mockContextBuilder.serializeToPrompt(any,
               includeNotes: anyNamed('includeNotes')))
           .thenReturn('context');
+      when(mockContextBuilder.serializeToPromptWithScores(any, any,
+              includeNotes: anyNamed('includeNotes')))
+          .thenAnswer((_) async => 'context');
       when(mockContextBuilder.findMostRecentMeetingWithoutNotes(any))
           .thenAnswer((_) async => null);
 
@@ -993,6 +1016,7 @@ void main() {
         openAIService: mockOpenAI,
         contextBuilderService: mockContextBuilder,
         buddyWriteService: mockBuddyWrite,
+        relationshipScoreService: mockRelationshipScore,
       );
       await p.initialize('user-1');
 

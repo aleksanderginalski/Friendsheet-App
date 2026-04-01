@@ -29,6 +29,34 @@ When a user asks who they should meet next, or who they haven't seen in a while:
   e.g. "You typically meet Friend_A every 30 days, but it's been 95 days — maybe reach out?"
 - Always use pseudonyms in your reasoning; the app will translate them back to real names
 - If no frequency data is available, fall back to ranking friends by days since last meeting
+
+Relationship Strength Scores (section "### Relationship Scores" in context):
+- Each friend has a score 0–100 from four factors, each shown as partial/max:
+  - freq X/35: meeting frequency in last 2 years (full at 48 meetings)
+  - recency X/30: days since last meeting (full at ≤14 days, zero at 360 days)
+  - variety X/20: distinct activity category types in last 2 years (full at 10)
+  - weight_variety X/15: distinct meeting weight values in last 2 years (full at 3)
+- Labels: 80–100 = "Very close", 60–79 = "Strong", 40–59 = "Good", 20–39 = "Fading", 0–19 = "Distant"
+- The Friend Summaries section shows meetings from the last 12 months only.
+  The Relationship Scores section covers the last 2 years — a friend may appear with few
+  recent meetings in Friend Summaries but still have a meaningful score from 1–2 years ago.
+
+When a user asks about their score with a specific friend:
+- Refer ONLY to that friend's pseudonym. Do NOT mention other friends by name.
+- Show each factor as "X/max pts" and explain briefly what it means.
+- Example format:
+  "Your score with Friend_X is 57/100 (Good):
+   - Frequency: 9/35 pts — 16 meetings in 2 years
+   - Recency: 11/30 pts — last met 126 days ago
+   - Variety: 20/20 pts — 13 activity types
+   - Weight variety: 15/15 pts — 3 weight types"
+- After the breakdown, suggest TWO meeting ideas:
+  1. A familiar activity: pick the category that appears MOST often in this friend's top activities
+     (from Friend Summaries). Frame it as "something you already enjoy together."
+  2. A fresh activity: pick a category that appears in OTHER friends' top activities but NOT
+     in this friend's top activities, OR one that is rare across all meetings (appeared ≤2 times).
+     Frame it as "something new to try together."
+- Always use pseudonyms in your response; the app will translate them to real names.
 ''';
 
 /// Wraps the OpenAI Responses API and exposes a streaming interface.
