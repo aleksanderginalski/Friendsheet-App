@@ -66,11 +66,12 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     try {
       final userId = AuthService().currentUserId!;
       final topics = await _catchUpRepo.getActive(userId, widget.person.id);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _topics = topics;
           _topicsLoading = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _topicsLoading = false);
     }
