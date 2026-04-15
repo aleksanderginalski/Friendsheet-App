@@ -1797,3 +1797,44 @@ Run after every release or hotfix:
 |----|-----------|---------|
 | UT-107-012 | 2 persons match → disambiguation message + 2 action buttons, no AI call | messages[2] contains "I'm not sure who you mean"; pendingActions length=2; OpenAI not called |
 | UT-107-013 | disambiguate_person action sends pseudonymized text to AI | last message is assistant; content contains real name (pseudonym translated back) |
+
+## US-120 — Catch-Up List
+
+### Automated tests — `test/data/models/catch_up_topic_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-120-001 | fromFirestore happy path: maps all fields correctly | id, text, contextLabel, createdAt, isArchived=true, archivedAt all correct |
+| UT-120-002 | fromFirestore nullable fields absent: contextLabel and archivedAt are null | contextLabel=null, archivedAt=null, isArchived=false |
+| UT-120-003 | fromFirestore missing createdAt falls back to epoch | createdAt == DateTime.fromMillisecondsSinceEpoch(0) |
+| UT-120-004 | fromFirestore missing isArchived defaults to false | isArchived=false |
+| UT-120-005 | toFirestore serializes all non-null fields | text, contextLabel, createdAt, isArchived, archivedAt present |
+| UT-120-006 | toFirestore omits contextLabel and archivedAt when null | map does not contain 'contextLabel' or 'archivedAt' keys |
+| UT-120-007 | copyWith creates updated copy without mutating original | updated has new text/contextLabel; original unchanged |
+
+### Automated tests — `test/data/repositories/catch_up_topic_repository_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-120-008 | add happy path: creates doc in Firestore and returns id | Firestore doc exists with correct text, contextLabel, isArchived=false |
+| UT-120-009 | add persists to local cache | subsequent getActive returns the added topic |
+| UT-120-010 | getActive returns only non-archived topics sorted newest first | 2 active topics returned in descending createdAt order; archived excluded |
+| UT-120-011 | getActive returns empty list when no active topics | empty list when only archived topics exist |
+| UT-120-012 | update updates text and contextLabel in Firestore | Firestore doc has new text and contextLabel |
+| UT-120-013 | update persists updated value in local cache | getActive returns topic with updated text |
+| UT-120-014 | delete removes doc from Firestore | doc.exists == false after delete |
+| UT-120-015 | delete does not affect other topics | sibling topic still exists after delete |
+| UT-120-016 | delete removes topic from local cache | deleted id absent from getActive after delete |
+
+### Automated tests — `test/presentation/persons/catch_up_topics_provider_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-120-017 | initial state all defaults | topics empty, isLoading=false, errorMessage=null |
+| UT-120-018 | loadTopics happy path: sets topics, clears isLoading and errorMessage | topics.length=2, isLoading=false, errorMessage=null |
+| UT-120-019 | loadTopics sets errorMessage on exception | errorMessage != null, isLoading=false, topics empty |
+| UT-120-020 | addTopic prepends new topic to list after Firestore write | topics.first.id == 'new-id', topics.length=3 |
+| UT-120-021 | addTopic sets errorMessage when repository throws | errorMessage != null |
+| UT-120-022 | deleteTopic removes topic optimistically before Firestore call | optimisticSeen=true during repo call; topic absent after |
+| UT-120-023 | dispose guard: notifyListeners after dispose does not throw | no exception thrown |
+

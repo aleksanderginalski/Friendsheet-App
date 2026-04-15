@@ -106,6 +106,32 @@ the Testing Patterns section). When this happens:
 - Disable buttons during loading to prevent double-tap
 - Check `mounted` before setState
 
+## Debugging Flutter Assertion Errors — Primary Exception Rule
+
+When a Flutter assertion fires (e.g. `_dependents.isEmpty: is not true`,
+`RenderObject was disposed`, `Null check operator used on a null value`),
+the FIRST step is always to obtain the **primary exception** from `flutter run`
+output — NOT `flutter test`.
+
+`flutter run` output shows the full exception chain in order:
+1. PRIMARY exception — the actual root cause (the FIRST "The following ... was thrown" block)
+2. SECONDARY cascades — triggered by the primary, fix themselves when root is fixed
+
+Never attempt a fix based on a secondary exception.
+If the stack trace does not clearly point to a root cause, ask the user:
+"Wklej pełny output z `flutter run` — potrzebuję pierwszego bloku wyjątku."
+
+### Known Flutter cascade: TextEditingController.dispose() during dialog animation
+
+Calling `textController.dispose()` at the end of `showDialog()` / `showModalBottomSheet()`
+causes `_dependents.isEmpty: is not true` because:
+- `showDialog()` Future resolves when route is popped — but widget tree teardown is async
+- `TextField` and `ValueListenableBuilder` still hold listeners during the exit animation
+- Disposing the controller mid-animation triggers the secondary assertion cascade
+
+Fix: **Do NOT call `dispose()` on a TextEditingController created inside a dialog function.**
+Local variables are garbage-collected when the dialog widget is fully unmounted.
+
 ## Field Propagation Rule
 
 When adding a new field to a model that flows through a multi-layer pipeline

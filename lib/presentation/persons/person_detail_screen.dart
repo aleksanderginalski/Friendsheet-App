@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/catch_up_topic.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/activity_category_repository.dart';
+import '../../data/repositories/catch_up_topic_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/sharing_token_repository.dart';
@@ -12,6 +14,7 @@ import '../../data/services/meeting_package_service.dart';
 import '../activities/activity_icons.dart';
 import '../sharing/share_meetings_provider.dart';
 import '../sharing/share_meetings_screen.dart';
+import 'catch_up_list_section.dart';
 import 'friend_groups_provider.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
@@ -39,13 +42,79 @@ class PersonDetailScreen extends StatefulWidget {
 }
 
 class _PersonDetailScreenState extends State<PersonDetailScreen> {
+  // Catch-up topic state is managed directly on the State — no ChangeNotifier,
+  // no InheritedWidget, no listener callbacks. This prevents the
+  // '_dependents.isEmpty: is not true' Flutter assertion that fired when
+  // notifyListeners() was called during keyboard-dismissal animation frames.
+  List<CatchUpTopic> _topics = [];
+  bool _topicsLoading = false;
+  final _catchUpRepo = CatchUpTopicRepository();
+
   @override
   void initState() {
     super.initState();
-    // Fetch meeting count after the first frame so the provider is available.
+    // Initialize after the first frame so providers are available.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PersonDetailProvider>().initialize(widget.person);
+      _loadTopics();
     });
+  }
+
+  Future<void> _loadTopics() async {
+    if (!mounted) return;
+    setState(() => _topicsLoading = true);
+    try {
+      final userId = AuthService().currentUserId!;
+      final topics = await _catchUpRepo.getActive(userId, widget.person.id);
+      if (mounted) {
+        setState(() {
+          _topics = topics;
+          _topicsLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _topicsLoading = false);
+    }
+  }
+
+  Future<void> _addTopic(String text, String? label) async {
+    try {
+      final userId = AuthService().currentUserId!;
+      final id = await _catchUpRepo.add(userId, widget.person.id, text, label);
+      if (!mounted) return;
+      final newTopic = CatchUpTopic(
+        id: id,
+        text: text,
+        contextLabel: label,
+        createdAt: DateTime.now(),
+      );
+      setState(() => _topics = [newTopic, ..._topics]);
+    } catch (_) {}
+  }
+
+  Future<void> _editTopic(
+      String topicId, String newText, String? newLabel) async {
+    // Optimistic update so the UI feels instant.
+    setState(() {
+      _topics = _topics.map((t) {
+        if (t.id != topicId) return t;
+        return t.copyWith(text: newText, contextLabel: newLabel);
+      }).toList();
+    });
+    try {
+      final userId = AuthService().currentUserId!;
+      await _catchUpRepo.update(
+          userId, widget.person.id, topicId, newText, newLabel);
+    } catch (_) {}
+  }
+
+  Future<void> _deleteTopic(String topicId) async {
+    // Optimistic removal so the UI feels instant.
+    setState(() => _topics = _topics.where((t) => t.id != topicId).toList());
+    try {
+      final userId = AuthService().currentUserId!;
+      await _catchUpRepo.delete(userId, widget.person.id, topicId);
+    } catch (_) {}
   }
 
   @override
@@ -71,11 +140,16 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       ),
       body: _PersonDetailBody(
         provider: provider,
+        topics: _topics,
+        topicsLoading: _topicsLoading,
         person: person,
         onLinkTap: () => _showLinkDialog(provider),
         onSendTap: () => _openShareMeetingsScreen(person),
         onMeetingsTap: () => _openPersonMeetingsScreen(person),
         onBirthdayTap: () => _showBirthdayPicker(person, provider),
+        onAddTopicTap: () => _showAddTopicDialog(person),
+        onDeleteTopic: _deleteTopic,
+        onEditTopic: (CatchUpTopic topic) => _showEditTopicDialog(topic),
       ),
     );
   }
@@ -416,6 +490,266 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     );
   }
 
+  // Opens the add-topic dialog: required topic text + optional month/year picker.
+  // Method lives on State so context is always alive after async gaps.
+  //
+  // Design note: the Confirm button uses ValueListenableBuilder instead of
+  // onChanged + setDialogState. This avoids calling StatefulBuilder's setState
+  // during IME callbacks that Android fires when the keyboard dismisses — those
+  // callbacks can arrive on a partially-deactivated dialog element and trigger
+  // '_dependents.isEmpty: is not true' / 'dirty widget in wrong build scope'.
+  Future<void> _showAddTopicDialog(Person person) async {
+    final textController = TextEditingController();
+    int? selectedMonth;
+    int? selectedYear;
+
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final currentYear = DateTime.now().year;
+    final years = List.generate(5, (i) => currentYear - 1 + i);
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        // StatefulBuilder is used ONLY for the dropdown state (month, year).
+        // The text field does NOT call setDialogState — see Confirm button below.
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            title: const Text('Add topic'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(labelText: 'Topic'),
+                  textCapitalization: TextCapitalization.sentences,
+                  // No onChanged → no setDialogState calls from the keyboard path.
+                  // Confirm button reactivity is handled by ValueListenableBuilder.
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'When? (optional)',
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButton<int>(
+                        value: selectedMonth,
+                        isExpanded: true,
+                        hint: const Text('Month'),
+                        items: List.generate(
+                          12,
+                          (i) => DropdownMenuItem(
+                            value: i + 1,
+                            child: Text(monthNames[i]),
+                          ),
+                        ),
+                        onChanged: (v) =>
+                            setDialogState(() => selectedMonth = v),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButton<int>(
+                        value: selectedYear,
+                        isExpanded: true,
+                        hint: const Text('Year'),
+                        items: years
+                            .map((y) => DropdownMenuItem(
+                                  value: y,
+                                  child: Text('$y'),
+                                ))
+                            .toList(),
+                        onChanged: (v) =>
+                            setDialogState(() => selectedYear = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              // ValueListenableBuilder watches the controller directly.
+              // It rebuilds only when text changes — independent of StatefulBuilder.
+              // Its own State properly removes the listener in dispose(), so no
+              // setState is called after the dialog element is deactivated.
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: textController,
+                builder: (_, value, __) => TextButton(
+                  onPressed: value.text.trim().isEmpty
+                      ? null
+                      : () {
+                          final text = value.text.trim();
+                          String? label;
+                          if (selectedMonth != null && selectedYear != null) {
+                            label =
+                                '${monthNames[selectedMonth! - 1]} $selectedYear';
+                          }
+                          // Dismiss keyboard before popping so Android IME cannot
+                          // fire further input callbacks on the closing dialog.
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.of(ctx).pop();
+                          if (!mounted) return;
+                          _addTopic(text, label);
+                        },
+                  child: const Text('Confirm'),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    // Do NOT call textController.dispose() here.
+    // showDialog() returns as soon as the route is popped, but the dialog's
+    // exit animation is still in progress. TextField and ValueListenableBuilder
+    // both hold listeners on the controller during that animation. Disposing
+    // early causes 'TextEditingController used after being disposed', which
+    // cascades into _dependents.isEmpty and dirty-widget-in-wrong-build-scope.
+    // The controller is a local variable; once the dialog fully unmounts and
+    // removes all listeners, it becomes unreachable and is garbage-collected.
+  }
+
+  // Opens a prefilled edit dialog for an existing catch-up topic.
+  // Reuses the same layout as the add dialog with current values pre-populated.
+  Future<void> _showEditTopicDialog(CatchUpTopic topic) async {
+    final textController = TextEditingController(text: topic.text);
+
+    // Pre-parse existing contextLabel (format: "Month Year", e.g. "July 2026").
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    int? selectedMonth;
+    int? selectedYear;
+    if (topic.contextLabel != null) {
+      final parts = topic.contextLabel!.split(' ');
+      if (parts.length == 2) {
+        final mIdx = monthNames.indexOf(parts[0]);
+        final y = int.tryParse(parts[1]);
+        if (mIdx >= 0) selectedMonth = mIdx + 1;
+        if (y != null) selectedYear = y;
+      }
+    }
+
+    final currentYear = DateTime.now().year;
+    final years = List.generate(5, (i) => currentYear - 1 + i);
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            title: const Text('Edit topic'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(labelText: 'Topic'),
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+                const SizedBox(height: 16),
+                Text('When? (optional)',
+                    style: Theme.of(ctx).textTheme.bodySmall),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButton<int>(
+                        value: selectedMonth,
+                        isExpanded: true,
+                        hint: const Text('Month'),
+                        items: List.generate(
+                          12,
+                          (i) => DropdownMenuItem(
+                              value: i + 1, child: Text(monthNames[i])),
+                        ),
+                        onChanged: (v) =>
+                            setDialogState(() => selectedMonth = v),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButton<int>(
+                        value: selectedYear,
+                        isExpanded: true,
+                        hint: const Text('Year'),
+                        items: years
+                            .map((y) =>
+                                DropdownMenuItem(value: y, child: Text('$y')))
+                            .toList(),
+                        onChanged: (v) =>
+                            setDialogState(() => selectedYear = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: textController,
+                builder: (_, value, __) => TextButton(
+                  onPressed: value.text.trim().isEmpty
+                      ? null
+                      : () {
+                          final text = value.text.trim();
+                          String? label;
+                          if (selectedMonth != null && selectedYear != null) {
+                            label =
+                                '${monthNames[selectedMonth! - 1]} $selectedYear';
+                          }
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.of(ctx).pop();
+                          if (!mounted) return;
+                          _editTopic(topic.id, text, label);
+                        },
+                  child: const Text('Save'),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    // Do NOT dispose textController here — see comment in _showAddTopicDialog.
+  }
+
   // Opens the token input dialog and handles linking result.
   // Method lives on State so context is always alive (not from a closure).
   Future<void> _showLinkDialog(PersonDetailProvider provider) async {
@@ -511,19 +845,29 @@ String _formatBirthDayMonth(String? value) {
 
 class _PersonDetailBody extends StatelessWidget {
   final PersonDetailProvider provider;
+  final List<CatchUpTopic> topics;
+  final bool topicsLoading;
   final Person person;
   final VoidCallback onLinkTap;
   final VoidCallback onSendTap;
   final VoidCallback onMeetingsTap;
   final VoidCallback onBirthdayTap;
+  final VoidCallback onAddTopicTap;
+  final Future<void> Function(String topicId) onDeleteTopic;
+  final void Function(CatchUpTopic topic) onEditTopic;
 
   const _PersonDetailBody({
     required this.provider,
+    required this.topics,
+    required this.topicsLoading,
     required this.person,
     required this.onLinkTap,
     required this.onSendTap,
     required this.onMeetingsTap,
     required this.onBirthdayTap,
+    required this.onAddTopicTap,
+    required this.onDeleteTopic,
+    required this.onEditTopic,
   });
 
   @override
@@ -573,6 +917,14 @@ class _PersonDetailBody extends StatelessWidget {
               ),
             ],
           ),
+        ),
+        CatchUpListSection(
+          topics: topics,
+          isLoading: topicsLoading,
+          personId: person.id,
+          onAddTap: onAddTopicTap,
+          onDelete: onDeleteTopic,
+          onEdit: onEditTopic,
         ),
         NicknamesSection(provider: provider, person: person),
         _GroupsSection(person: person),
