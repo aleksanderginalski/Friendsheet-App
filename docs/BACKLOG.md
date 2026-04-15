@@ -2996,7 +2996,7 @@ Error appears intermittently — every few sessions or after a longer idle perio
 
 **Priority:** P0
 **Role:** Developer
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 
 **Description:** Peer-to-peer meeting sharing between Friendsheet users. User C (new) generates
 a sharing token and sends it to User A (existing) out-of-band (e.g. WhatsApp). A enters the token
