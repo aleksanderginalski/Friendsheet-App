@@ -4635,27 +4635,27 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 5
 **Priority:** P2
 **Labels:** `social`, `persons`, `catch-up`
-**Status:** 🔄 In Progress
+**Status:** ✅ Completed
 **Feature:** FEATURE-030: Catch-up Topics
 
 **Acceptance Criteria:**
-- [ ] On Person detail screen, new "Catch-up List" section visible below "Meetings together" and above "Nicknames"
-- [ ] User can add a new topic: required text field + optional context label (e.g. "Lipiec 2026") indicating when to return to the topic
-- [ ] Add dialog has two fields: topic text (required) and context label (optional free-text, e.g. month/year or event name)
-- [ ] Active topics displayed as a list ordered by creation date (newest first); each item shows topic text and context label (if set)
-- [ ] User can permanently delete a topic via trash icon (with confirmation dialog) or swipe-to-delete — no effect on archives
-- [ ] Topics stored in Firestore (`users/{uid}/persons/{personId}/catch_up_topics/`) and cached in Hive
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] On Person detail screen, new "Catch-up List" section visible below "Meetings together" and above "Nicknames"
+- [x] User can add a new topic: required text field + optional context label (e.g. "Lipiec 2026") indicating when to return to the topic
+- [x] Add dialog has two fields: topic text (required) and context label (optional free-text, e.g. month/year or event name)
+- [x] Active topics displayed as a list ordered by creation date (newest first); each item shows topic text and context label (if set)
+- [x] User can permanently delete a topic via trash icon (with confirmation dialog) or swipe-to-delete — no effect on archives
+- [x] Topics stored in Firestore (`users/{uid}/persons/{personId}/catch_up_topics/`) and cached in Hive
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-120.1:** Add `CatchUpTopic` Freezed model (`id`, `text`, `contextLabel?`, `createdAt`, `isArchived`, `archivedAt?`) — 1h
-- [ ] **TASK-120.2:** Add `CatchUpTopicRepository` with `catch_up_topics` subcollection (`add`, `getActive`, `delete`) — 2h
-- [ ] **TASK-120.3:** Extend `LocalCacheService` + `HiveService` with catch-up topic cache read/write methods (box key: `{userId}_{personId}`) — 1h
-- [ ] **TASK-120.4:** Implement `CatchUpTopicsProvider` (`loadTopics`, `addTopic`, `deleteTopic`) — 1.5h
-- [ ] **TASK-120.5:** Build `CatchUpListSection` widget: list with swipe-to-delete (Dismissible) + trash icon + confirmation dialog — 2h
-- [ ] **TASK-120.6:** Add topic input dialog (text field + optional context label field, confirm/cancel) — 1h
-- [ ] **TASK-120.7:** Add Firestore security rule for `catch_up_topics` sub-subcollection; inject `CatchUpTopicsProvider` at call-site in `PersonsListScreen._openPerson` — 0.5h
-- [ ] **TASK-120.8:** Add edit topic action — edit icon on each tile opens prefilled dialog (same fields as add); updates text and contextLabel in Firestore + local cache — 1h
+- [x] **TASK-120.1:** Add `CatchUpTopic` Freezed model (`id`, `text`, `contextLabel?`, `createdAt`, `isArchived`, `archivedAt?`) — 1h
+- [x] **TASK-120.2:** Add `CatchUpTopicRepository` with `catch_up_topics` subcollection (`add`, `getActive`, `delete`, `update`) — 2h
+- [x] **TASK-120.3:** Extend `LocalCacheService` + `HiveService` with catch-up topic cache read/write methods (box key: `{userId}_{personId}`) — 1h
+- [x] **TASK-120.4:** Implement `CatchUpTopicsProvider` (`loadTopics`, `addTopic`, `deleteTopic`) — 1.5h
+- [x] **TASK-120.5:** Build `CatchUpListSection` widget: list with swipe-to-delete (Dismissible) + trash icon + confirmation dialog — 2h
+- [x] **TASK-120.6:** Add topic input dialog (text field + optional context label field, confirm/cancel) — 1h
+- [x] **TASK-120.7:** Add Firestore security rule for `catch_up_topics` sub-subcollection; state managed directly in `_PersonDetailScreenState` (no external Provider injection) — 0.5h
+- [x] **TASK-120.8:** Add edit topic action — edit icon on each tile opens prefilled dialog (same fields as add); updates text and contextLabel in Firestore + local cache — 1h
 
 **Dependencies:** None
 **Blocks:** US-121, US-122, US-124

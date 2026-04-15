@@ -4,6 +4,23 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.7 — US-120: Per-Person Catch-up Topics CRUD (April 15, 2026)
+- ✅ `lib/data/models/catch_up_topic.dart` (NEW) — Freezed model: `id`, `text`, `contextLabel?`, `createdAt`, `isArchived` (@Default false), `archivedAt?`; `fromFirestore` with null-safe epoch fallback; `toFirestore` omitting null optional fields
+- ✅ `lib/data/models/catch_up_topic.freezed.dart` + `catch_up_topic.g.dart` (NEW) — generated
+- ✅ `lib/data/repositories/catch_up_topic_repository.dart` (NEW) — `add`, `getActive` (cache-first, active filter + newest-first sort), `update`, `delete`; write-through to `LocalCacheService`
+- ✅ `lib/data/services/local_cache_service.dart` (MODIFIED) — `upsertTopic`, `removeTopic`, `getActiveTopics` methods; box key `{userId}_{personId}`
+- ✅ `lib/services/hive_service.dart` (MODIFIED) — `localCatchUpTopicsBox = 'local_catch_up_topics'` constant
+- ✅ `lib/presentation/persons/catch_up_topics_provider.dart` (NEW) — `loadTopics`, `addTopic` (optimistic prepend), `deleteTopic` (optimistic removal); `_disposed` guard prevents `notifyListeners()` after dispose
+- ✅ `lib/presentation/persons/catch_up_list_section.dart` (NEW) — `CatchUpListSection` StatelessWidget with `Dismissible` swipe-to-delete, edit icon, delete icon, confirmation dialog; `_TopicTile` with trailing edit+delete row
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — topic state managed directly in `_PersonDetailScreenState` (`_topics`, `_topicsLoading`, `_catchUpRepo`); `_showAddTopicDialog` + `_showEditTopicDialog` use `ValueListenableBuilder` (no `TextEditingController.dispose()` to avoid animation-phase assertion); `_editTopic` optimistic `copyWith` + async Firestore write; month/year picker with Polish month names
+- ✅ `firestore.rules` (MODIFIED) — added `catch_up_topics` subcollection rule (path-based `isOwner(userId)`)
+- ✅ `test/data/models/catch_up_topic_test.dart` (NEW) — 7 unit tests: fromFirestore happy path, nullable fields absent, missing createdAt epoch fallback, missing isArchived default, toFirestore all fields, toFirestore omits nulls, copyWith
+- ✅ `test/data/repositories/catch_up_topic_repository_test.dart` (NEW) — 9 unit tests: add happy path, add caches, getActive filter+sort, getActive empty, update Firestore, update cache, delete Firestore, delete isolation, delete cache; uses FakeFirebaseFirestore + real Hive in temp dir
+- ✅ `test/presentation/persons/catch_up_topics_provider_test.dart` (NEW) — 7 unit tests: initial state, loadTopics happy path, loadTopics error, addTopic prepend, addTopic error, deleteTopic optimistic, dispose guard
+- ✅ 918 Flutter tests passing (+23 new tests)
+
+---
+
 ### v4.5.6 — US-107: Relationship Strength Indicator (April 1, 2026)
 - ✅ `lib/data/services/relationship_score_service.dart` (NEW) — `RelationshipScore` data class + `RelationshipScoreService.computeScore(userId, personId)`; 4-factor algorithm: frequency 35% (cap 48/2y), recency 30% (all-time last meeting, 0 at 360d), category variety 20% (cap 10/2y), weight variety 15% (cap 3/2y); labels: Very close / Strong / Good / Fading / Distant; reads from `LocalCacheService` only — no Firestore
 - ✅ `lib/presentation/persons/relationship_strength_widget.dart` (NEW) — `StatelessWidget`; colored `LinearProgressIndicator` (green ≥80, lightGreen ≥60, amber ≥40, orange ≥20, red <20) + score/100 + label

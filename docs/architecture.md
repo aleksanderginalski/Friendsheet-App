@@ -675,20 +675,22 @@ getMeetingNotes(String meetingId) → List<String>
 
 ### M8 — Social Intelligence & Friends-Quest (EPIC-010)
 
-**Status:** 📋 Planned (US-120 → US-127)
+**Status:** 🔄 In Progress (US-120 ✅ → US-121 → US-127)
 
 #### Catch-up Topics (US-120, US-121)
 
-**Storage:** Firestore subcollection `users/{uid}/persons/{personId}/catch_up_topics/{topicId}` + Hive cache via `LocalCacheService`.
+**Storage:** Firestore subcollection `users/{uid}/persons/{personId}/catch_up_topics/{topicId}` + Hive cache via `LocalCacheService` (box key `{userId}_{personId}`).
 
 **Data model:**
-- `CatchUpTopic`: id, text, isArchived, archivedAt?, createdAt
+- `CatchUpTopic`: id, text, contextLabel? (e.g. "Lipiec 2026"), isArchived (@Default false), archivedAt?, createdAt
 
 **Key services:**
-- `CatchUpTopicRepository` — CRUD on Firestore subcollection + write-through to Hive
-- `CatchUpTopicsProvider` — ChangeNotifier; load, add, archive, delete
+- `CatchUpTopicRepository` — `add`, `getActive` (cache-first, active filter, newest-first), `update`, `delete`; write-through to `LocalCacheService`
+- `CatchUpTopicsProvider` — ChangeNotifier; `loadTopics`, `addTopic` (optimistic prepend), `deleteTopic` (optimistic removal); `_disposed` guard prevents `notifyListeners()` assertion after route pop
 
-**UI placement:** `PersonDetailScreen` — new `CatchUpListSection` below "Meetings together", above "Nicknames".
+**State management note (US-120):** Topic state (`_topics`, `_topicsLoading`) is owned directly by `_PersonDetailScreenState`, not injected via Provider. Add/edit dialogs use `ValueListenableBuilder<TextEditingValue>` to avoid `TextEditingController.dispose()` during dialog exit animation.
+
+**UI placement:** `PersonDetailScreen` — new `CatchUpListSection` below "Meetings together", above "Nicknames"; `_TopicTile` has trailing edit + delete icons; swipe-to-delete (Dismissible) also supported.
 
 ---
 

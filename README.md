@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (895)
+✅ All tests passing (918)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,12 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.6 — US-107: Relationship Strength Indicator (April 1, 2026)
-- ✅ `RelationshipScoreService` (NEW): local 0–100 scoring — frequency 35%, recency 30%, category variety 20%, weight variety 15%; reads from Hive cache only
-- ✅ `RelationshipStrengthWidget` (NEW): colored progress bar with score/100 and label shown on `PersonDetailScreen`
-- ✅ `serializeToPromptWithScores`: async variant appending `### Relationship Scores` section so Buddy can explain scores
-- ✅ Smart person name disambiguation in Buddy chat: substring match on firstName/lastName/nicknames; 1 match → auto-pseudonymize; 2+ matches → disambiguation prompt with score buttons
-- ✅ 13 new unit/widget tests (895 total)
+### Latest: v4.5.7 — US-120: Per-Person Catch-up Topics CRUD (April 15, 2026)
+- ✅ `CatchUpTopic` Freezed model + `CatchUpTopicRepository` (NEW): add/getActive/update/delete with write-through Hive cache; active topics sorted newest first
+- ✅ `CatchUpTopicsProvider` (NEW): optimistic prepend on add, optimistic removal on delete; `_disposed` guard prevents assertion after route pop
+- ✅ `CatchUpListSection` widget (NEW): swipe-to-delete (Dismissible), edit icon, delete icon with confirmation; `_TopicTile` trailing row
+- ✅ `PersonDetailScreen` (MODIFIED): topic state owned by `_PersonDetailScreenState`; add/edit dialogs use `ValueListenableBuilder` (no `TextEditingController.dispose()` during animation); Polish month picker for context label
+- ✅ Firestore security rule for `catch_up_topics` subcollection (path-based `isOwner`)
+- ✅ 23 new unit tests (918 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
