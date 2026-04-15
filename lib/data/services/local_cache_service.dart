@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../services/hive_service.dart';
 import '../models/activity_category.dart';
+import '../models/catch_up_topic.dart';
 import '../models/meeting.dart';
 import '../models/person.dart';
 
@@ -310,6 +311,73 @@ class LocalCacheService {
       firstMeetingDate: meetings.first.date,
       lastMeetingDate: meetings.last.date,
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Catch-up topics cache — box key: "{userId}_{personId}" (person-scoped)
+  // ---------------------------------------------------------------------------
+
+  List<CatchUpTopic> _loadTopics(String userId, String personId) {
+    try {
+      final raw = HiveService.box(HiveService.localCatchUpTopicsBox)
+          .get('${userId}_$personId');
+      if (raw == null) return [];
+      return (jsonDecode(raw as String) as List<dynamic>)
+          .map((e) => CatchUpTopic.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> upsertTopic(
+    String userId,
+    String personId,
+    CatchUpTopic topic,
+  ) async {
+    try {
+      final list = _loadTopics(userId, personId);
+      final idx = list.indexWhere((t) => t.id == topic.id);
+      if (idx >= 0) {
+        list[idx] = topic;
+      } else {
+        list.add(topic);
+      }
+      await HiveService.box(HiveService.localCatchUpTopicsBox).put(
+        '${userId}_$personId',
+        jsonEncode(list.map((t) => t.toJson()).toList()),
+      );
+    } catch (e) {
+      debugPrint('LocalCacheService.upsertTopic error: $e');
+    }
+  }
+
+  Future<void> removeTopic(
+    String userId,
+    String personId,
+    String topicId,
+  ) async {
+    try {
+      final list = _loadTopics(userId, personId)
+        ..removeWhere((t) => t.id == topicId);
+      await HiveService.box(HiveService.localCatchUpTopicsBox).put(
+        '${userId}_$personId',
+        jsonEncode(list.map((t) => t.toJson()).toList()),
+      );
+    } catch (e) {
+      debugPrint('LocalCacheService.removeTopic error: $e');
+    }
+  }
+
+  /// Returns active (non-archived) topics for [personId], newest first.
+  Future<List<CatchUpTopic>> getActiveTopics(
+    String userId,
+    String personId,
+  ) async {
+    final all = _loadTopics(userId, personId);
+    final active = all.where((t) => !t.isArchived).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return active;
   }
 }
 

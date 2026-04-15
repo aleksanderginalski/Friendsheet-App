@@ -4500,22 +4500,22 @@ Score labels: 80–100 → "Very close" · 60–79 → "Strong" · 40–59 → "
 Spike completed (March 2026 discovery session). Decision: **Hive** (already in project for statistics cache). Max dataset: ~10,000 meetings × 500 B + 250 persons = ~5 MB — trivially fits in device memory and on disk. In-memory filtering in Dart is faster than any Firestore query at this scale. Drift/SQLite would be overkill. This US is a prerequisite for US-110 (Tool Calling) — `LocalCacheService` exposes typed read methods that tool calls use to query data without hitting Firestore. Single-device usage pattern (one user, one phone) means write conflicts are not a concern — write-through cache is the correct strategy.
 
 **Acceptance Criteria:**
-- [ ] On app start, all meetings/persons/activity_categories are loaded from Firestore into Hive cache asynchronously without blocking UI
-- [ ] After any write operation (add/edit/delete meeting or person), local cache is updated immediately (write-through) — no stale data after user action
-- [ ] `LocalCacheService` exposes typed read methods: `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getPersonSummary`, `getAllPersons`, `getMeetingNotes`
-- [ ] Cache is user-scoped — cleared on logout and account switch
-- [ ] Cache survives app restart (Hive persists to disk)
-- [ ] Every existing feature that uses a one-shot Firestore `.get()` call reads from `LocalCacheService` instead — Firestore is only the fallback when cache is cold
-- [ ] No visible UI changes for end user
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] On app start, all meetings/persons/activity_categories are loaded from Firestore into Hive cache asynchronously without blocking UI
+- [x] After any write operation (add/edit/delete meeting or person), local cache is updated immediately (write-through) — no stale data after user action
+- [x] `LocalCacheService` exposes typed read methods: `resolvePerson`, `getMeetingsByPersonAndYear`, `getMeetingsByDateRange`, `getPersonSummary`, `getAllPersons`, `getMeetingNotes`
+- [x] Cache is user-scoped — cleared on logout and account switch
+- [x] Cache survives app restart (Hive persists to disk)
+- [x] Every existing feature that uses a one-shot Firestore `.get()` call reads from `LocalCacheService` instead — Firestore is only the fallback when cache is cold
+- [x] No visible UI changes for end user
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-109.1:** Configure Hive boxes for meetings/persons/activity_categories (`local_meetings`, `local_persons`, `local_categories`) in `HiveService`; extend `clearUserData()` to also clear these boxes — 1h
-- [ ] **TASK-109.2:** Implement sync on app start: trigger `LocalCacheService.syncFromFirestore(userId)` in `MainScreen.initState()` via `addPostFrameCallback` (after `GoogleCalendarService().ensureInitialized()`); full `.get()` fetch of all meetings/persons/categories written to Hive as JSON; non-blocking (UI does not wait) — 2h
-- [ ] **TASK-109.3:** Implement write-through: add `LocalCacheService` as optional dependency to `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; after each add/update/delete, upsert or remove the affected record in the Hive box — do NOT replace existing `CacheInvalidator` (statistics cache remains unchanged) — 2h
-- [ ] **TASK-109.4:** Implement `LocalCacheService` (`lib/data/services/local_cache_service.dart`) with 6 typed read methods and `PersonSummary` plain Dart class (totalMeetingCount, lastMeetingDate, firstMeetingDate, totalWeight, person); `resolvePerson` fuzzy-matches on firstName/lastName/nicknames — 2h
-- [ ] **TASK-109.5:** Implement cache clear on logout / account switch — already covered by TASK-109.1 extension to `HiveService.clearUserData()`; verify `AuthService.signOut()` and `AccountDeletionService._clearLocalData()` both call `HiveService.clearUserData()` — 0.5h
-- [ ] **TASK-109.6:** Audit ALL one-shot Firestore `.get()` calls across all providers and services; migrate each to `LocalCacheService`; add `// Firestore-primary: stream-based` comment to stream-driven reads (streams will be replaced in US-111) — 3h
+- [x] **TASK-109.1:** Configure Hive boxes for meetings/persons/activity_categories (`local_meetings`, `local_persons`, `local_categories`) in `HiveService`; extend `clearUserData()` to also clear these boxes — 1h
+- [x] **TASK-109.2:** Implement sync on app start: trigger `LocalCacheService.syncFromFirestore(userId)` in `MainScreen.initState()` via `addPostFrameCallback` (after `GoogleCalendarService().ensureInitialized()`); full `.get()` fetch of all meetings/persons/categories written to Hive as JSON; non-blocking (UI does not wait) — 2h
+- [x] **TASK-109.3:** Implement write-through: add `LocalCacheService` as optional dependency to `MeetingRepository`, `PersonRepository`, `ActivityCategoryRepository`; after each add/update/delete, upsert or remove the affected record in the Hive box — do NOT replace existing `CacheInvalidator` (statistics cache remains unchanged) — 2h
+- [x] **TASK-109.4:** Implement `LocalCacheService` (`lib/data/services/local_cache_service.dart`) with 6 typed read methods and `PersonSummary` plain Dart class (totalMeetingCount, lastMeetingDate, firstMeetingDate, totalWeight, person); `resolvePerson` fuzzy-matches on firstName/lastName/nicknames — 2h
+- [x] **TASK-109.5:** Implement cache clear on logout / account switch — already covered by TASK-109.1 extension to `HiveService.clearUserData()`; verify `AuthService.signOut()` and `AccountDeletionService._clearLocalData()` both call `HiveService.clearUserData()` — 0.5h
+- [x] **TASK-109.6:** Audit ALL one-shot Firestore `.get()` calls across all providers and services; migrate each to `LocalCacheService`; add `// Firestore-primary: stream-based` comment to stream-driven reads (streams will be replaced in US-111) — 3h
 
 **Dependencies:** None
 **Blocks:** US-110, US-111
@@ -4635,24 +4635,27 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 5
 **Priority:** P2
 **Labels:** `social`, `persons`, `catch-up`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Feature:** FEATURE-030: Catch-up Topics
 
 **Acceptance Criteria:**
 - [ ] On Person detail screen, new "Catch-up List" section visible below "Meetings together" and above "Nicknames"
-- [ ] User can add a new topic (text field, optional context label e.g. "July — Japan trip")
-- [ ] Active topics displayed as a list ordered by creation date (newest first)
-- [ ] User can permanently delete a topic — no effect on archives
+- [ ] User can add a new topic: required text field + optional context label (e.g. "Lipiec 2026") indicating when to return to the topic
+- [ ] Add dialog has two fields: topic text (required) and context label (optional free-text, e.g. month/year or event name)
+- [ ] Active topics displayed as a list ordered by creation date (newest first); each item shows topic text and context label (if set)
+- [ ] User can permanently delete a topic via trash icon (with confirmation dialog) or swipe-to-delete — no effect on archives
 - [ ] Topics stored in Firestore (`users/{uid}/persons/{personId}/catch_up_topics/`) and cached in Hive
 - [ ] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-120.1:** Add `CatchUpTopic` Freezed model (id, text, createdAt, isArchived, archivedAt?) — 1h
-- [ ] **TASK-120.2:** Add `CatchUpTopicRepository` with `catch_up_topics` subcollection (add, getActive, delete) — 2h
-- [ ] **TASK-120.3:** Extend `LocalCacheService` with catch-up topic cache read/write methods — 1h
-- [ ] **TASK-120.4:** Implement `CatchUpTopicsProvider` (load, add, delete) — 1.5h
-- [ ] **TASK-120.5:** Build `CatchUpListSection` widget on `PersonDetailScreen` — 2h
-- [ ] **TASK-120.6:** Add topic input dialog (text field, confirm/cancel) — 1h
+- [ ] **TASK-120.1:** Add `CatchUpTopic` Freezed model (`id`, `text`, `contextLabel?`, `createdAt`, `isArchived`, `archivedAt?`) — 1h
+- [ ] **TASK-120.2:** Add `CatchUpTopicRepository` with `catch_up_topics` subcollection (`add`, `getActive`, `delete`) — 2h
+- [ ] **TASK-120.3:** Extend `LocalCacheService` + `HiveService` with catch-up topic cache read/write methods (box key: `{userId}_{personId}`) — 1h
+- [ ] **TASK-120.4:** Implement `CatchUpTopicsProvider` (`loadTopics`, `addTopic`, `deleteTopic`) — 1.5h
+- [ ] **TASK-120.5:** Build `CatchUpListSection` widget: list with swipe-to-delete (Dismissible) + trash icon + confirmation dialog — 2h
+- [ ] **TASK-120.6:** Add topic input dialog (text field + optional context label field, confirm/cancel) — 1h
+- [ ] **TASK-120.7:** Add Firestore security rule for `catch_up_topics` sub-subcollection; inject `CatchUpTopicsProvider` at call-site in `PersonsListScreen._openPerson` — 0.5h
+- [ ] **TASK-120.8:** Add edit topic action — edit icon on each tile opens prefilled dialog (same fields as add); updates text and contextLabel in Firestore + local cache — 1h
 
 **Dependencies:** None
 **Blocks:** US-121, US-122, US-124
@@ -4931,6 +4934,91 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 - [ ] **TASK-127.6:** Shared person search utility: firstName + lastName + nicknames, used across all Buddy scenarios — 1h
 
 **Dependencies:** US-124, US-125, US-126
+**Blocks:** None
+
+---
+
+### US-128: Configurable Sentiment Settings
+
+**As a** user
+**I want to** customize how the Relationship Strength score is calculated
+**So that** the score reflects my personal values about what makes a relationship strong
+
+**Story Points:** 13
+**Priority:** P2
+**Labels:** `analytics`, `settings`, `persons`
+**Status:** 📋 Planned
+**Feature:** FEATURE-029: Advanced Analytics
+
+**Acceptance Criteria:**
+- [ ] New Freezed model `SentimentConfig` with fields:
+  - `frequencyWeight` (int, %) — contribution of meeting frequency to total score
+  - `recencyWeight` (int, %) — contribution of recency
+  - `varietyWeight` (int, %) — contribution of category variety
+  - `weightVarietyWeight` (int, %) — contribution of meeting weight variety
+  - Sum of all four weights must equal 100 (enforced by UI — last slider auto-adjusts)
+  - `frequencyCap` (int) — number of meetings in window = 100% for frequency factor
+  - `varietyCap` (int) — number of distinct categories = 100% for variety factor
+  - `weightVarietyCap` (int) — number of distinct weight values = 100% for weightVariety factor
+  - `recencyFullScoreDays` (int) — days since last meeting ≤ this value = 100% for recency factor
+  - `recencyZeroScoreDays` (int) — days since last meeting ≥ this value = 0% for recency factor
+  - `timeWindowDays` (int) — global data collection window; minimum 180 days
+- [ ] Global config stored in Firestore: `users/{uid}/settings/sentiment`
+- [ ] Per-group config stored in Firestore: `users/{uid}/settings/sentiment_groups/{groupId}`
+- [ ] `RelationshipScoreService.computeScore()` accepts `SentimentConfig` parameter instead of hardcoded constants
+- [ ] Default config matches current hardcoded values (frequency 35%, recency 30%, variety 20%, weightVariety 15%; caps 48/10/3; recencyFull 14 days, recencyZero 360 days; window 730 days)
+- [ ] Settings screen accessible via two entry points:
+  - Long press on `RelationshipStrengthWidget` on `PersonDetailScreen`
+  - SideMenu → Settings → "Sentiment Settings" (placed above Google Calendar section)
+- [ ] Settings screen shows global config tab + per-group config tabs for existing groups
+- [ ] UI: four sliders with auto-adjustment (changing one slider redistributes remainder to last slider); sum indicator always shows current total
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-128.1:** Design and implement `SentimentConfig` Freezed model + `fromFirestore`/`toFirestore` — 2h
+- [ ] **TASK-128.2:** Implement `SentimentConfigRepository` — read/write global config and per-group configs — 2h
+- [ ] **TASK-128.3:** Refactor `RelationshipScoreService.computeScore()` to accept `SentimentConfig` parameter; update all call sites — 1.5h
+- [ ] **TASK-128.4:** Build `SentimentSettingsScreen` with global tab + per-group tabs; sliders with auto-correction; save button — 4h
+- [ ] **TASK-128.5:** Wire long press on `RelationshipStrengthWidget` → navigate to `SentimentSettingsScreen` — 0.5h
+- [ ] **TASK-128.6:** Add "Sentiment Settings" entry to SideMenu Settings section (above Google Calendar) — 0.5h
+
+**Dependencies:** US-107
+**Blocks:** US-129
+
+---
+
+### US-129: Primary Group per Person + Buddy Effective Settings Context
+
+**As a** user
+**I want to** assign a primary friend group to each person
+**So that** the Relationship Strength score uses the group's custom settings for that person; and Buddy can explain scores using the correct configuration
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `analytics`, `persons`, `buddy`, `ai`
+**Status:** 📋 Planned
+**Feature:** FEATURE-029: Advanced Analytics
+
+**Acceptance Criteria:**
+- [ ] `primaryGroupId` (nullable `String`) added to `Person` Freezed model
+- [ ] `EditPersonScreen` shows a "Primary Group" dropdown — lists all user's groups; "None (global settings)" is default option
+- [ ] `fromFirestore` / `toFirestore` handle `primaryGroupId` field; null = use global config
+- [ ] Score resolution logic in `RelationshipScoreService`:
+  1. If person has `primaryGroupId` and a per-group `SentimentConfig` exists → use group config
+  2. Otherwise → use global `SentimentConfig`
+- [ ] `serializeToPromptWithScores` (from US-107.4) extended to include effective settings per person:
+  - "Using [Group Name] settings: frequency 40%, recency 25%..." or "Using global settings"
+- [ ] Buddy uses effective settings context when asked to explain a person's score
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-129.1:** Add `primaryGroupId` to `Person` model; run build_runner; update `fromFirestore`/`toFirestore` — 1h
+- [ ] **TASK-129.2:** Add "Primary Group" dropdown to `EditPersonScreen`; loads groups from `FriendGroupRepository` — 1.5h
+- [ ] **TASK-129.3:** Implement config resolution helper in `SentimentConfigRepository`: `getEffectiveConfig(userId, person)` — 1h
+- [ ] **TASK-129.4:** Update `RelationshipScoreService.computeScore()` to call `getEffectiveConfig()` — 0.5h
+- [ ] **TASK-129.5:** Extend `serializeToPromptWithScores` to append effective settings section per person — 1h
+
+**Dependencies:** US-128
 **Blocks:** None
 
 ---
@@ -5348,6 +5436,40 @@ ported to `dashboard.py`.
 - [ ] Coverage threshold defined (minimum 80%)
 - [ ] PR blocked if coverage drops below threshold
 - [ ] Coverage trend tracked over time
+
+### US-INF-014: Code Metrics in CI — dart_code_metrics
+
+**As a** Developer
+**I want to** have code complexity metrics checked automatically on every PR
+**So that** I can catch overly complex methods and maintain consistent code quality standards
+
+**Story Points:** 5
+**Priority:** P3
+**Status:** 📋 Planned
+**Trigger:** After US-INF-007 (GitHub Actions CI must be in place)
+**Feature:** FEATURE-INF-003: CI/CD Enhancement
+
+**Acceptance Criteria:**
+- [ ] `dart_code_metrics` added to `dev_dependencies` in `pubspec.yaml`
+- [ ] Metrics configuration file (`analysis_options.yaml` or `dart_code_metrics.yaml`) defines thresholds:
+  - Maximum cyclomatic complexity: 10
+  - Maximum cognitive complexity: 15
+  - Maximum lines of executable code per function: 40
+- [ ] GitHub Actions step runs `flutter pub run dart_code_metrics:metrics analyze lib` on every PR
+- [ ] Step fails the CI pipeline if any threshold is exceeded
+- [ ] Results visible in PR (CI step output)
+- [ ] GitHub Actions minutes usage within free tier
+
+**Tasks:**
+- [ ] **TASK-INF-014.1:** Add `dart_code_metrics` to `pubspec.yaml` dev_dependencies and configure thresholds — 1h
+- [ ] **TASK-INF-014.2:** Add metrics analysis step to GitHub Actions workflow (after US-INF-007 workflow exists) — 1h
+- [ ] **TASK-INF-014.3:** Run initial analysis, document current violations, set realistic thresholds — 1h
+- [ ] **TASK-INF-014.4:** Fix any files exceeding thresholds at time of introduction — 1h
+
+**Dependencies:** US-INF-007
+**Blocks:** None
+
+---
 
 **End of Backlog Document**
 
