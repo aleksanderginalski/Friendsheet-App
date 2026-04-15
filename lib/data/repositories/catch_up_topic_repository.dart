@@ -46,8 +46,7 @@ class CatchUpTopicRepository {
     String userId,
     String personId,
   ) async {
-    final cached =
-        await LocalCacheService().getActiveTopics(userId, personId);
+    final cached = await LocalCacheService().getActiveTopics(userId, personId);
     if (cached.isNotEmpty) return cached;
 
     // Fetch all topics and filter/sort in Dart to avoid a composite index requirement.

@@ -66,7 +66,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     try {
       final userId = AuthService().currentUserId!;
       final topics = await _catchUpRepo.getActive(userId, widget.person.id);
-      if (mounted) setState(() { _topics = topics; _topicsLoading = false; });
+      if (mounted)
+        setState(() {
+          _topics = topics;
+          _topicsLoading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _topicsLoading = false);
     }
@@ -499,8 +503,18 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     int? selectedYear;
 
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     final currentYear = DateTime.now().year;
     final years = List.generate(5, (i) => currentYear - 1 + i);
@@ -621,8 +635,18 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
     // Pre-parse existing contextLabel (format: "Month Year", e.g. "July 2026").
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     int? selectedMonth;
     int? selectedYear;
@@ -681,8 +705,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
                         isExpanded: true,
                         hint: const Text('Year'),
                         items: years
-                            .map((y) => DropdownMenuItem(
-                                value: y, child: Text('$y')))
+                            .map((y) =>
+                                DropdownMenuItem(value: y, child: Text('$y')))
                             .toList(),
                         onChanged: (v) =>
                             setDialogState(() => selectedYear = v),
