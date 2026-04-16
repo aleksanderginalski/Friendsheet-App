@@ -66,6 +66,17 @@ class PersonDetailProvider extends ChangeNotifier {
     }
   }
 
+  // Updates partnerId and partnerLinkedAt locally after couple linking.
+  // Lightweight — does not re-fetch meeting count or score.
+  void setPartner(String partnerId, DateTime partnerLinkedAt) {
+    if (_person == null) return;
+    _person = _person!.copyWith(
+      partnerId: partnerId,
+      partnerLinkedAt: partnerLinkedAt,
+    );
+    notifyListeners();
+  }
+
   // Silently re-fetches meeting count without setting isLoading.
   // Used to sync the count after returning from PersonMeetingsScreen.
   Future<void> refreshMeetingCount() async {

@@ -15,6 +15,7 @@ import '../activities/activity_icons.dart';
 import '../sharing/share_meetings_provider.dart';
 import '../sharing/share_meetings_screen.dart';
 import 'catch_up_list_section.dart';
+import 'couple_link_section.dart';
 import 'friend_groups_provider.dart';
 import 'history_section.dart';
 import 'nicknames_section.dart';
@@ -52,6 +53,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   List<CatchUpTopic> _archivedTopics = [];
   bool _archivedLoading = false;
   final _catchUpRepo = CatchUpTopicRepository();
+  Person? _partnerPerson;
+  final _personRepo = PersonRepository();
 
   @override
   void initState() {
@@ -60,6 +63,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PersonDetailProvider>().initialize(widget.person);
       _loadTopics();
+      _loadPartner();
     });
   }
 
@@ -80,7 +84,158 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  // Loads the linked partner Person from cache so CoupleLinkSection can
+  // display their name.
+  Future<void> _loadPartner() async {
+    final partnerId = widget.person.partnerId;
+    if (partnerId == null) return;
+    final userId = AuthService().currentUserId!;
+    final results = await _personRepo.getPersonsByIds([partnerId], userId);
+    if (mounted && results.isNotEmpty) {
+      setState(() => _partnerPerson = results.first);
+    }
+  }
+
+  // Shows a searchable list of unlinked persons (excluding self).
+  // Returns the selected Person, or null if the user cancelled.
+  Future<Person?> _showPersonPickerDialog() async {
+    final userId = AuthService().currentUserId!;
+    final allPersons = await _personRepo.getPersonsByUser(userId);
+    final candidates = allPersons
+        .where((p) => p.id != widget.person.id && p.partnerId == null)
+        .toList()
+      ..sort((a, b) => a.fullName.compareTo(b.fullName));
+
+    if (!mounted) return null;
+
+    return showDialog<Person>(
+      context: context,
+      builder: (ctx) {
+        var query = '';
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final filtered = query.isEmpty
+                ? candidates
+                : candidates
+                    .where((p) => p.fullName
+                        .toLowerCase()
+                        .contains(query.toLowerCase()))
+                    .toList();
+
+            return AlertDialog(
+              title: const Text('Select partner'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Search...',
+                        prefixIcon: Icon(Icons.search),
+                        isDense: true,
+                      ),
+                      onChanged: (v) => setDialogState(() => query = v),
+                    ),
+                    const SizedBox(height: 8),
+                    if (candidates.isEmpty)
+                      const Text('No available contacts to link.')
+                    else if (filtered.isEmpty)
+                      const Text('No results.')
+                    else
+                      // ConstrainedBox limits the list height so the dialog
+                      // does not overflow the screen on large contact lists.
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) => ListTile(
+                            title: Text(filtered[i].fullName),
+                            onTap: () => Navigator.of(ctx).pop(filtered[i]),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(null),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Shows merge-or-not dialog after a partner is selected.
+  // Returns true (merge), false (no merge), null (Cancel — back to picker).
+  Future<bool?> _showMergeDialog(Person partner) async {
+    return showDialog<bool?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Merge existing topics?'),
+        content: Text(
+          '${widget.person.firstName} and ${partner.firstName} will share '
+          'their catch-up topics. Duplicates will be removed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('No, keep separate'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Yes, merge'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Orchestrates the full couple link flow:
+  // Person picker → merge dialog → link + optional merge → state refresh.
+  // "Cancel" in the merge dialog loops back to the person picker.
+  Future<void> _showCoupleLinkFlow() async {
+    while (true) {
+      final picked = await _showPersonPickerDialog();
+      if (picked == null || !mounted) return;
+
+      final merge = await _showMergeDialog(picked);
+      if (!mounted) return;
+      if (merge == null) continue; // Cancel → back to picker
+
+      final userId = AuthService().currentUserId!;
+      final now = DateTime.now();
+      await _personRepo.linkPartner(userId, widget.person.id, picked.id);
+
+      if (merge) {
+        await _catchUpRepo.mergeTopics(userId, widget.person.id, picked.id);
+        if (mounted) await _loadTopics();
+      }
+
+      if (!mounted) return;
+      // Update provider immediately so CoupleLinkSection re-renders without
+      // requiring the user to leave and re-enter the screen.
+      context.read<PersonDetailProvider>().setPartner(picked.id, now);
+      setState(() => _partnerPerson = picked);
+      return;
+    }
+  }
+
   Future<void> _addTopic(String text, String? label) async {
+    // Read partnerId before any await to avoid using BuildContext across async gaps.
+    final partnerId =
+        context.read<PersonDetailProvider>().person?.partnerId ??
+        widget.person.partnerId;
     try {
       final userId = AuthService().currentUserId!;
       final id = await _catchUpRepo.add(userId, widget.person.id, text, label);
@@ -92,6 +247,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         createdAt: DateTime.now(),
       );
       setState(() => _topics = [newTopic, ..._topics]);
+
+      if (partnerId != null) {
+        // Fire-and-forget — partner propagation failure must not affect the UI.
+        _catchUpRepo.add(userId, partnerId, text, label).catchError((_) => '');
+      }
     } catch (_) {}
   }
 
@@ -121,6 +281,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   }
 
   // Optimistically moves the topic from active to archived list, then archives in Firestore.
+  // If the person is linked to a partner, also archives the matching topic on the partner.
   Future<void> _archiveTopic(String topicId) async {
     final topic = _topics.firstWhere((t) => t.id == topicId,
         orElse: () => CatchUpTopic(
@@ -137,9 +298,38 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         ..._archivedTopics,
       ];
     });
+    // Read partnerId before any await to avoid using BuildContext across async gaps.
+    final partnerId =
+        context.read<PersonDetailProvider>().person?.partnerId ??
+        widget.person.partnerId;
     try {
       final userId = AuthService().currentUserId!;
       await _catchUpRepo.archive(userId, widget.person.id, topicId);
+
+      // Mirror archive to partner if linked (fire-and-forget).
+      if (partnerId != null && topic.text.isNotEmpty) {
+        _archivePartnerTopicByText(userId, partnerId, topic.text);
+      }
+    } catch (_) {}
+  }
+
+  // Finds the matching active topic on the partner by case-insensitive text
+  // and archives it. Fire-and-forget — failure must not affect the UI.
+  Future<void> _archivePartnerTopicByText(
+    String userId,
+    String partnerId,
+    String text,
+  ) async {
+    try {
+      final partnerTopics = await _catchUpRepo.getActive(userId, partnerId);
+      final normalizedText = text.trim().toLowerCase();
+      final match = partnerTopics.cast<CatchUpTopic?>().firstWhere(
+            (t) => t!.text.trim().toLowerCase() == normalizedText,
+            orElse: () => null,
+          );
+      if (match != null) {
+        await _catchUpRepo.archive(userId, partnerId, match.id);
+      }
     } catch (_) {}
   }
 
@@ -210,6 +400,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         archivedLoading: _archivedLoading,
         onLoadArchived: _loadArchivedTopics,
         onDeleteArchivedTopic: _deleteArchivedTopic,
+        partnerPerson: _partnerPerson,
+        onCoupleLinkTap: _showCoupleLinkFlow,
       ),
     );
   }
@@ -588,60 +780,65 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         builder: (ctx, setDialogState) {
           return AlertDialog(
             title: const Text('Add topic'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: textController,
-                  decoration: const InputDecoration(labelText: 'Topic'),
-                  textCapitalization: TextCapitalization.sentences,
-                  // No onChanged → no setDialogState calls from the keyboard path.
-                  // Confirm button reactivity is handled by ValueListenableBuilder.
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'When? (optional)',
-                  style: Theme.of(ctx).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButton<int>(
-                        value: selectedMonth,
-                        isExpanded: true,
-                        hint: const Text('Month'),
-                        items: List.generate(
-                          12,
-                          (i) => DropdownMenuItem(
-                            value: i + 1,
-                            child: Text(monthNames[i]),
+            // SizedBox(width: maxFinite) prevents IntrinsicWidth from
+            // expanding the dialog as the user types in the TextField.
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: textController,
+                    decoration: const InputDecoration(labelText: 'Topic'),
+                    textCapitalization: TextCapitalization.sentences,
+                    // No onChanged → no setDialogState calls from the keyboard path.
+                    // Confirm button reactivity is handled by ValueListenableBuilder.
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'When? (optional)',
+                    style: Theme.of(ctx).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<int>(
+                          value: selectedMonth,
+                          isExpanded: true,
+                          hint: const Text('Month'),
+                          items: List.generate(
+                            12,
+                            (i) => DropdownMenuItem(
+                              value: i + 1,
+                              child: Text(monthNames[i]),
+                            ),
                           ),
+                          onChanged: (v) =>
+                              setDialogState(() => selectedMonth = v),
                         ),
-                        onChanged: (v) =>
-                            setDialogState(() => selectedMonth = v),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: DropdownButton<int>(
-                        value: selectedYear,
-                        isExpanded: true,
-                        hint: const Text('Year'),
-                        items: years
-                            .map((y) => DropdownMenuItem(
-                                  value: y,
-                                  child: Text('$y'),
-                                ))
-                            .toList(),
-                        onChanged: (v) =>
-                            setDialogState(() => selectedYear = v),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<int>(
+                          value: selectedYear,
+                          isExpanded: true,
+                          hint: const Text('Year'),
+                          items: years
+                              .map((y) => DropdownMenuItem(
+                                    value: y,
+                                    child: Text('$y'),
+                                  ))
+                              .toList(),
+                          onChanged: (v) =>
+                              setDialogState(() => selectedYear = v),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -730,52 +927,57 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         builder: (ctx, setDialogState) {
           return AlertDialog(
             title: const Text('Edit topic'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: textController,
-                  decoration: const InputDecoration(labelText: 'Topic'),
-                  textCapitalization: TextCapitalization.sentences,
-                ),
-                const SizedBox(height: 16),
-                Text('When? (optional)',
-                    style: Theme.of(ctx).textTheme.bodySmall),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButton<int>(
-                        value: selectedMonth,
-                        isExpanded: true,
-                        hint: const Text('Month'),
-                        items: List.generate(
-                          12,
-                          (i) => DropdownMenuItem(
-                              value: i + 1, child: Text(monthNames[i])),
+            // SizedBox(width: maxFinite) prevents IntrinsicWidth from
+            // expanding the dialog as the user types in the TextField.
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: textController,
+                    decoration: const InputDecoration(labelText: 'Topic'),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+                  const SizedBox(height: 16),
+                  Text('When? (optional)',
+                      style: Theme.of(ctx).textTheme.bodySmall),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<int>(
+                          value: selectedMonth,
+                          isExpanded: true,
+                          hint: const Text('Month'),
+                          items: List.generate(
+                            12,
+                            (i) => DropdownMenuItem(
+                                value: i + 1, child: Text(monthNames[i])),
+                          ),
+                          onChanged: (v) =>
+                              setDialogState(() => selectedMonth = v),
                         ),
-                        onChanged: (v) =>
-                            setDialogState(() => selectedMonth = v),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: DropdownButton<int>(
-                        value: selectedYear,
-                        isExpanded: true,
-                        hint: const Text('Year'),
-                        items: years
-                            .map((y) =>
-                                DropdownMenuItem(value: y, child: Text('$y')))
-                            .toList(),
-                        onChanged: (v) =>
-                            setDialogState(() => selectedYear = v),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<int>(
+                          value: selectedYear,
+                          isExpanded: true,
+                          hint: const Text('Year'),
+                          items: years
+                              .map((y) =>
+                                  DropdownMenuItem(value: y, child: Text('$y')))
+                              .toList(),
+                          onChanged: (v) =>
+                              setDialogState(() => selectedYear = v),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -920,6 +1122,8 @@ class _PersonDetailBody extends StatelessWidget {
   final bool archivedLoading;
   final VoidCallback onLoadArchived;
   final Future<void> Function(String topicId) onDeleteArchivedTopic;
+  final Person? partnerPerson;
+  final VoidCallback onCoupleLinkTap;
 
   const _PersonDetailBody({
     required this.provider,
@@ -938,6 +1142,8 @@ class _PersonDetailBody extends StatelessWidget {
     required this.archivedLoading,
     required this.onLoadArchived,
     required this.onDeleteArchivedTopic,
+    required this.partnerPerson,
+    required this.onCoupleLinkTap,
   });
 
   @override
@@ -1002,6 +1208,11 @@ class _PersonDetailBody extends StatelessWidget {
           archivedLoading: archivedLoading,
           onLoadArchived: onLoadArchived,
           onDeleteArchivedTopic: onDeleteArchivedTopic,
+        ),
+        CoupleLinkSection(
+          person: person,
+          partnerPerson: partnerPerson,
+          onLinkTap: onCoupleLinkTap,
         ),
         NicknamesSection(provider: provider, person: person),
         _GroupsSection(person: person),

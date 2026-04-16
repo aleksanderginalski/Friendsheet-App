@@ -50,46 +50,46 @@ class CatchUpListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      leading: const Icon(Icons.list_alt_outlined),
+      title: const Text('Catch-up List'),
+      // "Add" button in trailing so it's always visible without expanding.
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Catch-up List',
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add),
-                tooltip: 'Add topic',
-                onPressed: onAddTap,
-              ),
-            ],
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Add topic',
+            onPressed: onAddTap,
           ),
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: CircularProgressIndicator(),
-            )
-          else if (topics.isEmpty)
-            Text(
-              'No topics yet',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
-            )
-          else
-            ...topics.map((topic) => _TopicTile(
-                  topic: topic,
-                  onConfirmDelete: () => _confirmDelete(context),
-                  onDelete: () => onDelete(topic.id),
-                  onEdit: () => onEdit(topic),
-                  onArchive: () => onArchive(topic.id),
-                )),
+          // Default expansion arrow rebuilt by ExpansionTile when children present.
+          const Icon(Icons.expand_more),
         ],
       ),
+      initiallyExpanded: false,
+      children: [
+        if (isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: CircularProgressIndicator(),
+          )
+        else if (topics.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'No topics yet',
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
+            ),
+          )
+        else
+          ...topics.map((topic) => _TopicTile(
+                topic: topic,
+                onConfirmDelete: () => _confirmDelete(context),
+                onDelete: () => onDelete(topic.id),
+                onEdit: () => onEdit(topic),
+                onArchive: () => onArchive(topic.id),
+              )),
+      ],
     );
   }
 }
@@ -123,7 +123,6 @@ class _TopicTile extends StatelessWidget {
       confirmDismiss: (_) => onConfirmDelete(),
       onDismissed: (_) => onDelete(),
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
         title: Text(topic.text),
         subtitle: topic.contextLabel != null ? Text(topic.contextLabel!) : null,
         trailing: Row(

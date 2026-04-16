@@ -4710,28 +4710,32 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 8
 **Priority:** P3
 **Labels:** `social`, `persons`, `social-graph`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Feature:** FEATURE-031: Social Graph — Couple/Family Link
 
 **Acceptance Criteria:**
-- [ ] On Person detail screen: "Link as couple" button
-- [ ] User picks a second person from their contacts list
-- [ ] App asks: "Merge existing topics?" — Scenario 1.0 (Yes) or Scenario 2.0 (No)
-- [ ] Scenario 1.0 (merge): both persons receive all topics from both sides; duplicates removed
+- [ ] On Person detail screen: "Link as couple" tile in a new Couple section
+- [ ] User picks a second person from their contacts list (person picker dialog)
+- [ ] Merge dialog: "Merge existing topics?" with three options: Yes (Scenario 1.0), No (Scenario 2.0), Cancel
+- [ ] Cancel in merge dialog → returns to person picker (loop; does not close the whole flow)
+- [ ] Scenario 1.0 (merge): both persons receive all topics from both sides; duplicates removed (case-insensitive text match)
 - [ ] Scenario 2.0 (no merge): existing topics remain individual; only future new topics are shared
 - [ ] From link date forward: new topic added to one person → automatically added to the other
 - [ ] Couple link date (`partnerLinkedAt`) recorded in Firestore + Hive (required for Separation flow)
-- [ ] Link visible on both Person detail screens
+- [ ] Link visible on both Person detail screens (shows partner's full name)
 - [ ] Stored via `partnerId: String?` and `partnerLinkedAt: DateTime?` on Person model in Firestore + Hive
 - [ ] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
 - [ ] **TASK-122.1:** Add `partnerId: String?` and `partnerLinkedAt: DateTime?` to `Person` Freezed model; run build_runner — 1h
-- [ ] **TASK-122.2:** Add `linkPartner(personId, partnerId)` and `getPartner(personId)` to `PersonRepository` — 1.5h
-- [ ] **TASK-122.3:** Implement topic merge/share logic in `CatchUpTopicRepository.linkPartner()` — 2h
-- [ ] **TASK-122.4:** Build "Link as couple" UI on `PersonDetailScreen` — person picker dialog + confirmation — 2h
-- [ ] **TASK-122.5:** Build merge-or-not dialog (Scenario 1.0 vs 2.0 choice) — 1h
-- [ ] **TASK-122.6:** Implement write-through: new topic creation propagates to partner (in `CatchUpTopicsProvider.addTopic()`) — 1.5h
+- [ ] **TASK-122.2:** Add `linkPartner(userId, personId, partnerId)` to `PersonRepository` (sets fields on both persons in Firestore + Hive write-through) — 1.5h
+- [ ] **TASK-122.3:** Add `mergeTopics(userId, personId, partnerId)` to `CatchUpTopicRepository` (copies missing topics to each side; deduplicates by case-insensitive text trim; write-through both Firestore and Hive) — 2h
+- [ ] **TASK-122.4:** Build `CoupleLinkSection` widget (`lib/presentation/persons/couple_link_section.dart`) — shows "Link as couple" when unlinked, "Linked with [name]" when linked — 1h
+- [ ] **TASK-122.5:** Implement `_showCoupleLinkFlow()` on `_PersonDetailScreenState`: `while(true)` loop — person picker dialog → merge dialog (Yes/No/Cancel); Cancel returns to picker; on confirm calls TASK-122.2 + optionally TASK-122.3; refreshes person state — 2.5h
+- [ ] **TASK-122.6:** Implement write-through: in `_PersonDetailScreenState._addTopic()`, after adding topic to primary person, if `person.partnerId != null` also call `_catchUpRepo.add()` for the partner (fire-and-forget, no error propagation to UI) — 1h
+- [ ] **TASK-122.7:** Person picker dialog: add search TextField (StatefulBuilder) so users can filter by name without scrolling long lists — 0.5h
+- [ ] **TASK-122.8:** Make `CatchUpListSection` collapsible by default: convert to `ExpansionTile` (initially collapsed); move "Add" button to trailing of the header row — 0.5h
+- [ ] **TASK-122.9:** Archive propagation to partner: in `_PersonDetailScreenState._archiveTopic()`, after archiving on primary person, find matching active topic on partner by case-insensitive text and archive it (fire-and-forget); add `PersonDetailProvider.setPartner()` for immediate post-link UI refresh — 1h
 
 **Dependencies:** US-120
 **Blocks:** US-123, US-125
