@@ -1879,3 +1879,46 @@ Run after every release or hotfix:
 | UT-121-018 | calls onDeleteArchivedTopic after confirming delete dialog | deletedId == 't1' after confirm |
 | UT-121-019 | does not call onDeleteArchivedTopic when cancel pressed | callback not invoked after cancel |
 
+## US-122 — Couple Link
+
+### Automated tests — `test/data/models/person_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-122-001 | toFirestore() includes partnerId when set | map['partnerId'] == 'p2' |
+| UT-122-002 | toFirestore() omits partnerId key when null | map does not contain 'partnerId' key |
+| UT-122-003 | fromFirestore reads partnerId and partnerLinkedAt when present | partnerId == 'p2', partnerLinkedAt == expected date |
+| UT-122-004 | fromFirestore: partnerId and partnerLinkedAt are null when fields absent | both fields null |
+
+### Automated tests — `test/data/repositories/person_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-122-005 | linkPartner sets cross-referenced partnerId on both persons in Firestore | docA.partnerId == B.id, docB.partnerId == A.id |
+| UT-122-006 | linkPartner sets partnerLinkedAt on both persons in Firestore | partnerLinkedAt != null on both docs |
+
+### Automated tests — `test/data/repositories/catch_up_topic_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-122-007 | mergeTopics copies partner topics missing from person | person now has 'Partner only' topic |
+| UT-122-008 | mergeTopics copies person topics missing from partner | partner now has 'Person only' topic |
+| UT-122-009 | mergeTopics does not duplicate topics with same text (case-insensitive) | each side has exactly 1 matching topic |
+| UT-122-010 | mergeTopics: both sides unchanged when topics are identical | each side stays at 1 topic |
+
+### Automated tests — `test/presentation/persons/person_detail_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-122-011 | setPartner updates partnerId and partnerLinkedAt on person | person.partnerId == 'p2', partnerLinkedAt == expected date |
+
+### Automated tests — `test/presentation/persons/couple_link_section_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-122-012 | shows "Link as couple" title when person is unlinked | 'Link as couple' text visible |
+| UT-122-013 | shows "Couple" title when person is linked | 'Couple' text visible |
+| UT-122-014 | shows partner full name in subtitle when linked | partner firstName visible |
+| UT-122-015 | calls onLinkTap when tapped and unlinked | callback invoked |
+| UT-122-016 | does not call onLinkTap when tapped and already linked | callback not invoked |
+

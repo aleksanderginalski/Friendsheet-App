@@ -214,5 +214,78 @@ void main() {
         expect(after.any((t) => t.id == id), isFalse);
       });
     });
+
+    group('mergeTopics', () {
+      const partnerId = 'p2';
+
+      CollectionReference partnerTopicsRef() => fakeFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('persons')
+          .doc(partnerId)
+          .collection('catch_up_topics');
+
+      Future<String> seedPartnerTopic({
+        String text = 'Partner topic',
+        String? contextLabel,
+      }) async {
+        final ref = await partnerTopicsRef().add({
+          'text': text,
+          if (contextLabel != null) 'contextLabel': contextLabel,
+          'createdAt': Timestamp.fromDate(DateTime(2026, 4, 1)),
+          'isArchived': false,
+        });
+        return ref.id;
+      }
+
+      test('copies partner topics missing from person', () async {
+        await seedPartnerTopic(text: 'Partner only');
+
+        await repository.mergeTopics(userId, personId, partnerId);
+
+        final personTopics = await repository.getActive(userId, personId);
+        expect(personTopics.any((t) => t.text == 'Partner only'), isTrue);
+      });
+
+      test('copies person topics missing from partner', () async {
+        await seedTopic(text: 'Person only');
+
+        await repository.mergeTopics(userId, personId, partnerId);
+
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(partnerTopics.any((t) => t.text == 'Person only'), isTrue);
+      });
+
+      test('does not duplicate topics with same text (case-insensitive)',
+          () async {
+        await seedTopic(text: 'Shared topic');
+        await seedPartnerTopic(text: 'shared topic');
+
+        await repository.mergeTopics(userId, personId, partnerId);
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        final personCount = personTopics
+            .where((t) => t.text.toLowerCase() == 'shared topic')
+            .length;
+        final partnerCount = partnerTopics
+            .where((t) => t.text.toLowerCase() == 'shared topic')
+            .length;
+        expect(personCount, equals(1));
+        expect(partnerCount, equals(1));
+      });
+
+      test('both sides unchanged when topics are identical', () async {
+        await seedTopic(text: 'Same');
+        await seedPartnerTopic(text: 'Same');
+
+        await repository.mergeTopics(userId, personId, partnerId);
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.length, equals(1));
+        expect(partnerTopics.length, equals(1));
+      });
+    });
   });
 }

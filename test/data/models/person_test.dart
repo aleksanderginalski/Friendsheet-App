@@ -184,6 +184,23 @@ void main() {
         final map = personWithoutLastName.toFirestore();
         expect(map.containsKey('birthDayMonth'), false);
       });
+
+      test('includes partnerId when set', () {
+        final person = Person(
+          id: 'p1',
+          userId: 'u1',
+          firstName: 'Anna',
+          createdAt: testDate,
+          partnerId: 'p2',
+        );
+        final map = person.toFirestore();
+        expect(map['partnerId'], 'p2');
+      });
+
+      test('omits partnerId key when null', () {
+        final map = personWithoutLastName.toFirestore();
+        expect(map.containsKey('partnerId'), false);
+      });
     });
 
     group('linkedUserId (fromFirestore)', () {
@@ -253,6 +270,47 @@ void main() {
         final person = Person.fromFirestore(doc);
 
         expect(person.birthDayMonth, isNull);
+      });
+    });
+
+    group('partnerId / partnerLinkedAt (fromFirestore)', () {
+      late FakeFirebaseFirestore fakeFirestore;
+
+      setUp(() {
+        fakeFirestore = FakeFirebaseFirestore();
+      });
+
+      test('reads partnerId and partnerLinkedAt when present in document',
+          () async {
+        final linkedAt = DateTime(2026, 4, 10);
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+          'partnerId': 'p2',
+          'partnerLinkedAt': Timestamp.fromDate(linkedAt),
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.partnerId, 'p2');
+        expect(person.partnerLinkedAt, linkedAt);
+      });
+
+      test('partnerId and partnerLinkedAt are null when fields absent',
+          () async {
+        final ref = await fakeFirestore.collection('persons').add({
+          'userId': 'u1',
+          'firstName': 'Anna',
+          'createdAt': Timestamp.fromDate(testDate),
+          'nicknames': <String>[],
+        });
+        final doc = await ref.get();
+        final person = Person.fromFirestore(doc);
+
+        expect(person.partnerId, isNull);
+        expect(person.partnerLinkedAt, isNull);
       });
     });
   });

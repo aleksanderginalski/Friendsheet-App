@@ -170,6 +170,23 @@ void main() {
       });
     });
 
+    group('setPartner', () {
+      setUp(() async {
+        when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+            .thenAnswer((_) async => 0);
+        await provider.initialize(testPerson);
+      });
+
+      test('updates partnerId and partnerLinkedAt on person', () {
+        final linkedAt = DateTime(2026, 4, 10);
+
+        provider.setPartner('p2', linkedAt);
+
+        expect(provider.person!.partnerId, equals('p2'));
+        expect(provider.person!.partnerLinkedAt, equals(linkedAt));
+      });
+    });
+
     group('linkFriendAccount', () {
       setUp(() async {
         when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
