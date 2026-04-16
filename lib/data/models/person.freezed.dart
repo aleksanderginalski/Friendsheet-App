@@ -28,6 +28,8 @@ mixin _$Person {
   List<String> get nicknames => throw _privateConstructorUsedError;
   String? get linkedUserId => throw _privateConstructorUsedError;
   String? get birthDayMonth => throw _privateConstructorUsedError;
+  String? get partnerId => throw _privateConstructorUsedError;
+  DateTime? get partnerLinkedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Person to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +53,9 @@ abstract class $PersonCopyWith<$Res> {
       DateTime createdAt,
       List<String> nicknames,
       String? linkedUserId,
-      String? birthDayMonth});
+      String? birthDayMonth,
+      String? partnerId,
+      DateTime? partnerLinkedAt});
 }
 
 /// @nodoc
@@ -77,6 +81,8 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
     Object? nicknames = null,
     Object? linkedUserId = freezed,
     Object? birthDayMonth = freezed,
+    Object? partnerId = freezed,
+    Object? partnerLinkedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -111,6 +117,14 @@ class _$PersonCopyWithImpl<$Res, $Val extends Person>
           ? _value.birthDayMonth
           : birthDayMonth // ignore: cast_nullable_to_non_nullable
               as String?,
+      partnerId: freezed == partnerId
+          ? _value.partnerId
+          : partnerId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      partnerLinkedAt: freezed == partnerLinkedAt
+          ? _value.partnerLinkedAt
+          : partnerLinkedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -130,7 +144,9 @@ abstract class _$$PersonImplCopyWith<$Res> implements $PersonCopyWith<$Res> {
       DateTime createdAt,
       List<String> nicknames,
       String? linkedUserId,
-      String? birthDayMonth});
+      String? birthDayMonth,
+      String? partnerId,
+      DateTime? partnerLinkedAt});
 }
 
 /// @nodoc
@@ -154,6 +170,8 @@ class __$$PersonImplCopyWithImpl<$Res>
     Object? nicknames = null,
     Object? linkedUserId = freezed,
     Object? birthDayMonth = freezed,
+    Object? partnerId = freezed,
+    Object? partnerLinkedAt = freezed,
   }) {
     return _then(_$PersonImpl(
       id: null == id
@@ -188,6 +206,14 @@ class __$$PersonImplCopyWithImpl<$Res>
           ? _value.birthDayMonth
           : birthDayMonth // ignore: cast_nullable_to_non_nullable
               as String?,
+      partnerId: freezed == partnerId
+          ? _value.partnerId
+          : partnerId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      partnerLinkedAt: freezed == partnerLinkedAt
+          ? _value.partnerLinkedAt
+          : partnerLinkedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -203,7 +229,9 @@ class _$PersonImpl extends _Person {
       required this.createdAt,
       final List<String> nicknames = const [],
       this.linkedUserId,
-      this.birthDayMonth})
+      this.birthDayMonth,
+      this.partnerId,
+      this.partnerLinkedAt})
       : _nicknames = nicknames,
         super._();
 
@@ -233,10 +261,14 @@ class _$PersonImpl extends _Person {
   final String? linkedUserId;
   @override
   final String? birthDayMonth;
+  @override
+  final String? partnerId;
+  @override
+  final DateTime? partnerLinkedAt;
 
   @override
   String toString() {
-    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt, nicknames: $nicknames, linkedUserId: $linkedUserId, birthDayMonth: $birthDayMonth)';
+    return 'Person(id: $id, userId: $userId, firstName: $firstName, lastName: $lastName, createdAt: $createdAt, nicknames: $nicknames, linkedUserId: $linkedUserId, birthDayMonth: $birthDayMonth, partnerId: $partnerId, partnerLinkedAt: $partnerLinkedAt)';
   }
 
   @override
@@ -257,7 +289,11 @@ class _$PersonImpl extends _Person {
             (identical(other.linkedUserId, linkedUserId) ||
                 other.linkedUserId == linkedUserId) &&
             (identical(other.birthDayMonth, birthDayMonth) ||
-                other.birthDayMonth == birthDayMonth));
+                other.birthDayMonth == birthDayMonth) &&
+            (identical(other.partnerId, partnerId) ||
+                other.partnerId == partnerId) &&
+            (identical(other.partnerLinkedAt, partnerLinkedAt) ||
+                other.partnerLinkedAt == partnerLinkedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -271,7 +307,9 @@ class _$PersonImpl extends _Person {
       createdAt,
       const DeepCollectionEquality().hash(_nicknames),
       linkedUserId,
-      birthDayMonth);
+      birthDayMonth,
+      partnerId,
+      partnerLinkedAt);
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.
@@ -298,7 +336,9 @@ abstract class _Person extends Person {
       required final DateTime createdAt,
       final List<String> nicknames,
       final String? linkedUserId,
-      final String? birthDayMonth}) = _$PersonImpl;
+      final String? birthDayMonth,
+      final String? partnerId,
+      final DateTime? partnerLinkedAt}) = _$PersonImpl;
   const _Person._() : super._();
 
   factory _Person.fromJson(Map<String, dynamic> json) = _$PersonImpl.fromJson;
@@ -319,6 +359,10 @@ abstract class _Person extends Person {
   String? get linkedUserId;
   @override
   String? get birthDayMonth;
+  @override
+  String? get partnerId;
+  @override
+  DateTime? get partnerLinkedAt;
 
   /// Create a copy of Person
   /// with the given fields replaced by the non-null parameter values.

@@ -24,6 +24,9 @@ _$PersonImpl _$$PersonImplFromJson(Map<String, dynamic> json) => $checkedCreate(
                   const []),
           linkedUserId: $checkedConvert('linkedUserId', (v) => v as String?),
           birthDayMonth: $checkedConvert('birthDayMonth', (v) => v as String?),
+          partnerId: $checkedConvert('partnerId', (v) => v as String?),
+          partnerLinkedAt: $checkedConvert('partnerLinkedAt',
+              (v) => v == null ? null : DateTime.parse(v as String)),
         );
         return val;
       },
@@ -39,4 +42,6 @@ Map<String, dynamic> _$$PersonImplToJson(_$PersonImpl instance) =>
       'nicknames': instance.nicknames,
       'linkedUserId': instance.linkedUserId,
       'birthDayMonth': instance.birthDayMonth,
+      'partnerId': instance.partnerId,
+      'partnerLinkedAt': instance.partnerLinkedAt?.toIso8601String(),
     };

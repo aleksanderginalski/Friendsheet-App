@@ -144,6 +144,25 @@ class MockCatchUpTopicRepository extends _i1.Mock
       ) as _i3.Future<List<_i5.CatchUpTopic>>);
 
   @override
+  _i3.Future<void> mergeTopics(
+    String? userId,
+    String? personId,
+    String? partnerId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #mergeTopics,
+          [
+            userId,
+            personId,
+            partnerId,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   _i3.Future<void> delete(
     String? userId,
     String? personId,

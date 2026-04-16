@@ -17,6 +17,8 @@ class Person with _$Person {
     @Default([]) List<String> nicknames,
     String? linkedUserId,
     String? birthDayMonth,
+    String? partnerId,
+    DateTime? partnerLinkedAt,
   }) = _Person;
 
   /// Returns full display name, e.g. "Anna" or "Anna Smith"
@@ -41,6 +43,10 @@ class Person with _$Person {
           [],
       linkedUserId: data['linkedUserId'] as String?,
       birthDayMonth: data['birthDayMonth'] as String?,
+      partnerId: data['partnerId'] as String?,
+      partnerLinkedAt: data['partnerLinkedAt'] != null
+          ? (data['partnerLinkedAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -55,6 +61,9 @@ class Person with _$Person {
       'nicknames': nicknames,
       if (linkedUserId != null) 'linkedUserId': linkedUserId,
       if (birthDayMonth != null) 'birthDayMonth': birthDayMonth,
+      if (partnerId != null) 'partnerId': partnerId,
+      if (partnerLinkedAt != null)
+        'partnerLinkedAt': Timestamp.fromDate(partnerLinkedAt!),
     };
   }
 

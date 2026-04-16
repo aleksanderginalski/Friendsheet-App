@@ -58,8 +58,9 @@ Jeśli duplikat — pomiń bez informowania użytkownika.
 Dla każdego zidentyfikowanego problemu:
 1. Wskaż plik (.claude/skills/X/SKILL.md lub CLAUDE.md)
 2. Pokaż dokładny tekst który zostanie dodany
-3. Zastosuj zmianę od razu
-4. Napisz: "Zmiana zastosowana w [plik]. Chcesz wiedzieć dlaczego?"
+3. Poczekaj na potwierdzenie użytkownika ("ok", "tak", "akceptuję") lub uwzględnij jego uwagi
+4. Dopiero po akceptacji zastosuj zmianę
+5. Napisz: "Zmiana zastosowana w [plik]. Chcesz wiedzieć dlaczego?"
 
 Jeśli pyta "dlaczego?":
 - Jaki problem rozwiązuje
@@ -68,6 +69,10 @@ Jeśli pyta "dlaczego?":
 
 Jeśli zmiana dotyczy zakresu lub odpowiedzialności agenta (nie tylko jego instrukcji)
 → zaktualizuj też MULTI_AGENT_ARCHITECTURE.md w sekcji Agent Specifications.
+
+Po zastosowaniu wszystkich zmian reaktywnych zapytaj:
+"Czy to wszystko co chciałeś zmienić? Możemy przejść do sekwencji zamknięcia?"
+Poczekaj na potwierdzenie przed podaniem kroków zamknięcia.
 
 ## Krok 4 — Sugestia proaktywna (co 3 US)
 

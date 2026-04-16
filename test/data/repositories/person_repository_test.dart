@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,8 @@ import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/friend_group_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/services/hive_service.dart';
+import 'package:hive/hive.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
@@ -195,6 +199,49 @@ void main() {
 
         final meetings = await meetingsRef('user-1').get();
         expect(meetings.docs.first['participantIds'], isEmpty);
+      });
+    });
+
+    group('linkPartner', () {
+      late Directory hiveDir;
+
+      setUp(() async {
+        hiveDir = await Directory.systemTemp.createTemp('hive_person_link_');
+        await HiveService.initialize(testPath: hiveDir.path);
+      });
+
+      tearDown(() async {
+        await Hive.close();
+        await hiveDir.delete(recursive: true);
+      });
+
+      test('sets cross-referenced partnerId on both persons in Firestore',
+          () async {
+        final a =
+            await repository.addPerson(makePerson(id: 'a', firstName: 'Anna'));
+        final b =
+            await repository.addPerson(makePerson(id: 'b', firstName: 'Bob'));
+
+        await repository.linkPartner('user-1', a.id, b.id);
+
+        final docA = await personsRef('user-1').doc(a.id).get();
+        final docB = await personsRef('user-1').doc(b.id).get();
+        expect(docA.data()?['partnerId'], equals(b.id));
+        expect(docB.data()?['partnerId'], equals(a.id));
+      });
+
+      test('sets partnerLinkedAt on both persons in Firestore', () async {
+        final a =
+            await repository.addPerson(makePerson(id: 'a', firstName: 'Anna'));
+        final b =
+            await repository.addPerson(makePerson(id: 'b', firstName: 'Bob'));
+
+        await repository.linkPartner('user-1', a.id, b.id);
+
+        final docA = await personsRef('user-1').doc(a.id).get();
+        final docB = await personsRef('user-1').doc(b.id).get();
+        expect(docA.data()?['partnerLinkedAt'], isNotNull);
+        expect(docB.data()?['partnerLinkedAt'], isNotNull);
       });
     });
   });

@@ -371,6 +371,25 @@ class MockPersonRepository extends _i1.Mock implements _i10.PersonRepository {
       ) as _i7.Future<bool>);
 
   @override
+  _i7.Future<void> linkPartner(
+    String? userId,
+    String? personId,
+    String? partnerId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #linkPartner,
+          [
+            userId,
+            personId,
+            partnerId,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
   _i7.Future<void> deletePerson(
     String? userId,
     String? personId,

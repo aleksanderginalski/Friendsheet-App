@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (937)
+✅ All tests passing (953)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,14 +174,15 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.8 — US-121: Mark Topic as Discussed (April 16, 2026)
-- ✅ `CatchUpTopicRepository` (MODIFIED): `archive()` sets `isArchived: true` + `archivedAt` in Firestore + cache; `getArchived()` cache-first with Firestore fallback
-- ✅ `LocalCacheService` (MODIFIED): `getArchivedTopics()` returns archived topics sorted by archivedAt descending
-- ✅ `CatchUpTopicsProvider` (MODIFIED): `archiveTopic()` optimistically removes topic from active list
-- ✅ `CatchUpListSection` (MODIFIED): `check_circle_outline` "Mark as discussed" icon added as first trailing action on each topic tile
-- ✅ `HistorySection` widget (NEW): collapsible `ExpansionTile` with lazy load; Polish empty state; read-only archived topics with permanent delete
-- ✅ `PersonDetailScreen` (MODIFIED): archive/history state in `_PersonDetailScreenState`; `HistorySection` inserted below active list
-- ✅ 19 new tests (937 total)
+### Latest: v4.5.9 — US-122: Couple Link (April 16, 2026)
+- ✅ `Person` model (MODIFIED): `partnerId: String?` + `partnerLinkedAt: DateTime?`; Freezed regenerated
+- ✅ `PersonRepository` (MODIFIED): `linkPartner()` batch-writes both persons in Firestore + Hive write-through
+- ✅ `CatchUpTopicRepository` (MODIFIED): `mergeTopics()` copies missing topics bidirectionally with case-insensitive deduplication
+- ✅ `CoupleLinkSection` widget (NEW): shows "Link as couple" / "Coupled with [name]" based on link state
+- ✅ `PersonDetailProvider` (MODIFIED): `setPartner()` for immediate post-link UI refresh
+- ✅ `PersonDetailScreen` (MODIFIED): `while(true)` picker→merge flow; topic + archive propagation to partner (fire-and-forget)
+- ✅ `CatchUpListSection` (MODIFIED): converted to `ExpansionTile` (collapsed by default); Add button in header
+- ✅ 16 new tests (953 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

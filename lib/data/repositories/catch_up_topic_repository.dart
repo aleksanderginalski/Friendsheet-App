@@ -130,6 +130,35 @@ class CatchUpTopicRepository {
     return archived;
   }
 
+  /// Copies active topics missing on each side (deduplicates by
+  /// case-insensitive text trim). Called only for Scenario 1.0 (merge).
+  /// Write-through is handled inside add() for each new topic.
+  Future<void> mergeTopics(
+    String userId,
+    String personId,
+    String partnerId,
+  ) async {
+    final personTopics = await getActive(userId, personId);
+    final partnerTopics = await getActive(userId, partnerId);
+
+    final personTexts =
+        personTopics.map((t) => t.text.trim().toLowerCase()).toSet();
+    final partnerTexts =
+        partnerTopics.map((t) => t.text.trim().toLowerCase()).toSet();
+
+    for (final t in partnerTopics) {
+      if (!personTexts.contains(t.text.trim().toLowerCase())) {
+        await add(userId, personId, t.text, t.contextLabel);
+      }
+    }
+
+    for (final t in personTopics) {
+      if (!partnerTexts.contains(t.text.trim().toLowerCase())) {
+        await add(userId, partnerId, t.text, t.contextLabel);
+      }
+    }
+  }
+
   /// Permanently deletes a topic from Firestore and removes it from local cache.
   Future<void> delete(
     String userId,
