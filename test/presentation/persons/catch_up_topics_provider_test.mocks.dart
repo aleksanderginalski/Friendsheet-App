@@ -108,6 +108,42 @@ class MockCatchUpTopicRepository extends _i1.Mock
       ) as _i3.Future<void>);
 
   @override
+  _i3.Future<void> archive(
+    String? userId,
+    String? personId,
+    String? topicId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #archive,
+          [
+            userId,
+            personId,
+            topicId,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<List<_i5.CatchUpTopic>> getArchived(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getArchived,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue:
+            _i3.Future<List<_i5.CatchUpTopic>>.value(<_i5.CatchUpTopic>[]),
+      ) as _i3.Future<List<_i5.CatchUpTopic>>);
+
+  @override
   _i3.Future<void> delete(
     String? userId,
     String? personId,

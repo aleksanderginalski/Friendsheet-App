@@ -119,6 +119,37 @@ void main() {
       });
     });
 
+    group('archiveTopic', () {
+      test('removes topic optimistically from active list', () async {
+        when(mockRepo.getActive('u1', 'p1'))
+            .thenAnswer((_) async => [topic1, topic2]);
+        await provider.loadTopics('p1');
+
+        bool optimisticSeen = false;
+        when(mockRepo.archive('u1', 'p1', 't1')).thenAnswer((_) async {
+          optimisticSeen = provider.topics.every((t) => t.id != 't1');
+        });
+
+        await provider.archiveTopic('p1', 't1');
+
+        expect(optimisticSeen, isTrue);
+        expect(provider.topics.any((t) => t.id == 't1'), isFalse);
+        expect(provider.topics.length, equals(1));
+      });
+
+      test('sets errorMessage when repository throws', () async {
+        when(mockRepo.getActive('u1', 'p1')).thenAnswer((_) async => [topic1]);
+        await provider.loadTopics('p1');
+
+        when(mockRepo.archive(any, any, any))
+            .thenThrow(Exception('archive failed'));
+
+        await provider.archiveTopic('p1', 't1');
+
+        expect(provider.errorMessage, isNotNull);
+      });
+    });
+
     group('dispose guard', () {
       test('does not throw when notifyListeners called after dispose', () {
         provider.dispose();

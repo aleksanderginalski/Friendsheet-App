@@ -128,6 +128,59 @@ void main() {
       });
     });
 
+    group('archive', () {
+      test('sets isArchived true and archivedAt in Firestore', () async {
+        final id = await seedTopic(text: 'To archive');
+
+        await repository.archive(userId, personId, id);
+
+        final doc = await topicsRef().doc(id).get();
+        final data = doc.data() as Map<String, dynamic>;
+        expect(data['isArchived'], isTrue);
+        expect(data['archivedAt'], isNotNull);
+      });
+
+      test('archived topic no longer appears in getActive', () async {
+        final id = await repository.add(userId, personId, 'Active', null);
+
+        await repository.archive(userId, personId, id);
+
+        final active = await repository.getActive(userId, personId);
+        expect(active.any((t) => t.id == id), isFalse);
+      });
+
+      test('archived topic appears in getArchived after archive call',
+          () async {
+        final id = await repository.add(userId, personId, 'Will archive', null);
+
+        await repository.archive(userId, personId, id);
+
+        final archived = await repository.getArchived(userId, personId);
+        expect(archived.any((t) => t.id == id && t.isArchived), isTrue);
+      });
+    });
+
+    group('getArchived', () {
+      test('returns only archived topics from Firestore', () async {
+        await seedTopic(text: 'Active', isArchived: false);
+        await seedTopic(text: 'Archived', isArchived: true);
+
+        final archived = await repository.getArchived(userId, personId);
+
+        expect(archived.length, equals(1));
+        expect(archived.first.text, equals('Archived'));
+        expect(archived.first.isArchived, isTrue);
+      });
+
+      test('returns empty list when no archived topics exist', () async {
+        await seedTopic(text: 'Active only', isArchived: false);
+
+        final archived = await repository.getArchived(userId, personId);
+
+        expect(archived, isEmpty);
+      });
+    });
+
     group('delete', () {
       test('removes doc from Firestore', () async {
         final id = await seedTopic(text: 'To delete');

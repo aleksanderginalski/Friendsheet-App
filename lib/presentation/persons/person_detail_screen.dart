@@ -149,8 +149,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     setState(() => _archivedLoading = true);
     try {
       final userId = AuthService().currentUserId!;
-      final archived =
-          await _catchUpRepo.getArchived(userId, widget.person.id);
+      final archived = await _catchUpRepo.getArchived(userId, widget.person.id);
       if (mounted) {
         setState(() {
           _archivedTopics = archived;
@@ -165,8 +164,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   // Optimistically removes an archived topic from the local list, then deletes from Firestore.
   Future<void> _deleteArchivedTopic(String topicId) async {
     if (!mounted) return;
-    setState(() =>
-        _archivedTopics = _archivedTopics.where((t) => t.id != topicId).toList());
+    setState(() => _archivedTopics =
+        _archivedTopics.where((t) => t.id != topicId).toList());
     try {
       final userId = AuthService().currentUserId!;
       await _catchUpRepo.delete(userId, widget.person.id, topicId);

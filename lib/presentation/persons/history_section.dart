@@ -56,7 +56,8 @@ class _HistorySectionState extends State<HistorySection> {
     List<Widget> children;
     if (widget.archivedLoading) {
       children = const [
-        Center(child: Padding(
+        Center(
+            child: Padding(
           padding: EdgeInsets.symmetric(vertical: 12),
           child: CircularProgressIndicator(),
         )),

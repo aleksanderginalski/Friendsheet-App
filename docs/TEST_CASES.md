@@ -1838,3 +1838,44 @@ Run after every release or hotfix:
 | UT-120-022 | deleteTopic removes topic optimistically before Firestore call | optimisticSeen=true during repo call; topic absent after |
 | UT-120-023 | dispose guard: notifyListeners after dispose does not throw | no exception thrown |
 
+## US-121 — Mark Topic as Discussed
+
+### Automated tests — `test/data/services/local_cache_service_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-121-001 | getArchivedTopics returns only archived topics sorted by archivedAt desc | 2 archived returned newest first; active excluded |
+| UT-121-002 | getArchivedTopics returns empty when no archived topics exist | empty list when only active topics in cache |
+| UT-121-003 | getArchivedTopics places null archivedAt topics last | topic with archivedAt comes before topic without |
+
+### Automated tests — `test/data/repositories/catch_up_topic_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-121-004 | archive sets isArchived true and archivedAt in Firestore | Firestore doc has isArchived=true, archivedAt != null |
+| UT-121-005 | archive: archived topic no longer appears in getActive | getActive returns empty after archive |
+| UT-121-006 | archive: archived topic appears in getArchived after call | getArchived returns topic with isArchived=true |
+| UT-121-007 | getArchived returns only archived topics from Firestore | 1 archived returned; active excluded |
+| UT-121-008 | getArchived returns empty when no archived topics exist | empty list when only active topics |
+
+### Automated tests — `test/presentation/persons/catch_up_topics_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-121-009 | archiveTopic removes topic optimistically from active list | optimisticSeen=true during repo call; topic absent after; length=1 |
+| UT-121-010 | archiveTopic sets errorMessage when repository throws | errorMessage != null |
+
+### Automated tests — `test/presentation/persons/history_section_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-121-011 | renders Historia ExpansionTile in collapsed state | 'Historia' text and history icon visible |
+| UT-121-012 | shows empty text when expanded with no archived topics | 'Brak omówionych tematów' visible after expand |
+| UT-121-013 | calls onLoadArchived when expanded and list is empty | onLoadArchived callback invoked |
+| UT-121-014 | does not call onLoadArchived when expanded with topics present | callback not invoked when topics non-empty |
+| UT-121-015 | shows CircularProgressIndicator when archivedLoading is true | CircularProgressIndicator visible when expanded |
+| UT-121-016 | shows topic text and contextLabel when topics present | topic text and contextLabel visible after expand |
+| UT-121-017 | shows delete icon for each archived topic | delete_outline icon visible |
+| UT-121-018 | calls onDeleteArchivedTopic after confirming delete dialog | deletedId == 't1' after confirm |
+| UT-121-019 | does not call onDeleteArchivedTopic when cancel pressed | callback not invoked after cancel |
+
