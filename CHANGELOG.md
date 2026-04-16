@@ -4,6 +4,24 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.9 — US-122: Couple Link (April 16, 2026)
+- ✅ `lib/data/models/person.dart` (MODIFIED) — added `partnerId: String?` and `partnerLinkedAt: DateTime?` Freezed fields; `fromFirestore` reads both with null-safe fallbacks; `toFirestore` conditionally writes both
+- ✅ `lib/data/models/person.freezed.dart` + `person.g.dart` (REGENERATED) — build_runner output for new fields
+- ✅ `lib/data/repositories/person_repository.dart` (MODIFIED) — `linkPartner(userId, personId, partnerId)`: batch write sets `partnerId` + `partnerLinkedAt` on both persons, re-fetches and upserts both to Hive
+- ✅ `lib/data/repositories/catch_up_topic_repository.dart` (MODIFIED) — `mergeTopics(userId, personId, partnerId)`: copies missing topics bidirectionally; deduplicates by case-insensitive text trim; write-through via existing `add()`
+- ✅ `lib/presentation/persons/couple_link_section.dart` (NEW) — `CoupleLinkSection` StatelessWidget: shows "Link as couple" when `partnerId == null`; shows "Coupled with [name]" subtitle when linked; `onTap` disabled when linked
+- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — `setPartner(partnerId, partnerLinkedAt)`: lightweight `copyWith` update for immediate post-link UI refresh without re-initializing the full provider
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — `_showCoupleLinkFlow()` with `while(true)` picker→merge loop; person picker with search filter (StatefulBuilder + TextField); merge dialog with Scenario 1.0 / 2.0 / Cancel; `_addTopic()` fire-and-forget mirror to partner; `_archiveTopic()` fire-and-forget archive propagation to partner; `CoupleLinkSection` inserted after `HistorySection`
+- ✅ `lib/presentation/persons/catch_up_list_section.dart` (MODIFIED) — converted to `ExpansionTile` (`initiallyExpanded: false`); "Add" button in trailing row alongside expand icon; default `ListTile` padding restored on `_TopicTile`
+- ✅ `test/data/models/person_test.dart` (MODIFIED) — 4 new tests: `toFirestore` includes/omits `partnerId`; `fromFirestore` reads `partnerId`+`partnerLinkedAt`, null when absent
+- ✅ `test/data/repositories/person_repository_test.dart` (MODIFIED) — 2 new tests: `linkPartner` sets cross-referenced `partnerId` on both, sets `partnerLinkedAt` on both
+- ✅ `test/data/repositories/catch_up_topic_repository_test.dart` (MODIFIED) — 4 new tests: `mergeTopics` copies partner→person, person→partner, no case-insensitive duplicates, unchanged when identical
+- ✅ `test/presentation/persons/person_detail_provider_test.dart` (MODIFIED) — 1 new test: `setPartner` updates `partnerId` and `partnerLinkedAt`
+- ✅ `test/presentation/persons/couple_link_section_test.dart` (NEW) — 5 widget tests: "Link as couple" unlinked, "Couple" title linked, partner name in subtitle, onLinkTap fires when unlinked, onLinkTap disabled when linked
+- ✅ 953 Flutter tests passing (+16 new tests)
+
+---
+
 ### v4.5.8 — US-121: Mark Topic as Discussed (April 16, 2026)
 - ✅ `lib/data/repositories/catch_up_topic_repository.dart` (MODIFIED) — `archive(userId, personId, topicId)`: sets `isArchived: true` + `archivedAt: FieldValue.serverTimestamp()` in Firestore, re-fetches and syncs local cache; `getArchived(userId, personId)`: cache-first, falls back to Firestore full fetch filtered to archived, sorted by archivedAt desc
 - ✅ `lib/data/services/local_cache_service.dart` (MODIFIED) — `getArchivedTopics(userId, personId)`: returns archived topics sorted by archivedAt descending, null archivedAt last
