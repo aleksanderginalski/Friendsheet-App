@@ -4,6 +4,21 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.8 — US-121: Mark Topic as Discussed (April 16, 2026)
+- ✅ `lib/data/repositories/catch_up_topic_repository.dart` (MODIFIED) — `archive(userId, personId, topicId)`: sets `isArchived: true` + `archivedAt: FieldValue.serverTimestamp()` in Firestore, re-fetches and syncs local cache; `getArchived(userId, personId)`: cache-first, falls back to Firestore full fetch filtered to archived, sorted by archivedAt desc
+- ✅ `lib/data/services/local_cache_service.dart` (MODIFIED) — `getArchivedTopics(userId, personId)`: returns archived topics sorted by archivedAt descending, null archivedAt last
+- ✅ `lib/presentation/persons/catch_up_topics_provider.dart` (MODIFIED) — `archiveTopic(personId, topicId)`: optimistic removal from active list before Firestore call; error sets `_errorMessage`
+- ✅ `lib/presentation/persons/catch_up_list_section.dart` (MODIFIED) — added `onArchive` required callback; `_TopicTile` trailing row extended with `check_circle_outline` IconButton as first action (order: mark discussed → edit → delete)
+- ✅ `lib/presentation/persons/history_section.dart` (NEW) — `HistorySection` StatefulWidget: `ExpansionTile` with lazy load (`onLoadArchived` called on first expand when list empty); shows `CircularProgressIndicator` during load, empty state text in Polish ("Brak omówionych tematów"), read-only `ListTile` per archived topic with permanent delete (confirmation dialog)
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — `_archivedTopics` + `_archivedLoading` state fields; `_archiveTopic` (optimistic move active→archived + Firestore call); `_loadArchivedTopics` (lazy load on History expand); `_deleteArchivedTopic` (optimistic removal + delete); `_PersonDetailBody` extended with 5 new params; `HistorySection` inserted after `CatchUpListSection`
+- ✅ `test/data/services/local_cache_service_test.dart` (MODIFIED) — 3 new tests: `getArchivedTopics` filter+sort, empty when no archived, null archivedAt last
+- ✅ `test/data/repositories/catch_up_topic_repository_test.dart` (MODIFIED) — 5 new tests: `archive` sets Firestore fields, archived absent from getActive, archived appears in getArchived, `getArchived` filter, `getArchived` empty
+- ✅ `test/presentation/persons/catch_up_topics_provider_test.dart` (MODIFIED) — 2 new tests: `archiveTopic` optimistic removal, error sets errorMessage
+- ✅ `test/presentation/persons/history_section_test.dart` (NEW) — 9 widget tests: render, empty state, onLoadArchived called on expand, not called when topics present, loading indicator, topics display, delete icon, delete confirmed, delete cancelled
+- ✅ 937 Flutter tests passing (+19 new tests)
+
+---
+
 ### v4.5.7 — US-120: Per-Person Catch-up Topics CRUD (April 15, 2026)
 - ✅ `lib/data/models/catch_up_topic.dart` (NEW) — Freezed model: `id`, `text`, `contextLabel?`, `createdAt`, `isArchived` (@Default false), `archivedAt?`; `fromFirestore` with null-safe epoch fallback; `toFirestore` omitting null optional fields
 - ✅ `lib/data/models/catch_up_topic.freezed.dart` + `catch_up_topic.g.dart` (NEW) — generated

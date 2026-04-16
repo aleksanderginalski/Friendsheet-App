@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
+import 'package:friendsheet/data/models/catch_up_topic.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/services/local_cache_service.dart';
@@ -404,6 +405,83 @@ void main() {
       expect(summary.totalWeight, 8);
       expect(summary.firstMeetingDate, DateTime(2026, 1, 1));
       expect(summary.lastMeetingDate, DateTime(2026, 3, 1));
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Catch-up topics
+  // ---------------------------------------------------------------------------
+
+  group('LocalCacheService — catch-up topics', () {
+    const personId = 'p1';
+
+    CatchUpTopic makeTopic({
+      String id = 't1',
+      String text = 'Topic',
+      bool isArchived = false,
+      DateTime? archivedAt,
+    }) =>
+        CatchUpTopic(
+          id: id,
+          text: text,
+          createdAt: DateTime(2026, 4, 1),
+          isArchived: isArchived,
+          archivedAt: archivedAt,
+        );
+
+    test(
+        'getArchivedTopics returns only archived topics sorted by archivedAt desc',
+        () async {
+      final older = makeTopic(
+        id: 't1',
+        text: 'Older',
+        isArchived: true,
+        archivedAt: DateTime(2026, 3, 1),
+      );
+      final newer = makeTopic(
+        id: 't2',
+        text: 'Newer',
+        isArchived: true,
+        archivedAt: DateTime(2026, 4, 1),
+      );
+      final active = makeTopic(id: 't3', text: 'Active', isArchived: false);
+
+      await cache.upsertTopic(userId, personId, older);
+      await cache.upsertTopic(userId, personId, newer);
+      await cache.upsertTopic(userId, personId, active);
+
+      final result = await cache.getArchivedTopics(userId, personId);
+
+      expect(result.length, equals(2));
+      expect(result.any((t) => t.id == 't3'), isFalse);
+      expect(result.first.id, equals('t2'));
+      expect(result.last.id, equals('t1'));
+    });
+
+    test('getArchivedTopics returns empty when no archived topics exist',
+        () async {
+      await cache.upsertTopic(userId, personId, makeTopic(isArchived: false));
+
+      final result = await cache.getArchivedTopics(userId, personId);
+
+      expect(result, isEmpty);
+    });
+
+    test('getArchivedTopics places null archivedAt topics last', () async {
+      final withDate = makeTopic(
+        id: 't1',
+        isArchived: true,
+        archivedAt: DateTime(2026, 4, 1),
+      );
+      final withoutDate = makeTopic(id: 't2', isArchived: true);
+
+      await cache.upsertTopic(userId, personId, withDate);
+      await cache.upsertTopic(userId, personId, withoutDate);
+
+      final result = await cache.getArchivedTopics(userId, personId);
+
+      expect(result.first.id, equals('t1'));
+      expect(result.last.id, equals('t2'));
     });
   });
 }

@@ -379,6 +379,25 @@ class LocalCacheService {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return active;
   }
+
+  /// Returns archived topics for [personId], sorted by archivedAt descending.
+  /// Topics without archivedAt are placed last.
+  Future<List<CatchUpTopic>> getArchivedTopics(
+    String userId,
+    String personId,
+  ) async {
+    final all = _loadTopics(userId, personId);
+    final archived = all.where((t) => t.isArchived).toList()
+      ..sort((a, b) {
+        final aAt = a.archivedAt;
+        final bAt = b.archivedAt;
+        if (aAt == null && bAt == null) return 0;
+        if (aAt == null) return 1;
+        if (bAt == null) return -1;
+        return bAt.compareTo(aAt);
+      });
+    return archived;
+  }
 }
 
 /// Computed summary of a person's meeting history. Not a domain model — plain Dart class.

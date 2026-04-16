@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (918)
+✅ All tests passing (937)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,13 +174,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.7 — US-120: Per-Person Catch-up Topics CRUD (April 15, 2026)
-- ✅ `CatchUpTopic` Freezed model + `CatchUpTopicRepository` (NEW): add/getActive/update/delete with write-through Hive cache; active topics sorted newest first
-- ✅ `CatchUpTopicsProvider` (NEW): optimistic prepend on add, optimistic removal on delete; `_disposed` guard prevents assertion after route pop
-- ✅ `CatchUpListSection` widget (NEW): swipe-to-delete (Dismissible), edit icon, delete icon with confirmation; `_TopicTile` trailing row
-- ✅ `PersonDetailScreen` (MODIFIED): topic state owned by `_PersonDetailScreenState`; add/edit dialogs use `ValueListenableBuilder` (no `TextEditingController.dispose()` during animation); Polish month picker for context label
-- ✅ Firestore security rule for `catch_up_topics` subcollection (path-based `isOwner`)
-- ✅ 23 new unit tests (918 total)
+### Latest: v4.5.8 — US-121: Mark Topic as Discussed (April 16, 2026)
+- ✅ `CatchUpTopicRepository` (MODIFIED): `archive()` sets `isArchived: true` + `archivedAt` in Firestore + cache; `getArchived()` cache-first with Firestore fallback
+- ✅ `LocalCacheService` (MODIFIED): `getArchivedTopics()` returns archived topics sorted by archivedAt descending
+- ✅ `CatchUpTopicsProvider` (MODIFIED): `archiveTopic()` optimistically removes topic from active list
+- ✅ `CatchUpListSection` (MODIFIED): `check_circle_outline` "Mark as discussed" icon added as first trailing action on each topic tile
+- ✅ `HistorySection` widget (NEW): collapsible `ExpansionTile` with lazy load; Polish empty state; read-only archived topics with permanent delete
+- ✅ `PersonDetailScreen` (MODIFIED): archive/history state in `_PersonDetailScreenState`; `HistorySection` inserted below active list
+- ✅ 19 new tests (937 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

@@ -4671,21 +4671,21 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 3
 **Priority:** P2
 **Labels:** `social`, `persons`, `catch-up`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 **Feature:** FEATURE-030: Catch-up Topics
 
 **Acceptance Criteria:**
-- [ ] Each active topic has a "Mark as discussed" action (checkbox or swipe gesture)
-- [ ] Marking sets `isArchived: true` and records `archivedAt` timestamp in Firestore + Hive
-- [ ] Archived topics visible in a collapsible "History" section on Person detail screen
-- [ ] Archived topics are read-only (no edit; permanent delete allowed)
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] Each active topic has a "Mark as discussed" action (checkbox or swipe gesture)
+- [x] Marking sets `isArchived: true` and records `archivedAt` timestamp in Firestore + Hive
+- [x] Archived topics visible in a collapsible "History" section on Person detail screen
+- [x] Archived topics are read-only (no edit; permanent delete allowed)
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-121.1:** Add `archive()` method to `CatchUpTopicRepository` (sets isArchived + archivedAt in Firestore + Hive) — 1h
-- [ ] **TASK-121.2:** Add `archiveTopic(topicId)` to `CatchUpTopicsProvider` — 0.5h
-- [ ] **TASK-121.3:** Add "Mark as discussed" UI interaction to `CatchUpListSection` — 1h
-- [ ] **TASK-121.4:** Build collapsible "History" section showing archived topics — 1.5h
+- [x] **TASK-121.1:** Add `archive()` and `getArchived()` to `CatchUpTopicRepository`; add `getArchivedTopics()` to `LocalCacheService` — 1h
+- [x] **TASK-121.2:** Add `archiveTopic(topicId)` to `CatchUpTopicsProvider` — 0.5h
+- [x] **TASK-121.3:** Add "Mark as discussed" UI interaction (`check_circle_outline` icon) to `CatchUpListSection` — 1h
+- [x] **TASK-121.4:** Build collapsible `HistorySection` widget (ExpansionTile, lazy load, read-only with delete) — 1.5h
 
 **Dependencies:** US-120
 **Blocks:** US-125, US-126

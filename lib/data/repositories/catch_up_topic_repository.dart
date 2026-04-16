@@ -82,6 +82,54 @@ class CatchUpTopicRepository {
     }
   }
 
+  /// Marks a topic as archived (isArchived: true, archivedAt: now).
+  /// Write-through: updates Firestore and re-fetches to sync local cache.
+  Future<void> archive(
+    String userId,
+    String personId,
+    String topicId,
+  ) async {
+    await _topicsRef(userId, personId).doc(topicId).update({
+      'isArchived': true,
+      'archivedAt': FieldValue.serverTimestamp(),
+    });
+    // Re-fetch to get the server-assigned archivedAt before updating cache.
+    final snap = await _topicsRef(userId, personId).doc(topicId).get();
+    if (snap.exists) {
+      await LocalCacheService()
+          .upsertTopic(userId, personId, CatchUpTopic.fromFirestore(snap));
+    }
+  }
+
+  /// Returns all archived topics for [personId], newest archivedAt first.
+  /// Reads from local cache first; falls back to Firestore when cache is cold.
+  Future<List<CatchUpTopic>> getArchived(
+    String userId,
+    String personId,
+  ) async {
+    final cached =
+        await LocalCacheService().getArchivedTopics(userId, personId);
+    if (cached.isNotEmpty) return cached;
+
+    // Fetch all topics and filter in Dart to avoid a composite index requirement.
+    final snap = await _topicsRef(userId, personId).get();
+    final all = snap.docs.map(CatchUpTopic.fromFirestore).toList();
+    final archived = all.where((t) => t.isArchived).toList()
+      ..sort((a, b) {
+        final aAt = a.archivedAt;
+        final bAt = b.archivedAt;
+        if (aAt == null && bAt == null) return 0;
+        if (aAt == null) return 1;
+        if (bAt == null) return -1;
+        return bAt.compareTo(aAt);
+      });
+    // Populate cache so subsequent reads are instant.
+    for (final t in all) {
+      await LocalCacheService().upsertTopic(userId, personId, t);
+    }
+    return archived;
+  }
+
   /// Permanently deletes a topic from Firestore and removes it from local cache.
   Future<void> delete(
     String userId,
