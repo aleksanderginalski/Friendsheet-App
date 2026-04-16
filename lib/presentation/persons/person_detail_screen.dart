@@ -117,9 +117,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
             final filtered = query.isEmpty
                 ? candidates
                 : candidates
-                    .where((p) => p.fullName
-                        .toLowerCase()
-                        .contains(query.toLowerCase()))
+                    .where((p) =>
+                        p.fullName.toLowerCase().contains(query.toLowerCase()))
                     .toList();
 
             return AlertDialog(
@@ -233,8 +232,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
 
   Future<void> _addTopic(String text, String? label) async {
     // Read partnerId before any await to avoid using BuildContext across async gaps.
-    final partnerId =
-        context.read<PersonDetailProvider>().person?.partnerId ??
+    final partnerId = context.read<PersonDetailProvider>().person?.partnerId ??
         widget.person.partnerId;
     try {
       final userId = AuthService().currentUserId!;
@@ -299,8 +297,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       ];
     });
     // Read partnerId before any await to avoid using BuildContext across async gaps.
-    final partnerId =
-        context.read<PersonDetailProvider>().person?.partnerId ??
+    final partnerId = context.read<PersonDetailProvider>().person?.partnerId ??
         widget.person.partnerId;
     try {
       final userId = AuthService().currentUserId!;
