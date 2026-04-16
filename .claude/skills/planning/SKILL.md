@@ -72,13 +72,13 @@ Po akceptacji wygeneruj instrukcję w języku angielskim używając szablonu z t
 - ## Constraints
 - ## After implementation
 
-Zapisz instrukcję do `.claude/current_task.md`:
+Save the instruction directly to `.claude/current_task.md` — do NOT ask for confirmation before writing:
 ```
 # Current Task — [US number]
 [full task instruction here]
 ```
 
-Napisz wyraźnie:
+After saving, write:
 "Task instruction saved to `.claude/current_task.md`. Run /dev."
 
 ## Format outputu

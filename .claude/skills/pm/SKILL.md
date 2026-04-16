@@ -15,7 +15,18 @@ tłumaczyć co się dzieje.
 
 1. Sprawdź stan repo:
    git status
+   git branch --show-current
    git log main..HEAD --oneline
+
+   Jeśli jesteśmy na `main`:
+   - Poinformuj: "Jesteśmy na main — nie możemy tu pracować bezpośrednio."
+   - Na podstawie tego co użytkownik chce zrobić, zaproponuj nazwę brancha
+     w formacie z CLAUDE.md: {issue-number}-{short-description}
+     Jeśli brak numeru issue — użyj samego opisu, np. `backlog-review` lub `us-123-short-desc`
+   - Podaj gotową komendę i poczekaj aż użytkownik ją wykona zanim przejdziesz dalej:
+     ```powershell
+     git checkout -b [proponowana-nazwa]
+     ```
 
    Jeśli są niezcommitowane zmiany lub commity bez pusha — poinformuj użytkownika:
    "Masz [X] niezcommitowanych zmian / [Y] commitów które nie poszły do remote.
