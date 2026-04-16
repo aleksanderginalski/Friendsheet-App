@@ -12,6 +12,7 @@ class CatchUpListSection extends StatelessWidget {
   final VoidCallback onAddTap;
   final Future<void> Function(String topicId) onDelete;
   final void Function(CatchUpTopic topic) onEdit;
+  final Future<void> Function(String topicId) onArchive;
 
   const CatchUpListSection({
     super.key,
@@ -21,6 +22,7 @@ class CatchUpListSection extends StatelessWidget {
     required this.onAddTap,
     required this.onDelete,
     required this.onEdit,
+    required this.onArchive,
   });
 
   Future<bool?> _confirmDelete(BuildContext context) {
@@ -84,6 +86,7 @@ class CatchUpListSection extends StatelessWidget {
                   onConfirmDelete: () => _confirmDelete(context),
                   onDelete: () => onDelete(topic.id),
                   onEdit: () => onEdit(topic),
+                  onArchive: () => onArchive(topic.id),
                 )),
         ],
       ),
@@ -96,12 +99,14 @@ class _TopicTile extends StatelessWidget {
   final Future<bool?> Function() onConfirmDelete;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onArchive;
 
   const _TopicTile({
     required this.topic,
     required this.onConfirmDelete,
     required this.onDelete,
     required this.onEdit,
+    required this.onArchive,
   });
 
   @override
@@ -124,6 +129,11 @@ class _TopicTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              icon: const Icon(Icons.check_circle_outline),
+              tooltip: 'Mark as discussed',
+              onPressed: onArchive,
+            ),
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit topic',

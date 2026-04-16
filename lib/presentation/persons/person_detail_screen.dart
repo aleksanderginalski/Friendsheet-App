@@ -16,6 +16,7 @@ import '../sharing/share_meetings_provider.dart';
 import '../sharing/share_meetings_screen.dart';
 import 'catch_up_list_section.dart';
 import 'friend_groups_provider.dart';
+import 'history_section.dart';
 import 'nicknames_section.dart';
 import 'person_detail_provider.dart';
 import 'person_meetings_screen.dart';
@@ -48,6 +49,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   // notifyListeners() was called during keyboard-dismissal animation frames.
   List<CatchUpTopic> _topics = [];
   bool _topicsLoading = false;
+  List<CatchUpTopic> _archivedTopics = [];
+  bool _archivedLoading = false;
   final _catchUpRepo = CatchUpTopicRepository();
 
   @override
@@ -117,6 +120,59 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     } catch (_) {}
   }
 
+  // Optimistically moves the topic from active to archived list, then archives in Firestore.
+  Future<void> _archiveTopic(String topicId) async {
+    final topic = _topics.firstWhere((t) => t.id == topicId,
+        orElse: () => CatchUpTopic(
+              id: topicId,
+              text: '',
+              createdAt: DateTime.now(),
+              isArchived: true,
+            ));
+    if (!mounted) return;
+    setState(() {
+      _topics = _topics.where((t) => t.id != topicId).toList();
+      _archivedTopics = [
+        topic.copyWith(isArchived: true, archivedAt: DateTime.now()),
+        ..._archivedTopics,
+      ];
+    });
+    try {
+      final userId = AuthService().currentUserId!;
+      await _catchUpRepo.archive(userId, widget.person.id, topicId);
+    } catch (_) {}
+  }
+
+  // Loads archived topics from cache / Firestore on demand (called when History expands).
+  Future<void> _loadArchivedTopics() async {
+    if (!mounted) return;
+    setState(() => _archivedLoading = true);
+    try {
+      final userId = AuthService().currentUserId!;
+      final archived =
+          await _catchUpRepo.getArchived(userId, widget.person.id);
+      if (mounted) {
+        setState(() {
+          _archivedTopics = archived;
+          _archivedLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _archivedLoading = false);
+    }
+  }
+
+  // Optimistically removes an archived topic from the local list, then deletes from Firestore.
+  Future<void> _deleteArchivedTopic(String topicId) async {
+    if (!mounted) return;
+    setState(() =>
+        _archivedTopics = _archivedTopics.where((t) => t.id != topicId).toList());
+    try {
+      final userId = AuthService().currentUserId!;
+      await _catchUpRepo.delete(userId, widget.person.id, topicId);
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PersonDetailProvider>();
@@ -150,6 +206,11 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         onAddTopicTap: () => _showAddTopicDialog(person),
         onDeleteTopic: _deleteTopic,
         onEditTopic: (CatchUpTopic topic) => _showEditTopicDialog(topic),
+        onArchiveTopic: _archiveTopic,
+        archivedTopics: _archivedTopics,
+        archivedLoading: _archivedLoading,
+        onLoadArchived: _loadArchivedTopics,
+        onDeleteArchivedTopic: _deleteArchivedTopic,
       ),
     );
   }
@@ -855,6 +916,11 @@ class _PersonDetailBody extends StatelessWidget {
   final VoidCallback onAddTopicTap;
   final Future<void> Function(String topicId) onDeleteTopic;
   final void Function(CatchUpTopic topic) onEditTopic;
+  final Future<void> Function(String topicId) onArchiveTopic;
+  final List<CatchUpTopic> archivedTopics;
+  final bool archivedLoading;
+  final VoidCallback onLoadArchived;
+  final Future<void> Function(String topicId) onDeleteArchivedTopic;
 
   const _PersonDetailBody({
     required this.provider,
@@ -868,6 +934,11 @@ class _PersonDetailBody extends StatelessWidget {
     required this.onAddTopicTap,
     required this.onDeleteTopic,
     required this.onEditTopic,
+    required this.onArchiveTopic,
+    required this.archivedTopics,
+    required this.archivedLoading,
+    required this.onLoadArchived,
+    required this.onDeleteArchivedTopic,
   });
 
   @override
@@ -925,6 +996,13 @@ class _PersonDetailBody extends StatelessWidget {
           onAddTap: onAddTopicTap,
           onDelete: onDeleteTopic,
           onEdit: onEditTopic,
+          onArchive: onArchiveTopic,
+        ),
+        HistorySection(
+          archivedTopics: archivedTopics,
+          archivedLoading: archivedLoading,
+          onLoadArchived: onLoadArchived,
+          onDeleteArchivedTopic: onDeleteArchivedTopic,
         ),
         NicknamesSection(provider: provider, person: person),
         _GroupsSection(person: person),

@@ -100,4 +100,18 @@ class CatchUpTopicsProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Removes a topic from the active list immediately, then archives it in Firestore.
+  Future<void> archiveTopic(String personId, String topicId) async {
+    _topics = _topics.where((t) => t.id != topicId).toList();
+    notifyListeners();
+
+    try {
+      final userId = _authService.currentUserId!;
+      await _repository.archive(userId, personId, topicId);
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
 }
