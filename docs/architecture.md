@@ -80,6 +80,7 @@ erDiagram
         array participantIds
         array categoryIds
         array notes "list of memory bullet points, each a short string (US-100)"
+        map personBonuses "nullable Map<personId, List<PersonBonus>>; each bonus: {points: 1-3, comment: String} (US-130)"
         datetime createdAt
         datetime updatedAt
     }
@@ -715,6 +716,31 @@ Score computed by `RelationshipScoreService.computeScore()` in `PersonDetailProv
 **Deduplication rule:** A topic that exists on both linked persons is considered shared — displayed once in Friends-Quest, with `sourceTopicId` pointing to the canonical version.
 
 **Separation rule:** Topics created BEFORE `partnerLinkedAt` → auto-return to original owner. Topics created AFTER `partnerLinkedAt` → redistribution dialog (Person A / Shared copy / Person B / Delete).
+
+---
+
+#### Person Recognition — Bonus Points (US-130, US-131)
+
+**Storage:** `personBonuses: Map<personId, List<{points, comment}>>` on the `Meeting` Firestore document.
+
+**PersonBonus model:**
+```dart
+PersonBonus {
+  points: int   // 1–3
+  comment: String
+}
+```
+
+**Effective weight formula (US-131):**
+`effectiveWeight(personId, meeting) = meeting.weight + sum(personBonuses[personId].points)`
+
+Applied in:
+- `StatisticsRepository.getInteractionDistribution()` — per-person weight uses effectiveWeight
+- `RelationshipScoreService.computeScore()` — frequency/recency scoring uses effectiveWeight
+- `ActivityBreakdownWidget` — NOT affected, uses flat `meeting.weight`
+
+**Auto-note on bonus add:** Each bonus appends `"[FirstName] +[N]: [comment]"` to `meeting.notes`.
+Deletion of a bonus removes the corresponding notes entry.
 
 ---
 

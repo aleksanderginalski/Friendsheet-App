@@ -16,6 +16,7 @@
 - v2.6 — FR-033 added: Tool Calling (US-110) — Buddy queries only relevant data via OpenAI function calling, supports arbitrary date ranges; FR-034 added: Offline-First Mode (US-111) — full CRUD available offline via Firestore SDK write queue + Hive cache (US-109)
 - v2.7 — FR-035 added: Buddy Language Selection (US-113); FR-036 added: Buddy Onboarding (US-114); FR-037 added: Buddy Birthday Message Quality (US-115); FR-038 added: App UI Localization (US-116); FR-039 added: User-Defined Writing Style (US-117)
 - v2.8 — FR-040 added: Catch-up Topics per Person (US-120, US-121); FR-041 added: Couple/Family Link in Social Graph (US-122, US-123); FR-042 added: Friends-Quest pre-meeting tool (US-124, US-125, US-126, US-127)
+- v2.9 — FR-043 added: Person Recognition — Bonus Points (US-130, US-131)
 
 ---
 
@@ -629,6 +630,9 @@ User can link two Person records as a couple. Linked persons share all new catch
 
 ### FR-042: Friends-Quest — Pre-Meeting Preparation (M8)
 User can create named Friends-Quests (multiple active simultaneously), add participants, and auto-import their catch-up topics as tasks (deduplicated for couples). Tasks can be added, edited (edit propagates to source topic), and deleted (delete does NOT remove source topic). Quest can be linked to a meeting (1 quest : 1 meeting). Completing a quest pushes finished task notes to the linked meeting. Buddy can create and populate quests via "Others → Catch-up topics" flow. Stored locally in Hive only (not synced to Firestore). Accessible from sidebar + optional home widget. Implemented in US-124–US-127.
+
+### FR-043: Person Recognition — Bonus Points (M8)
+User can award bonus points (1–3) with a mandatory comment to individual meeting participants from the Meeting Detail screen. Multiple bonuses can be added per person per meeting; they all stack. Effective weight for a person in a meeting = `meeting.weight + sum of their bonuses`. Each bonus auto-appends to meeting notes as `"[FirstName] +[N]: [comment]"`. Deletion of a bonus removes its notes entry. Bonus points affect Interaction Distribution and Relationship Score statistics; Activity Breakdown is unaffected (uses flat meeting weight). Implemented in US-130–US-131.
 
 ---
 
