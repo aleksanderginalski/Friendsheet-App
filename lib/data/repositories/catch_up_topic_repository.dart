@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/catch_up_topic.dart';
 import '../services/local_cache_service.dart';
 
+// Redistribution decision for a shared topic during couple separation.
+enum TopicRedistributionDecision { personA, shared, personB, delete }
+
 class CatchUpTopicRepository {
   final FirebaseFirestore _firestore;
 
@@ -167,5 +170,47 @@ class CatchUpTopicRepository {
   ) async {
     await _topicsRef(userId, personId).doc(topicId).delete();
     await LocalCacheService().removeTopic(userId, personId, topicId);
+  }
+
+  /// Applies redistribution decisions after couple separation.
+  /// personId = primary person, partnerId = partner.
+  /// postLinkTopics: active topics for personId created on/after partnerLinkedAt.
+  /// Partner-side matching: case-insensitive text trim.
+  Future<void> applyRedistribution(
+    String userId,
+    String personId,
+    String partnerId,
+    List<CatchUpTopic> postLinkTopics,
+    Map<String, TopicRedistributionDecision> decisions,
+  ) async {
+    final partnerTopics = await getActive(userId, partnerId);
+    for (final topic in postLinkTopics) {
+      final decision =
+          decisions[topic.id] ?? TopicRedistributionDecision.shared;
+      final normalizedText = topic.text.trim().toLowerCase();
+      final partnerMatch = partnerTopics.cast<CatchUpTopic?>().firstWhere(
+        (t) => t!.text.trim().toLowerCase() == normalizedText,
+        orElse: () => null,
+      );
+      switch (decision) {
+        case TopicRedistributionDecision.personA:
+          // Keep on A, delete from B.
+          if (partnerMatch != null) {
+            await delete(userId, partnerId, partnerMatch.id);
+          }
+        case TopicRedistributionDecision.shared:
+          // Keep both — no action.
+          break;
+        case TopicRedistributionDecision.personB:
+          // Keep on B, delete from A.
+          await delete(userId, personId, topic.id);
+        case TopicRedistributionDecision.delete:
+          // Delete from both.
+          await delete(userId, personId, topic.id);
+          if (partnerMatch != null) {
+            await delete(userId, partnerId, partnerMatch.id);
+          }
+      }
+    }
   }
 }

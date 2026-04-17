@@ -16,6 +16,7 @@ import '../sharing/share_meetings_provider.dart';
 import '../sharing/share_meetings_screen.dart';
 import 'catch_up_list_section.dart';
 import 'couple_link_section.dart';
+import 'couple_separation_dialog.dart';
 import 'friend_groups_provider.dart';
 import 'history_section.dart';
 import 'nicknames_section.dart';
@@ -230,6 +231,121 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     }
   }
 
+  // Orchestrates couple separation: confirmation -> post-link topic split ->
+  // redistribution dialog (if needed) -> applyRedistribution -> unlinkPartner -> UI refresh.
+  Future<void> _showSeparationFlow() async {
+    final person =
+        context.read<PersonDetailProvider>().person ?? widget.person;
+    final partnerId = person.partnerId;
+    final partnerLinkedAt = person.partnerLinkedAt;
+    if (partnerId == null || partnerLinkedAt == null || !mounted) return;
+
+    // Step 1: Confirmation dialog.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Unlink partner?'),
+        content: Text(
+          'Unlink ${_partnerPerson?.firstName ?? 'partner'} as your partner? '
+          'You can re-link them at any time.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Unlink'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final userId = AuthService().currentUserId!;
+
+    // Step 2: Load both persons' active topics to classify pre/post-link correctly.
+    final personTopics =
+        await _catchUpRepo.getActive(userId, widget.person.id);
+    final partnerTopics =
+        await _catchUpRepo.getActive(userId, partnerId);
+    if (!mounted) return;
+
+    // Pre-link text sets (lowercase trimmed) — topics that existed before linking.
+    final personPreLinkTexts = personTopics
+        .where((t) => t.createdAt.isBefore(partnerLinkedAt))
+        .map((t) => t.text.trim().toLowerCase())
+        .toSet();
+    final partnerPreLinkTexts = partnerTopics
+        .where((t) => t.createdAt.isBefore(partnerLinkedAt))
+        .map((t) => t.text.trim().toLowerCase())
+        .toSet();
+
+    // Genuine couple-era topics: created on/after linking AND not a merged copy of
+    // a partner's pre-link topic. mergeTopics() creates copies at link time with
+    // createdAt >= partnerLinkedAt, so filtering by text excludes them correctly.
+    final postLinkTopics = personTopics
+        .where((t) =>
+            !t.createdAt.isBefore(partnerLinkedAt) &&
+            !partnerPreLinkTexts.contains(t.text.trim().toLowerCase()))
+        .toList();
+
+    // Step 3: Show redistribution dialog only for genuine couple-era topics.
+    if (postLinkTopics.isNotEmpty) {
+      final decisions =
+          await showDialog<Map<String, TopicRedistributionDecision>>(
+        context: context,
+        builder: (ctx) => CoupleSeparationDialog(
+          personAName: widget.person.firstName,
+          personBName: _partnerPerson?.firstName ?? 'Partner',
+          postLinkTopics: postLinkTopics,
+        ),
+      );
+      if (decisions == null || !mounted) return;
+
+      await _catchUpRepo.applyRedistribution(
+        userId,
+        widget.person.id,
+        partnerId,
+        postLinkTopics,
+        decisions,
+      );
+      if (!mounted) return;
+    }
+
+    // Step 4: Auto-remove partner's pre-link topics that were merged to this person.
+    // Text in partnerPreLinkTexts but NOT in personPreLinkTexts = merged copies.
+    for (final topic in personTopics) {
+      final normalized = topic.text.trim().toLowerCase();
+      if (partnerPreLinkTexts.contains(normalized) &&
+          !personPreLinkTexts.contains(normalized)) {
+        await _catchUpRepo.delete(userId, widget.person.id, topic.id);
+      }
+    }
+    if (!mounted) return;
+
+    // Step 5: Auto-remove this person's pre-link topics that were merged to partner.
+    for (final topic in partnerTopics) {
+      final normalized = topic.text.trim().toLowerCase();
+      if (personPreLinkTexts.contains(normalized) &&
+          !partnerPreLinkTexts.contains(normalized)) {
+        await _catchUpRepo.delete(userId, partnerId, topic.id);
+      }
+    }
+    if (!mounted) return;
+
+    // Step 6: Unlink on both persons.
+    await _personRepo.unlinkPartner(userId, widget.person.id, partnerId);
+    if (!mounted) return;
+
+    // Step 7: Refresh UI state.
+    context.read<PersonDetailProvider>().clearPartner();
+    setState(() => _partnerPerson = null);
+    await _loadTopics();
+  }
+
   Future<void> _addTopic(String text, String? label) async {
     // Read partnerId before any await to avoid using BuildContext across async gaps.
     final partnerId = context.read<PersonDetailProvider>().person?.partnerId ??
@@ -270,11 +386,43 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   }
 
   Future<void> _deleteTopic(String topicId) async {
+    // Capture topic text before removal for partner propagation.
+    final topic = _topics.firstWhere(
+      (t) => t.id == topicId,
+      orElse: () => CatchUpTopic(id: topicId, text: '', createdAt: DateTime.now()),
+    );
+    // Read partnerId before any await to avoid using BuildContext across async gaps.
+    final partnerId = context.read<PersonDetailProvider>().person?.partnerId ??
+        widget.person.partnerId;
     // Optimistic removal so the UI feels instant.
     setState(() => _topics = _topics.where((t) => t.id != topicId).toList());
     try {
       final userId = AuthService().currentUserId!;
       await _catchUpRepo.delete(userId, widget.person.id, topicId);
+      // Mirror delete to partner if linked (fire-and-forget).
+      if (partnerId != null && topic.text.isNotEmpty) {
+        _deletePartnerTopicByText(userId, partnerId, topic.text);
+      }
+    } catch (_) {}
+  }
+
+  // Finds the matching active topic on the partner by case-insensitive text
+  // and deletes it. Fire-and-forget — failure must not affect the UI.
+  Future<void> _deletePartnerTopicByText(
+    String userId,
+    String partnerId,
+    String text,
+  ) async {
+    try {
+      final partnerTopics = await _catchUpRepo.getActive(userId, partnerId);
+      final normalizedText = text.trim().toLowerCase();
+      final match = partnerTopics.cast<CatchUpTopic?>().firstWhere(
+        (t) => t!.text.trim().toLowerCase() == normalizedText,
+        orElse: () => null,
+      );
+      if (match != null) {
+        await _catchUpRepo.delete(userId, partnerId, match.id);
+      }
     } catch (_) {}
   }
 
@@ -399,6 +547,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
         onDeleteArchivedTopic: _deleteArchivedTopic,
         partnerPerson: _partnerPerson,
         onCoupleLinkTap: _showCoupleLinkFlow,
+        onUnlinkTap: _showSeparationFlow,
       ),
     );
   }
@@ -1121,6 +1270,7 @@ class _PersonDetailBody extends StatelessWidget {
   final Future<void> Function(String topicId) onDeleteArchivedTopic;
   final Person? partnerPerson;
   final VoidCallback onCoupleLinkTap;
+  final VoidCallback? onUnlinkTap;
 
   const _PersonDetailBody({
     required this.provider,
@@ -1141,6 +1291,7 @@ class _PersonDetailBody extends StatelessWidget {
     required this.onDeleteArchivedTopic,
     required this.partnerPerson,
     required this.onCoupleLinkTap,
+    this.onUnlinkTap,
   });
 
   @override
@@ -1210,6 +1361,7 @@ class _PersonDetailBody extends StatelessWidget {
           person: person,
           partnerPerson: partnerPerson,
           onLinkTap: onCoupleLinkTap,
+          onUnlinkTap: onUnlinkTap,
         ),
         NicknamesSection(provider: provider, person: person),
         _GroupsSection(person: person),
