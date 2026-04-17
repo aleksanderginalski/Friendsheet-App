@@ -244,5 +244,52 @@ void main() {
         expect(docB.data()?['partnerLinkedAt'], isNotNull);
       });
     });
+
+    group('unlinkPartner', () {
+      late Directory hiveDir;
+
+      setUp(() async {
+        hiveDir = await Directory.systemTemp.createTemp('hive_person_unlink_');
+        await HiveService.initialize(testPath: hiveDir.path);
+      });
+
+      tearDown(() async {
+        await Hive.close();
+        await hiveDir.delete(recursive: true);
+      });
+
+      test('clears partnerId and partnerLinkedAt on both persons in Firestore',
+          () async {
+        final a =
+            await repository.addPerson(makePerson(id: 'a', firstName: 'Anna'));
+        final b =
+            await repository.addPerson(makePerson(id: 'b', firstName: 'Bob'));
+
+        await repository.linkPartner('user-1', a.id, b.id);
+        await repository.unlinkPartner('user-1', a.id, b.id);
+
+        final docA = await personsRef('user-1').doc(a.id).get();
+        final docB = await personsRef('user-1').doc(b.id).get();
+        expect(docA.data()?['partnerId'], isNull);
+        expect(docA.data()?['partnerLinkedAt'], isNull);
+        expect(docB.data()?['partnerId'], isNull);
+        expect(docB.data()?['partnerLinkedAt'], isNull);
+      });
+
+      test('does not affect other persons in Firestore', () async {
+        final a =
+            await repository.addPerson(makePerson(id: 'a', firstName: 'Anna'));
+        final b =
+            await repository.addPerson(makePerson(id: 'b', firstName: 'Bob'));
+        final c =
+            await repository.addPerson(makePerson(id: 'c', firstName: 'Carl'));
+
+        await repository.linkPartner('user-1', a.id, b.id);
+        await repository.unlinkPartner('user-1', a.id, b.id);
+
+        final docC = await personsRef('user-1').doc(c.id).get();
+        expect(docC.exists, isTrue);
+      });
+    });
   });
 }

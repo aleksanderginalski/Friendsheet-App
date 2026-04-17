@@ -215,6 +215,147 @@ void main() {
       });
     });
 
+    group('applyRedistribution', () {
+      const partnerId = 'p2';
+
+      CollectionReference partnerTopicsRef() => fakeFirestore
+          .collection('users')
+          .doc(userId)
+          .collection('persons')
+          .doc(partnerId)
+          .collection('catch_up_topics');
+
+      Future<String> seedPartnerTopic({String text = 'Partner topic'}) async {
+        final ref = await partnerTopicsRef().add({
+          'text': text,
+          'createdAt': Timestamp.fromDate(DateTime(2026, 4, 10)),
+          'isArchived': false,
+        });
+        return ref.id;
+      }
+
+      test('personA: keeps topic on A, deletes matching topic from B',
+          () async {
+        final topicId = await seedTopic(text: 'Shared');
+        await seedPartnerTopic(text: 'Shared');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {topicId: TopicRedistributionDecision.personA},
+        );
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.any((t) => t.text == 'Shared'), isTrue);
+        expect(partnerTopics.any((t) => t.text == 'Shared'), isFalse);
+      });
+
+      test('shared: keeps topic on both sides', () async {
+        final topicId = await seedTopic(text: 'Keep both');
+        await seedPartnerTopic(text: 'Keep both');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {topicId: TopicRedistributionDecision.shared},
+        );
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.any((t) => t.text == 'Keep both'), isTrue);
+        expect(partnerTopics.any((t) => t.text == 'Keep both'), isTrue);
+      });
+
+      test('personB: deletes topic from A, keeps it on B', () async {
+        final topicId = await seedTopic(text: 'For B only');
+        await seedPartnerTopic(text: 'For B only');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {topicId: TopicRedistributionDecision.personB},
+        );
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.any((t) => t.text == 'For B only'), isFalse);
+        expect(partnerTopics.any((t) => t.text == 'For B only'), isTrue);
+      });
+
+      test('delete: removes topic from both A and B', () async {
+        final topicId = await seedTopic(text: 'Remove all');
+        await seedPartnerTopic(text: 'Remove all');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {topicId: TopicRedistributionDecision.delete},
+        );
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.any((t) => t.text == 'Remove all'), isFalse);
+        expect(partnerTopics.any((t) => t.text == 'Remove all'), isFalse);
+      });
+
+      test('defaults to shared when topic id missing from decisions map',
+          () async {
+        final topicId = await seedTopic(text: 'Default shared');
+        await seedPartnerTopic(text: 'Default shared');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        // Pass empty decisions — should default to shared.
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {},
+        );
+
+        final personTopics = await repository.getActive(userId, personId);
+        final partnerTopics = await repository.getActive(userId, partnerId);
+        expect(personTopics.any((t) => t.id == topicId), isTrue);
+        expect(partnerTopics.any((t) => t.text == 'Default shared'), isTrue);
+      });
+
+      test('personA: no-op when partner has no matching topic', () async {
+        final topicId = await seedTopic(text: 'Only on A');
+
+        final topic = (await repository.getActive(userId, personId)).first;
+
+        await repository.applyRedistribution(
+          userId,
+          personId,
+          partnerId,
+          [topic],
+          {topicId: TopicRedistributionDecision.personA},
+        );
+
+        // Topic should still exist on A; nothing thrown.
+        final personTopics = await repository.getActive(userId, personId);
+        expect(personTopics.any((t) => t.text == 'Only on A'), isTrue);
+      });
+    });
+
     group('mergeTopics', () {
       const partnerId = 'p2';
 
