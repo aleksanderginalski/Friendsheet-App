@@ -189,9 +189,9 @@ class CatchUpTopicRepository {
           decisions[topic.id] ?? TopicRedistributionDecision.shared;
       final normalizedText = topic.text.trim().toLowerCase();
       final partnerMatch = partnerTopics.cast<CatchUpTopic?>().firstWhere(
-        (t) => t!.text.trim().toLowerCase() == normalizedText,
-        orElse: () => null,
-      );
+            (t) => t!.text.trim().toLowerCase() == normalizedText,
+            orElse: () => null,
+          );
       switch (decision) {
         case TopicRedistributionDecision.personA:
           // Keep on A, delete from B.

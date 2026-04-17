@@ -234,8 +234,7 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
   // Orchestrates couple separation: confirmation -> post-link topic split ->
   // redistribution dialog (if needed) -> applyRedistribution -> unlinkPartner -> UI refresh.
   Future<void> _showSeparationFlow() async {
-    final person =
-        context.read<PersonDetailProvider>().person ?? widget.person;
+    final person = context.read<PersonDetailProvider>().person ?? widget.person;
     final partnerId = person.partnerId;
     final partnerLinkedAt = person.partnerLinkedAt;
     if (partnerId == null || partnerLinkedAt == null || !mounted) return;
@@ -267,10 +266,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     final userId = AuthService().currentUserId!;
 
     // Step 2: Load both persons' active topics to classify pre/post-link correctly.
-    final personTopics =
-        await _catchUpRepo.getActive(userId, widget.person.id);
-    final partnerTopics =
-        await _catchUpRepo.getActive(userId, partnerId);
+    final personTopics = await _catchUpRepo.getActive(userId, widget.person.id);
+    final partnerTopics = await _catchUpRepo.getActive(userId, partnerId);
     if (!mounted) return;
 
     // Pre-link text sets (lowercase trimmed) — topics that existed before linking.
@@ -389,7 +386,8 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
     // Capture topic text before removal for partner propagation.
     final topic = _topics.firstWhere(
       (t) => t.id == topicId,
-      orElse: () => CatchUpTopic(id: topicId, text: '', createdAt: DateTime.now()),
+      orElse: () =>
+          CatchUpTopic(id: topicId, text: '', createdAt: DateTime.now()),
     );
     // Read partnerId before any await to avoid using BuildContext across async gaps.
     final partnerId = context.read<PersonDetailProvider>().person?.partnerId ??
@@ -417,9 +415,9 @@ class _PersonDetailScreenState extends State<PersonDetailScreen> {
       final partnerTopics = await _catchUpRepo.getActive(userId, partnerId);
       final normalizedText = text.trim().toLowerCase();
       final match = partnerTopics.cast<CatchUpTopic?>().firstWhere(
-        (t) => t!.text.trim().toLowerCase() == normalizedText,
-        orElse: () => null,
-      );
+            (t) => t!.text.trim().toLowerCase() == normalizedText,
+            orElse: () => null,
+          );
       if (match != null) {
         await _catchUpRepo.delete(userId, partnerId, match.id);
       }

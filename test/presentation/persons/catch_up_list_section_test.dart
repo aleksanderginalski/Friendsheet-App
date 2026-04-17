@@ -67,7 +67,8 @@ void main() {
       expect(find.text('2'), findsOneWidget);
     });
 
-    testWidgets('does not show badge when topics list is empty', (tester) async {
+    testWidgets('does not show badge when topics list is empty',
+        (tester) async {
       await tester.pumpWidget(buildSection(topics: []));
 
       // No numeric badge — '0' must not appear.
@@ -84,7 +85,8 @@ void main() {
       expect(find.text('Buy milk'), findsOneWidget);
     });
 
-    testWidgets('shows "No topics yet" when expanded and empty', (tester) async {
+    testWidgets('shows "No topics yet" when expanded and empty',
+        (tester) async {
       await tester.pumpWidget(buildSection(topics: []));
 
       await tester.tap(find.text('Catch-up List'));

@@ -104,8 +104,7 @@ class _HistorySectionState extends State<HistorySection> {
               const SizedBox(width: 6),
               // Badge matching child activities style (green pill).
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),

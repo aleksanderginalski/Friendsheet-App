@@ -105,15 +105,13 @@ class _CoupleSeparationDialogState extends State<CoupleSeparationDialog> {
               d == TopicRedistributionDecision.delete,
             ],
             onPressed: (i) => setState(
-              () => _decisions[topic.id] =
-                  TopicRedistributionDecision.values[i],
+              () =>
+                  _decisions[topic.id] = TopicRedistributionDecision.values[i],
             ),
             children: [
-              Text(widget.personAName,
-                  style: const TextStyle(fontSize: 12)),
+              Text(widget.personAName, style: const TextStyle(fontSize: 12)),
               const Text('Shared', style: TextStyle(fontSize: 12)),
-              Text(widget.personBName,
-                  style: const TextStyle(fontSize: 12)),
+              Text(widget.personBName, style: const TextStyle(fontSize: 12)),
               const Text('Delete', style: TextStyle(fontSize: 12)),
             ],
           ),
