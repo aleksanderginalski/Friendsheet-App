@@ -4752,27 +4752,27 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 8
 **Priority:** P3
 **Labels:** `social`, `persons`, `social-graph`
-**Status:** 🔄 In Progress
+**Status:** ✅ Completed
 **Feature:** FEATURE-031: Social Graph — Couple/Family Link
 
 **Acceptance Criteria:**
-- [ ] On Person detail screen, the couple link section has an "Unlink" option
-- [ ] Topics created BEFORE `partnerLinkedAt` → automatically returned to their original individual owner
-- [ ] Topics created AFTER `partnerLinkedAt` → redistribution dialog shown per topic
-- [ ] Redistribution dialog: 4-option switch per topic: `[Person A] | [Shared — copy] | [Person B] | [Delete]`
+- [x] On Person detail screen, the couple link section has an "Unlink" option
+- [x] Topics created BEFORE `partnerLinkedAt` → automatically returned to their original individual owner
+- [x] Topics created AFTER `partnerLinkedAt` → redistribution dialog shown per topic
+- [x] Redistribution dialog: 4-option switch per topic: `[Person A] | [Shared — copy] | [Person B] | [Delete]`
   - Person A → assigned only to Person A
   - Shared → kept as copy on both
   - Person B → assigned only to Person B
   - Delete → permanently removed
-- [ ] After redistribution: `partnerId` and `partnerLinkedAt` cleared on both persons in Firestore + Hive
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] After redistribution: `partnerId` and `partnerLinkedAt` cleared on both persons in Firestore + Hive
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-123.1:** Implement `unlinkPartner()` in `PersonRepository` (clear `partnerId` + `partnerLinkedAt` on both persons in Firestore + Hive) — 1h
-- [ ] **TASK-123.2:** Implement topic split logic: filter topics by `createdAt` vs `partnerLinkedAt` to determine auto-return vs dialog topics — 1.5h
-- [ ] **TASK-123.3:** Build redistribution dialog — scrollable list of topics, 4-state switch per item — 3h
-- [ ] **TASK-123.4:** Apply redistribution decisions (move/copy/delete in Firestore + Hive) — 2h
-- [ ] **TASK-123.5:** Trigger redistribution flow on "Unlink" confirmation — 0.5h
+- [x] **TASK-123.1:** Implement `unlinkPartner()` in `PersonRepository` (clear `partnerId` + `partnerLinkedAt` on both persons in Firestore + Hive) — 1h
+- [x] **TASK-123.2:** Implement topic split logic: filter topics by `createdAt` vs `partnerLinkedAt` to determine auto-return vs dialog topics — 1.5h
+- [x] **TASK-123.3:** Build redistribution dialog — scrollable list of topics, 4-state switch per item — 3h
+- [x] **TASK-123.4:** Apply redistribution decisions (move/copy/delete in Firestore + Hive) — 2h
+- [x] **TASK-123.5:** Trigger redistribution flow on "Unlink" confirmation — 0.5h
 
 **Dependencies:** US-122
 **Blocks:** None

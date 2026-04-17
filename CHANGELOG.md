@@ -4,6 +4,26 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.10 — US-123: Couple Separation Flow (April 17, 2026)
+- ✅ `lib/data/repositories/person_repository.dart` (MODIFIED) — `unlinkPartner(userId, personId, partnerId)`: batch write clears `partnerId` + `partnerLinkedAt` on both persons via `FieldValue.delete()`, re-fetches and upserts both to Hive
+- ✅ `lib/data/repositories/catch_up_topic_repository.dart` (MODIFIED) — `TopicRedistributionDecision` enum (personA / shared / personB / delete); `applyRedistribution()`: loads partner's active topics, matches by case-insensitive text trim, executes per-topic delete/keep decisions
+- ✅ `lib/presentation/persons/couple_separation_dialog.dart` (NEW) — `CoupleSeparationDialog` StatefulWidget: `AlertDialog` with `SingleChildScrollView + Column` (no ListView); 4-state `ToggleButtons` per topic; all decisions default to `shared`; returns `Map<String, TopicRedistributionDecision>` or null on cancel
+- ✅ `lib/presentation/persons/couple_link_section.dart` (MODIFIED) — added `onUnlinkTap: VoidCallback?`; shows "Unlink" `TextButton` in trailing when linked; tile tap disabled when linked
+- ✅ `lib/presentation/persons/person_detail_provider.dart` (MODIFIED) — `clearPartner()`: clears `partnerId` + `partnerLinkedAt` via `copyWith` for immediate post-separation UI refresh
+- ✅ `lib/presentation/persons/person_detail_screen.dart` (MODIFIED) — `_showSeparationFlow()`: confirmation → load both sides' topics → compute pre-link text sets → redistribution dialog (post-link topics only) → `applyRedistribution()` → auto-delete merged pre-link copies on both sides → `unlinkPartner()` + `clearPartner()` + reload; `_deleteTopic()` now fire-and-forget propagates deletion to partner; `_deletePartnerTopicByText()` helper
+- ✅ `lib/presentation/persons/catch_up_list_section.dart` (MODIFIED) — green badge counter (topic count) added to `ExpansionTile` trailing row, matching child activities style
+- ✅ `lib/presentation/persons/history_section.dart` (MODIFIED) — green badge counter (archived count) added to title row; `Text('Historia')` kept as standalone widget for test compatibility
+- ✅ `test/data/repositories/person_repository_test.dart` (MODIFIED) — 2 new tests: `unlinkPartner` clears fields on both persons, does not affect third person
+- ✅ `test/data/repositories/catch_up_topic_repository_test.dart` (MODIFIED) — 6 new tests: all 4 `applyRedistribution` decisions + default-to-shared + no-op when no partner match
+- ✅ `test/presentation/persons/person_detail_provider_test.dart` (MODIFIED) — 2 new tests: `clearPartner` clears fields, no-op when person null
+- ✅ `test/presentation/persons/couple_link_section_test.dart` (MODIFIED) — 3 new tests: Unlink shown when linked, hidden when unlinked, `onUnlinkTap` fires
+- ✅ `test/presentation/persons/couple_separation_dialog_test.dart` (NEW) — 7 widget tests: title, topic text, 4 ToggleButtons options, cancel returns null, confirm returns decisions map, option selection updates decision, empty topics = no ToggleButtons
+- ✅ `test/presentation/persons/catch_up_list_section_test.dart` (NEW) — 8 widget tests: title, add icon, onAddTap, badge visible with topics, badge absent when empty, topic text expanded, no-topics state, loading indicator
+- ✅ `test/presentation/persons/history_section_test.dart` (MODIFIED) — 2 new tests: badge shows count, badge absent when empty
+- ✅ 983 Flutter tests passing (+30 new tests)
+
+---
+
 ### v4.5.9 — US-122: Couple Link (April 16, 2026)
 - ✅ `lib/data/models/person.dart` (MODIFIED) — added `partnerId: String?` and `partnerLinkedAt: DateTime?` Freezed fields; `fromFirestore` reads both with null-safe fallbacks; `toFirestore` conditionally writes both
 - ✅ `lib/data/models/person.freezed.dart` + `person.g.dart` (REGENERATED) — build_runner output for new fields
