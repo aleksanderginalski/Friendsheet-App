@@ -72,7 +72,8 @@ EPIC-007: Friendsheet M7 - AI Assistant (Buddy)
 EPIC-010: Friendsheet M8 — Social Intelligence & Friends-Quest
 ├── FEATURE-030: Catch-up Topics
 ├── FEATURE-031: Social Graph — Couple/Family Link
-└── FEATURE-032: Friends-Quest
+├── FEATURE-032: Friends-Quest
+└── FEATURE-033: Person Recognition — Bonus Points
 ```
 
 
@@ -4751,27 +4752,27 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 8
 **Priority:** P3
 **Labels:** `social`, `persons`, `social-graph`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 **Feature:** FEATURE-031: Social Graph — Couple/Family Link
 
 **Acceptance Criteria:**
-- [ ] On Person detail screen, the couple link section has an "Unlink" option
-- [ ] Topics created BEFORE `partnerLinkedAt` → automatically returned to their original individual owner
-- [ ] Topics created AFTER `partnerLinkedAt` → redistribution dialog shown per topic
-- [ ] Redistribution dialog: 4-option switch per topic: `[Person A] | [Shared — copy] | [Person B] | [Delete]`
+- [x] On Person detail screen, the couple link section has an "Unlink" option
+- [x] Topics created BEFORE `partnerLinkedAt` → automatically returned to their original individual owner
+- [x] Topics created AFTER `partnerLinkedAt` → redistribution dialog shown per topic
+- [x] Redistribution dialog: 4-option switch per topic: `[Person A] | [Shared — copy] | [Person B] | [Delete]`
   - Person A → assigned only to Person A
   - Shared → kept as copy on both
   - Person B → assigned only to Person B
   - Delete → permanently removed
-- [ ] After redistribution: `partnerId` and `partnerLinkedAt` cleared on both persons in Firestore + Hive
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] After redistribution: `partnerId` and `partnerLinkedAt` cleared on both persons in Firestore + Hive
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-123.1:** Implement `unlinkPartner()` in `PersonRepository` (clear `partnerId` + `partnerLinkedAt` on both persons in Firestore + Hive) — 1h
-- [ ] **TASK-123.2:** Implement topic split logic: filter topics by `createdAt` vs `partnerLinkedAt` to determine auto-return vs dialog topics — 1.5h
-- [ ] **TASK-123.3:** Build redistribution dialog — scrollable list of topics, 4-state switch per item — 3h
-- [ ] **TASK-123.4:** Apply redistribution decisions (move/copy/delete in Firestore + Hive) — 2h
-- [ ] **TASK-123.5:** Trigger redistribution flow on "Unlink" confirmation — 0.5h
+- [x] **TASK-123.1:** Implement `unlinkPartner()` in `PersonRepository` (clear `partnerId` + `partnerLinkedAt` on both persons in Firestore + Hive) — 1h
+- [x] **TASK-123.2:** Implement topic split logic: filter topics by `createdAt` vs `partnerLinkedAt` to determine auto-return vs dialog topics — 1.5h
+- [x] **TASK-123.3:** Build redistribution dialog — scrollable list of topics, 4-state switch per item — 3h
+- [x] **TASK-123.4:** Apply redistribution decisions (move/copy/delete in Firestore + Hive) — 2h
+- [x] **TASK-123.5:** Trigger redistribution flow on "Unlink" confirmation — 0.5h
 
 **Dependencies:** US-122
 **Blocks:** None
@@ -5023,6 +5024,85 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 - [ ] **TASK-129.5:** Extend `serializeToPromptWithScores` to append effective settings section per person — 1h
 
 **Dependencies:** US-128
+**Blocks:** None
+
+---
+
+## 🏅 FEATURE-033: Person Recognition — Bonus Points
+
+**Description:** Allow users to award bonus points (1–3) with a comment to individual meeting participants who did something exceptional. Bonuses stack per person per meeting and are factored into relationship statistics.
+**Priority:** P2
+**Role:** Developer
+**Status:** 📋 Planned
+
+---
+
+### US-130: Person Bonus — Model, UI & Meeting Notes
+
+**As a** user
+**I want to** award bonus points with a comment to a specific participant after a meeting
+**So that** I can recognise extraordinary contributions and have them reflected in my notes
+
+**Story Points:** 8
+**Priority:** P2
+**Labels:** `persons`, `meetings`, `model`
+**Status:** 📋 Planned
+**Feature:** FEATURE-033: Person Recognition — Bonus Points
+
+**Acceptance Criteria:**
+- [ ] New Freezed model `PersonBonus` with fields: `points` (int, 1–3), `comment` (String)
+- [ ] `Meeting` model gains field `personBonuses: Map<String, List<PersonBonus>>?` (personId → list of bonuses); nullable, default empty
+- [ ] `fromFirestore` / `toFirestore` handle `personBonuses` field correctly
+- [ ] `MeetingDetailScreen` participant list shows an "Add bonus" icon button per participant
+- [ ] Tapping "Add bonus" opens a dialog: point picker (1 / 2 / 3) + text field for comment (required)
+- [ ] Multiple bonuses can be added for the same participant in the same meeting — each is a separate entry
+- [ ] Existing bonuses for a participant are listed below their name in the meeting detail view (points + comment)
+- [ ] Each new bonus is auto-appended to meeting notes as: `"[FirstName] +[N]: [comment]"`
+- [ ] Bonus can be deleted — deletion also removes the corresponding auto-generated notes entry
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-130.1:** Create `PersonBonus` Freezed model in `lib/data/models/`; run build_runner — 1h
+- [ ] **TASK-130.2:** Add `personBonuses` field to `Meeting` model; update `fromFirestore`/`toFirestore`; run build_runner — 1.5h
+- [ ] **TASK-130.3:** Build `PersonBonusDialog` widget (point picker + comment field + save/cancel) — 1.5h
+- [ ] **TASK-130.4:** Extend `MeetingDetailScreen` participant section: "Add bonus" button per participant; display existing bonuses below name — 2h
+- [ ] **TASK-130.5:** Implement add/delete bonus in `MeetingRepository`: update `personBonuses` map + sync meeting notes — 1h
+
+**Dependencies:** US-022 (MeetingDetailScreen exists)
+**Blocks:** US-131
+
+---
+
+### US-131: Person Bonus — Statistics Integration
+
+**As a** user
+**I want to** bonus points awarded to a participant to affect relationship statistics
+**So that** people who go the extra mile at meetings are reflected as stronger relationships
+
+**Story Points:** 5
+**Priority:** P2
+**Labels:** `analytics`, `statistics`, `persons`
+**Status:** 📋 Planned
+**Feature:** FEATURE-033: Person Recognition — Bonus Points
+
+**Effective weight formula:**
+`effectiveWeight(person, meeting) = meeting.weight + sum(personBonuses[personId].points)`
+
+**Acceptance Criteria:**
+- [ ] `StatisticsRepository` exposes a helper `effectiveWeight(personId, meeting)` that computes meeting weight + all bonus points for that person
+- [ ] `getInteractionDistribution()` uses `effectiveWeight` per person instead of flat `meeting.weight`
+- [ ] `RelationshipScoreService.computeScore()` uses `effectiveWeight` when reading meeting data from `LocalCacheService`
+- [ ] `ActivityBreakdownWidget` is NOT affected — activity weight remains flat `meeting.weight`
+- [ ] Existing tests updated to cover `effectiveWeight` logic
+- [ ] `flutter analyze` clean, `flutter test` pass
+
+**Tasks:**
+- [ ] **TASK-131.1:** Add `effectiveWeight(personId, Meeting)` helper to `StatisticsRepository` — 1h
+- [ ] **TASK-131.2:** Refactor `getInteractionDistribution()` to use `effectiveWeight` per participant — 1h
+- [ ] **TASK-131.3:** Update `RelationshipScoreService.computeScore()` to apply `effectiveWeight` from `LocalCacheService` meeting data — 1.5h
+- [ ] **TASK-131.4:** Update `LocalCacheService` write-through so `personBonuses` is cached alongside meeting data — 0.5h
+
+**Dependencies:** US-130
 **Blocks:** None
 
 ---

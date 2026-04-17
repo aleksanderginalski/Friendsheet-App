@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (953)
+✅ All tests passing (983)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,15 +174,15 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.9 — US-122: Couple Link (April 16, 2026)
-- ✅ `Person` model (MODIFIED): `partnerId: String?` + `partnerLinkedAt: DateTime?`; Freezed regenerated
-- ✅ `PersonRepository` (MODIFIED): `linkPartner()` batch-writes both persons in Firestore + Hive write-through
-- ✅ `CatchUpTopicRepository` (MODIFIED): `mergeTopics()` copies missing topics bidirectionally with case-insensitive deduplication
-- ✅ `CoupleLinkSection` widget (NEW): shows "Link as couple" / "Coupled with [name]" based on link state
-- ✅ `PersonDetailProvider` (MODIFIED): `setPartner()` for immediate post-link UI refresh
-- ✅ `PersonDetailScreen` (MODIFIED): `while(true)` picker→merge flow; topic + archive propagation to partner (fire-and-forget)
-- ✅ `CatchUpListSection` (MODIFIED): converted to `ExpansionTile` (collapsed by default); Add button in header
-- ✅ 16 new tests (953 total)
+### Latest: v4.5.10 — US-123: Couple Separation Flow (April 17, 2026)
+- ✅ `PersonRepository` (MODIFIED): `unlinkPartner()` batch-clears `partnerId`/`partnerLinkedAt` on both persons via `FieldValue.delete()` + Hive write-through
+- ✅ `CatchUpTopicRepository` (MODIFIED): `TopicRedistributionDecision` enum; `applyRedistribution()` applies per-topic personA/shared/personB/delete decisions
+- ✅ `CoupleSeparationDialog` widget (NEW): 4-state `ToggleButtons` per post-link topic; defaults to shared; returns decisions map or null
+- ✅ `CoupleLinkSection` (MODIFIED): added `onUnlinkTap` callback; Unlink button in trailing when linked
+- ✅ `PersonDetailProvider` (MODIFIED): `clearPartner()` for immediate post-separation UI refresh
+- ✅ `PersonDetailScreen` (MODIFIED): full separation flow with pre-link text-set filtering, redistribution dialog, partner copy cleanup, delete propagation
+- ✅ `CatchUpListSection` + `HistorySection` (MODIFIED): green badge counters matching child activities style
+- ✅ 30 new tests (983 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

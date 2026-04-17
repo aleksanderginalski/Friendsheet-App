@@ -77,6 +77,14 @@ class PersonDetailProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Clears partnerId and partnerLinkedAt locally after couple separation.
+  // Lightweight — does not re-fetch meeting count or score.
+  void clearPartner() {
+    if (_person == null) return;
+    _person = _person!.copyWith(partnerId: null, partnerLinkedAt: null);
+    notifyListeners();
+  }
+
   // Silently re-fetches meeting count without setting isLoading.
   // Used to sync the count after returning from PersonMeetingsScreen.
   Future<void> refreshMeetingCount() async {

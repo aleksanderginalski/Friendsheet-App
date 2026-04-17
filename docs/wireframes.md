@@ -263,11 +263,30 @@ Each card:
 │  ⚖  Weight: 3                       │
 │                                     │
 │  Participants                        │
-│  Anna Smith · John Doe              │
+│  Anna Smith                    [+]  │
+│    ⭐ +2: Zorganizowała całe wyjście │
+│  John Doe                      [+]  │
 │                                     │
 │  Activities                          │
 │  ☕ Coffee · 🏃 Running              │
 │                                     │
+└─────────────────────────────────────┘
+```
+
+**Person Bonus Dialog (US-130):**
+```
+┌─────────────────────────────────────┐
+│  Bonus dla Anna Smith               │
+├─────────────────────────────────────┤
+│  Punkty                             │
+│  ○ 1   ● 2   ○ 3                   │
+│                                     │
+│  Za co?                             │
+│  ┌─────────────────────────────┐   │
+│  │ Zorganizowała całe wyjście  │   │
+│  └─────────────────────────────┘   │
+│                                     │
+│         [Anuluj]  [Dodaj bonus]     │
 └─────────────────────────────────────┘
 ```
 
@@ -276,6 +295,9 @@ Each card:
 - `🗑` → confirmation dialog → delete → back to `MeetingsListScreen`
 - Participants shown as resolved full names (not IDs)
 - Activities shown with category icons
+- `[+]` per participant → opens PersonBonusDialog (point picker 1–3 + required comment)
+- Existing bonuses shown below participant name (star icon + points + comment)
+- Long press on bonus → delete confirmation → removes bonus and its notes entry
 
 ---
 

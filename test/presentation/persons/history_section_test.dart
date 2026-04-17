@@ -147,5 +147,19 @@ void main() {
 
       expect(called, isFalse);
     });
+
+    testWidgets('shows badge with count when archived topics present',
+        (tester) async {
+      await tester.pumpWidget(buildSection(archivedTopics: [archivedTopic]));
+
+      expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('does not show badge when archived topics list is empty',
+        (tester) async {
+      await tester.pumpWidget(buildSection(archivedTopics: []));
+
+      expect(find.text('0'), findsNothing);
+    });
   });
 }

@@ -26,6 +26,7 @@ void main() {
     required Person person,
     Person? partnerPerson,
     VoidCallback? onLinkTap,
+    VoidCallback? onUnlinkTap,
   }) {
     return MaterialApp(
       home: Scaffold(
@@ -33,6 +34,7 @@ void main() {
           person: person,
           partnerPerson: partnerPerson,
           onLinkTap: onLinkTap ?? () {},
+          onUnlinkTap: onUnlinkTap,
         ),
       ),
     );
@@ -100,6 +102,46 @@ void main() {
 
       await tester.tap(find.byType(ListTile));
       expect(tapped, isFalse);
+    });
+
+    testWidgets('shows Unlink button when person is linked', (tester) async {
+      final person = makePerson(
+        partnerId: 'p2',
+        partnerLinkedAt: DateTime(2026, 4, 10),
+      );
+      final partner = makePerson(id: 'p2', firstName: 'Bob');
+
+      await tester.pumpWidget(buildWidget(
+        person: person,
+        partnerPerson: partner,
+      ));
+
+      expect(find.text('Unlink'), findsOneWidget);
+    });
+
+    testWidgets('does not show Unlink button when person is unlinked',
+        (tester) async {
+      await tester.pumpWidget(buildWidget(person: makePerson()));
+
+      expect(find.text('Unlink'), findsNothing);
+    });
+
+    testWidgets('calls onUnlinkTap when Unlink button pressed', (tester) async {
+      var called = false;
+      final person = makePerson(
+        partnerId: 'p2',
+        partnerLinkedAt: DateTime(2026, 4, 10),
+      );
+      final partner = makePerson(id: 'p2', firstName: 'Bob');
+
+      await tester.pumpWidget(buildWidget(
+        person: person,
+        partnerPerson: partner,
+        onUnlinkTap: () => called = true,
+      ));
+
+      await tester.tap(find.text('Unlink'));
+      expect(called, isTrue);
     });
   });
 }

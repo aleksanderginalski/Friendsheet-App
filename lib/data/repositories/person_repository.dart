@@ -128,6 +128,41 @@ class PersonRepository {
     }
   }
 
+  /// Clears partnerId + partnerLinkedAt on both persons using a batch write.
+  /// Write-through: re-fetches both persons from Firestore and upserts to Hive.
+  Future<void> unlinkPartner(
+    String userId,
+    String personId,
+    String partnerId,
+  ) async {
+    final batch = _firestore.batch();
+
+    final personRef = _personsRef(userId).doc(personId);
+    final partnerRef = _personsRef(userId).doc(partnerId);
+
+    batch.update(personRef, {
+      'partnerId': FieldValue.delete(),
+      'partnerLinkedAt': FieldValue.delete(),
+    });
+    batch.update(partnerRef, {
+      'partnerId': FieldValue.delete(),
+      'partnerLinkedAt': FieldValue.delete(),
+    });
+
+    await batch.commit();
+
+    final personSnap = await personRef.get();
+    final partnerSnap = await partnerRef.get();
+    if (personSnap.exists) {
+      await LocalCacheService()
+          .upsertPerson(userId, Person.fromFirestore(personSnap));
+    }
+    if (partnerSnap.exists) {
+      await LocalCacheService()
+          .upsertPerson(userId, Person.fromFirestore(partnerSnap));
+    }
+  }
+
   /// Deletes a person and removes them from all associated meetings atomically.
   Future<void> deletePerson(String userId, String personId) async {
     // Remove personId from meetings and groups before deleting the person

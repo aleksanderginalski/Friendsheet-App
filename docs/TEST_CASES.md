@@ -1922,3 +1922,70 @@ Run after every release or hotfix:
 | UT-122-015 | calls onLinkTap when tapped and unlinked | callback invoked |
 | UT-122-016 | does not call onLinkTap when tapped and already linked | callback not invoked |
 
+## US-123 — Couple Separation Flow
+
+### Automated tests — `test/data/repositories/person_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-001 | unlinkPartner clears partnerId and partnerLinkedAt on both persons | both Firestore docs have no partnerId/partnerLinkedAt |
+| UT-123-002 | unlinkPartner does not affect other persons | third person document unchanged |
+
+### Automated tests — `test/data/repositories/catch_up_topic_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-003 | applyRedistribution personA: keeps topic on A, deletes from B | A has topic, B does not |
+| UT-123-004 | applyRedistribution shared: keeps topic on both sides | both A and B have topic |
+| UT-123-005 | applyRedistribution personB: deletes from A, keeps on B | A missing topic, B has topic |
+| UT-123-006 | applyRedistribution delete: removes from both A and B | neither A nor B has topic |
+| UT-123-007 | applyRedistribution defaults to shared when topic id missing from decisions | both sides keep topic |
+| UT-123-008 | applyRedistribution personA no-op when partner has no matching topic | A topic unchanged, no exception |
+
+### Automated tests — `test/presentation/persons/person_detail_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-009 | clearPartner clears partnerId and partnerLinkedAt | both fields null after call |
+| UT-123-010 | clearPartner does nothing when person is null | no exception thrown |
+
+### Automated tests — `test/presentation/persons/couple_link_section_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-011 | shows Unlink button when person is linked | 'Unlink' text visible |
+| UT-123-012 | does not show Unlink button when person is unlinked | 'Unlink' text absent |
+| UT-123-013 | calls onUnlinkTap when Unlink button pressed | callback invoked |
+
+### Automated tests — `test/presentation/persons/couple_separation_dialog_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-014 | shows Redistribute topics title | dialog title visible |
+| UT-123-015 | shows topic text for each post-link topic | topic text rendered |
+| UT-123-016 | shows ToggleButtons with 4 options per topic | Anna / Shared / Bob / Delete buttons present |
+| UT-123-017 | returns null when Cancel tapped | result is null |
+| UT-123-018 | returns decisions map with shared default when Confirm tapped | decisions[t1] == shared |
+| UT-123-019 | selecting a ToggleButtons option updates decision | decisions[t1] == delete after tapping Delete |
+| UT-123-020 | shows no ToggleButtons when postLinkTopics is empty | no ToggleButtons in tree |
+
+### Automated tests — `test/presentation/persons/catch_up_list_section_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-021 | shows Catch-up List title | text visible |
+| UT-123-022 | shows add icon button | Icons.add present |
+| UT-123-023 | calls onAddTap when add button pressed | callback invoked |
+| UT-123-024 | shows badge with topic count when topics present | '2' badge visible |
+| UT-123-025 | does not show badge when topics list is empty | '0' absent |
+| UT-123-026 | shows topic text when expanded | topic text visible |
+| UT-123-027 | shows "No topics yet" when expanded and empty | empty-state text visible |
+| UT-123-028 | shows CircularProgressIndicator when isLoading is true | spinner visible |
+
+### Automated tests — `test/presentation/persons/history_section_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-123-029 | shows badge with count when archived topics present | '1' badge visible |
+| UT-123-030 | does not show badge when archived topics list is empty | '0' absent |
+

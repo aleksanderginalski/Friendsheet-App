@@ -94,7 +94,31 @@ class _HistorySectionState extends State<HistorySection> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ExpansionTile(
         leading: const Icon(Icons.history),
-        title: const Text('Historia'),
+        // Title uses a Row so 'Historia' remains as a standalone Text widget —
+        // required for find.text('Historia') in widget tests to keep working.
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Historia'),
+            if (widget.archivedTopics.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              // Badge matching child activities style (green pill).
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${widget.archivedTopics.length}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.zero,
         onExpansionChanged: (expanded) {

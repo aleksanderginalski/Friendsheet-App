@@ -187,6 +187,27 @@ void main() {
       });
     });
 
+    group('clearPartner', () {
+      setUp(() async {
+        when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
+            .thenAnswer((_) async => 0);
+        await provider.initialize(testPerson);
+      });
+
+      test('clears partnerId and partnerLinkedAt on person', () {
+        provider.setPartner('p2', DateTime(2026, 4, 10));
+        provider.clearPartner();
+
+        expect(provider.person!.partnerId, isNull);
+        expect(provider.person!.partnerLinkedAt, isNull);
+      });
+
+      test('does nothing when person is null', () {
+        // Provider not initialized — person is null.
+        expect(() => provider.clearPartner(), returnsNormally);
+      });
+    });
+
     group('linkFriendAccount', () {
       setUp(() async {
         when(mockMeetingRepository.getMeetingsCountForPerson('u1', 'p1'))
