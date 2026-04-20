@@ -4,6 +4,26 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.11 — US-124: Friends-Quest List & Creation (April 20, 2026)
+- ✅ `lib/data/models/friends_quest.dart` (NEW) — `FriendsQuest` Freezed model: `id`, `name`, `participantIds`, `linkedMeetingId?`, `createdAt`, `isCompleted`, `tasks` (list of `FriendsQuestTask`)
+- ✅ `lib/data/models/friends_quest_task.dart` (NEW) — `FriendsQuestTask` Freezed model: `id`, `text`, `sourceTopicId?`, `assignedPersonIds`, `isCompleted`
+- ✅ `lib/data/models/friends_quest.freezed.dart` + `friends_quest.g.dart` + `friends_quest_task.freezed.dart` + `friends_quest_task.g.dart` (GENERATED) — build_runner output
+- ✅ `lib/data/repositories/friends_quest_repository.dart` (NEW) — Hive-only CRUD: `getAll(userId)` (synchronous), `create(userId, name, participantIds)`, `delete(userId, questId)`; data persists across logout/login
+- ✅ `lib/services/hive_service.dart` (MODIFIED) — added `friends_quests` box; `clearUserData()` intentionally does NOT clear this box (local device data, survives logout)
+- ✅ `lib/presentation/friends_quest/friends_quest_provider.dart` (NEW) — `FriendsQuestProvider` (ChangeNotifier): `loadQuests`, `createQuest`, `deleteQuest`; exposes `activeQuests` (non-completed only)
+- ✅ `lib/presentation/friends_quest/friends_quest_list_screen.dart` (NEW) — `FriendsQuestListScreen`: AppBar, FAB, empty state, `ListView` of quests with participant count + pending task count + delete confirmation dialog
+- ✅ `lib/presentation/friends_quest/create_quest_dialog.dart` (NEW) — `CreateQuestDialog`: quest name TextField, person search TextField with `_filteredPersons` getter, `CheckboxListTile` per person; CREATE disabled when name empty
+- ✅ `lib/presentation/widgets/friends_quest_summary_widget.dart` (NEW) — `FriendsQuestSummaryWidget`: Card with `ListTile` showing "N active quest(s)" + "View all →" TextButton; tapping either navigates to list
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `FriendsQuestProvider` instantiated at `_MainScreenState` level; "Friends-Quest" drawer tile; `_openFriendsQuestList()` with `ChangeNotifierProvider.value` + `.then()` reload
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — `Consumer<FriendsQuestProvider>` above statistics; shows `FriendsQuestSummaryWidget` when active quests exist
+- ✅ `test/data/repositories/friends_quest_repository_test.dart` (NEW) — 7 Hive repository tests: getAll empty, create+getAll, multiple, delete, unknown id, per-userId isolation, round-trip serialization
+- ✅ `test/presentation/friends_quest/friends_quest_provider_test.dart` (NEW) — 6 provider tests with `MockFriendsQuestRepository`
+- ✅ `test/presentation/widgets/friends_quest_summary_widget_test.dart` (NEW) — 5 widget tests: singular/plural label, View all button, onViewAll callback, tile tap
+- ✅ `test/presentation/screens/home_screen_test.dart` (MODIFIED) — added `FriendsQuestProvider` to `setUp`/`tearDown`/`buildHomeScreen`
+- ✅ 1001 Flutter tests passing (+18 new tests)
+
+---
+
 ### v4.5.10 — US-123: Couple Separation Flow (April 17, 2026)
 - ✅ `lib/data/repositories/person_repository.dart` (MODIFIED) — `unlinkPartner(userId, personId, partnerId)`: batch write clears `partnerId` + `partnerLinkedAt` on both persons via `FieldValue.delete()`, re-fetches and upserts both to Hive
 - ✅ `lib/data/repositories/catch_up_topic_repository.dart` (MODIFIED) — `TopicRedistributionDecision` enum (personA / shared / personB / delete); `applyRedistribution()`: loads partner's active topics, matches by case-insensitive text trim, executes per-topic delete/keep decisions

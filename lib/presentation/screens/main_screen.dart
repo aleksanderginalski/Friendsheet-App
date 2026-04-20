@@ -22,6 +22,8 @@ import '../../data/services/local_cache_service.dart';
 import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
+import '../friends_quest/friends_quest_list_screen.dart';
+import '../friends_quest/friends_quest_provider.dart';
 import '../import/meeting_inbox_screen.dart';
 import '../persons/friend_groups_provider.dart';
 import '../persons/persons_list_provider.dart';
@@ -70,6 +72,7 @@ class _MainScreenState extends State<MainScreen> {
   late final CalendarSettingsProvider _calendarSettingsProvider;
   late final MeetingInboxProvider _meetingInboxProvider;
   late final SharedPackageInboxProvider _sharedPackageInboxProvider;
+  late final FriendsQuestProvider _friendsQuestProvider;
 
   @override
   void initState() {
@@ -109,6 +112,7 @@ class _MainScreenState extends State<MainScreen> {
       calendarService: GoogleCalendarService(),
     );
     _meetingInboxProvider = MeetingInboxProvider();
+    _friendsQuestProvider = FriendsQuestProvider();
     _sharedPackageInboxProvider = SharedPackageInboxProvider(
       packageRepository: PendingMeetingPackageRepository(),
       meetingRepository: meetingRepository,
@@ -127,6 +131,7 @@ class _MainScreenState extends State<MainScreen> {
         _buddyWidgetProvider.initialize(userId);
         _activitiesListProvider.initialize(userId);
         _sharedPackageInboxProvider.initialize(userId);
+        _friendsQuestProvider.loadQuests(userId);
       }
       _friendGroupsProvider.loadGroups();
       _statisticsProvider.initialize();
@@ -169,7 +174,25 @@ class _MainScreenState extends State<MainScreen> {
     _calendarSettingsProvider.dispose();
     _meetingInboxProvider.dispose();
     _sharedPackageInboxProvider.dispose();
+    _friendsQuestProvider.dispose();
     super.dispose();
+  }
+
+  void _openFriendsQuestList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: _friendsQuestProvider,
+          child: const FriendsQuestListScreen(),
+        ),
+      ),
+    ).then((_) {
+      final userId = AuthService().currentUserId;
+      if (userId != null && mounted) {
+        _friendsQuestProvider.loadQuests(userId);
+      }
+    });
   }
 
   /// Opens BuddyMenuScreen — single entry point for all Buddy features.
@@ -332,6 +355,7 @@ class _MainScreenState extends State<MainScreen> {
         ChangeNotifierProvider.value(value: _calendarSettingsProvider),
         ChangeNotifierProvider.value(value: _meetingInboxProvider),
         ChangeNotifierProvider.value(value: _sharedPackageInboxProvider),
+        ChangeNotifierProvider.value(value: _friendsQuestProvider),
       ],
       child: _buildScaffold(context),
     );
@@ -473,6 +497,15 @@ class _MainScreenState extends State<MainScreen> {
               onTap: () {
                 Navigator.pop(context);
                 _openBuddyMenu();
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.checklist_rtl),
+              title: const Text('Friends-Quest'),
+              onTap: () {
+                Navigator.pop(context);
+                _openFriendsQuestList();
               },
             ),
             const Divider(),

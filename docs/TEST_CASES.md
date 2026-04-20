@@ -1989,3 +1989,38 @@ Run after every release or hotfix:
 | UT-123-029 | shows badge with count when archived topics present | '1' badge visible |
 | UT-123-030 | does not show badge when archived topics list is empty | '0' absent |
 
+## US-124 — Friends-Quest List & Creation
+
+### Automated tests — `test/data/repositories/friends_quest_repository_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-124-001 | getAll returns empty list when no data exists | empty list |
+| UT-124-002 | create adds quest with correct fields and getAll returns it | name, participantIds, isCompleted=false, tasks empty |
+| UT-124-003 | create multiple quests preserves all entries | 2 quests in list |
+| UT-124-004 | delete removes quest by id, others remain | 1 quest left |
+| UT-124-005 | delete with unknown id leaves list unchanged | 1 quest still present |
+| UT-124-006 | data is isolated per userId | each user has own quests |
+| UT-124-007 | persists data across getAll calls (round-trip serialization) | fields preserved after re-read |
+
+### Automated tests — `test/presentation/friends_quest/friends_quest_provider_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-124-008 | initial state: quests empty, activeQuests empty, not loading | all defaults correct |
+| UT-124-009 | loadQuests populates quests from repository | 2 quests loaded |
+| UT-124-010 | activeQuests returns only non-completed quests | 1 of 2 quests returned |
+| UT-124-011 | createQuest calls repo and refreshes list | repo.create called, list updated |
+| UT-124-012 | deleteQuest calls repo and refreshes list | repo.delete called, list empty |
+| UT-124-013 | loadQuests notifies listeners | listener fired |
+
+### Automated tests — `test/presentation/widgets/friends_quest_summary_widget_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-124-014 | shows singular label for 1 quest | '1 active quest' |
+| UT-124-015 | shows plural label for multiple quests | '3 active quests' |
+| UT-124-016 | shows View all button | 'View all →' visible |
+| UT-124-017 | tapping View all calls onViewAll | callback invoked |
+| UT-124-018 | tapping tile also calls onViewAll | callback invoked via ListTile |
+
