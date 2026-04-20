@@ -1,15 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/friends_quest.dart';
+import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart';
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart';
+import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/friends_quest/friends_quest_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import 'friends_quest_provider_test.mocks.dart';
 
-@GenerateMocks([FriendsQuestRepository])
+@GenerateMocks([FriendsQuestRepository, CatchUpTopicRepository, PersonRepository])
 void main() {
   late MockFriendsQuestRepository mockRepo;
+  late MockCatchUpTopicRepository mockCatchUpRepo;
+  late MockPersonRepository mockPersonRepo;
   late FriendsQuestProvider provider;
 
   final activeQuest = FriendsQuest(
@@ -28,7 +32,13 @@ void main() {
 
   setUp(() {
     mockRepo = MockFriendsQuestRepository();
-    provider = FriendsQuestProvider(repository: mockRepo);
+    mockCatchUpRepo = MockCatchUpTopicRepository();
+    mockPersonRepo = MockPersonRepository();
+    provider = FriendsQuestProvider(
+      repository: mockRepo,
+      catchUpRepo: mockCatchUpRepo,
+      personRepo: mockPersonRepo,
+    );
   });
 
   tearDown(() => provider.dispose());
@@ -57,14 +67,21 @@ void main() {
       expect(provider.activeQuests.first.id, 'q1');
     });
 
-    test('createQuest calls repo and refreshes list', () async {
-      when(mockRepo.create('u1', 'New quest', ['p1']))
-          .thenAnswer((_) async => activeQuest);
-      when(mockRepo.getAll('u1')).thenReturn([activeQuest]);
+    test('createQuest with no participants skips import', () async {
+      final noParticipantQuest = FriendsQuest(
+        id: 'q3',
+        name: 'Solo',
+        participantIds: [],
+        createdAt: DateTime(2026),
+      );
+      when(mockRepo.create('u1', 'Solo', []))
+          .thenAnswer((_) async => noParticipantQuest);
+      when(mockRepo.getAll('u1')).thenReturn([noParticipantQuest]);
 
-      await provider.createQuest('u1', 'New quest', ['p1']);
+      await provider.createQuest('u1', 'Solo', []);
 
-      verify(mockRepo.create('u1', 'New quest', ['p1'])).called(1);
+      verify(mockRepo.create('u1', 'Solo', [])).called(1);
+      verifyNever(mockPersonRepo.getPersonsByIds(any, any));
       expect(provider.quests, hasLength(1));
       expect(provider.isLoading, false);
     });

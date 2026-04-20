@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart';
+import 'package:friendsheet/data/repositories/friends_quest_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
@@ -82,6 +84,8 @@ const Widget _stubImage = SizedBox(key: Key('stub_image'), height: 120);
   PersonRepository,
   MeetingRepository,
   LtnsExclusionService,
+  FriendsQuestRepository,
+  CatchUpTopicRepository,
 ])
 void main() {
   late MockStatisticsRepository mockRepository;
@@ -90,6 +94,8 @@ void main() {
   late MockPersonRepository mockPersonRepository;
   late MockMeetingRepository mockMeetingRepository;
   late MockLtnsExclusionService mockLtnsExclusionService;
+  late MockFriendsQuestRepository mockFriendsQuestRepository;
+  late MockCatchUpTopicRepository mockCatchUpTopicRepository;
   late StatisticsProvider statisticsProvider;
   late HomeProvider homeProvider;
   late BuddyWidgetProvider buddyWidgetProvider;
@@ -118,7 +124,14 @@ void main() {
     // Default stub: no LTNS exclusions (US-118).
     when(mockLtnsExclusionService.getExcludedIds())
         .thenAnswer((_) async => <String>{});
-    friendsQuestProvider = FriendsQuestProvider();
+    mockFriendsQuestRepository = MockFriendsQuestRepository();
+    mockCatchUpTopicRepository = MockCatchUpTopicRepository();
+    when(mockFriendsQuestRepository.getAll(any)).thenReturn([]);
+    friendsQuestProvider = FriendsQuestProvider(
+      repository: mockFriendsQuestRepository,
+      catchUpRepo: mockCatchUpTopicRepository,
+      personRepo: mockPersonRepository,
+    );
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
     buddyWidgetProvider = BuddyWidgetProvider(
       meetingRepository: mockMeetingRepository,

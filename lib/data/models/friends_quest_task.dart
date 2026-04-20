@@ -8,7 +8,9 @@ class FriendsQuestTask with _$FriendsQuestTask {
   const factory FriendsQuestTask({
     required String id,
     required String text,
+    String? contextLabel,
     String? sourceTopicId,
+    String? sourcePersonId,
     @Default([]) List<String> assignedPersonIds,
     @Default(false) bool isCompleted,
   }) = _FriendsQuestTask;

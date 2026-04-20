@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -14,7 +16,9 @@ class FriendsQuestRepository {
     if (raw == null) return [];
     return (raw as List<dynamic>)
         .map(
-          (e) => FriendsQuest.fromJson(Map<String, dynamic>.from(e as Map)),
+          (e) => FriendsQuest.fromJson(
+            Map<String, dynamic>.from(jsonDecode(jsonEncode(e)) as Map),
+          ),
         )
         .toList();
   }
@@ -41,6 +45,12 @@ class FriendsQuestRepository {
 
   Future<void> delete(String userId, String questId) async {
     final updated = getAll(userId).where((q) => q.id != questId).toList();
+    await _save(userId, updated);
+  }
+
+  Future<void> updateQuest(String userId, FriendsQuest quest) async {
+    final updated =
+        getAll(userId).map((q) => q.id == quest.id ? quest : q).toList();
     await _save(userId, updated);
   }
 }
