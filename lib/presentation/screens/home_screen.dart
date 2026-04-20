@@ -6,12 +6,15 @@ import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../ai_chat/ai_chat_screen.dart';
 import '../ai_chat/buddy_chat_mode.dart';
+import '../friends_quest/friends_quest_list_screen.dart';
+import '../friends_quest/friends_quest_provider.dart';
 import '../providers/buddy_widget_provider.dart';
 import '../providers/home_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../sharing/generate_sharing_token_screen.dart';
 import '../widgets/buddy_widget.dart';
 import '../widgets/build_meeting_base_cta_card.dart';
+import '../widgets/friends_quest_summary_widget.dart';
 import '../widgets/home_loading_screen.dart';
 import '../widgets/statistics_section.dart';
 import 'calendar_events_screen.dart';
@@ -60,9 +63,30 @@ class HomeScreen extends StatelessWidget {
       );
     }
 
-    return const Padding(
-      padding: EdgeInsets.all(24.0),
-      child: StatisticsSection(),
+    return Consumer<FriendsQuestProvider>(
+      builder: (context, questProvider, _) {
+        final active = questProvider.activeQuests;
+        if (active.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(24.0),
+            child: StatisticsSection(),
+          );
+        }
+        return Column(
+          children: [
+            FriendsQuestSummaryWidget(
+              activeQuests: active,
+              onViewAll: () => _openFriendsQuestList(context, questProvider),
+            ),
+            const Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: StatisticsSection(),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -111,6 +135,21 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+void _openFriendsQuestList(
+  BuildContext context,
+  FriendsQuestProvider provider,
+) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        value: provider,
+        child: const FriendsQuestListScreen(),
+      ),
+    ),
+  );
 }
 
 /// Opens AIChatScreen in meeting-notes-list mode (top-3 meeting selection).

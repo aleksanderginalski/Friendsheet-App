@@ -180,6 +180,29 @@ class MockCatchUpTopicRepository extends _i1.Mock
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> applyRedistribution(
+    String? userId,
+    String? personId,
+    String? partnerId,
+    List<_i5.CatchUpTopic>? postLinkTopics,
+    Map<String, _i2.TopicRedistributionDecision>? decisions,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #applyRedistribution,
+          [
+            userId,
+            personId,
+            partnerId,
+            postLinkTopics,
+            decisions,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }
 
 /// A class which mocks [AuthService].

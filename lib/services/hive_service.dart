@@ -22,6 +22,9 @@ class HiveService {
   // Per-person catch-up topics cache (US-120).
   static const String _localCatchUpTopicsBox = 'local_catch_up_topics';
 
+  // Friends-Quest local storage (US-124) — device-only, not synced to Firestore.
+  static const String _friendsQuestsBox = 'friends_quests';
+
   // Public constants used by StatisticsRepository to reference box names.
   static const String meetingsBox = _meetingsBox;
   static const String categoriesBox = _categoriesBox;
@@ -33,6 +36,9 @@ class HiveService {
   static const String localPersonsBox = _localPersonsBox;
   static const String localCatsBox = _localCatsBox;
   static const String localCatchUpTopicsBox = _localCatchUpTopicsBox;
+
+  // Public constant used by FriendsQuestRepository.
+  static const String friendsQuestsBox = _friendsQuestsBox;
 
   /// Initializes Hive and opens all boxes.
   ///
@@ -55,6 +61,7 @@ class HiveService {
     await Hive.openBox<dynamic>(_localPersonsBox);
     await Hive.openBox<dynamic>(_localCatsBox);
     await Hive.openBox<dynamic>(_localCatchUpTopicsBox);
+    await Hive.openBox<dynamic>(_friendsQuestsBox);
   }
 
   /// Returns an already-open box by name. Boxes must be opened via [initialize].
@@ -83,5 +90,8 @@ class HiveService {
         .where((k) => k.toString().startsWith('${userId}_'))
         .toList();
     await topicsBox.deleteAll(topicKeys);
+
+    // Friends-Quest data is intentionally NOT cleared on logout — it is a
+    // local-only planning tool and should persist across logout/login cycles.
   }
 }

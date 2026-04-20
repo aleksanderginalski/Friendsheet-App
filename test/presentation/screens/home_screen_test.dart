@@ -9,6 +9,7 @@ import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/data/services/ltns_exclusion_service.dart';
+import 'package:friendsheet/presentation/friends_quest/friends_quest_provider.dart';
 import 'package:friendsheet/presentation/providers/buddy_widget_provider.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -92,6 +93,7 @@ void main() {
   late StatisticsProvider statisticsProvider;
   late HomeProvider homeProvider;
   late BuddyWidgetProvider buddyWidgetProvider;
+  late FriendsQuestProvider friendsQuestProvider;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -116,6 +118,7 @@ void main() {
     // Default stub: no LTNS exclusions (US-118).
     when(mockLtnsExclusionService.getExcludedIds())
         .thenAnswer((_) async => <String>{});
+    friendsQuestProvider = FriendsQuestProvider();
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
     buddyWidgetProvider = BuddyWidgetProvider(
       meetingRepository: mockMeetingRepository,
@@ -144,6 +147,7 @@ void main() {
     buddyWidgetProvider.dispose();
     statisticsProvider.dispose();
     homeProvider.dispose();
+    friendsQuestProvider.dispose();
   });
 
   Widget buildHomeScreen() {
@@ -153,6 +157,7 @@ void main() {
           ChangeNotifierProvider.value(value: buddyWidgetProvider),
           ChangeNotifierProvider.value(value: homeProvider),
           ChangeNotifierProvider.value(value: statisticsProvider),
+          ChangeNotifierProvider.value(value: friendsQuestProvider),
         ],
         child: const HomeScreen(),
       ),

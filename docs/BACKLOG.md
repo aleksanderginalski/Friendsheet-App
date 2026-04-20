@@ -4797,7 +4797,7 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 5
 **Priority:** P2
 **Labels:** `friends-quest`, `planning`, `ux`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 **Feature:** FEATURE-032: Friends-Quest
 
 **Acceptance Criteria:**
