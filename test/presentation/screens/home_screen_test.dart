@@ -131,6 +131,7 @@ void main() {
       repository: mockFriendsQuestRepository,
       catchUpRepo: mockCatchUpTopicRepository,
       personRepo: mockPersonRepository,
+      meetingRepo: mockMeetingRepository,
     );
     homeProvider = HomeProvider(meetingRepository: mockMeetingRepository);
     buddyWidgetProvider = BuddyWidgetProvider(

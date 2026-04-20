@@ -4,14 +4,17 @@ import 'package:uuid/uuid.dart';
 import '../../data/models/catch_up_topic.dart';
 import '../../data/models/friends_quest.dart';
 import '../../data/models/friends_quest_task.dart';
+import '../../data/models/meeting.dart';
 import '../../data/repositories/catch_up_topic_repository.dart';
 import '../../data/repositories/friends_quest_repository.dart';
+import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 
 class FriendsQuestProvider extends ChangeNotifier {
   final FriendsQuestRepository _repository;
   final CatchUpTopicRepository _catchUpRepo;
   final PersonRepository _personRepo;
+  final MeetingRepository _meetingRepo;
 
   static const _uuid = Uuid();
 
@@ -22,9 +25,11 @@ class FriendsQuestProvider extends ChangeNotifier {
     FriendsQuestRepository? repository,
     CatchUpTopicRepository? catchUpRepo,
     PersonRepository? personRepo,
+    MeetingRepository? meetingRepo,
   })  : _repository = repository ?? FriendsQuestRepository(),
         _catchUpRepo = catchUpRepo ?? CatchUpTopicRepository(),
-        _personRepo = personRepo ?? PersonRepository();
+        _personRepo = personRepo ?? PersonRepository(),
+        _meetingRepo = meetingRepo ?? MeetingRepository();
 
   List<FriendsQuest> get quests => _quests;
   List<FriendsQuest> get activeQuests =>
@@ -266,6 +271,52 @@ class FriendsQuestProvider extends ChangeNotifier {
     }
 
     await _repository.updateQuest(userId, quest.copyWith(tasks: allTasks));
+    _quests = _repository.getAll(userId);
+    notifyListeners();
+  }
+
+  Future<void> linkToMeeting(
+      String userId, String questId, String meetingId) async {
+    final quest = _quests.firstWhere((q) => q.id == questId);
+    await _repository.updateQuest(
+        userId, quest.copyWith(linkedMeetingId: meetingId));
+    _quests = _repository.getAll(userId);
+    notifyListeners();
+  }
+
+  Future<void> completeTask(
+      String userId, String questId, String taskId) async {
+    final quest = _quests.firstWhere((q) => q.id == questId);
+    final task = quest.tasks.firstWhere((t) => t.id == taskId);
+    if (task.isCompleted) return;
+    if (task.sourceTopicId != null && task.sourcePersonId != null) {
+      try {
+        await _catchUpRepo.archive(
+            userId, task.sourcePersonId!, task.sourceTopicId!);
+      } catch (_) {}
+    }
+    final updated = quest.tasks
+        .map((t) => t.id == taskId ? t.copyWith(isCompleted: true) : t)
+        .toList();
+    await _repository.updateQuest(userId, quest.copyWith(tasks: updated));
+    _quests = _repository.getAll(userId);
+    notifyListeners();
+  }
+
+  Future<void> completeQuest(String userId, String questId) async {
+    final quest = _quests.firstWhere((q) => q.id == questId);
+    final done = quest.tasks.where((t) => t.isCompleted).toList();
+    if (quest.linkedMeetingId != null && done.isNotEmpty) {
+      final all = await _meetingRepo.getAllMeetings(userId);
+      final matches = all.where((m) => m.id == quest.linkedMeetingId);
+      final Meeting? m = matches.isNotEmpty ? matches.first : null;
+      if (m != null) {
+        await _meetingRepo.updateMeeting(
+          m.copyWith(notes: [...m.notes, ...done.map((t) => t.text)]),
+        );
+      }
+    }
+    await _repository.updateQuest(userId, quest.copyWith(isCompleted: true));
     _quests = _repository.getAll(userId);
     notifyListeners();
   }

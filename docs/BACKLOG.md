@@ -4871,25 +4871,25 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 5
 **Priority:** P2
 **Labels:** `friends-quest`, `meetings`, `completion`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Feature:** FEATURE-032: Friends-Quest
 
 **Acceptance Criteria:**
-- [ ] User can link a quest to an existing meeting (1 quest : 1 meeting; 1 meeting can have N quests)
-- [ ] Completing a task in the quest → corresponding Catch-up Topic archived on person profile (`isArchived: true`)
-- [ ] "Complete Quest" action on `FriendsQuestDetailScreen`
-- [ ] If quest linked to meeting: all completed tasks added as notes to the linked meeting (via `MeetingRepository`)
-- [ ] If quest NOT linked to meeting: dialog — "Delete all notes?" or "Select a meeting to attach notes"
-- [ ] Completed quest removed from active list (or shown in read-only completed state)
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] User can link a quest to an existing meeting (1 quest : 1 meeting; 1 meeting can have N quests)
+- [x] Completing a task in the quest → corresponding Catch-up Topic archived on person profile (`isArchived: true`)
+- [x] "Complete Quest" action on `FriendsQuestDetailScreen`
+- [x] If quest linked to meeting: all completed tasks added as notes to the linked meeting (via `MeetingRepository`)
+- [x] If quest NOT linked to meeting: dialog — "Delete all notes?" or "Select a meeting to attach notes"
+- [x] Completed quest removed from active list (or shown in read-only completed state)
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-126.1:** Implement `linkToMeeting(questId, meetingId)` — validate 1-quest:1-meeting; allow N-quests:1-meeting — 1h
-- [ ] **TASK-126.2:** Add meeting picker UI to `FriendsQuestDetailScreen` — 1.5h
-- [ ] **TASK-126.3:** Implement `completeTask(questId, taskId)` — archives `sourceTopicId` if present — 1h
-- [ ] **TASK-126.4:** Implement `completeQuest(questId)` — push completed tasks as meeting notes via `MeetingRepository`; mark quest completed — 2h
-- [ ] **TASK-126.5:** Build "no meeting linked" completion dialog (delete / select meeting) — 1.5h
-- [ ] **TASK-126.6:** Show completed quest summary (read-only) or remove from active list — 1h
+- [x] **TASK-126.1:** Implement `linkToMeeting(questId, meetingId)` — validate 1-quest:1-meeting; allow N-quests:1-meeting — 1h
+- [x] **TASK-126.2:** Add meeting picker UI to `FriendsQuestDetailScreen` — 1.5h
+- [x] **TASK-126.3:** Implement `completeTask(questId, taskId)` — archives `sourceTopicId` if present — 1h
+- [x] **TASK-126.4:** Implement `completeQuest(questId)` — push completed tasks as meeting notes via `MeetingRepository`; mark quest completed — 2h
+- [x] **TASK-126.5:** Build "no meeting linked" completion dialog (delete / select meeting) — 1.5h
+- [x] **TASK-126.6:** Show completed quest summary (read-only) or remove from active list — 1h
 
 **Dependencies:** US-121, US-125
 **Blocks:** US-127

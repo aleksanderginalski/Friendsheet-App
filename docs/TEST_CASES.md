@@ -2055,3 +2055,31 @@ Run after every release or hotfix:
 | UT-125-013 | edit and delete buttons trigger callbacks | both callbacks invoked |
 | UT-125-014 | completed task shows strikethrough text | TextDecoration.lineThrough on text |
 
+---
+
+## US-126 — Friends-Quest Completion & Meeting Link
+
+### Automated tests — `test/presentation/friends_quest/friends_quest_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-126-001 | linkToMeeting sets linkedMeetingId on quest | updateQuest called with linkedMeetingId = 'meeting-1' |
+| UT-126-002 | completeTask marks task as completed | updateQuest called with task.isCompleted = true |
+| UT-126-003 | completeTask with sourceTopicId archives the catch-up topic | catchUpRepo.archive called once |
+| UT-126-004 | completeTask on already-completed task is a no-op | updateQuest never called |
+| UT-126-005 | completeQuest marks quest as completed | updateQuest called with isCompleted = true |
+| UT-126-006 | completeQuest appends completed task texts to linked meeting notes | meetingRepo.updateMeeting called with notes = ['Existing note', 'Task A'] |
+| UT-126-007 | completeQuest with no linked meeting skips meeting update | meetingRepo.getAllMeetings never called |
+
+### Automated tests — `test/presentation/friends_quest/meeting_picker_sheet_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-126-008 | shows search bar | TextField present |
+| UT-126-009 | shows year and month headers and meeting names | year, month, meeting names visible |
+| UT-126-010 | tapping a meeting calls onSelected and pops sheet | onSelected receives correct Meeting |
+| UT-126-011 | search by name shows only matching meetings | non-matching items hidden |
+| UT-126-012 | search by date shows matching meeting | date-filtered result visible |
+| UT-126-013 | tapping year header collapses its months | month and meetings hidden after tap |
+| UT-126-014 | shows empty message when search matches nothing | 'No meetings found.' visible |
+
