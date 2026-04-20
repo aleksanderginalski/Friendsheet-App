@@ -93,7 +93,7 @@ void main() {
       final q1 = await repository.create(userId, 'Quest A', []);
       await repository.create(userId, 'Quest B', []);
 
-      final task = FriendsQuestTask(id: 't1', text: 'Do something');
+      const task = FriendsQuestTask(id: 't1', text: 'Do something');
       await repository.updateQuest(userId, q1.copyWith(tasks: [task]));
 
       final all = repository.getAll(userId);
@@ -107,13 +107,13 @@ void main() {
     test('updateQuest persists nested tasks (round-trip serialization)',
         () async {
       final q = await repository.create(userId, 'Quest', []);
-      final task = FriendsQuestTask(
+      const task = FriendsQuestTask(
         id: 't1',
         text: 'Nested task',
         contextLabel: 'ctx',
         sourceTopicId: 'src-1',
         sourcePersonId: 'p1',
-        assignedPersonIds: const ['p1', 'p2'],
+        assignedPersonIds: ['p1', 'p2'],
       );
       await repository.updateQuest(userId, q.copyWith(tasks: [task]));
 
