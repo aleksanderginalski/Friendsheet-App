@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (1001)
+✅ All tests passing (1015)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,16 +174,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.11 — US-124: Friends-Quest List & Creation (April 20, 2026)
-- ✅ `FriendsQuest` + `FriendsQuestTask` Freezed models (NEW) — Hive-serialized, device-local only
-- ✅ `FriendsQuestRepository` (NEW) — Hive CRUD: create/getAll/delete; persists across logout/login
-- ✅ `HiveService` (MODIFIED) — `friends_quests` box; intentionally excluded from `clearUserData()`
-- ✅ `FriendsQuestProvider` (NEW) — ChangeNotifier: load/create/delete, exposes `activeQuests`
-- ✅ `FriendsQuestListScreen` (NEW) — list with participant count, pending task count, delete confirmation
-- ✅ `CreateQuestDialog` (NEW) — name field + participant multi-picker with search filter
-- ✅ `FriendsQuestSummaryWidget` (NEW) — home screen card: "N active quest(s)" + "View all →"
-- ✅ `MainScreen` + `HomeScreen` (MODIFIED) — provider wired at MainScreen level; drawer tile; Consumer on home
-- ✅ 18 new tests (1001 total)
+### Latest: v4.5.12 — US-125: Friends-Quest Tasks (April 20, 2026)
+- ✅ `FriendsQuestTask` (MODIFIED) — `contextLabel` and `sourcePersonId` fields added
+- ✅ `FriendsQuestRepository` (MODIFIED) — `updateQuest()`; deep Hive cast fix via json round-trip
+- ✅ `FriendsQuestProvider` (MODIFIED) — `addTask`, `editTask`, `deleteTask`, `updateParticipants`, `_importTopicsForQuest` with couple-deduplication
+- ✅ `FriendsQuestDetailScreen` (NEW) — task list, add/edit dialogs, participant management bottom sheet
+- ✅ `QuestTaskTile` (NEW) — task row with read-only checkbox, subtitle, edit/delete actions
+- ✅ `QuestParticipantsSection` (NEW) — participant management widget for bottom sheet
+- ✅ 14 new tests (1015 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

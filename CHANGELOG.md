@@ -4,6 +4,23 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.12 — US-125: Friends-Quest Tasks (April 20, 2026)
+- ✅ `lib/data/models/friends_quest_task.dart` (MODIFIED) — added `contextLabel: String?` and `sourcePersonId: String?` fields
+- ✅ `lib/data/models/friends_quest_task.freezed.dart` + `friends_quest_task.g.dart` (GENERATED) — build_runner output for updated model
+- ✅ `lib/data/repositories/friends_quest_repository.dart` (MODIFIED) — added `updateQuest(userId, quest)`; fixed Hive deep-cast bug (`jsonDecode(jsonEncode(e))` round-trip in `getAll`)
+- ✅ `lib/presentation/friends_quest/friends_quest_provider.dart` (MODIFIED) — added `CatchUpTopicRepository` + `PersonRepository` deps; new methods: `addTask`, `editTask`, `deleteTask`, `updateParticipants`, `_importTopicsForQuest`; couple-deduplication algorithm; try/finally in `createQuest` to guarantee `_isLoading` reset
+- ✅ `lib/presentation/friends_quest/friends_quest_detail_screen.dart` (NEW) — `FriendsQuestDetailScreen`: AppBar with participant-management icon, FAB for new task, ListView of `QuestTaskTile`; add/edit task dialogs with optional person assignment; participant bottom sheet
+- ✅ `lib/presentation/friends_quest/quest_task_tile.dart` (NEW) — `QuestTaskTile`: read-only checkbox, task text with strikethrough when completed, `names · contextLabel` subtitle, edit/delete icon buttons
+- ✅ `lib/presentation/friends_quest/quest_participants_section.dart` (NEW) — `QuestParticipantsSection`: flat Column widget for use in bottom sheet; remove participant + add-person search dialog
+- ✅ `lib/presentation/friends_quest/friends_quest_list_screen.dart` (MODIFIED) — quest `onTap` navigates to `FriendsQuestDetailScreen` via `ChangeNotifierProvider.value`; `loadQuests` called on return
+- ✅ `test/data/repositories/friends_quest_repository_test.dart` (MODIFIED) — +2 tests: `updateQuest` replaces in place, nested task round-trip serialization
+- ✅ `test/presentation/friends_quest/friends_quest_provider_test.dart` (MODIFIED) — +7 tests: `addTask` (with/without assignees), `deleteTask`, `editTask` (with/without source), `updateParticipants`, `createQuest` with import
+- ✅ `test/presentation/friends_quest/quest_task_tile_test.dart` (NEW) — 5 widget tests: text, subtitle names, contextLabel, callbacks, strikethrough
+- ✅ `test/presentation/screens/home_screen_test.dart` + `home_screen_test.mocks.dart` (MODIFIED) — updated to pass `CatchUpTopicRepository` mock to `FriendsQuestProvider`
+- ✅ 1015 Flutter tests passing (+14 new tests)
+
+---
+
 ### v4.5.11 — US-124: Friends-Quest List & Creation (April 20, 2026)
 - ✅ `lib/data/models/friends_quest.dart` (NEW) — `FriendsQuest` Freezed model: `id`, `name`, `participantIds`, `linkedMeetingId?`, `createdAt`, `isCompleted`, `tasks` (list of `FriendsQuestTask`)
 - ✅ `lib/data/models/friends_quest_task.dart` (NEW) — `FriendsQuestTask` Freezed model: `id`, `text`, `sourceTopicId?`, `assignedPersonIds`, `isCompleted`

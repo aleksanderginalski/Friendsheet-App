@@ -750,7 +750,7 @@ Deletion of a bonus removes the corresponding notes entry.
 
 **Data models (Hive):**
 - `FriendsQuest`: id, name, participantIds, linkedMeetingId?, createdAt, isCompleted
-- `FriendsQuestTask`: id, text, sourceTopicId?, assignedPersonIds, isCompleted
+- `FriendsQuestTask`: id, text, contextLabel?, sourceTopicId?, sourcePersonId?, assignedPersonIds, isCompleted
 
 **Cardinality:** 1 quest : 1 meeting (max); 1 meeting : N quests (allowed).
 
@@ -775,17 +775,26 @@ Deletion of a bonus removes the corresponding notes entry.
 
 ---
 
-### FEATURE-032 — Friends-Quest Architecture (US-124)
+### FEATURE-032 — Friends-Quest Architecture (US-124 + US-125)
 
 **Data storage:** Hive only (`friends_quests` box). No Firestore. Quest data is device-local and persists across logout/login cycles.
 
 **Key design decision:** `clearUserData()` in `HiveService` intentionally does NOT clear the `friends_quests` box. Quests are local planning tools — they are not tied to a Firebase UID and should survive authentication changes on the same device.
 
-**Data layout:** Key = `userId`, Value = `List<Map>` (JSON-serialized list of `FriendsQuest` objects). All CRUD operates on the full list per user — read, mutate, write-back.
+**Data layout:** Key = `userId`, Value = `List<Map>` (JSON-serialized list of `FriendsQuest` objects). All CRUD operates on the full list per user — read, mutate, write-back. Nested `tasks` list uses `jsonDecode(jsonEncode(e))` deep round-trip on read to handle Hive's `Map<dynamic, dynamic>` for nested objects.
 
-**Provider ownership:** `FriendsQuestProvider` is instantiated in `_MainScreenState` (same level as `BuddyWidgetProvider`). Both `HomeScreen` (summary widget) and `FriendsQuestListScreen` access it via `ChangeNotifierProvider.value` at call-site — follows Navigator.push Provider Scope Rule.
+**Provider ownership:** `FriendsQuestProvider` is instantiated in `_MainScreenState`. `FriendsQuestListScreen` and `FriendsQuestDetailScreen` access it via `ChangeNotifierProvider.value` at call-site — follows Navigator.push Provider Scope Rule.
 
 **Persistence across logout:** `FriendsQuestRepository.getAll(userId)` is keyed by userId string. If the device user logs in as a different account, a different key is used — data is isolated per userId string without being cleared on logout.
+
+**Topic import algorithm (`_importTopicsForQuest`):**
+1. Load `Person` records for all `participantIds` from Firestore.
+2. Detect couple pairs: both `A.partnerId == B` AND B is in `participantIds` — deduplicate shared topics by case-insensitive text trim.
+3. For couple pairs: A-topics matched with B-topics → one task with `assignedPersonIds: [A, B]`; unmatched topics → one task for each owner.
+4. For solo participants (not part of any couple pair in this quest): one task per topic.
+5. `sourceTopicId` + `sourcePersonId` set on every imported task for edit-propagation tracking.
+
+**Edit propagation:** `editTask` with `sourceTopicId` updates the originating `CatchUpTopic`, then loads source person's `partnerId` and updates partner's matching topic (by case-insensitive text trim) regardless of quest participation.
 
 ---
 
