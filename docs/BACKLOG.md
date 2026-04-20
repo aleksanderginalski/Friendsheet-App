@@ -4797,27 +4797,27 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 5
 **Priority:** P2
 **Labels:** `friends-quest`, `planning`, `ux`
-**Status:** 🔄 In Progress
+**Status:** ✅ Completed
 **Feature:** FEATURE-032: Friends-Quest
 
 **Acceptance Criteria:**
-- [ ] New "Friends-Quest" entry in app sidebar (Side Menu), alongside existing items
-- [ ] Friends-Quest list screen shows all active quests (name, participant count, pending task count)
-- [ ] User can create a new quest: enter name + select participants from contacts
-- [ ] User can delete a quest (with confirmation dialog)
-- [ ] Optional home screen widget showing active quests (name + pending task count)
-- [ ] Friends-Quest data stored locally in Hive only (`friends_quests` box) — NOT synced to Firestore
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] New "Friends-Quest" entry in app sidebar (Side Menu), alongside existing items
+- [x] Friends-Quest list screen shows all active quests (name, participant count, pending task count)
+- [x] User can create a new quest: enter name + select participants from contacts
+- [x] User can delete a quest (with confirmation dialog)
+- [x] Optional home screen widget showing active quests (name + pending task count)
+- [x] Friends-Quest data stored locally in Hive only (`friends_quests` box) — NOT synced to Firestore
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-124.1:** Define `FriendsQuest` Hive model (id, name, participantIds, linkedMeetingId?, createdAt, isCompleted) — 1h
-- [ ] **TASK-124.2:** Define `FriendsQuestTask` Hive model (id, text, sourceTopicId?, assignedPersonIds, isCompleted) — 1h
-- [ ] **TASK-124.3:** Add `friends_quests` box to `HiveService`; implement `FriendsQuestRepository` (create, getAll, delete) — 2h
-- [ ] **TASK-124.4:** Implement `FriendsQuestProvider` (load, create, delete) — 1h
-- [ ] **TASK-124.5:** Build `FriendsQuestListScreen` (list + empty state + FAB for new quest) — 2h
-- [ ] **TASK-124.6:** Build new quest creation dialog (name field + person multi-picker) — 1.5h
-- [ ] **TASK-124.7:** Add "Friends-Quest" tile to `SideMenu` — 0.5h
-- [ ] **TASK-124.8:** Build optional home screen widget (active quest summary) — 2h
+- [x] **TASK-124.1:** Define `FriendsQuest` Hive model (id, name, participantIds, linkedMeetingId?, createdAt, isCompleted) — 1h
+- [x] **TASK-124.2:** Define `FriendsQuestTask` Hive model (id, text, sourceTopicId?, assignedPersonIds, isCompleted) — 1h
+- [x] **TASK-124.3:** Add `friends_quests` box to `HiveService`; implement `FriendsQuestRepository` (create, getAll, delete) — 2h
+- [x] **TASK-124.4:** Implement `FriendsQuestProvider` (load, create, delete) — 1h
+- [x] **TASK-124.5:** Build `FriendsQuestListScreen` (list + empty state + FAB for new quest) — 2h
+- [x] **TASK-124.6:** Build new quest creation dialog (name field + person multi-picker with search) — 1.5h
+- [x] **TASK-124.7:** Add "Friends-Quest" tile to `SideMenu` — 0.5h
+- [x] **TASK-124.8:** Build optional home screen widget (active quest summary) — 2h
 
 **Dependencies:** US-120
 **Blocks:** US-125, US-126

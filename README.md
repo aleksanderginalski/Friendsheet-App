@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (983)
+✅ All tests passing (1001)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,15 +174,16 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.10 — US-123: Couple Separation Flow (April 17, 2026)
-- ✅ `PersonRepository` (MODIFIED): `unlinkPartner()` batch-clears `partnerId`/`partnerLinkedAt` on both persons via `FieldValue.delete()` + Hive write-through
-- ✅ `CatchUpTopicRepository` (MODIFIED): `TopicRedistributionDecision` enum; `applyRedistribution()` applies per-topic personA/shared/personB/delete decisions
-- ✅ `CoupleSeparationDialog` widget (NEW): 4-state `ToggleButtons` per post-link topic; defaults to shared; returns decisions map or null
-- ✅ `CoupleLinkSection` (MODIFIED): added `onUnlinkTap` callback; Unlink button in trailing when linked
-- ✅ `PersonDetailProvider` (MODIFIED): `clearPartner()` for immediate post-separation UI refresh
-- ✅ `PersonDetailScreen` (MODIFIED): full separation flow with pre-link text-set filtering, redistribution dialog, partner copy cleanup, delete propagation
-- ✅ `CatchUpListSection` + `HistorySection` (MODIFIED): green badge counters matching child activities style
-- ✅ 30 new tests (983 total)
+### Latest: v4.5.11 — US-124: Friends-Quest List & Creation (April 20, 2026)
+- ✅ `FriendsQuest` + `FriendsQuestTask` Freezed models (NEW) — Hive-serialized, device-local only
+- ✅ `FriendsQuestRepository` (NEW) — Hive CRUD: create/getAll/delete; persists across logout/login
+- ✅ `HiveService` (MODIFIED) — `friends_quests` box; intentionally excluded from `clearUserData()`
+- ✅ `FriendsQuestProvider` (NEW) — ChangeNotifier: load/create/delete, exposes `activeQuests`
+- ✅ `FriendsQuestListScreen` (NEW) — list with participant count, pending task count, delete confirmation
+- ✅ `CreateQuestDialog` (NEW) — name field + participant multi-picker with search filter
+- ✅ `FriendsQuestSummaryWidget` (NEW) — home screen card: "N active quest(s)" + "View all →"
+- ✅ `MainScreen` + `HomeScreen` (MODIFIED) — provider wired at MainScreen level; drawer tile; Consumer on home
+- ✅ 18 new tests (1001 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

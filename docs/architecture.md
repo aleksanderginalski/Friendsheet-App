@@ -775,6 +775,20 @@ Deletion of a bonus removes the corresponding notes entry.
 
 ---
 
+### FEATURE-032 — Friends-Quest Architecture (US-124)
+
+**Data storage:** Hive only (`friends_quests` box). No Firestore. Quest data is device-local and persists across logout/login cycles.
+
+**Key design decision:** `clearUserData()` in `HiveService` intentionally does NOT clear the `friends_quests` box. Quests are local planning tools — they are not tied to a Firebase UID and should survive authentication changes on the same device.
+
+**Data layout:** Key = `userId`, Value = `List<Map>` (JSON-serialized list of `FriendsQuest` objects). All CRUD operates on the full list per user — read, mutate, write-back.
+
+**Provider ownership:** `FriendsQuestProvider` is instantiated in `_MainScreenState` (same level as `BuddyWidgetProvider`). Both `HomeScreen` (summary widget) and `FriendsQuestListScreen` access it via `ChangeNotifierProvider.value` at call-site — follows Navigator.push Provider Scope Rule.
+
+**Persistence across logout:** `FriendsQuestRepository.getAll(userId)` is keyed by userId string. If the device user logs in as a different account, a different key is used — data is isolated per userId string without being cleared on logout.
+
+---
+
 ## 5. Firestore Data Structure
 
 ```mermaid

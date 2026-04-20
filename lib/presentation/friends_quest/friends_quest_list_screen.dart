@@ -95,8 +95,7 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
               itemCount: quests.length,
               itemBuilder: (context, index) {
                 final quest = quests[index];
-                final pending =
-                    quest.tasks.where((t) => !t.isCompleted).length;
+                final pending = quest.tasks.where((t) => !t.isCompleted).length;
                 final participantCount = quest.participantIds.length;
                 return ListTile(
                   title: Text(quest.name),

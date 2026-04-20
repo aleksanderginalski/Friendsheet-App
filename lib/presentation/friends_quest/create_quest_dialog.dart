@@ -66,8 +66,7 @@ class _CreateQuestDialogState extends State<CreateQuestDialog> {
     if (mounted) Navigator.pop(context);
   }
 
-  bool get _canCreate =>
-      _nameController.text.trim().isNotEmpty && !_creating;
+  bool get _canCreate => _nameController.text.trim().isNotEmpty && !_creating;
 
   @override
   Widget build(BuildContext context) {
