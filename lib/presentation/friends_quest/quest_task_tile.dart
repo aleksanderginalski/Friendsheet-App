@@ -8,6 +8,7 @@ class QuestTaskTile extends StatelessWidget {
   final Map<String, Person> personMap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onComplete;
 
   const QuestTaskTile({
     super.key,
@@ -15,6 +16,7 @@ class QuestTaskTile extends StatelessWidget {
     required this.personMap,
     required this.onEdit,
     required this.onDelete,
+    required this.onComplete,
   });
 
   String _subtitle() {
@@ -36,7 +38,7 @@ class QuestTaskTile extends StatelessWidget {
     return ListTile(
       leading: Checkbox(
         value: task.isCompleted,
-        onChanged: null,
+        onChanged: task.isCompleted ? null : (_) => onComplete(),
       ),
       title: Text(
         task.text,

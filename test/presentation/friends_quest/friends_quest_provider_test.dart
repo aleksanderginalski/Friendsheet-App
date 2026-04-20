@@ -2,9 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/catch_up_topic.dart';
 import 'package:friendsheet/data/models/friends_quest.dart';
 import 'package:friendsheet/data/models/friends_quest_task.dart';
+import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart';
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart';
+import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/presentation/friends_quest/friends_quest_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -12,12 +14,17 @@ import 'package:mockito/mockito.dart';
 
 import 'friends_quest_provider_test.mocks.dart';
 
-@GenerateMocks(
-    [FriendsQuestRepository, CatchUpTopicRepository, PersonRepository])
+@GenerateMocks([
+  FriendsQuestRepository,
+  CatchUpTopicRepository,
+  PersonRepository,
+  MeetingRepository,
+])
 void main() {
   late MockFriendsQuestRepository mockRepo;
   late MockCatchUpTopicRepository mockCatchUpRepo;
   late MockPersonRepository mockPersonRepo;
+  late MockMeetingRepository mockMeetingRepo;
   late FriendsQuestProvider provider;
 
   final activeQuest = FriendsQuest(
@@ -38,10 +45,12 @@ void main() {
     mockRepo = MockFriendsQuestRepository();
     mockCatchUpRepo = MockCatchUpTopicRepository();
     mockPersonRepo = MockPersonRepository();
+    mockMeetingRepo = MockMeetingRepository();
     provider = FriendsQuestProvider(
       repository: mockRepo,
       catchUpRepo: mockCatchUpRepo,
       personRepo: mockPersonRepo,
+      meetingRepo: mockMeetingRepo,
     );
   });
 
@@ -257,6 +266,122 @@ void main() {
       expect(savedQuest.tasks.first.sourceTopicId, 'topic-1');
       expect(savedQuest.tasks.first.assignedPersonIds, ['p1']);
       expect(provider.isLoading, false);
+    });
+
+    test('linkToMeeting sets linkedMeetingId on quest', () async {
+      when(mockRepo.getAll('u1')).thenReturn([activeQuest]);
+      provider.loadQuests('u1');
+
+      await provider.linkToMeeting('u1', 'q1', 'meeting-1');
+
+      final captured = verify(mockRepo.updateQuest('u1', captureAny)).captured;
+      final saved = captured.last as FriendsQuest;
+      expect(saved.linkedMeetingId, 'meeting-1');
+    });
+
+    test('completeTask marks task as completed', () async {
+      final questWithTask = activeQuest.copyWith(tasks: [
+        const FriendsQuestTask(id: 't1', text: 'Do something'),
+      ]);
+      when(mockRepo.getAll('u1')).thenReturn([questWithTask]);
+      provider.loadQuests('u1');
+
+      await provider.completeTask('u1', 'q1', 't1');
+
+      final captured = verify(mockRepo.updateQuest('u1', captureAny)).captured;
+      final saved = captured.last as FriendsQuest;
+      expect(saved.tasks.first.isCompleted, true);
+    });
+
+    test('completeTask with sourceTopicId archives the catch-up topic',
+        () async {
+      final questWithTask = activeQuest.copyWith(tasks: [
+        const FriendsQuestTask(
+          id: 't1',
+          text: 'Talk to Alice',
+          sourceTopicId: 'topic-1',
+          sourcePersonId: 'p1',
+        ),
+      ]);
+      when(mockRepo.getAll('u1')).thenReturn([questWithTask]);
+      provider.loadQuests('u1');
+      when(mockCatchUpRepo.archive('u1', 'p1', 'topic-1'))
+          .thenAnswer((_) async {});
+
+      await provider.completeTask('u1', 'q1', 't1');
+
+      verify(mockCatchUpRepo.archive('u1', 'p1', 'topic-1')).called(1);
+    });
+
+    test('completeTask on already-completed task is a no-op', () async {
+      final questWithTask = activeQuest.copyWith(tasks: [
+        const FriendsQuestTask(id: 't1', text: 'Done', isCompleted: true),
+      ]);
+      when(mockRepo.getAll('u1')).thenReturn([questWithTask]);
+      provider.loadQuests('u1');
+
+      await provider.completeTask('u1', 'q1', 't1');
+
+      verifyNever(mockRepo.updateQuest(any, any));
+    });
+
+    test('completeQuest marks quest as completed', () async {
+      when(mockRepo.getAll('u1')).thenReturn([activeQuest]);
+      provider.loadQuests('u1');
+      when(mockMeetingRepo.getAllMeetings('u1')).thenAnswer((_) async => []);
+
+      await provider.completeQuest('u1', 'q1');
+
+      final captured = verify(mockRepo.updateQuest('u1', captureAny)).captured;
+      final saved = captured.last as FriendsQuest;
+      expect(saved.isCompleted, true);
+    });
+
+    test('completeQuest appends completed task texts to linked meeting notes',
+        () async {
+      final meeting = Meeting(
+        id: 'm1',
+        userId: 'u1',
+        name: 'Coffee',
+        date: DateTime(2026),
+        weight: 3,
+        participantIds: const [],
+        notes: const ['Existing note'],
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+      );
+      final linkedQuest = FriendsQuest(
+        id: 'q1',
+        name: 'Weekend crew',
+        participantIds: const ['p1'],
+        createdAt: DateTime(2026),
+        linkedMeetingId: 'm1',
+        tasks: const [
+          FriendsQuestTask(id: 't1', text: 'Task A', isCompleted: true),
+          FriendsQuestTask(id: 't2', text: 'Task B', isCompleted: false),
+        ],
+      );
+      when(mockRepo.getAll('u1')).thenReturn([linkedQuest]);
+      provider.loadQuests('u1');
+      when(mockMeetingRepo.getAllMeetings('u1'))
+          .thenAnswer((_) async => [meeting]);
+      when(mockMeetingRepo.updateMeeting(any)).thenAnswer((_) async {});
+
+      await provider.completeQuest('u1', 'q1');
+
+      final captured =
+          verify(mockMeetingRepo.updateMeeting(captureAny)).captured;
+      final updated = captured.first as Meeting;
+      expect(updated.notes, ['Existing note', 'Task A']);
+    });
+
+    test('completeQuest with no linked meeting skips meeting update', () async {
+      when(mockRepo.getAll('u1')).thenReturn([activeQuest]);
+      provider.loadQuests('u1');
+
+      await provider.completeQuest('u1', 'q1');
+
+      verifyNever(mockMeetingRepo.getAllMeetings(any));
     });
   });
 }

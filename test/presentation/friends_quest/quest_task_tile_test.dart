@@ -15,17 +15,19 @@ void main() {
   Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
   group('QuestTaskTile', () {
-    testWidgets('shows task text and read-only checkbox', (tester) async {
+    testWidgets('shows task text and interactive checkbox when incomplete',
+        (tester) async {
       await tester.pumpWidget(wrap(QuestTaskTile(
         task: const FriendsQuestTask(id: 't1', text: 'Buy milk'),
         personMap: const {},
         onEdit: () {},
         onDelete: () {},
+        onComplete: () {},
       )));
 
       expect(find.text('Buy milk'), findsOneWidget);
       final cb = tester.widget<Checkbox>(find.byType(Checkbox));
-      expect(cb.onChanged, isNull);
+      expect(cb.onChanged, isNotNull);
     });
 
     testWidgets('shows assigned person names in subtitle', (tester) async {
@@ -41,6 +43,7 @@ void main() {
         },
         onEdit: () {},
         onDelete: () {},
+        onComplete: () {},
       )));
 
       expect(find.text('Alice, Bob'), findsOneWidget);
@@ -58,6 +61,7 @@ void main() {
         personMap: {'p1': makePerson('p1', 'Alice')},
         onEdit: () {},
         onDelete: () {},
+        onComplete: () {},
       )));
 
       expect(find.text('Alice · Dinner'), findsOneWidget);
@@ -71,6 +75,7 @@ void main() {
         personMap: const {},
         onEdit: () => edited = true,
         onDelete: () => deleted = true,
+        onComplete: () {},
       )));
 
       await tester.tap(find.byIcon(Icons.edit_outlined));
@@ -86,6 +91,7 @@ void main() {
         personMap: const {},
         onEdit: () {},
         onDelete: () {},
+        onComplete: () {},
       )));
 
       final textWidget = tester.widget<Text>(find.text('Done'));
