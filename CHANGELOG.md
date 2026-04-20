@@ -4,6 +4,21 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.13 — US-126: Friends-Quest Completion & Meeting Link (April 20, 2026)
+- ✅ `lib/presentation/friends_quest/friends_quest_provider.dart` (MODIFIED) — added `MeetingRepository` dep; new methods: `linkToMeeting`, `completeTask` (archives linked Catch-up Topic), `completeQuest` (appends completed task texts as meeting notes, marks quest completed)
+- ✅ `lib/presentation/friends_quest/meeting_picker_sheet.dart` (NEW) — `MeetingPickerSheet`: `DraggableScrollableSheet` with search (name or `dd/mm/yyyy` date), grouped collapsible year → month → meeting list, descending sort, all sections expanded by default
+- ✅ `lib/presentation/friends_quest/quest_add_task_dialog.dart` (NEW) — extracted `showQuestAddTaskDialog` top-level function from detail screen to stay under 300-line limit
+- ✅ `lib/presentation/friends_quest/friends_quest_detail_screen.dart` (MODIFIED) — complete quest `IconButton` in AppBar; meeting link row at top of body; `_showMeetingPickerSheet` delegates to `MeetingPickerSheet`; `_onCompleteQuestTapped` handles linked/unlinked dialog flow; `QuestTaskTile` wired with `onComplete`
+- ✅ `lib/presentation/friends_quest/quest_task_tile.dart` (MODIFIED) — `onComplete: VoidCallback` added; checkbox now interactive for incomplete tasks
+- ✅ `test/presentation/friends_quest/friends_quest_provider_test.dart` (MODIFIED) — +7 tests: `linkToMeeting`, `completeTask` (×3: happy path, archive, no-op), `completeQuest` (×3: marks complete, appends notes, skips update when no meeting)
+- ✅ `test/presentation/friends_quest/meeting_picker_sheet_test.dart` (NEW) — 7 widget tests: search bar, year/month headers, onSelected callback, name filter, date filter, collapse, empty state
+- ✅ `test/presentation/friends_quest/friends_quest_provider_test.mocks.dart` (REGENERATED) — `MockMeetingRepository` added
+- ✅ `test/presentation/friends_quest/quest_task_tile_test.dart` (MODIFIED) — `onComplete` param added to all calls; first test updated for interactive checkbox
+- ✅ `test/presentation/screens/home_screen_test.dart` + `home_screen_test.mocks.dart` (MODIFIED) — `meetingRepo` mock injected into `FriendsQuestProvider` setUp
+- ✅ 1029 Flutter tests passing (+14 new tests)
+
+---
+
 ### v4.5.12 — US-125: Friends-Quest Tasks (April 20, 2026)
 - ✅ `lib/data/models/friends_quest_task.dart` (MODIFIED) — added `contextLabel: String?` and `sourcePersonId: String?` fields
 - ✅ `lib/data/models/friends_quest_task.freezed.dart` + `friends_quest_task.g.dart` (GENERATED) — build_runner output for updated model

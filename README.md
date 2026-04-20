@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (1015)
+✅ All tests passing (1029)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,14 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.12 — US-125: Friends-Quest Tasks (April 20, 2026)
-- ✅ `FriendsQuestTask` (MODIFIED) — `contextLabel` and `sourcePersonId` fields added
-- ✅ `FriendsQuestRepository` (MODIFIED) — `updateQuest()`; deep Hive cast fix via json round-trip
-- ✅ `FriendsQuestProvider` (MODIFIED) — `addTask`, `editTask`, `deleteTask`, `updateParticipants`, `_importTopicsForQuest` with couple-deduplication
-- ✅ `FriendsQuestDetailScreen` (NEW) — task list, add/edit dialogs, participant management bottom sheet
-- ✅ `QuestTaskTile` (NEW) — task row with read-only checkbox, subtitle, edit/delete actions
-- ✅ `QuestParticipantsSection` (NEW) — participant management widget for bottom sheet
-- ✅ 14 new tests (1015 total)
+### Latest: v4.5.13 — US-126: Friends-Quest Completion & Meeting Link (April 20, 2026)
+- ✅ `FriendsQuestProvider` (MODIFIED) — `linkToMeeting`, `completeTask` (archives Catch-up Topic), `completeQuest` (appends notes to meeting)
+- ✅ `MeetingPickerSheet` (NEW) — grouped collapsible year/month picker with search by name or date
+- ✅ `quest_add_task_dialog.dart` (NEW) — extracted dialog function to keep detail screen under 300 lines
+- ✅ `FriendsQuestDetailScreen` (MODIFIED) — complete quest button, meeting link row, interactive task checkboxes
+- ✅ `QuestTaskTile` (MODIFIED) — interactive checkbox for task completion
+- ✅ 14 new tests (1029 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
