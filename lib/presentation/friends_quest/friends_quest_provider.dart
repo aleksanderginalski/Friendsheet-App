@@ -117,16 +117,15 @@ class FriendsQuestProvider extends ChangeNotifier {
       try {
         final persons =
             await _personRepo.getPersonsByIds([task.sourcePersonId!], userId);
-        final partnerId =
-            persons.isNotEmpty ? persons.first.partnerId : null;
+        final partnerId = persons.isNotEmpty ? persons.first.partnerId : null;
         if (partnerId != null) {
           final partnerTopics = await _catchUpRepo.getActive(userId, partnerId);
           final match = partnerTopics.cast<CatchUpTopic?>().firstWhere(
-            (t) =>
-                t!.text.trim().toLowerCase() ==
-                task.text.trim().toLowerCase(),
-            orElse: () => null,
-          );
+                (t) =>
+                    t!.text.trim().toLowerCase() ==
+                    task.text.trim().toLowerCase(),
+                orElse: () => null,
+              );
           if (match != null) {
             await _catchUpRepo.update(
                 userId, partnerId, match.id, newText, null);
@@ -266,8 +265,7 @@ class FriendsQuestProvider extends ChangeNotifier {
       }
     }
 
-    await _repository.updateQuest(
-        userId, quest.copyWith(tasks: allTasks));
+    await _repository.updateQuest(userId, quest.copyWith(tasks: allTasks));
     _quests = _repository.getAll(userId);
     notifyListeners();
   }

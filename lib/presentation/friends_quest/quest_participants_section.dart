@@ -27,8 +27,7 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
 
   Future<void> _remove(String personId) async {
     setState(() => _updating = true);
-    final newIds =
-        widget.participantIds.where((id) => id != personId).toList();
+    final newIds = widget.participantIds.where((id) => id != personId).toList();
     await widget.onParticipantsChanged(newIds);
     if (mounted) setState(() => _updating = false);
   }
@@ -148,8 +147,8 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
         if (widget.participantIds.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text('No participants.',
-                style: TextStyle(color: Colors.grey)),
+            child:
+                Text('No participants.', style: TextStyle(color: Colors.grey)),
           )
         else
           ...widget.participantIds.map((id) {

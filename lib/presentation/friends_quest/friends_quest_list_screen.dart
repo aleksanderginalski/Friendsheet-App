@@ -65,7 +65,8 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
     );
   }
 
-  void _openDetail(BuildContext context, FriendsQuestProvider provider, String questId) {
+  void _openDetail(
+      BuildContext context, FriendsQuestProvider provider, String questId) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -111,8 +112,7 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
               itemCount: quests.length,
               itemBuilder: (context, index) {
                 final quest = quests[index];
-                final pending =
-                    quest.tasks.where((t) => !t.isCompleted).length;
+                final pending = quest.tasks.where((t) => !t.isCompleted).length;
                 final participantCount = quest.participantIds.length;
                 return ListTile(
                   title: Text(quest.name),
@@ -123,8 +123,8 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
                     children: [
                       Text(
                         '$pending pending',
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),

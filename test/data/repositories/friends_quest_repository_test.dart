@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/data/models/friends_quest_task.dart';
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart';
 import 'package:friendsheet/services/hive_service.dart';
 import 'package:hive/hive.dart';
@@ -86,6 +87,42 @@ void main() {
       final loaded = repository.getAll(userId);
       expect(loaded.first.participantIds, ['p1', 'p2']);
       expect(loaded.first.isCompleted, false);
+    });
+
+    test('updateQuest replaces matching quest, others unchanged', () async {
+      final q1 = await repository.create(userId, 'Quest A', []);
+      await repository.create(userId, 'Quest B', []);
+
+      final task = FriendsQuestTask(id: 't1', text: 'Do something');
+      await repository.updateQuest(userId, q1.copyWith(tasks: [task]));
+
+      final all = repository.getAll(userId);
+      expect(all, hasLength(2));
+      final found = all.firstWhere((q) => q.id == q1.id);
+      expect(found.tasks, hasLength(1));
+      expect(found.tasks.first.text, 'Do something');
+      expect(all.firstWhere((q) => q.name == 'Quest B').tasks, isEmpty);
+    });
+
+    test('updateQuest persists nested tasks (round-trip serialization)',
+        () async {
+      final q = await repository.create(userId, 'Quest', []);
+      final task = FriendsQuestTask(
+        id: 't1',
+        text: 'Nested task',
+        contextLabel: 'ctx',
+        sourceTopicId: 'src-1',
+        sourcePersonId: 'p1',
+        assignedPersonIds: const ['p1', 'p2'],
+      );
+      await repository.updateQuest(userId, q.copyWith(tasks: [task]));
+
+      final loaded = repository.getAll(userId).first;
+      expect(loaded.tasks, hasLength(1));
+      expect(loaded.tasks.first.text, 'Nested task');
+      expect(loaded.tasks.first.contextLabel, 'ctx');
+      expect(loaded.tasks.first.sourceTopicId, 'src-1');
+      expect(loaded.tasks.first.assignedPersonIds, ['p1', 'p2']);
     });
   });
 }

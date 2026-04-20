@@ -32,11 +32,9 @@ class _FriendsQuestDetailScreenState extends State<FriendsQuestDetailScreen> {
   }
 
   Future<void> _loadPersons() async {
-    final quest = context
-        .read<FriendsQuestProvider>()
-        .quests
-        .firstWhere((q) => q.id == widget.questId,
-            orElse: () => throw StateError('Quest not found'));
+    final quest = context.read<FriendsQuestProvider>().quests.firstWhere(
+        (q) => q.id == widget.questId,
+        orElse: () => throw StateError('Quest not found'));
     final persons =
         await PersonRepository().getPersonsByIds(quest.participantIds, _userId);
     if (mounted) {
