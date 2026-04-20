@@ -15,7 +15,10 @@ _$FriendsQuestTaskImpl _$$FriendsQuestTaskImplFromJson(
         final val = _$FriendsQuestTaskImpl(
           id: $checkedConvert('id', (v) => v as String),
           text: $checkedConvert('text', (v) => v as String),
+          contextLabel: $checkedConvert('contextLabel', (v) => v as String?),
           sourceTopicId: $checkedConvert('sourceTopicId', (v) => v as String?),
+          sourcePersonId:
+              $checkedConvert('sourcePersonId', (v) => v as String?),
           assignedPersonIds: $checkedConvert(
               'assignedPersonIds',
               (v) =>
@@ -33,7 +36,9 @@ Map<String, dynamic> _$$FriendsQuestTaskImplToJson(
     <String, dynamic>{
       'id': instance.id,
       'text': instance.text,
+      'contextLabel': instance.contextLabel,
       'sourceTopicId': instance.sourceTopicId,
+      'sourcePersonId': instance.sourcePersonId,
       'assignedPersonIds': instance.assignedPersonIds,
       'isCompleted': instance.isCompleted,
     };

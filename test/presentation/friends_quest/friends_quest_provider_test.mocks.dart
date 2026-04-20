@@ -3,12 +3,19 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
+import 'package:friendsheet/data/models/catch_up_topic.dart' as _i8;
 import 'package:friendsheet/data/models/friends_quest.dart' as _i2;
+import 'package:friendsheet/data/models/person.dart' as _i3;
+import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i10;
+import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart'
+    as _i6;
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart'
-    as _i3;
+    as _i4;
+import 'package:friendsheet/data/repositories/person_repository.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -34,11 +41,21 @@ class _FakeFriendsQuest_0 extends _i1.SmartFake implements _i2.FriendsQuest {
         );
 }
 
+class _FakePerson_1 extends _i1.SmartFake implements _i3.Person {
+  _FakePerson_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [FriendsQuestRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFriendsQuestRepository extends _i1.Mock
-    implements _i3.FriendsQuestRepository {
+    implements _i4.FriendsQuestRepository {
   MockFriendsQuestRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -53,7 +70,7 @@ class MockFriendsQuestRepository extends _i1.Mock
       ) as List<_i2.FriendsQuest>);
 
   @override
-  _i4.Future<_i2.FriendsQuest> create(
+  _i5.Future<_i2.FriendsQuest> create(
     String? userId,
     String? name,
     List<String>? participantIds,
@@ -67,7 +84,7 @@ class MockFriendsQuestRepository extends _i1.Mock
             participantIds,
           ],
         ),
-        returnValue: _i4.Future<_i2.FriendsQuest>.value(_FakeFriendsQuest_0(
+        returnValue: _i5.Future<_i2.FriendsQuest>.value(_FakeFriendsQuest_0(
           this,
           Invocation.method(
             #create,
@@ -78,10 +95,10 @@ class MockFriendsQuestRepository extends _i1.Mock
             ],
           ),
         )),
-      ) as _i4.Future<_i2.FriendsQuest>);
+      ) as _i5.Future<_i2.FriendsQuest>);
 
   @override
-  _i4.Future<void> delete(
+  _i5.Future<void> delete(
     String? userId,
     String? questId,
   ) =>
@@ -93,7 +110,347 @@ class MockFriendsQuestRepository extends _i1.Mock
             questId,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> updateQuest(
+    String? userId,
+    _i2.FriendsQuest? quest,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateQuest,
+          [
+            userId,
+            quest,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [CatchUpTopicRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCatchUpTopicRepository extends _i1.Mock
+    implements _i6.CatchUpTopicRepository {
+  MockCatchUpTopicRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<String> add(
+    String? userId,
+    String? personId,
+    String? text,
+    String? contextLabel,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #add,
+          [
+            userId,
+            personId,
+            text,
+            contextLabel,
+          ],
+        ),
+        returnValue: _i5.Future<String>.value(_i7.dummyValue<String>(
+          this,
+          Invocation.method(
+            #add,
+            [
+              userId,
+              personId,
+              text,
+              contextLabel,
+            ],
+          ),
+        )),
+      ) as _i5.Future<String>);
+
+  @override
+  _i5.Future<List<_i8.CatchUpTopic>> getActive(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getActive,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue:
+            _i5.Future<List<_i8.CatchUpTopic>>.value(<_i8.CatchUpTopic>[]),
+      ) as _i5.Future<List<_i8.CatchUpTopic>>);
+
+  @override
+  _i5.Future<void> update(
+    String? userId,
+    String? personId,
+    String? topicId,
+    String? text,
+    String? contextLabel,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #update,
+          [
+            userId,
+            personId,
+            topicId,
+            text,
+            contextLabel,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> archive(
+    String? userId,
+    String? personId,
+    String? topicId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #archive,
+          [
+            userId,
+            personId,
+            topicId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<_i8.CatchUpTopic>> getArchived(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getArchived,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue:
+            _i5.Future<List<_i8.CatchUpTopic>>.value(<_i8.CatchUpTopic>[]),
+      ) as _i5.Future<List<_i8.CatchUpTopic>>);
+
+  @override
+  _i5.Future<void> mergeTopics(
+    String? userId,
+    String? personId,
+    String? partnerId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #mergeTopics,
+          [
+            userId,
+            personId,
+            partnerId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> delete(
+    String? userId,
+    String? personId,
+    String? topicId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [
+            userId,
+            personId,
+            topicId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> applyRedistribution(
+    String? userId,
+    String? personId,
+    String? partnerId,
+    List<_i8.CatchUpTopic>? postLinkTopics,
+    Map<String, _i6.TopicRedistributionDecision>? decisions,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #applyRedistribution,
+          [
+            userId,
+            personId,
+            partnerId,
+            postLinkTopics,
+            decisions,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [PersonRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPersonRepository extends _i1.Mock implements _i9.PersonRepository {
+  MockPersonRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  set cacheInvalidator(_i10.CacheInvalidator? _cacheInvalidator) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #cacheInvalidator,
+          _cacheInvalidator,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<List<_i3.Person>> getPersonsByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getPersonsByUser,
+          [userId],
+        ),
+        returnValue: _i5.Future<List<_i3.Person>>.value(<_i3.Person>[]),
+      ) as _i5.Future<List<_i3.Person>>);
+
+  @override
+  _i5.Future<List<_i3.Person>> getPersonsByIds(
+    List<String>? ids,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getPersonsByIds,
+          [
+            ids,
+            userId,
+          ],
+        ),
+        returnValue: _i5.Future<List<_i3.Person>>.value(<_i3.Person>[]),
+      ) as _i5.Future<List<_i3.Person>>);
+
+  @override
+  _i5.Future<_i3.Person> addPerson(_i3.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #addPerson,
+          [person],
+        ),
+        returnValue: _i5.Future<_i3.Person>.value(_FakePerson_1(
+          this,
+          Invocation.method(
+            #addPerson,
+            [person],
+          ),
+        )),
+      ) as _i5.Future<_i3.Person>);
+
+  @override
+  _i5.Future<void> updatePerson(_i3.Person? person) => (super.noSuchMethod(
+        Invocation.method(
+          #updatePerson,
+          [person],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<bool> isDuplicateName(
+    String? userId,
+    String? firstName,
+    String? lastName, {
+    String? excludeId,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #isDuplicateName,
+          [
+            userId,
+            firstName,
+            lastName,
+          ],
+          {#excludeId: excludeId},
+        ),
+        returnValue: _i5.Future<bool>.value(false),
+      ) as _i5.Future<bool>);
+
+  @override
+  _i5.Future<void> linkPartner(
+    String? userId,
+    String? personId,
+    String? partnerId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #linkPartner,
+          [
+            userId,
+            personId,
+            partnerId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> unlinkPartner(
+    String? userId,
+    String? personId,
+    String? partnerId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #unlinkPartner,
+          [
+            userId,
+            personId,
+            partnerId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> deletePerson(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deletePerson,
+          [
+            userId,
+            personId,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }

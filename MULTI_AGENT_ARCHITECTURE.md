@@ -567,8 +567,9 @@ c) Coverage audit for a feature"
 
 1. dart run build_runner build --delete-conflicting-outputs
 2. dart format .
-3. flutter test
-4. Update TEST_CASES.md
+3. flutter analyze   ← fix all issues before proceeding
+4. flutter test
+5. Update TEST_CASES.md
 
 ## Output
 

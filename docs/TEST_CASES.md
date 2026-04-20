@@ -2024,3 +2024,34 @@ Run after every release or hotfix:
 | UT-124-017 | tapping View all calls onViewAll | callback invoked |
 | UT-124-018 | tapping tile also calls onViewAll | callback invoked via ListTile |
 
+## US-125 — Friends-Quest Tasks
+
+### Automated tests — `test/data/repositories/friends_quest_repository_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-125-001 | updateQuest replaces matching quest, others unchanged | task saved, other quest unchanged |
+| UT-125-002 | updateQuest persists nested tasks (round-trip serialization) | all task fields preserved after re-read |
+
+### Automated tests — `test/presentation/friends_quest/friends_quest_provider_test.dart` (additions)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-125-003 | addTask without assignees adds task and skips catchup | task saved, catchup.add not called |
+| UT-125-004 | addTask with assignees calls catchup.add and sets source fields | catchup.add × 2, sourceTopicId and sourcePersonId set |
+| UT-125-005 | deleteTask removes task from quest | updateQuest called with empty tasks |
+| UT-125-006 | editTask without sourceTopicId updates text only, no catchup call | text updated, catchup.update not called |
+| UT-125-007 | editTask with sourceTopicId calls catchup.update | catchup.update called with new text |
+| UT-125-008 | updateParticipants keeps manual tasks and drops imported tasks | first updateQuest call has only manual task, participantIds updated |
+| UT-125-009 | createQuest with participants imports topics as tasks | updateQuest called with imported task, isLoading reset to false |
+
+### Automated tests — `test/presentation/friends_quest/quest_task_tile_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-125-010 | shows task text and read-only checkbox | text visible, checkbox.onChanged is null |
+| UT-125-011 | shows assigned person names in subtitle | 'Alice, Bob' visible |
+| UT-125-012 | shows names and contextLabel combined in subtitle | 'Alice · Dinner' visible |
+| UT-125-013 | edit and delete buttons trigger callbacks | both callbacks invoked |
+| UT-125-014 | completed task shows strikethrough text | TextDecoration.lineThrough on text |
+

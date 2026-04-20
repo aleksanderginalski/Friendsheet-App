@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/services/auth_service.dart';
 import 'create_quest_dialog.dart';
+import 'friends_quest_detail_screen.dart';
 import 'friends_quest_provider.dart';
 
 class FriendsQuestListScreen extends StatefulWidget {
@@ -64,6 +65,22 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
     );
   }
 
+  void _openDetail(
+      BuildContext context, FriendsQuestProvider provider, String questId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: provider,
+          child: FriendsQuestDetailScreen(questId: questId),
+        ),
+      ),
+    ).then((_) {
+      if (!mounted) return;
+      provider.loadQuests(_userId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<FriendsQuestProvider>();
@@ -100,6 +117,7 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
                 return ListTile(
                   title: Text(quest.name),
                   subtitle: Text('$participantCount participants'),
+                  onTap: () => _openDetail(context, provider, quest.id),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

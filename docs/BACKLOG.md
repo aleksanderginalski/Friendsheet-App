@@ -4833,29 +4833,29 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 8
 **Priority:** P2
 **Labels:** `friends-quest`, `tasks`, `sync`
-**Status:** 📋 Planned
+**Status:** ✅ COMPLETED
 **Feature:** FEATURE-032: Friends-Quest
 
 **Acceptance Criteria:**
-- [ ] On quest creation: active Catch-up Topics for all participants auto-imported as tasks
-- [ ] Deduplication: if two participants are linked as a couple and share a topic, it appears only once
-- [ ] Edge case: if only one person of a couple is in the quest, their shared topics are still visible (couple treated as unit for topic ownership)
-- [ ] User can manually add a task (text + optional person assignment from participants list)
+- [x] On quest creation: active Catch-up Topics for all participants auto-imported as tasks
+- [x] Deduplication: if two participants are linked as a couple and share a topic, it appears only once
+- [x] Edge case: if only one person of a couple is in the quest, their shared topics are still visible (couple treated as unit for topic ownership)
+- [x] User can manually add a task (text + optional person assignment from participants list)
   - If person assigned: task also saved as a new Catch-up Topic for that person
-- [ ] Edit task with `sourceTopicId`: edit propagates to original Catch-up Topic (and to partner if couple-linked — both updated)
-- [ ] Edit task without `sourceTopicId`: local edit only
-- [ ] Delete task with `sourceTopicId`: original Catch-up Topic is NOT deleted
-- [ ] Delete task without `sourceTopicId`: deleted locally
-- [ ] User can manage quest participants (add/remove); catch-up topics re-synced after change
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] Edit task with `sourceTopicId`: edit propagates to original Catch-up Topic (and to partner if couple-linked — both updated)
+- [x] Edit task without `sourceTopicId`: local edit only
+- [x] Delete task with `sourceTopicId`: original Catch-up Topic is NOT deleted
+- [x] Delete task without `sourceTopicId`: deleted locally
+- [x] User can manage quest participants (add/remove); catch-up topics re-synced after change
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-125.1:** Implement `importTopicsAsTasksForQuest(questId)` — loads active topics for all participants, applies couple-deduplication, creates `FriendsQuestTask` entries — 3h
-- [ ] **TASK-125.2:** Implement `addTask(questId, text, personIds)` — creates task + optional Catch-up Topic propagation — 1.5h
-- [ ] **TASK-125.3:** Implement `editTask(questId, taskId, newText)` — propagates to `sourceTopicId` if present (and partner if couple-linked) — 2h
-- [ ] **TASK-125.4:** Implement `deleteTask(questId, taskId)` — local removal only; never touches `sourceTopicId` — 0.5h
-- [ ] **TASK-125.5:** Implement `updateParticipants(questId, personIds)` — re-imports topics after participant change — 1h
-- [ ] **TASK-125.6:** Build `FriendsQuestDetailScreen` — task list, add/edit/delete UI, participant management — 3h
+- [x] **TASK-125.1:** Implement `importTopicsAsTasksForQuest(questId)` — loads active topics for all participants, applies couple-deduplication, creates `FriendsQuestTask` entries — 3h
+- [x] **TASK-125.2:** Implement `addTask(questId, text, personIds)` — creates task + optional Catch-up Topic propagation — 1.5h
+- [x] **TASK-125.3:** Implement `editTask(questId, taskId, newText)` — propagates to `sourceTopicId` if present (and partner if couple-linked) — 2h
+- [x] **TASK-125.4:** Implement `deleteTask(questId, taskId)` — local removal only; never touches `sourceTopicId` — 0.5h
+- [x] **TASK-125.5:** Implement `updateParticipants(questId, personIds)` — re-imports topics after participant change — 1h
+- [x] **TASK-125.6:** Build `FriendsQuestDetailScreen` — task list, add/edit/delete UI, participant management — 3h
 
 **Dependencies:** US-121, US-122, US-124
 **Blocks:** US-126

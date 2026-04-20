@@ -22,7 +22,9 @@ FriendsQuestTask _$FriendsQuestTaskFromJson(Map<String, dynamic> json) {
 mixin _$FriendsQuestTask {
   String get id => throw _privateConstructorUsedError;
   String get text => throw _privateConstructorUsedError;
+  String? get contextLabel => throw _privateConstructorUsedError;
   String? get sourceTopicId => throw _privateConstructorUsedError;
+  String? get sourcePersonId => throw _privateConstructorUsedError;
   List<String> get assignedPersonIds => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
 
@@ -45,7 +47,9 @@ abstract class $FriendsQuestTaskCopyWith<$Res> {
   $Res call(
       {String id,
       String text,
+      String? contextLabel,
       String? sourceTopicId,
+      String? sourcePersonId,
       List<String> assignedPersonIds,
       bool isCompleted});
 }
@@ -67,7 +71,9 @@ class _$FriendsQuestTaskCopyWithImpl<$Res, $Val extends FriendsQuestTask>
   $Res call({
     Object? id = null,
     Object? text = null,
+    Object? contextLabel = freezed,
     Object? sourceTopicId = freezed,
+    Object? sourcePersonId = freezed,
     Object? assignedPersonIds = null,
     Object? isCompleted = null,
   }) {
@@ -80,9 +86,17 @@ class _$FriendsQuestTaskCopyWithImpl<$Res, $Val extends FriendsQuestTask>
           ? _value.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      contextLabel: freezed == contextLabel
+          ? _value.contextLabel
+          : contextLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
       sourceTopicId: freezed == sourceTopicId
           ? _value.sourceTopicId
           : sourceTopicId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sourcePersonId: freezed == sourcePersonId
+          ? _value.sourcePersonId
+          : sourcePersonId // ignore: cast_nullable_to_non_nullable
               as String?,
       assignedPersonIds: null == assignedPersonIds
           ? _value.assignedPersonIds
@@ -107,7 +121,9 @@ abstract class _$$FriendsQuestTaskImplCopyWith<$Res>
   $Res call(
       {String id,
       String text,
+      String? contextLabel,
       String? sourceTopicId,
+      String? sourcePersonId,
       List<String> assignedPersonIds,
       bool isCompleted});
 }
@@ -127,7 +143,9 @@ class __$$FriendsQuestTaskImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? text = null,
+    Object? contextLabel = freezed,
     Object? sourceTopicId = freezed,
+    Object? sourcePersonId = freezed,
     Object? assignedPersonIds = null,
     Object? isCompleted = null,
   }) {
@@ -140,9 +158,17 @@ class __$$FriendsQuestTaskImplCopyWithImpl<$Res>
           ? _value.text
           : text // ignore: cast_nullable_to_non_nullable
               as String,
+      contextLabel: freezed == contextLabel
+          ? _value.contextLabel
+          : contextLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
       sourceTopicId: freezed == sourceTopicId
           ? _value.sourceTopicId
           : sourceTopicId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      sourcePersonId: freezed == sourcePersonId
+          ? _value.sourcePersonId
+          : sourcePersonId // ignore: cast_nullable_to_non_nullable
               as String?,
       assignedPersonIds: null == assignedPersonIds
           ? _value._assignedPersonIds
@@ -162,7 +188,9 @@ class _$FriendsQuestTaskImpl implements _FriendsQuestTask {
   const _$FriendsQuestTaskImpl(
       {required this.id,
       required this.text,
+      this.contextLabel,
       this.sourceTopicId,
+      this.sourcePersonId,
       final List<String> assignedPersonIds = const [],
       this.isCompleted = false})
       : _assignedPersonIds = assignedPersonIds;
@@ -175,7 +203,11 @@ class _$FriendsQuestTaskImpl implements _FriendsQuestTask {
   @override
   final String text;
   @override
+  final String? contextLabel;
+  @override
   final String? sourceTopicId;
+  @override
+  final String? sourcePersonId;
   final List<String> _assignedPersonIds;
   @override
   @JsonKey()
@@ -192,7 +224,7 @@ class _$FriendsQuestTaskImpl implements _FriendsQuestTask {
 
   @override
   String toString() {
-    return 'FriendsQuestTask(id: $id, text: $text, sourceTopicId: $sourceTopicId, assignedPersonIds: $assignedPersonIds, isCompleted: $isCompleted)';
+    return 'FriendsQuestTask(id: $id, text: $text, contextLabel: $contextLabel, sourceTopicId: $sourceTopicId, sourcePersonId: $sourcePersonId, assignedPersonIds: $assignedPersonIds, isCompleted: $isCompleted)';
   }
 
   @override
@@ -202,8 +234,12 @@ class _$FriendsQuestTaskImpl implements _FriendsQuestTask {
             other is _$FriendsQuestTaskImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.text, text) || other.text == text) &&
+            (identical(other.contextLabel, contextLabel) ||
+                other.contextLabel == contextLabel) &&
             (identical(other.sourceTopicId, sourceTopicId) ||
                 other.sourceTopicId == sourceTopicId) &&
+            (identical(other.sourcePersonId, sourcePersonId) ||
+                other.sourcePersonId == sourcePersonId) &&
             const DeepCollectionEquality()
                 .equals(other._assignedPersonIds, _assignedPersonIds) &&
             (identical(other.isCompleted, isCompleted) ||
@@ -212,8 +248,15 @@ class _$FriendsQuestTaskImpl implements _FriendsQuestTask {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, text, sourceTopicId,
-      const DeepCollectionEquality().hash(_assignedPersonIds), isCompleted);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      text,
+      contextLabel,
+      sourceTopicId,
+      sourcePersonId,
+      const DeepCollectionEquality().hash(_assignedPersonIds),
+      isCompleted);
 
   /// Create a copy of FriendsQuestTask
   /// with the given fields replaced by the non-null parameter values.
@@ -236,7 +279,9 @@ abstract class _FriendsQuestTask implements FriendsQuestTask {
   const factory _FriendsQuestTask(
       {required final String id,
       required final String text,
+      final String? contextLabel,
       final String? sourceTopicId,
+      final String? sourcePersonId,
       final List<String> assignedPersonIds,
       final bool isCompleted}) = _$FriendsQuestTaskImpl;
 
@@ -248,7 +293,11 @@ abstract class _FriendsQuestTask implements FriendsQuestTask {
   @override
   String get text;
   @override
+  String? get contextLabel;
+  @override
   String? get sourceTopicId;
+  @override
+  String? get sourcePersonId;
   @override
   List<String> get assignedPersonIds;
   @override
