@@ -383,8 +383,8 @@ class AddMeetingProvider extends ChangeNotifier {
           createdAt: now,
           updatedAt: now,
         );
-        await _meetingRepository.saveMeeting(meeting);
-        _savedMeeting = meeting;
+        final meetingId = await _meetingRepository.saveMeeting(meeting);
+        _savedMeeting = meeting.copyWith(id: meetingId);
       }
 
       return true;

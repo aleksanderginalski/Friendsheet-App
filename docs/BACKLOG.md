@@ -4570,7 +4570,7 @@ Currently `ContextBuilderService` sends all meetings from the last 12 months in 
 **Story Points:** 13
 **Priority:** P2
 **Labels:** `infrastructure`, `offline`, `ux`
-**Status:** 📋 Planned
+**Status:** ✅ Completed
 
 **Context:**
 Firestore SDK on Flutter mobile has built-in offline persistence enabled by default — write operations (add/edit/delete) are queued locally on disk and replayed automatically on reconnect. This US leverages that mechanism rather than building a custom write queue. The main work is: replacing stream-based reads with cache-first reads (using `LocalCacheService` from US-109), adding connectivity detection with UI indicators, and gracefully disabling online-only features (Buddy AI, Google Calendar) when offline. Single-user usage pattern (phone + emulator, never simultaneously) means write conflicts are not a concern.
@@ -4585,23 +4585,23 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 - ❌ Google Sign-In on first launch (requires network)
 
 **Acceptance Criteria:**
-- [ ] App displays data immediately on screen open using `LocalCacheService` — no loading spinner for cached data
-- [ ] Firestore stream runs in background and updates cache silently; UI reflects changes without full reload
-- [ ] Offline banner visible at top of screen when connectivity is lost
-- [ ] Offline banner dismisses automatically when connectivity returns
-- [ ] Pending sync indicator shown when Firestore has queued writes not yet sent
-- [ ] Write operations (add/edit/delete) work while offline — changes visible immediately in UI via cache; synced to Firestore on reconnect
-- [ ] Online-only features (Buddy, Google Calendar) show "Requires internet connection" message when offline instead of crashing
-- [ ] `flutter analyze` clean, `flutter test` pass
+- [x] App displays data immediately on screen open using `LocalCacheService` — no loading spinner for cached data
+- [x] Firestore stream runs in background and updates cache silently; UI reflects changes without full reload
+- [x] Offline banner visible at top of screen when connectivity is lost
+- [x] Offline banner dismisses automatically when connectivity returns
+- [x] Pending sync indicator shown when Firestore has queued writes not yet sent
+- [x] Write operations (add/edit/delete) work while offline — changes visible immediately in UI via cache; synced to Firestore on reconnect
+- [x] Online-only features (Buddy, Google Calendar) show "Requires internet connection" message when offline instead of crashing
+- [x] `flutter analyze` clean, `flutter test` pass
 
 **Tasks:**
-- [ ] **TASK-111.1:** Verify Firestore offline persistence is enabled; add `Settings(persistenceEnabled: true)` if not explicit — 0.5h
-- [ ] **TASK-111.2:** Add `connectivity_plus` package; implement `ConnectivityService` singleton with `ValueNotifier<ConnectivityStatus>` — 1h
-- [ ] **TASK-111.3:** Replace stream-based reads on MeetingsList, PersonsList with cache-first pattern: load from `LocalCacheService` → render → Firestore stream updates cache in background — 3h
-- [ ] **TASK-111.4:** Implement offline banner widget (auto-shows/hides based on `ConnectivityService`) — 1h
-- [ ] **TASK-111.5:** Implement pending sync indicator — hook into Firestore pending writes state — 2h
-- [ ] **TASK-111.6:** Graceful degradation for online-only features: wrap Buddy entry points and Google Calendar with connectivity check + informative message — 1.5h
-- [ ] **TASK-111.7:** Write tests for connectivity state transitions and cache-first read paths — 2h
+- [x] **TASK-111.1:** Verify Firestore offline persistence is enabled; add `Settings(persistenceEnabled: true)` if not explicit — 0.5h
+- [x] **TASK-111.2:** Add `connectivity_plus` package; implement `ConnectivityService` singleton with `ValueNotifier<ConnectivityStatus>` — 1h
+- [x] **TASK-111.3:** Replace stream-based reads on MeetingsList, PersonsList with cache-first pattern: load from `LocalCacheService` → render → Firestore stream updates cache in background — 3h
+- [x] **TASK-111.4:** Implement offline banner widget (auto-shows/hides based on `ConnectivityService`) — 1h
+- [x] **TASK-111.5:** Implement pending sync indicator — hook into Firestore pending writes state — 2h
+- [x] **TASK-111.6:** Graceful degradation for online-only features: wrap Buddy entry points and Google Calendar with connectivity check + informative message — 1.5h
+- [x] **TASK-111.7:** Write tests for connectivity state transitions and cache-first read paths — 2h
 
 **Dependencies:** US-109
 **Blocks:** None

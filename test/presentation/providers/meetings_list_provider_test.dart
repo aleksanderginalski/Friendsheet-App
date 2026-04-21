@@ -39,6 +39,11 @@ void main() {
   setUp(() {
     mockMeetingRepository = MockMeetingRepository();
     mockAuthService = MockAuthService();
+    // Stub getMeetingsSnapshot so the metadata subscription in initialize()
+    // does not throw MissingStubError. Returns empty stream — hasPendingWrites
+    // stays false in all tests that do not explicitly test it.
+    when(mockMeetingRepository.getMeetingsSnapshot(any))
+        .thenAnswer((_) => const Stream.empty());
     provider = MeetingsListProvider(
       meetingRepository: mockMeetingRepository,
       authService: mockAuthService,

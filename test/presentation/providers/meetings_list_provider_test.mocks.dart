@@ -5,11 +5,12 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:firebase_auth/firebase_auth.dart' as _i8;
+import 'package:cloud_firestore/cloud_firestore.dart' as _i7;
+import 'package:firebase_auth/firebase_auth.dart' as _i9;
 import 'package:friendsheet/data/models/meeting.dart' as _i5;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i3;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i2;
-import 'package:friendsheet/data/services/auth_service.dart' as _i7;
+import 'package:friendsheet/data/services/auth_service.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
 
@@ -69,6 +70,16 @@ class MockMeetingRepository extends _i1.Mock implements _i2.MeetingRepository {
         ),
         returnValue: _i4.Stream<List<_i5.Meeting>>.empty(),
       ) as _i4.Stream<List<_i5.Meeting>>);
+
+  @override
+  _i4.Stream<_i7.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i4.Stream<_i7.QuerySnapshot<Object?>>.empty(),
+      ) as _i4.Stream<_i7.QuerySnapshot<Object?>>);
 
   @override
   _i4.Future<List<_i5.Meeting>> getAllMeetings(String? userId) =>
@@ -247,25 +258,25 @@ class MockMeetingRepository extends _i1.Mock implements _i2.MeetingRepository {
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i7.AuthService {
+class MockAuthService extends _i1.Mock implements _i8.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Stream<_i8.User?> get authStateChanges => (super.noSuchMethod(
+  _i4.Stream<_i9.User?> get authStateChanges => (super.noSuchMethod(
         Invocation.getter(#authStateChanges),
-        returnValue: _i4.Stream<_i8.User?>.empty(),
-      ) as _i4.Stream<_i8.User?>);
+        returnValue: _i4.Stream<_i9.User?>.empty(),
+      ) as _i4.Stream<_i9.User?>);
 
   @override
-  _i4.Future<_i8.User?> signInWithGoogle() => (super.noSuchMethod(
+  _i4.Future<_i9.User?> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
           [],
         ),
-        returnValue: _i4.Future<_i8.User?>.value(),
-      ) as _i4.Future<_i8.User?>);
+        returnValue: _i4.Future<_i9.User?>.value(),
+      ) as _i4.Future<_i9.User?>);
 
   @override
   _i4.Future<void> signOut() => (super.noSuchMethod(

@@ -59,6 +59,9 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
+  # Connectivity detection for offline banner and feature gating (US-111)
+  connectivity_plus: ^6.1.4
+
   # UI Icons
   cupertino_icons: ^1.0.6
   openai_dart: ^2.0.0

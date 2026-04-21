@@ -5,7 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
 
-import 'package:firebase_auth/firebase_auth.dart' as _i13;
+import 'package:cloud_firestore/cloud_firestore.dart' as _i12;
+import 'package:firebase_auth/firebase_auth.dart' as _i14;
 import 'package:friendsheet/data/models/meeting.dart' as _i10;
 import 'package:friendsheet/data/models/person.dart' as _i2;
 import 'package:friendsheet/data/models/sharing_token.dart' as _i3;
@@ -14,7 +15,7 @@ import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i9;
 import 'package:friendsheet/data/repositories/person_repository.dart' as _i6;
 import 'package:friendsheet/data/repositories/sharing_token_repository.dart'
     as _i4;
-import 'package:friendsheet/data/services/auth_service.dart' as _i12;
+import 'package:friendsheet/data/services/auth_service.dart' as _i13;
 import 'package:friendsheet/data/services/relationship_score_service.dart'
     as _i5;
 import 'package:mockito/mockito.dart' as _i1;
@@ -265,6 +266,16 @@ class MockMeetingRepository extends _i1.Mock implements _i9.MeetingRepository {
       ) as _i8.Stream<List<_i10.Meeting>>);
 
   @override
+  _i8.Stream<_i12.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i8.Stream<_i12.QuerySnapshot<Object?>>.empty(),
+      ) as _i8.Stream<_i12.QuerySnapshot<Object?>>);
+
+  @override
   _i8.Future<List<_i10.Meeting>> getAllMeetings(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -441,25 +452,25 @@ class MockMeetingRepository extends _i1.Mock implements _i9.MeetingRepository {
 /// A class which mocks [AuthService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthService extends _i1.Mock implements _i12.AuthService {
+class MockAuthService extends _i1.Mock implements _i13.AuthService {
   MockAuthService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i8.Stream<_i13.User?> get authStateChanges => (super.noSuchMethod(
+  _i8.Stream<_i14.User?> get authStateChanges => (super.noSuchMethod(
         Invocation.getter(#authStateChanges),
-        returnValue: _i8.Stream<_i13.User?>.empty(),
-      ) as _i8.Stream<_i13.User?>);
+        returnValue: _i8.Stream<_i14.User?>.empty(),
+      ) as _i8.Stream<_i14.User?>);
 
   @override
-  _i8.Future<_i13.User?> signInWithGoogle() => (super.noSuchMethod(
+  _i8.Future<_i14.User?> signInWithGoogle() => (super.noSuchMethod(
         Invocation.method(
           #signInWithGoogle,
           [],
         ),
-        returnValue: _i8.Future<_i13.User?>.value(),
-      ) as _i8.Future<_i13.User?>);
+        returnValue: _i8.Future<_i14.User?>.value(),
+      ) as _i8.Future<_i14.User?>);
 
   @override
   _i8.Future<void> signOut() => (super.noSuchMethod(

@@ -27,7 +27,7 @@
 
 **M6 — Custom Dashboard:** Configurable home screen with drag-and-drop metric widgets.
 
-**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. US-109 delivered the full-dataset local Hive cache (`LocalCacheService`): fire-and-forget sync on app start, write-through after every repository write, 8 typed read methods — all one-shot Firestore reads now cache-first. US-105 added meeting frequency context: `PersonContextEntry` carries `avgDaysBetweenMeetings` and `daysSinceLastMeeting`; system prompt guides Buddy to suggest overdue friends. US-118 added LTNS Exclusion Filter: `LtnsExclusionService` + `LtnsFilterScreen` allow opt-out of specific friends from LTNS reminders; action buttons show full name and meeting frequency. US-107 added Relationship Strength Indicator: `RelationshipScoreService` computes a 0–100 score (frequency/recency/variety/weight variety) from the Hive cache; `RelationshipStrengthWidget` shows a colored progress bar on `PersonDetailScreen`; `serializeToPromptWithScores` appends per-person partial scores so Buddy can explain them; smart person name disambiguation — when a user types a real name Buddy resolves it via substring match and shows disambiguation buttons with scores if multiple persons match. Remaining US: widget auto-refresh (US-112), language selection (US-113).
+**M7 — AI Assistant:** Buddy — an AI chat assistant powered by OpenAI (BYOK). US-087 delivered the full chat screen with streaming responses, pseudonym back-translation, and write isolation via `BuddyWriteService`. US-101 added the proactive HomeScreen widget (floating Buddy icon with contextual CTAs). US-103 added birthday data to Person. US-104 delivered birthday reminders: Buddy detects upcoming birthdays, generates Dart-computed friendship stats, and streams a personalized AI birthday wish; "Save Your Memories" shows top-3 meetings without notes as in-chat action buttons. US-102 added proactive LTNS insights: "Long time no see" button for friends absent 90+ days; greeting/lapsedFriendsList/lapsedFriendDetail chat modes; Side Menu "Buddy" tile navigating to a dedicated sub-screen; AIChatScreen AppBar uses Pacifico font. US-109 delivered the full-dataset local Hive cache (`LocalCacheService`): fire-and-forget sync on app start, write-through after every repository write, 8 typed read methods — all one-shot Firestore reads now cache-first. US-105 added meeting frequency context: `PersonContextEntry` carries `avgDaysBetweenMeetings` and `daysSinceLastMeeting`; system prompt guides Buddy to suggest overdue friends. US-118 added LTNS Exclusion Filter: `LtnsExclusionService` + `LtnsFilterScreen` allow opt-out of specific friends from LTNS reminders; action buttons show full name and meeting frequency. US-107 added Relationship Strength Indicator: `RelationshipScoreService` computes a 0–100 score (frequency/recency/variety/weight variety) from the Hive cache; `RelationshipStrengthWidget` shows a colored progress bar on `PersonDetailScreen`; `serializeToPromptWithScores` appends per-person partial scores so Buddy can explain them; smart person name disambiguation — when a user types a real name Buddy resolves it via substring match and shows disambiguation buttons with scores if multiple persons match. US-111 delivered offline-first app: `ConnectivityService` singleton drives `OfflineBannerWidget`; `MeetingRepository` writes are cache-first (Hive immediate, Firestore fire-and-forget) so add/edit/delete never hang when offline; `MeetingsListProvider` renders from cache without spinner; Buddy and Google Calendar entry points gracefully degraded with offline message. Remaining US: widget auto-refresh (US-112), language selection (US-113).
 
 ---
 
@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (1029)
+✅ All tests passing (1038)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,13 +174,14 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.13 — US-126: Friends-Quest Completion & Meeting Link (April 20, 2026)
-- ✅ `FriendsQuestProvider` (MODIFIED) — `linkToMeeting`, `completeTask` (archives Catch-up Topic), `completeQuest` (appends notes to meeting)
-- ✅ `MeetingPickerSheet` (NEW) — grouped collapsible year/month picker with search by name or date
-- ✅ `quest_add_task_dialog.dart` (NEW) — extracted dialog function to keep detail screen under 300 lines
-- ✅ `FriendsQuestDetailScreen` (MODIFIED) — complete quest button, meeting link row, interactive task checkboxes
-- ✅ `QuestTaskTile` (MODIFIED) — interactive checkbox for task completion
-- ✅ 14 new tests (1029 total)
+### Latest: v4.5.14 — US-111: Offline-First App (April 21, 2026)
+- ✅ `ConnectivityService` (NEW) — singleton with `ValueNotifier<bool> isOnlineNotifier`; `connectivity_plus` stream subscription
+- ✅ `OfflineBannerWidget` (NEW) — animated amber banner shown automatically when offline
+- ✅ `MeetingRepository` (MODIFIED) — `saveMeeting`/`updateMeeting`/`deleteMeeting` cache-first: writes to Hive immediately, Firestore fire-and-forget (no hang when offline)
+- ✅ `MeetingsListProvider` (MODIFIED) — `hasPendingWrites` via metadata-aware snapshot; cache renders without spinner
+- ✅ `MainScreen` (MODIFIED) — offline banner wired; Buddy + Google Calendar connectivity-gated
+- ✅ `HomeScreen` (MODIFIED) — all 4 Buddy CTAs gated with connectivity check
+- ✅ 9 new tests (1038 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

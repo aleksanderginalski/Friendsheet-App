@@ -584,7 +584,7 @@ AIChatScreen
 - `LtnsFilterScreen` ✅ — `StatefulWidget`; `SwitchListTile` per person backed by `LtnsExclusionService`; Polish-aware alphabetical sort; search bar; AppBar "Filtry LTNS"; navigated from `BuddyMenuScreen` via `MainScreen._openLtnsFilters()` (US-118) (`lib/presentation/screens/ltns_filter_screen.dart`)
 - `birthday_format_helpers.dart` ✅ — pure functions: `formatBirthdayStats()`, `buildBirthdayListGreeting()`, `birthdayActionLabel()` (`lib/presentation/ai_chat/birthday_format_helpers.dart`)
 - `LocalCacheService` ✅ — Hive-based full dataset cache (meetings, persons, activity_categories); exposes typed read methods for tool calling; write-through on every repository write (US-109) (`lib/data/services/local_cache_service.dart`)
-- `ConnectivityService` 📋 — singleton with `ValueNotifier<ConnectivityStatus>`; drives offline banner and graceful degradation (US-111)
+- `ConnectivityService` ✅ — singleton with `ValueNotifier<bool> isOnlineNotifier`; `initialize()` subscribes to `connectivity_plus` stream; `isOnline` getter; drives `OfflineBannerWidget` and graceful degradation in Buddy / Google Calendar entry points (US-111) (`lib/data/services/connectivity_service.dart`)
 - `RelationshipScoreService` ✅ — local 0–100 scoring algorithm (frequency 35%, recency 30%, category variety 20%, weight variety 15%); reads exclusively from `LocalCacheService`, no API calls (US-107) (`lib/data/services/relationship_score_service.dart`)
 - `AIKeyRepository` ✅ — Flutter Secure Storage wrapper for OpenAI key (`lib/data/repositories/ai_key_repository.dart`)
 
@@ -592,8 +592,8 @@ AIChatScreen
 - `openai_dart: ^2.0.0` — official Dart client for OpenAI API (streaming support)
 - `flutter_markdown: ^0.7.7+1` — markdown rendering in `ChatBubble` for formatted Buddy responses
 
-**Planned packages (US-111):**
-- `connectivity_plus` — network connectivity detection for offline-first mode
+**New packages (US-111):**
+- `connectivity_plus: ^6.1.4` — network connectivity detection; used by `ConnectivityService` for offline banner and feature gating
 
 **Error handling (typed exceptions):**
 ```dart
@@ -662,7 +662,7 @@ getMeetingNotes(String meetingId) → List<String>
 **Offline writes:** Firestore SDK offline persistence is enabled by default on Flutter mobile. Write operations while offline are queued on-disk by the SDK and replayed automatically on reconnect. No custom write queue required.
 
 **Offline UI indicators:**
-- Offline banner: shown at top of screen when `ConnectivityService.isConnected == false`; auto-dismisses on reconnect
+- Offline banner: `OfflineBannerWidget` shown at top of `MainScreen` when `ConnectivityService().isOnline == false`; `AnimatedSwitcher` animates in/out; auto-dismisses on reconnect
 - Pending sync indicator: shown when Firestore has queued writes not yet confirmed
 
 **Features available offline:**

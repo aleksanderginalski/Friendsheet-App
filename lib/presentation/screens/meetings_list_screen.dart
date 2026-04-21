@@ -95,6 +95,14 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
             appBar: AppBar(
               title: const Text('My Meetings'),
               actions: [
+                if (provider.hasPendingWrites)
+                  const Tooltip(
+                    message: 'Syncing...',
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Icon(Icons.sync, size: 18),
+                    ),
+                  ),
                 if (hasMeetings)
                   IconButton(
                     icon:

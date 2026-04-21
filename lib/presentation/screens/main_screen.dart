@@ -16,6 +16,7 @@ import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../data/services/account_deletion_service.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/connectivity_service.dart';
 import '../../data/services/export_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../../data/services/local_cache_service.dart';
@@ -38,6 +39,7 @@ import '../providers/shared_package_inbox_provider.dart';
 import '../providers/statistics_provider.dart';
 import '../sharing/generate_sharing_token_screen.dart';
 import '../widgets/easter_egg_dialog.dart';
+import '../widgets/offline_banner_widget.dart';
 import 'add_meeting_screen.dart';
 import 'ai_settings_screen.dart';
 import 'buddy_menu_screen.dart';
@@ -120,6 +122,8 @@ class _MainScreenState extends State<MainScreen> {
       categoryRepository: activityCategoryRepository,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Initialize connectivity monitoring before any other providers.
+      await ConnectivityService().initialize();
       // Ensure calendar token is loaded before drawer renders.
       await GoogleCalendarService().ensureInitialized();
 
@@ -361,6 +365,19 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  // IndexedStack keeps all tab widgets alive, preserving scroll state.
+  Widget _buildBody() {
+    return IndexedStack(
+      index: _currentIndex,
+      children: const [
+        HomeScreen(),
+        MeetingsListScreen(),
+        PersonsListScreen(),
+        ActivitiesListScreen(),
+      ],
+    );
+  }
+
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -442,6 +459,17 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   onTap: () async {
                     Navigator.pop(context);
+                    if (!ConnectivityService().isOnline) {
+                      ScaffoldMessenger.of(appNavigatorKey.currentContext!)
+                          .showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Google Calendar requires an internet connection',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
                     final calendarService = GoogleCalendarService();
 
                     if (isConnected) {
@@ -496,6 +524,15 @@ class _MainScreenState extends State<MainScreen> {
               title: const Text('Buddy'),
               onTap: () {
                 Navigator.pop(context);
+                if (!ConnectivityService().isOnline) {
+                  ScaffoldMessenger.of(appNavigatorKey.currentContext!)
+                      .showSnackBar(
+                    const SnackBar(
+                      content: Text('Buddy requires an internet connection'),
+                    ),
+                  );
+                  return;
+                }
                 _openBuddyMenu();
               },
             ),
@@ -576,14 +613,10 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      // IndexedStack keeps all tab widgets alive, preserving scroll state.
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          HomeScreen(),
-          MeetingsListScreen(),
-          PersonsListScreen(),
-          ActivitiesListScreen(),
+      body: Column(
+        children: [
+          const OfflineBannerWidget(),
+          Expanded(child: _buildBody()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
