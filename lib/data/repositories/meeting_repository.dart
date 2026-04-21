@@ -21,15 +21,26 @@ class MeetingRepository {
 
   /// Saves a new meeting document to Firestore.
   /// Returns the generated document ID on success.
+  ///
+  /// Cache-first: writes to LocalCacheService immediately so the caller is
+  /// never blocked by network latency. The Firestore write runs in the
+  /// background — when offline, the SDK queues it and syncs when reconnected.
   Future<String> saveMeeting(Meeting meeting) async {
-    final docRef =
-        await _meetingsRef(meeting.userId).add(meeting.toFirestore());
-    await cacheInvalidator?.invalidateMeetingsCache();
-    // Write-through: add the persisted meeting (with generated ID) to local cache.
-    await LocalCacheService().upsertMeeting(
-      meeting.userId,
-      meeting.copyWith(id: docRef.id),
-    );
+    // Generate a client-side document ID — no network round-trip needed.
+    final docRef = _meetingsRef(meeting.userId).doc();
+    final persisted = meeting.copyWith(id: docRef.id);
+
+    // Write to local cache immediately — unblocks the caller even when offline.
+    await LocalCacheService().upsertMeeting(meeting.userId, persisted);
+
+    // Firestore write — not awaited so the caller returns before network ACK.
+    // When offline, the SDK queues the write and retries when back online.
+    docRef.set(persisted.toFirestore()).then((_) async {
+      await cacheInvalidator?.invalidateMeetingsCache();
+    }).catchError((_) {
+      // Offline path: write is queued by Firestore persistence.
+    });
+
     return docRef.id;
   }
 
@@ -44,6 +55,14 @@ class MeetingRepository {
             snapshot.docs.map((doc) => Meeting.fromFirestore(doc)).toList());
   }
 
+  /// Returns a metadata-aware stream of the meetings query snapshot.
+  /// Use this when [QuerySnapshot.metadata.hasPendingWrites] is needed
+  /// (e.g. pending sync indicator).
+  Stream<QuerySnapshot<Object?>> getMeetingsSnapshot(String userId) =>
+      _meetingsRef(userId)
+          .orderBy('date', descending: true)
+          .snapshots(includeMetadataChanges: true);
+
   /// Returns all meetings for [userId] from local cache; falls back to
   /// Firestore stream when cache is cold. Prefer this over [getMeetingsByUser]
   /// for one-shot reads.
@@ -55,22 +74,34 @@ class MeetingRepository {
 
   /// Updates an existing meeting document in Firestore.
   /// Refreshes updatedAt to current timestamp.
+  ///
+  /// Cache-first: updates LocalCacheService immediately, then syncs to
+  /// Firestore in the background so the caller is not blocked when offline.
   Future<void> updateMeeting(Meeting meeting) async {
+    await LocalCacheService().upsertMeeting(meeting.userId, meeting);
+
     final data = meeting.toFirestore();
     data['updatedAt'] = FieldValue.serverTimestamp();
 
-    await _meetingsRef(meeting.userId).doc(meeting.id).update(data);
-    await cacheInvalidator?.invalidateMeetingsCache();
-    // Write-through: update the cached meeting entry.
-    await LocalCacheService().upsertMeeting(meeting.userId, meeting);
+    _meetingsRef(meeting.userId).doc(meeting.id).update(data).then((_) async {
+      await cacheInvalidator?.invalidateMeetingsCache();
+    }).catchError((_) {
+      // Offline path: write is queued by Firestore persistence.
+    });
   }
 
   /// Deletes a meeting document from Firestore by its ID.
+  ///
+  /// Cache-first: removes from LocalCacheService immediately, then syncs to
+  /// Firestore in the background so the caller is not blocked when offline.
   Future<void> deleteMeeting(String userId, String meetingId) async {
-    await _meetingsRef(userId).doc(meetingId).delete();
-    await cacheInvalidator?.invalidateMeetingsCache();
-    // Write-through: remove the meeting from local cache.
     await LocalCacheService().removeMeeting(userId, meetingId);
+
+    _meetingsRef(userId).doc(meetingId).delete().then((_) async {
+      await cacheInvalidator?.invalidateMeetingsCache();
+    }).catchError((_) {
+      // Offline path: write is queued by Firestore persistence.
+    });
   }
 
   /// Returns all meetings for [userId] where [personId] is a participant,

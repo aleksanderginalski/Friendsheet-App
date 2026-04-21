@@ -5,14 +5,15 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
 
+import 'package:cloud_firestore/cloud_firestore.dart' as _i10;
 import 'package:friendsheet/data/models/activity_category.dart' as _i3;
 import 'package:friendsheet/data/models/meeting.dart' as _i8;
 import 'package:friendsheet/data/models/person.dart' as _i2;
 import 'package:friendsheet/data/repositories/activity_category_repository.dart'
-    as _i11;
+    as _i12;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i6;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i5;
-import 'package:friendsheet/data/repositories/person_repository.dart' as _i10;
+import 'package:friendsheet/data/repositories/person_repository.dart' as _i11;
 import 'package:friendsheet/data/services/relationship_score_service.dart'
     as _i4;
 import 'package:mockito/mockito.dart' as _i1;
@@ -106,6 +107,16 @@ class MockMeetingRepository extends _i1.Mock implements _i5.MeetingRepository {
         ),
         returnValue: _i7.Stream<List<_i8.Meeting>>.empty(),
       ) as _i7.Stream<List<_i8.Meeting>>);
+
+  @override
+  _i7.Stream<_i10.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i7.Stream<_i10.QuerySnapshot<Object?>>.empty(),
+      ) as _i7.Stream<_i10.QuerySnapshot<Object?>>);
 
   @override
   _i7.Future<List<_i8.Meeting>> getAllMeetings(String? userId) =>
@@ -284,7 +295,7 @@ class MockMeetingRepository extends _i1.Mock implements _i5.MeetingRepository {
 /// A class which mocks [PersonRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPersonRepository extends _i1.Mock implements _i10.PersonRepository {
+class MockPersonRepository extends _i1.Mock implements _i11.PersonRepository {
   MockPersonRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -430,7 +441,7 @@ class MockPersonRepository extends _i1.Mock implements _i10.PersonRepository {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockActivityCategoryRepository extends _i1.Mock
-    implements _i11.ActivityCategoryRepository {
+    implements _i12.ActivityCategoryRepository {
   MockActivityCategoryRepository() {
     _i1.throwOnMissingStub(this);
   }

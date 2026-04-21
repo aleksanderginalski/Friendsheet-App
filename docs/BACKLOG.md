@@ -4570,7 +4570,7 @@ Currently `ContextBuilderService` sends all meetings from the last 12 months in 
 **Story Points:** 13
 **Priority:** P2
 **Labels:** `infrastructure`, `offline`, `ux`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Context:**
 Firestore SDK on Flutter mobile has built-in offline persistence enabled by default — write operations (add/edit/delete) are queued locally on disk and replayed automatically on reconnect. This US leverages that mechanism rather than building a custom write queue. The main work is: replacing stream-based reads with cache-first reads (using `LocalCacheService` from US-109), adding connectivity detection with UI indicators, and gracefully disabling online-only features (Buddy AI, Google Calendar) when offline. Single-user usage pattern (phone + emulator, never simultaneously) means write conflicts are not a concern.

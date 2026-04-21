@@ -5,9 +5,10 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
 
+import 'package:cloud_firestore/cloud_firestore.dart' as _i16;
 import 'package:firebase_auth/firebase_auth.dart' as _i10;
 import 'package:friendsheet/data/models/activity_category.dart' as _i3;
-import 'package:friendsheet/data/models/catch_up_topic.dart' as _i19;
+import 'package:friendsheet/data/models/catch_up_topic.dart' as _i20;
 import 'package:friendsheet/data/models/friends_quest.dart' as _i5;
 import 'package:friendsheet/data/models/meeting.dart' as _i8;
 import 'package:friendsheet/data/models/person.dart' as _i4;
@@ -16,15 +17,15 @@ import 'package:friendsheet/data/repositories/activity_category_repository.dart'
     as _i11;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i12;
 import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart'
-    as _i18;
+    as _i19;
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart'
-    as _i17;
+    as _i18;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i14;
 import 'package:friendsheet/data/repositories/person_repository.dart' as _i13;
 import 'package:friendsheet/data/repositories/statistics_repository.dart'
     as _i6;
 import 'package:friendsheet/data/services/auth_service.dart' as _i9;
-import 'package:friendsheet/data/services/ltns_exclusion_service.dart' as _i16;
+import 'package:friendsheet/data/services/ltns_exclusion_service.dart' as _i17;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i15;
 
@@ -708,6 +709,16 @@ class MockMeetingRepository extends _i1.Mock implements _i14.MeetingRepository {
       ) as _i7.Stream<List<_i8.Meeting>>);
 
   @override
+  _i7.Stream<_i16.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i7.Stream<_i16.QuerySnapshot<Object?>>.empty(),
+      ) as _i7.Stream<_i16.QuerySnapshot<Object?>>);
+
+  @override
   _i7.Future<List<_i8.Meeting>> getAllMeetings(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -885,7 +896,7 @@ class MockMeetingRepository extends _i1.Mock implements _i14.MeetingRepository {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLtnsExclusionService extends _i1.Mock
-    implements _i16.LtnsExclusionService {
+    implements _i17.LtnsExclusionService {
   MockLtnsExclusionService() {
     _i1.throwOnMissingStub(this);
   }
@@ -919,7 +930,7 @@ class MockLtnsExclusionService extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFriendsQuestRepository extends _i1.Mock
-    implements _i17.FriendsQuestRepository {
+    implements _i18.FriendsQuestRepository {
   MockFriendsQuestRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -1000,7 +1011,7 @@ class MockFriendsQuestRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCatchUpTopicRepository extends _i1.Mock
-    implements _i18.CatchUpTopicRepository {
+    implements _i19.CatchUpTopicRepository {
   MockCatchUpTopicRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -1037,7 +1048,7 @@ class MockCatchUpTopicRepository extends _i1.Mock
       ) as _i7.Future<String>);
 
   @override
-  _i7.Future<List<_i19.CatchUpTopic>> getActive(
+  _i7.Future<List<_i20.CatchUpTopic>> getActive(
     String? userId,
     String? personId,
   ) =>
@@ -1050,8 +1061,8 @@ class MockCatchUpTopicRepository extends _i1.Mock
           ],
         ),
         returnValue:
-            _i7.Future<List<_i19.CatchUpTopic>>.value(<_i19.CatchUpTopic>[]),
-      ) as _i7.Future<List<_i19.CatchUpTopic>>);
+            _i7.Future<List<_i20.CatchUpTopic>>.value(<_i20.CatchUpTopic>[]),
+      ) as _i7.Future<List<_i20.CatchUpTopic>>);
 
   @override
   _i7.Future<void> update(
@@ -1096,7 +1107,7 @@ class MockCatchUpTopicRepository extends _i1.Mock
       ) as _i7.Future<void>);
 
   @override
-  _i7.Future<List<_i19.CatchUpTopic>> getArchived(
+  _i7.Future<List<_i20.CatchUpTopic>> getArchived(
     String? userId,
     String? personId,
   ) =>
@@ -1109,8 +1120,8 @@ class MockCatchUpTopicRepository extends _i1.Mock
           ],
         ),
         returnValue:
-            _i7.Future<List<_i19.CatchUpTopic>>.value(<_i19.CatchUpTopic>[]),
-      ) as _i7.Future<List<_i19.CatchUpTopic>>);
+            _i7.Future<List<_i20.CatchUpTopic>>.value(<_i20.CatchUpTopic>[]),
+      ) as _i7.Future<List<_i20.CatchUpTopic>>);
 
   @override
   _i7.Future<void> mergeTopics(
@@ -1155,8 +1166,8 @@ class MockCatchUpTopicRepository extends _i1.Mock
     String? userId,
     String? personId,
     String? partnerId,
-    List<_i19.CatchUpTopic>? postLinkTopics,
-    Map<String, _i18.TopicRedistributionDecision>? decisions,
+    List<_i20.CatchUpTopic>? postLinkTopics,
+    Map<String, _i19.TopicRedistributionDecision>? decisions,
   ) =>
       (super.noSuchMethod(
         Invocation.method(

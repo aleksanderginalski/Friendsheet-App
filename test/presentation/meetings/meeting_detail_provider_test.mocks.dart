@@ -5,6 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
 
+import 'package:cloud_firestore/cloud_firestore.dart' as _i11;
 import 'package:friendsheet/data/models/activity_category.dart' as _i3;
 import 'package:friendsheet/data/models/meeting.dart' as _i9;
 import 'package:friendsheet/data/models/person.dart' as _i2;
@@ -408,6 +409,16 @@ class MockMeetingRepository extends _i1.Mock implements _i8.MeetingRepository {
         ),
         returnValue: _i6.Stream<List<_i9.Meeting>>.empty(),
       ) as _i6.Stream<List<_i9.Meeting>>);
+
+  @override
+  _i6.Stream<_i11.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i6.Stream<_i11.QuerySnapshot<Object?>>.empty(),
+      ) as _i6.Stream<_i11.QuerySnapshot<Object?>>);
 
   @override
   _i6.Future<List<_i9.Meeting>> getAllMeetings(String? userId) =>

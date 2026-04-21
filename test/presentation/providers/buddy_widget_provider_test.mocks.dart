@@ -5,12 +5,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
+import 'package:cloud_firestore/cloud_firestore.dart' as _i8;
 import 'package:friendsheet/data/models/meeting.dart' as _i6;
 import 'package:friendsheet/data/models/person.dart' as _i2;
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i4;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i3;
-import 'package:friendsheet/data/repositories/person_repository.dart' as _i8;
-import 'package:friendsheet/data/services/ltns_exclusion_service.dart' as _i9;
+import 'package:friendsheet/data/repositories/person_repository.dart' as _i9;
+import 'package:friendsheet/data/services/ltns_exclusion_service.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
 
@@ -80,6 +81,16 @@ class MockMeetingRepository extends _i1.Mock implements _i3.MeetingRepository {
         ),
         returnValue: _i5.Stream<List<_i6.Meeting>>.empty(),
       ) as _i5.Stream<List<_i6.Meeting>>);
+
+  @override
+  _i5.Stream<_i8.QuerySnapshot<Object?>> getMeetingsSnapshot(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getMeetingsSnapshot,
+          [userId],
+        ),
+        returnValue: _i5.Stream<_i8.QuerySnapshot<Object?>>.empty(),
+      ) as _i5.Stream<_i8.QuerySnapshot<Object?>>);
 
   @override
   _i5.Future<List<_i6.Meeting>> getAllMeetings(String? userId) =>
@@ -258,7 +269,7 @@ class MockMeetingRepository extends _i1.Mock implements _i3.MeetingRepository {
 /// A class which mocks [PersonRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPersonRepository extends _i1.Mock implements _i8.PersonRepository {
+class MockPersonRepository extends _i1.Mock implements _i9.PersonRepository {
   MockPersonRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -404,7 +415,7 @@ class MockPersonRepository extends _i1.Mock implements _i8.PersonRepository {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLtnsExclusionService extends _i1.Mock
-    implements _i9.LtnsExclusionService {
+    implements _i10.LtnsExclusionService {
   MockLtnsExclusionService() {
     _i1.throwOnMissingStub(this);
   }

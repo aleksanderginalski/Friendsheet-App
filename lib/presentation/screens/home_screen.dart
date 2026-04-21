@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/connectivity_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../ai_chat/ai_chat_screen.dart';
 import '../ai_chat/buddy_chat_mode.dart';
@@ -121,13 +122,34 @@ class HomeScreen extends StatelessWidget {
                   lapsedPersons: buddyProvider.lapsedPersons,
                   isExpanded: buddyProvider.isExpanded,
                   onDismiss: buddyProvider.collapse,
-                  onSaveMemoriesTap: () =>
-                      _openAIChatSaveMemories(context, buddyProvider),
-                  onBirthdayTap: () =>
-                      _openAIChatBirthday(context, buddyProvider),
-                  onLongTimeNoSeeTap: () =>
-                      _openLtnsChat(context, buddyProvider),
-                  onIconTap: () => openAIChatGreeting(context, buddyProvider),
+                  onSaveMemoriesTap: () {
+                    if (!ConnectivityService().isOnline) {
+                      _showOfflineSnackBar(context);
+                      return;
+                    }
+                    _openAIChatSaveMemories(context, buddyProvider);
+                  },
+                  onBirthdayTap: () {
+                    if (!ConnectivityService().isOnline) {
+                      _showOfflineSnackBar(context);
+                      return;
+                    }
+                    _openAIChatBirthday(context, buddyProvider);
+                  },
+                  onLongTimeNoSeeTap: () {
+                    if (!ConnectivityService().isOnline) {
+                      _showOfflineSnackBar(context);
+                      return;
+                    }
+                    _openLtnsChat(context, buddyProvider);
+                  },
+                  onIconTap: () {
+                    if (!ConnectivityService().isOnline) {
+                      _showOfflineSnackBar(context);
+                      return;
+                    }
+                    openAIChatGreeting(context, buddyProvider);
+                  },
                 ),
               ),
           ],
@@ -135,6 +157,12 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showOfflineSnackBar(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Buddy requires an internet connection')),
+  );
 }
 
 void _openFriendsQuestList(

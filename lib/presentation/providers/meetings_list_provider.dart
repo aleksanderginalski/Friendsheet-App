@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../data/models/meeting.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/local_cache_service.dart';
 
 class MeetingsListProvider extends ChangeNotifier {
   final MeetingRepository _meetingRepository;
@@ -18,14 +20,17 @@ class MeetingsListProvider extends ChangeNotifier {
         _authService = authService ?? AuthService();
 
   StreamSubscription<List<Meeting>>? _subscription;
+  StreamSubscription<QuerySnapshot<Object?>>? _metaSubscription;
   List<Meeting> _meetings = [];
   bool _isLoading = false;
+  bool _hasPendingWrites = false;
   String? _error;
   final Set<int> _expandedYears = {};
   final Set<String> _expandedMonths = {};
   String _searchQuery = '';
 
   bool get isLoading => _isLoading;
+  bool get hasPendingWrites => _hasPendingWrites;
   String? get error => _error;
   String get searchQuery => _searchQuery;
 
@@ -128,10 +133,38 @@ class MeetingsListProvider extends ChangeNotifier {
     }
   }
 
-  // Starts listening to the meetings stream for the given user.
-  // Sets isLoading to true until the first data event arrives.
-  // Automatically expands the current year, previous year, current month,
-  // and the last month that has any meeting data.
+  // Loads from Hive cache immediately so the screen renders without a spinner.
+  // Cache returns [] when cold (first launch) — no state change in that case.
+  Future<void> _loadFromCache(String userId) async {
+    final cached = await LocalCacheService().getAllMeetings(userId);
+    if (cached.isNotEmpty) {
+      _meetings = cached;
+      _isLoading = false;
+      _initDefaultExpandedMonths();
+      notifyListeners();
+    }
+  }
+
+  // Subscribes to the metadata-aware snapshot stream to track hasPendingWrites.
+  // Uses a separate subscription from the data stream so the data stream
+  // interface (getMeetingsByUser) stays unchanged.
+  void _subscribeToMetadata(String userId) {
+    _metaSubscription?.cancel();
+    _metaSubscription =
+        _meetingRepository.getMeetingsSnapshot(userId).listen(
+      (snapshot) {
+        final pending = snapshot.metadata.hasPendingWrites;
+        if (_hasPendingWrites != pending) {
+          _hasPendingWrites = pending;
+          notifyListeners();
+        }
+      },
+    );
+  }
+
+  // Starts listening to meetings for the given user.
+  // Cache-first: renders from Hive immediately (no spinner if cache is warm),
+  // then keeps Firestore stream active in background for real-time updates.
   void initialize(String userId) {
     _isLoading = true;
     _error = null;
@@ -140,6 +173,9 @@ class MeetingsListProvider extends ChangeNotifier {
     final currentYear = DateTime.now().year;
     _expandedYears.clear();
     _expandedYears.addAll({currentYear, currentYear - 1});
+
+    // Render from cache immediately — fire-and-forget.
+    _loadFromCache(userId);
 
     _subscription?.cancel();
     _subscription = _meetingRepository.getMeetingsByUser(userId).listen(
@@ -156,6 +192,8 @@ class MeetingsListProvider extends ChangeNotifier {
         notifyListeners();
       },
     );
+
+    _subscribeToMetadata(userId);
   }
 
   // Expands a collapsed year or collapses an expanded year.
@@ -171,6 +209,7 @@ class MeetingsListProvider extends ChangeNotifier {
   @override
   void dispose() {
     _subscription?.cancel();
+    _metaSubscription?.cancel();
     super.dispose();
   }
 }
