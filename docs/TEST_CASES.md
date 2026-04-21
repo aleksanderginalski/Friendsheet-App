@@ -2083,3 +2083,25 @@ Run after every release or hotfix:
 | UT-126-013 | tapping year header collapses its months | month and meetings hidden after tap |
 | UT-126-014 | shows empty message when search matches nothing | 'No meetings found.' visible |
 
+---
+
+## US-111 — Offline-First App
+
+### Automated tests — `test/data/services/connectivity_service_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-111-001 | isOnline is true by default | `isOnline` returns `true` on fresh singleton |
+| UT-111-002 | isOnline reflects isOnlineNotifier.value | setting notifier to false makes `isOnline` false |
+| UT-111-003 | factory returns the same singleton instance | two `ConnectivityService()` calls return `same()` |
+
+### Automated tests — `test/data/repositories/meeting_repository_test.dart` (UPDATED)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-111-004 | saveMeeting — cache-first: adds meeting to local cache immediately | `LocalCacheService.getAllMeetings` contains saved meeting |
+| UT-111-005 | saveMeeting — cache-first: saved meeting in cache has the generated Firestore ID | cached meeting id equals returned id |
+| UT-111-006 | updateMeeting — updates document in Firestore | Firestore doc name equals 'Updated' |
+| UT-111-007 | updateMeeting — updates meeting in local cache | cached meeting name equals 'Updated' |
+| UT-111-008 | deleteMeeting — removes document from Firestore | `doc.exists` is false after delete |
+| UT-111-009 | deleteMeeting — removes meeting from local cache | `getAllMeetings` does not contain deleted id |

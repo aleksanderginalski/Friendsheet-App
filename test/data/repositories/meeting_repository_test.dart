@@ -1,16 +1,29 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
+import 'package:friendsheet/data/services/local_cache_service.dart';
+import 'package:friendsheet/services/hive_service.dart';
+import 'package:hive/hive.dart';
 
 void main() {
   late FakeFirebaseFirestore fakeFirestore;
   late MeetingRepository repository;
+  late Directory hiveDir;
 
-  setUp(() {
+  setUp(() async {
+    hiveDir = await Directory.systemTemp.createTemp('hive_meeting_repo_test_');
+    await HiveService.initialize(testPath: hiveDir.path);
     fakeFirestore = FakeFirebaseFirestore();
     repository = MeetingRepository(firestore: fakeFirestore);
+  });
+
+  tearDown(() async {
+    await Hive.close();
+    await hiveDir.delete(recursive: true);
   });
 
   // Helper: creates a valid Meeting for tests
@@ -364,6 +377,70 @@ void main() {
             await repository.getRecentMeetingsByPerson('user-1', 'p-unknown');
 
         expect(results, isEmpty);
+      });
+    });
+
+    group('updateMeeting', () {
+      test('updates document in Firestore', () async {
+        final id = await repository.saveMeeting(makeMeeting(name: 'Original'));
+        await Future.delayed(Duration.zero);
+        final updated = makeMeeting(id: id, name: 'Updated');
+
+        await repository.updateMeeting(updated);
+        await Future.delayed(Duration.zero);
+
+        final doc = await meetingsRef('user-1').doc(id).get();
+        expect(doc.data()?['name'], equals('Updated'));
+      });
+
+      test('updates meeting in local cache', () async {
+        final id = await repository.saveMeeting(makeMeeting(name: 'Original'));
+        await Future.delayed(Duration.zero);
+        final updated = makeMeeting(id: id, name: 'Updated');
+
+        await repository.updateMeeting(updated);
+
+        final cached = await LocalCacheService().getAllMeetings('user-1');
+        expect(cached.any((m) => m.id == id && m.name == 'Updated'), isTrue);
+      });
+    });
+
+    group('deleteMeeting', () {
+      test('removes document from Firestore', () async {
+        final id = await repository.saveMeeting(makeMeeting());
+        await Future.delayed(Duration.zero);
+
+        await repository.deleteMeeting('user-1', id);
+        await Future.delayed(Duration.zero);
+
+        final doc = await meetingsRef('user-1').doc(id).get();
+        expect(doc.exists, isFalse);
+      });
+
+      test('removes meeting from local cache', () async {
+        final id = await repository.saveMeeting(makeMeeting());
+        await Future.delayed(Duration.zero);
+
+        await repository.deleteMeeting('user-1', id);
+
+        final cached = await LocalCacheService().getAllMeetings('user-1');
+        expect(cached.any((m) => m.id == id), isFalse);
+      });
+    });
+
+    group('saveMeeting — cache-first', () {
+      test('adds meeting to local cache immediately', () async {
+        final id = await repository.saveMeeting(makeMeeting(name: 'Cached'));
+
+        final cached = await LocalCacheService().getAllMeetings('user-1');
+        expect(cached.any((m) => m.id == id && m.name == 'Cached'), isTrue);
+      });
+
+      test('saved meeting in cache has the generated Firestore ID', () async {
+        final id = await repository.saveMeeting(makeMeeting());
+
+        final cached = await LocalCacheService().getAllMeetings('user-1');
+        expect(cached.any((m) => m.id == id), isTrue);
       });
     });
 
