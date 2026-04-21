@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../providers/statistics_provider.dart';
 
 /// Dialog for toggling card visibility in the Statistics carousel.
@@ -35,14 +36,15 @@ class _StatisticsVisibilityDialogState
     _hidden = Set.from(widget.hiddenCards);
   }
 
-  String _cardLabel(StatCardType card) {
+  String _cardLabel(BuildContext context, StatCardType card) {
+    final l10n = AppLocalizations.of(context)!;
     switch (card) {
       case StatCardType.activityBreakdown:
-        return 'Activity Breakdown';
+        return l10n.activityBreakdownTitle;
       case StatCardType.whoPerActivity:
-        return 'Who Per Activity';
+        return l10n.whoPerActivityTitle;
       case StatCardType.interactionDistribution:
-        return 'Interaction Distribution';
+        return l10n.interactionDistributionTitle;
     }
   }
 
@@ -87,6 +89,7 @@ class _StatisticsVisibilityDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Three-state selection: all selected, none selected, or partial.
     final allSelected = _hidden.isEmpty;
     final noneSelected = StatCardType.values.isNotEmpty &&
@@ -95,17 +98,17 @@ class _StatisticsVisibilityDialogState
     final String toggleTooltip;
     if (allSelected) {
       toggleIcon = Icons.check_box;
-      toggleTooltip = 'Deselect all';
+      toggleTooltip = l10n.visibilityDeselectAll;
     } else if (noneSelected) {
       toggleIcon = Icons.check_box_outline_blank;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     } else {
       toggleIcon = Icons.indeterminate_check_box;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     }
 
     return AlertDialog(
-      title: const Text('Statistics Cards'),
+      title: Text(l10n.statisticsVisibilityDialogTitle),
       // SingleChildScrollView + Column required — ListView crashes inside
       // AlertDialog due to IntrinsicWidth incompatibility.
       content: SingleChildScrollView(
@@ -126,12 +129,11 @@ class _StatisticsVisibilityDialogState
               final isVisible = !_hidden.contains(card);
               final isDisabled = _isLastVisible(card);
               return Tooltip(
-                message:
-                    isDisabled ? 'At least one card must remain visible' : '',
+                message: isDisabled ? l10n.statisticsMinOneCard : '',
                 child: CheckboxListTile(
                   value: isVisible,
                   onChanged: isDisabled ? null : (_) => _toggle(card),
-                  title: Text(_cardLabel(card)),
+                  title: Text(_cardLabel(context, card)),
                   controlAffinity: ListTileControlAffinity.leading,
                   dense: true,
                 ),
@@ -143,7 +145,7 @@ class _StatisticsVisibilityDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CLOSE'),
+          child: Text(l10n.dialogClose),
         ),
       ],
     );

@@ -6,6 +6,7 @@ import '../../data/models/person.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'friends_quest_provider.dart';
 import 'meeting_picker_sheet.dart';
 import 'quest_add_task_dialog.dart';
@@ -119,43 +120,46 @@ class _FriendsQuestDetailScreenState extends State<FriendsQuestDetailScreen> {
     showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialog) => AlertDialog(
-          title: const Text('Edit task'),
-          content: TextField(
-            controller: textController,
-            autofocus: true,
-            maxLength: 200,
-            decoration: const InputDecoration(labelText: 'Task text'),
-            onChanged: (_) => setDialog(() {}),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('CANCEL'),
+        builder: (ctx, setDialog) {
+          final l10n = AppLocalizations.of(ctx)!;
+          return AlertDialog(
+            title: Text(l10n.questEditTaskTitle),
+            content: TextField(
+              controller: textController,
+              autofocus: true,
+              maxLength: 200,
+              decoration: InputDecoration(labelText: l10n.questTaskText),
+              onChanged: (_) => setDialog(() {}),
             ),
-            TextButton(
-              onPressed: textController.text.trim().isEmpty || saving
-                  ? null
-                  : () async {
-                      setDialog(() => saving = true);
-                      await provider.editTask(
-                        _userId,
-                        widget.questId,
-                        task.id,
-                        textController.text.trim(),
-                      );
-                      if (ctx.mounted) Navigator.pop(ctx);
-                    },
-              child: saving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('SAVE'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.dialogCancel),
+              ),
+              TextButton(
+                onPressed: textController.text.trim().isEmpty || saving
+                    ? null
+                    : () async {
+                        setDialog(() => saving = true);
+                        await provider.editTask(
+                          _userId,
+                          widget.questId,
+                          task.id,
+                          textController.text.trim(),
+                        );
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                child: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.dialogSave),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -169,25 +173,25 @@ class _FriendsQuestDetailScreenState extends State<FriendsQuestDetailScreen> {
     }
     final choice = await showDialog<_CompleteChoice>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Complete Quest'),
-        content: const Text(
-          'This quest is not linked to a meeting. '
-          'Complete without saving notes, or select a meeting first?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(context, _CompleteChoice.withoutNotes),
-            child: const Text('WITHOUT NOTES'),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(context, _CompleteChoice.selectMeeting),
-            child: const Text('SELECT MEETING'),
-          ),
-        ],
-      ),
+      builder: (_) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.questCompleteTitle),
+          content: Text(l10n.questCompleteContent),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, _CompleteChoice.withoutNotes),
+              child: Text(l10n.questWithoutNotes),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(context, _CompleteChoice.selectMeeting),
+              child: Text(l10n.questSelectMeeting),
+            ),
+          ],
+        );
+      },
     );
     if (!mounted) return;
     if (choice == _CompleteChoice.withoutNotes) {
@@ -258,23 +262,26 @@ class _FriendsQuestDetailScreenState extends State<FriendsQuestDetailScreen> {
                       ? TextButton.icon(
                           onPressed: () => _showMeetingPickerSheet(provider),
                           icon: const Icon(Icons.link),
-                          label: const Text('Link to meeting'),
+                          label: Text(
+                              AppLocalizations.of(context)!.questLinkToMeeting),
                         )
                       : ListTile(
                           dense: true,
                           leading:
                               const Icon(Icons.link, color: Color(0xFF4CAF50)),
-                          title: Text(_linkedMeetingName ?? 'Meeting linked'),
-                          subtitle: const Text('Tap to change'),
+                          title: Text(_linkedMeetingName ??
+                              AppLocalizations.of(context)!.questMeetingLinked),
+                          subtitle: Text(
+                              AppLocalizations.of(context)!.questTapToChange),
                           onTap: () => _showMeetingPickerSheet(provider),
                         ),
                 ),
                 Expanded(
                   child: quest.tasks.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            'No tasks yet. Add one with the + button.',
-                            style: TextStyle(color: Colors.grey),
+                            AppLocalizations.of(context)!.questNoTasks,
+                            style: const TextStyle(color: Colors.grey),
                             textAlign: TextAlign.center,
                           ),
                         )

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/widgets/person_visibility_dialog.dart';
 
 void main() {
@@ -45,6 +47,12 @@ void main() {
     VoidCallback? onToggleSelectAll,
   }) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
           child: PersonVisibilityDialog(
@@ -60,10 +68,10 @@ void main() {
   }
 
   group('PersonVisibilityDialog', () {
-    testWidgets('renders dialog title "Manage persons"', (tester) async {
+    testWidgets('renders dialog title "Show / Hide Friends"', (tester) async {
       await tester.pumpWidget(buildDialog(entries: [alice, bob]));
 
-      expect(find.text('Manage persons'), findsOneWidget);
+      expect(find.text('Show / Hide Friends'), findsOneWidget);
     });
 
     testWidgets('renders all person names as CheckboxListTiles',

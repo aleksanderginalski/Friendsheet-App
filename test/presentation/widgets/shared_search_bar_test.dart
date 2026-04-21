@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/widgets/shared_search_bar.dart';
 
 void main() {
@@ -9,6 +11,12 @@ void main() {
     TextEditingController? controller,
   }) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SharedSearchBar(
           onChanged: onChanged,

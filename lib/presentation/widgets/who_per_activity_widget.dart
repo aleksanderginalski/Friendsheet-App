@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
 import '../../data/models/activity_category.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Maximum rendered height for a single bar, in logical pixels.
 const _kMaxBarHeight = 110.0;
@@ -67,9 +68,9 @@ class WhoPerActivityWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Who Per Activity',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Text(
+              AppLocalizations.of(context)!.whoPerActivityTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             IconButton(
               icon: Image.asset(
@@ -92,14 +93,14 @@ class WhoPerActivityWidget extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         if (selectedCategoryId == null)
-          const Text(
-            'Select an activity above to see the ranking.',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.whoSelectActivity,
+            style: const TextStyle(color: Colors.grey),
           )
         else if (visibleEntries.isEmpty)
-          const Text(
-            'No data for this activity.',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.whoNoData,
+            style: const TextStyle(color: Colors.grey),
           )
         else
           _BarChart(visibleEntries: visibleEntries),

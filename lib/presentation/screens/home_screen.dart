@@ -5,6 +5,7 @@ import '../../data/models/google_calendar.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/connectivity_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../ai_chat/ai_chat_screen.dart';
 import '../ai_chat/buddy_chat_mode.dart';
 import '../friends_quest/friends_quest_list_screen.dart';
@@ -161,7 +162,9 @@ class HomeScreen extends StatelessWidget {
 
 void _showOfflineSnackBar(BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Buddy requires an internet connection')),
+    SnackBar(
+      content: Text(AppLocalizations.of(context)!.homeOfflineMessage),
+    ),
   );
 }
 
@@ -285,7 +288,9 @@ Future<void> _handleImport(BuildContext context) async {
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Calendar access denied')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.homeCalendarAccessDenied),
+        ),
       );
       return;
     }
@@ -310,7 +315,10 @@ Future<void> _handleImport(BuildContext context) async {
           } catch (_) {
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Calendar access denied')),
+              SnackBar(
+                content: Text(
+                    AppLocalizations.of(context)!.homeCalendarAccessDenied),
+              ),
             );
           }
         },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/person_sort.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Dialog for toggling person visibility in the Interaction Distribution chart.
 /// All entries are shown as a flat checkbox list — persons have no hierarchy.
@@ -75,6 +76,7 @@ class _PersonVisibilityDialogState extends State<PersonVisibilityDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Three-state selection: all selected, none selected, or partial.
     final allSelected = _hidden.isEmpty;
     final noneSelected = widget.allEntries.isNotEmpty &&
@@ -83,17 +85,17 @@ class _PersonVisibilityDialogState extends State<PersonVisibilityDialog> {
     final String toggleTooltip;
     if (allSelected) {
       toggleIcon = Icons.check_box;
-      toggleTooltip = 'Deselect all';
+      toggleTooltip = l10n.visibilityDeselectAll;
     } else if (noneSelected) {
       toggleIcon = Icons.check_box_outline_blank;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     } else {
       toggleIcon = Icons.indeterminate_check_box;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     }
 
     return AlertDialog(
-      title: const Text('Manage persons'),
+      title: Text(l10n.personVisibilityDialogTitle),
       // SingleChildScrollView + Column required — ListView crashes inside
       // AlertDialog due to IntrinsicWidth incompatibility.
       content: SingleChildScrollView(
@@ -105,7 +107,7 @@ class _PersonVisibilityDialogState extends State<PersonVisibilityDialog> {
               children: [
                 TextButton(
                   onPressed: _applyTop10,
-                  child: const Text('Auto-select top 10'),
+                  child: Text(l10n.visibilityAutoSelectTop10),
                 ),
                 IconButton(
                   icon: Icon(toggleIcon),
@@ -133,7 +135,7 @@ class _PersonVisibilityDialogState extends State<PersonVisibilityDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CLOSE'),
+          child: Text(l10n.dialogClose),
         ),
       ],
     );

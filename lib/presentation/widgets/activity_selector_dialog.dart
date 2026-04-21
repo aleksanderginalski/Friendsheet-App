@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/activity_category.dart';
+import '../../l10n/app_localizations.dart';
 import '../activities/activity_icons.dart';
 
 /// Dialog that displays a scrollable two-level category tree.
@@ -33,8 +34,9 @@ class _ActivitySelectorDialogState extends State<ActivitySelectorDialog> {
   Widget build(BuildContext context) {
     final roots = _roots;
 
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Select Activity'),
+      title: Text(l10n.activitySelectorDialogTitle),
       content: SizedBox(
         height: 350,
         width: double.maxFinite,
@@ -46,12 +48,12 @@ class _ActivitySelectorDialogState extends State<ActivitySelectorDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (roots.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    'No activities found',
+                    l10n.activitiesListNoResults,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
               for (final root in roots) ...[
@@ -76,7 +78,7 @@ class _ActivitySelectorDialogState extends State<ActivitySelectorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CANCEL'),
+          child: Text(l10n.dialogCancel),
         ),
       ],
     );

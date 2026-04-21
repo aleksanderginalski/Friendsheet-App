@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/person.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/ai_chat/buddy_chat_mode.dart';
 import 'package:friendsheet/presentation/widgets/buddy_widget.dart';
 
@@ -41,6 +43,12 @@ void main() {
     VoidCallback? onIconTap,
   }) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Stack(
           clipBehavior: Clip.none,

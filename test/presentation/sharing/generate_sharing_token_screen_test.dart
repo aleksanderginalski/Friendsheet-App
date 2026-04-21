@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/sharing/generate_sharing_token_screen.dart';
 
 import '../../helpers/firebase_test_helpers.dart';
@@ -11,6 +13,12 @@ void main() {
 
   Widget buildScreen() {
     return const MaterialApp(
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: GenerateSharingTokenScreen(),
     );
   }
@@ -45,11 +53,23 @@ void main() {
       // Push on top of a navigator so back button renders.
       await tester.pumpWidget(
         const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: Text('parent')),
         ),
       );
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Navigator(
             onGenerateRoute: (_) => MaterialPageRoute(
               builder: (_) => const GenerateSharingTokenScreen(),

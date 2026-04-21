@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../providers/ai_settings_provider.dart';
 
 /// Screen for managing the user's OpenAI API key.
@@ -33,25 +34,23 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
   }
 
   Future<void> _confirmAndDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete API Key?'),
-        content: const Text(
-          'This will remove your OpenAI API key from the device. '
-          'AI features will be unavailable until you add a key again.',
-        ),
+        title: Text(l10n.aiSettingsDeleteKeyTitle),
+        content: Text(l10n.aiSettingsDeleteKeyContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('DELETE'),
+            child: Text(l10n.aiSettingsDeleteKeyConfirm),
           ),
         ],
       ),
@@ -66,11 +65,12 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AISettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text('AI Assistant', style: TextStyle(color: Colors.white)),
+        title: Text(l10n.aiSettingsTitle,
+            style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
@@ -79,13 +79,17 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
         child: provider.isLoading && provider.maskedKey == null
             ? const Center(child: CircularProgressIndicator())
             : provider.maskedKey != null
-                ? _buildKeySet(context, provider, colorScheme)
-                : _buildKeyInput(context, provider),
+                ? _buildKeySet(context, provider, colorScheme, l10n)
+                : _buildKeyInput(context, provider, l10n),
       ),
     );
   }
 
-  Widget _buildKeyInput(BuildContext context, AISettingsProvider provider) {
+  Widget _buildKeyInput(
+    BuildContext context,
+    AISettingsProvider provider,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -98,10 +102,10 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
         TextField(
           controller: _controller,
           obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'OpenAI API Key',
-            hintText: 'sk-...',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.aiSettingsApiKeyLabel,
+            hintText: l10n.aiSettingsApiKeyHint,
+            border: const OutlineInputBorder(),
           ),
           onChanged: (_) => context.read<AISettingsProvider>().clearError(),
         ),
@@ -125,7 +129,7 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : Text(l10n.aiSettingsSave),
         ),
       ],
     );
@@ -135,6 +139,7 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
     BuildContext context,
     AISettingsProvider provider,
     ColorScheme colorScheme,
+    AppLocalizations l10n,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,9 +149,9 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
           style: TextStyle(color: Colors.black54),
         ),
         const SizedBox(height: 24),
-        const Text(
-          'API Key',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
+        Text(
+          l10n.aiSettingsApiKeySection,
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         const SizedBox(height: 4),
         Text(
@@ -170,7 +175,7 @@ class _AISettingsScreenState extends State<AISettingsScreen> {
                     color: colorScheme.error,
                   ),
                 )
-              : const Text('Delete Key'),
+              : Text(l10n.aiSettingsDeleteKey),
         ),
       ],
     );

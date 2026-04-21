@@ -4,6 +4,7 @@ import '../../core/utils/person_search_helper.dart';
 import '../../data/models/person.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/ltns_exclusion_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Screen for managing which persons appear in the Long Time No See feature.
 ///
@@ -92,11 +93,12 @@ class _LtnsFilterScreenState extends State<LtnsFilterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'LTNS Filters',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.ltnsFilterTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
@@ -107,12 +109,11 @@ class _LtnsFilterScreenState extends State<LtnsFilterScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: Text(
-                    'Toggle off friends you don\'t want to see in '
-                    'Long Time No See reminders.',
-                    style: TextStyle(fontSize: 13, color: Colors.black54),
+                    l10n.ltnsFilterDescription,
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
                   ),
                 ),
                 Padding(
@@ -120,7 +121,7 @@ class _LtnsFilterScreenState extends State<LtnsFilterScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search by name or nickname…',
+                      hintText: l10n.ltnsFilterSearchHint,
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: _query.isNotEmpty
                           ? IconButton(

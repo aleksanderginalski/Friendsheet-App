@@ -1,7 +1,9 @@
 // lib/presentation/widgets/person_autocomplete.dart
 
 import 'package:flutter/material.dart';
+
 import '../../data/models/person.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Callback-based person search widget.
 /// Does not depend on any specific Provider — all state is passed via callbacks.
@@ -298,15 +300,16 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('Add New Person'),
+      title: Text(l10n.personDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _firstNameController,
             decoration: InputDecoration(
-              labelText: 'First name *',
+              labelText: l10n.personDialogFirstName,
               errorText: _firstNameError,
               border: const OutlineInputBorder(),
             ),
@@ -328,9 +331,9 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
           const SizedBox(height: 16),
           TextField(
             controller: _lastNameController,
-            decoration: const InputDecoration(
-              labelText: 'Last name (optional)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.personDialogLastName,
+              border: const OutlineInputBorder(),
             ),
             onChanged: (_) {
               if (_duplicateError != null || _showNickField) {
@@ -357,9 +360,9 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _nickController,
-              decoration: const InputDecoration(
-                labelText: 'Nickname (required to distinguish)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.personDialogNickname,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (_) {
                 // Always rebuild so the ADD button can react to the nick field
@@ -376,7 +379,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: const Text('CANCEL'),
+          child: Text(l10n.dialogCancel),
         ),
         ElevatedButton(
           // Disabled while saving or while the nick field is visible but empty.
@@ -390,7 +393,7 @@ class _AddPersonDialogState extends State<AddPersonDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('ADD'),
+              : Text(l10n.dialogAdd),
         ),
       ],
     );

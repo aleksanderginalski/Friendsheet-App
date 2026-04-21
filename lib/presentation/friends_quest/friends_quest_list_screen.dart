@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'create_quest_dialog.dart';
 import 'friends_quest_detail_screen.dart';
 import 'friends_quest_provider.dart';
@@ -35,20 +36,23 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Quest'),
-        content: Text('Delete "$questName"? This cannot be undone.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('DELETE'),
-          ),
-        ],
-      ),
+      builder: (_) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.questDeleteTitle),
+          content: Text(l10n.questDeleteContent(questName)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.dialogCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.dialogDelete),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true) {
       await provider.deleteQuest(_userId, questId);
@@ -88,9 +92,9 @@ class _FriendsQuestListScreenState extends State<FriendsQuestListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Friends-Quests',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          AppLocalizations.of(context)!.questScreenTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/person.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 class QuestParticipantsSection extends StatefulWidget {
   final List<String> participantIds;
@@ -48,6 +49,7 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
         final selected = <String>{};
         return StatefulBuilder(
           builder: (ctx, setDialog) {
+            final l10n = AppLocalizations.of(ctx)!;
             final filtered = query.isEmpty
                 ? candidates
                 : candidates
@@ -55,29 +57,29 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
                         p.fullName.toLowerCase().contains(query.toLowerCase()))
                     .toList();
             return AlertDialog(
-              title: const Text('Add participants'),
+              title: Text(l10n.questAddParticipantsTitle),
               content: SizedBox(
                 width: double.maxFinite,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search...',
-                        prefixIcon: Icon(Icons.search, size: 20),
+                      decoration: InputDecoration(
+                        hintText: l10n.questSearch,
+                        prefixIcon: const Icon(Icons.search, size: 20),
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                       onChanged: (v) => setDialog(() => query = v),
                     ),
                     const SizedBox(height: 4),
                     if (candidates.isEmpty)
-                      const Text('All contacts already added.')
+                      Text(l10n.questAllContactsAdded)
                     else if (filtered.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text('No matches.',
-                            style: TextStyle(color: Colors.grey)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(l10n.questNoMatches,
+                            style: const TextStyle(color: Colors.grey)),
                       )
                     else
                       ConstrainedBox(
@@ -108,13 +110,13 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('CANCEL'),
+                  child: Text(l10n.dialogCancel),
                 ),
                 TextButton(
                   onPressed: selected.isEmpty
                       ? null
                       : () => Navigator.pop(ctx, selected.toList()),
-                  child: const Text('ADD'),
+                  child: Text(l10n.dialogAdd),
                 ),
               ],
             );
@@ -140,15 +142,18 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
           child: Text(
-            'Participants (${widget.participantIds.length})',
+            AppLocalizations.of(context)!
+                .questParticipantsCount(widget.participantIds.length),
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
         if (widget.participantIds.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child:
-                Text('No participants.', style: TextStyle(color: Colors.grey)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              AppLocalizations.of(context)!.questNoParticipants,
+              style: const TextStyle(color: Colors.grey),
+            ),
           )
         else
           ...widget.participantIds.map((id) {
@@ -171,7 +176,7 @@ class _QuestParticipantsSectionState extends State<QuestParticipantsSection> {
         TextButton.icon(
           onPressed: _updating ? null : _showAddPersonDialog,
           icon: const Icon(Icons.person_add_outlined),
-          label: const Text('Add participant'),
+          label: Text(AppLocalizations.of(context)!.questAddParticipant),
         ),
         const SizedBox(height: 8),
       ],

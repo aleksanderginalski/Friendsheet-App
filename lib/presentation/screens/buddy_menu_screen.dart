@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Sub-menu screen for Buddy (AI Assistant) features.
 /// Accessible via Side Menu → Buddy.
 /// Mirrors the Settings screen pattern: single tile in the drawer,
@@ -24,6 +26,7 @@ class BuddyMenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -37,8 +40,8 @@ class BuddyMenuScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.smart_toy_outlined),
-            title: const Text('AI Assistant'),
-            subtitle: const Text('Chat with your AI social assistant'),
+            title: Text(l10n.buddyMenuTitle),
+            subtitle: Text(l10n.buddyMenuChatSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.pop(context);
@@ -48,8 +51,8 @@ class BuddyMenuScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.key_outlined),
-            title: const Text('API Key'),
-            subtitle: const Text('Manage your OpenAI API key'),
+            title: Text(l10n.buddyMenuApiKey),
+            subtitle: Text(l10n.buddyMenuApiKeySubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.pop(context);
@@ -59,8 +62,8 @@ class BuddyMenuScreen extends StatelessWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.filter_list_outlined),
-            title: const Text('LTNS Filters'),
-            subtitle: const Text('Choose who appears in Long Time No See'),
+            title: Text(l10n.buddyMenuLtnsFilters),
+            subtitle: Text(l10n.buddyMenuLtnsFiltersSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.pop(context);

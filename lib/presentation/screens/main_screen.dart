@@ -20,6 +20,7 @@ import '../../data/services/connectivity_service.dart';
 import '../../data/services/export_service.dart';
 import '../../data/services/google_calendar_service.dart';
 import '../../data/services/local_cache_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../../main.dart' show appNavigatorKey;
 import '../activities/activities_list_provider.dart';
 import '../activities/activities_list_screen.dart';
@@ -308,22 +309,20 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log Out?'),
-        content: const Text(
-          'Are you sure you want to log out?\n\n'
-          'You\'ll need to sign in again to access your meetings.',
-        ),
+        title: Text(l10n.mainLogOutTitle),
+        content: Text(l10n.mainLogOutContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('LOG OUT'),
+            child: Text(l10n.mainLogOutConfirm),
           ),
         ],
       ),
@@ -335,9 +334,10 @@ class _MainScreenState extends State<MainScreen> {
         await widget.authService.signOut();
       } catch (e) {
         if (context.mounted) {
+          final l10nErr = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to log out: $e'),
+              content: Text(l10nErr.mainLogOutError(e.toString())),
               backgroundColor: Colors.red,
             ),
           );
@@ -379,6 +379,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildScaffold(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
@@ -396,7 +398,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Log Out',
+            tooltip: l10n.mainLogOut,
             onPressed: () => _handleLogout(context),
           ),
         ],
@@ -428,11 +430,11 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             // Import & Share section header — tools for building the meeting base
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: Text(
-                'Import & Share',
-                style: TextStyle(
+                l10n.mainImportShare,
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                   fontWeight: FontWeight.w600,
@@ -441,7 +443,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share meetings with a friend'),
+              title: Text(l10n.mainShareMeetings),
               onTap: () {
                 Navigator.pop(context);
                 _openSharingTokenScreen();
@@ -450,24 +452,28 @@ class _MainScreenState extends State<MainScreen> {
             ValueListenableBuilder<bool>(
               valueListenable: GoogleCalendarService().isConnectedNotifier,
               builder: (context, isConnected, _) {
+                final tileL10n = AppLocalizations.of(context)!;
                 return ListTile(
                   leading: const Icon(Icons.calendar_month),
                   title: Text(
                     isConnected
-                        ? 'Browse & Import Events'
-                        : 'Import from Calendar',
+                        ? tileL10n.mainBrowseImport
+                        : tileL10n.mainImportFromCalendar,
                   ),
                   onTap: () async {
                     Navigator.pop(context);
                     if (!ConnectivityService().isOnline) {
-                      ScaffoldMessenger.of(appNavigatorKey.currentContext!)
-                          .showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Google Calendar requires an internet connection',
+                      final navCtx = appNavigatorKey.currentContext;
+                      if (navCtx != null) {
+                        ScaffoldMessenger.of(navCtx).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppLocalizations.of(navCtx)!
+                                  .mainCalendarOfflineMessage,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                       return;
                     }
                     final calendarService = GoogleCalendarService();
@@ -475,11 +481,12 @@ class _MainScreenState extends State<MainScreen> {
                     if (isConnected) {
                       // Capture messenger before the await so no BuildContext
                       // is used across an async gap.
-                      final messenger = appNavigatorKey.currentContext != null
-                          ? ScaffoldMessenger.maybeOf(
-                              appNavigatorKey.currentContext!,
-                            )
+                      final navCtx = appNavigatorKey.currentContext;
+                      final messenger = navCtx != null
+                          ? ScaffoldMessenger.maybeOf(navCtx)
                           : null;
+                      final errorL10n =
+                          navCtx != null ? AppLocalizations.of(navCtx) : null;
                       try {
                         final calendars =
                             await calendarService.fetchCalendars();
@@ -496,17 +503,19 @@ class _MainScreenState extends State<MainScreen> {
                         );
                       } on CalendarAuthException {
                         messenger?.showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Calendar access expired — please reconnect',
+                              errorL10n?.mainCalendarAuthExpired ??
+                                  'Calendar access expired — please reconnect',
                             ),
                           ),
                         );
                       } catch (e) {
                         messenger?.showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Could not load calendars. Check your connection.',
+                              errorL10n?.mainCalendarLoadError ??
+                                  'Could not load calendars. Check your connection.',
                             ),
                           ),
                         );
@@ -521,16 +530,20 @@ class _MainScreenState extends State<MainScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.smart_toy_outlined),
-              title: const Text('Buddy'),
+              title: Text(l10n.mainBuddy),
               onTap: () {
                 Navigator.pop(context);
                 if (!ConnectivityService().isOnline) {
-                  ScaffoldMessenger.of(appNavigatorKey.currentContext!)
-                      .showSnackBar(
-                    const SnackBar(
-                      content: Text('Buddy requires an internet connection'),
-                    ),
-                  );
+                  final navCtx = appNavigatorKey.currentContext;
+                  if (navCtx != null) {
+                    ScaffoldMessenger.of(navCtx).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(navCtx)!.homeOfflineMessage,
+                        ),
+                      ),
+                    );
+                  }
                   return;
                 }
                 _openBuddyMenu();
@@ -539,7 +552,7 @@ class _MainScreenState extends State<MainScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.checklist_rtl),
-              title: const Text('Friends-Quest'),
+              title: Text(l10n.mainFriendsQuest),
               onTap: () {
                 Navigator.pop(context);
                 _openFriendsQuestList();
@@ -552,9 +565,10 @@ class _MainScreenState extends State<MainScreen> {
                 final totalCount = inboxProvider.candidates.length +
                     packageProvider.packages.length;
                 if (totalCount == 0) return const SizedBox.shrink();
+                final inboxL10n = AppLocalizations.of(context)!;
                 return ListTile(
                   leading: const Icon(Icons.inbox),
-                  title: Text('Pending Meetings ($totalCount)'),
+                  title: Text(inboxL10n.mainPendingMeetings(totalCount)),
                   onTap: () {
                     Navigator.pop(context); // close drawer
                     _openPendingMeetings();
@@ -564,7 +578,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              title: Text(l10n.mainSettingsTitle),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -604,7 +618,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.logout),
-              title: const Text('Log Out'),
+              title: Text(l10n.mainLogOut),
               onTap: () {
                 Navigator.pop(context);
                 _handleLogout(context);
@@ -649,22 +663,22 @@ class _MainScreenState extends State<MainScreen> {
             }
             setState(() => _currentIndex = index);
           },
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
+              icon: const Icon(Icons.home),
+              label: l10n.mainNavHome,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: 'Meetings',
+              icon: const Icon(Icons.calendar_today),
+              label: l10n.mainNavMeetings,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: 'Friends',
+              icon: const Icon(Icons.people),
+              label: l10n.mainNavFriends,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.sports_tennis),
-              label: 'Activities',
+              icon: const Icon(Icons.sports_tennis),
+              label: l10n.mainNavActivities,
             ),
           ],
         ),

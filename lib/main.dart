@@ -3,10 +3,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/services/auth_service.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
+import 'presentation/providers/app_locale_provider.dart';
 import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -25,7 +28,15 @@ void main() async {
 
   await HiveService.initialize();
 
-  runApp(const FriendsheetApp());
+  final localeProvider = AppLocaleProvider();
+  await localeProvider.loadSavedLocale();
+
+  runApp(
+    ChangeNotifierProvider.value(
+      value: localeProvider,
+      child: const FriendsheetApp(),
+    ),
+  );
 }
 
 class FriendsheetApp extends StatelessWidget {
@@ -33,11 +44,16 @@ class FriendsheetApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = context.watch<AppLocaleProvider>();
+
     return MaterialApp(
       navigatorKey: appNavigatorKey,
       title: 'Friendsheet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      locale: localeProvider.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       // Inject real AuthService in production
       home: SplashScreen(nextScreen: AuthWrapper(authService: AuthService())),
     );

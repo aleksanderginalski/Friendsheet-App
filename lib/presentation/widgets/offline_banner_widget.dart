@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/services/connectivity_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Displays an amber banner at the top of the screen when the device is offline.
 /// Listens to [ConnectivityService.isOnlineNotifier] and animates in/out.
@@ -24,14 +25,14 @@ class OfflineBannerWidget extends StatelessWidget {
                     horizontal: 12,
                     vertical: 6,
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.wifi_off, size: 16, color: Colors.white),
-                      SizedBox(width: 8),
+                      const Icon(Icons.wifi_off, size: 16, color: Colors.white),
+                      const SizedBox(width: 8),
                       Text(
-                        'No internet connection',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.offlineBannerMessage,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,

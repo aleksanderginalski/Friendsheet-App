@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/models/pending_meeting_package.dart';
@@ -7,6 +8,7 @@ import 'package:friendsheet/data/repositories/activity_category_repository.dart'
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/pending_meeting_package_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/import/package_conflict_screen.dart';
 import 'package:friendsheet/presentation/providers/shared_package_inbox_provider.dart';
 import 'package:mockito/annotations.dart';
@@ -89,6 +91,12 @@ void main() {
     return ChangeNotifierProvider.value(
       value: provider,
       child: MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
         home: PackageConflictScreen(package: pkg, userId: 'u1'),
       ),
     );

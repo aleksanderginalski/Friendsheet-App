@@ -8,6 +8,7 @@ import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/inbox_item_edit_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
 import '../providers/shared_package_inbox_provider.dart';
@@ -33,7 +34,8 @@ class MeetingInboxScreen extends StatelessWidget {
         !packageProvider.hasPackages &&
         provider.confirmedCount == 0) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Pending Meetings')),
+        appBar: AppBar(
+            title: Text(AppLocalizations.of(context)!.meetingInboxTitle)),
         body: _buildEmptyState(context),
       );
     }
@@ -62,7 +64,7 @@ class MeetingInboxScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pending Meetings'),
+        title: Text(AppLocalizations.of(context)!.meetingInboxTitle),
       ),
       body: Column(
         children: [
@@ -96,21 +98,20 @@ class MeetingInboxScreen extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 16),
-            const Text(
-              'No pending meetings',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
+            Text(
+              AppLocalizations.of(context)!.meetingInboxEmptyTitle,
+              style: const TextStyle(fontSize: 18, color: Colors.grey),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Import events from your calendar or receive shared meetings '
-              'from a friend to get started.',
+            Text(
+              AppLocalizations.of(context)!.meetingInboxEmptySubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Import from Calendar'),
+              child: Text(AppLocalizations.of(context)!.mainImportFromCalendar),
             ),
           ],
         ),
@@ -130,7 +131,7 @@ class MeetingInboxScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$reviewed of $total reviewed',
+            AppLocalizations.of(context)!.meetingInboxProgress(reviewed, total),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 6),
@@ -150,7 +151,7 @@ class MeetingInboxScreen extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Text(
-            'Shared by friends',
+            AppLocalizations.of(context)!.meetingInboxSharedByFriends,
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
@@ -187,22 +188,23 @@ class MeetingInboxScreen extends StatelessWidget {
   Future<bool> _confirmDelete(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete package?'),
-        content: const Text(
-          'Are you sure you want to delete this package? It cannot be recovered.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(l10n.meetingInboxDeletePackageTitle),
+          content: Text(l10n.meetingInboxDeletePackageContent),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.meetingDetailDeleteCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.meetingDetailDeleteConfirm),
+            ),
+          ],
+        );
+      },
     );
     return result ?? false;
   }
@@ -300,7 +302,7 @@ class _SharedPackageCard extends StatelessWidget {
     Widget trailing;
     if (conflictCount > 0) {
       trailing = Text(
-        '⚠️ $conflictCount conflict(s)',
+        AppLocalizations.of(context)!.meetingInboxConflictCount(conflictCount),
         style: const TextStyle(color: Colors.orange),
       );
     } else if (canProceed) {

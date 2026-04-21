@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/ai_key_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/providers/ai_settings_provider.dart';
 import 'package:friendsheet/presentation/screens/ai_settings_screen.dart';
 import 'package:mockito/annotations.dart';
@@ -21,6 +23,12 @@ void main() {
 
   Widget buildScreen({AISettingsProvider? provider}) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: ChangeNotifierProvider(
         create: (_) => provider ?? AISettingsProvider(repository: mockRepo),
         child: const AISettingsScreen(),

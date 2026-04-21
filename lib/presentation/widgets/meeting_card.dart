@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/meeting.dart';
+import '../../l10n/app_localizations.dart';
 
 class MeetingCard extends StatelessWidget {
   final Meeting meeting;
@@ -53,16 +54,18 @@ class MeetingCard extends StatelessWidget {
                             color: Colors.orange,
                           ),
                           const SizedBox(width: 4),
-                          const Text(
-                            'No participants',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!
+                                .meetingCardNoParticipants,
+                            style: const TextStyle(
                               color: Colors.orange,
                               fontSize: 12,
                             ),
                           ),
                         ] else
                           Text(
-                            '${meeting.participantIds.length} people',
+                            AppLocalizations.of(context)!.meetingCardPeople(
+                                meeting.participantIds.length),
                             style: theme.textTheme.bodySmall,
                           ),
                         _bullet(context),

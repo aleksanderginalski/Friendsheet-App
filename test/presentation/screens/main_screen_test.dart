@@ -1,8 +1,10 @@
 // test/presentation/screens/main_screen_test.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/screens/add_meeting_screen.dart';
 import 'package:friendsheet/presentation/screens/home_screen.dart';
 import 'package:friendsheet/presentation/screens/main_screen.dart';
@@ -33,6 +35,12 @@ void main() {
 
   Widget buildMainScreen() {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: MainScreen(authService: mockAuthService),
     );
   }

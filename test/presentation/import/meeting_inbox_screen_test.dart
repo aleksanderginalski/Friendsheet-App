@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_core_platform_interface/test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/pending_meeting_package.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/pending_meeting_package_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/import/meeting_inbox_screen.dart';
 import 'package:friendsheet/presentation/providers/meeting_inbox_provider.dart';
 import 'package:friendsheet/presentation/providers/shared_package_inbox_provider.dart';
@@ -84,7 +86,15 @@ void main() {
         ChangeNotifierProvider(create: (_) => MeetingInboxProvider()),
         ChangeNotifierProvider.value(value: packageProvider),
       ],
-      child: const MaterialApp(home: MeetingInboxScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MeetingInboxScreen(),
+      ),
     );
   }
 

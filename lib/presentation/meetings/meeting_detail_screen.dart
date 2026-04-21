@@ -7,6 +7,7 @@ import '../../data/models/meeting.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../l10n/app_localizations.dart';
 import '../activities/activity_icons.dart';
 import '../screens/add_meeting_screen.dart';
 import 'meeting_detail_provider.dart';
@@ -39,6 +40,7 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ChangeNotifierProvider(
       create: (_) => MeetingDetailProvider(
         personRepository: PersonRepository(),
@@ -47,7 +49,7 @@ class _MeetingDetailScreenState extends State<MeetingDetailScreen> {
       )..initialize(_meeting),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Meeting Detail'),
+          title: Text(l10n.meetingDetailTitle),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             // Passes current meeting state back to caller on back navigation
@@ -78,6 +80,7 @@ class _MeetingDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MeetingDetailProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -104,14 +107,14 @@ class _MeetingDetailBody extends StatelessWidget {
                 border: Border.all(color: Colors.orange),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                  SizedBox(width: 8),
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This meeting has no participants. Tap edit to add someone.',
-                      style: TextStyle(color: Colors.orange),
+                      l10n.meetingDetailNoParticipantsWarning,
+                      style: const TextStyle(color: Colors.orange),
                     ),
                   ),
                 ],
@@ -119,11 +122,11 @@ class _MeetingDetailBody extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'Participants'),
+          _SectionTitle(title: l10n.meetingDetailParticipants),
           const SizedBox(height: 8),
           _ParticipantList(provider: provider),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'Activities'),
+          _SectionTitle(title: l10n.meetingDetailActivities),
           const SizedBox(height: 8),
           _ActivityList(provider: provider),
           const SizedBox(height: 24),
@@ -194,7 +197,8 @@ class _ParticipantList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (provider.participants.isEmpty) {
-      return const Text('No participants.');
+      return Text(
+          AppLocalizations.of(context)!.meetingDetailNoParticipantsLabel);
     }
 
     return Column(
@@ -217,7 +221,7 @@ class _ActivityList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (provider.categories.isEmpty) {
-      return const Text('No activities.');
+      return Text(AppLocalizations.of(context)!.meetingDetailNoActivities);
     }
 
     return Column(
@@ -245,7 +249,7 @@ class _EditButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: () => _handleEdit(context),
         icon: const Icon(Icons.edit),
-        label: const Text('Edit Meeting'),
+        label: Text(AppLocalizations.of(context)!.meetingDetailEditButton),
       ),
     );
   }
@@ -299,21 +303,21 @@ class _DeleteButtonState extends State<_DeleteButton> {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Meeting'),
-        content: const Text(
-            'Are you sure you want to delete this meeting? This action cannot be undone.'),
+        title: Text(l10n.meetingDetailDeleteTitle),
+        content: Text(l10n.meetingDetailDeleteContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.meetingDetailDeleteCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(l10n.meetingDetailDeleteConfirm),
           ),
         ],
       ),
@@ -330,8 +334,9 @@ class _DeleteButtonState extends State<_DeleteButton> {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete meeting. Please try again.'),
+          SnackBar(
+            content:
+                Text(AppLocalizations.of(context)!.meetingDetailDeleteError),
           ),
         );
       }

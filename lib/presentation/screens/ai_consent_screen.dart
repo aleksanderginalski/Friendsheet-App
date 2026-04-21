@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/repositories/ai_consent_repository.dart';
 import '../../data/repositories/ai_key_repository.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/ai_settings_provider.dart';
 import 'ai_settings_screen.dart';
 
@@ -52,11 +53,12 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'AI Assistant — Privacy',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.aiConsentTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
@@ -78,7 +80,7 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
                     _buildSection(
                       icon: Icons.upload_outlined,
                       iconColor: const Color(0xFF4CAF50),
-                      title: 'Always sent to OpenAI',
+                      title: l10n.aiConsentAlwaysSent,
                       items: const [
                         'Meeting statistics: total count, frequency, distribution by month',
                         'Activity breakdown: category names and usage counts',
@@ -93,7 +95,7 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
                     _buildSection(
                       icon: Icons.tune_outlined,
                       iconColor: Colors.orange,
-                      title: 'Sent only when you explicitly ask',
+                      title: l10n.aiConsentSentWhenAsked,
                       items: const [
                         'Meeting notes — included only when you request sentiment analysis '
                             '(e.g. "How have my meetings with Anna felt this year?"). '
@@ -104,7 +106,7 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
                     _buildSection(
                       icon: Icons.block_outlined,
                       iconColor: Colors.red,
-                      title: 'Never sent to OpenAI',
+                      title: l10n.aiConsentNeverSent,
                       items: const [
                         'Your real name or your friends\' real names',
                         'Raw Firestore data or any data not listed above',
@@ -124,7 +126,7 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
                     TextButton.icon(
                       onPressed: _openPrivacyPolicy,
                       icon: const Icon(Icons.open_in_new, size: 16),
-                      label: const Text('Read full Privacy Policy'),
+                      label: Text(l10n.aiConsentPrivacyPolicy),
                     ),
                   ],
                 ),
@@ -150,7 +152,7 @@ class _AIConsentScreenState extends State<AIConsentScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('I understand and agree'),
+                      : Text(l10n.aiConsentAgree),
                 ),
               ),
             ),

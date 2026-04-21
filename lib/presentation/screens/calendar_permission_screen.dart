@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/calendar_settings_provider.dart';
 
 /// Screen that explains calendar access and triggers the OAuth grant flow.
@@ -48,8 +49,9 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
-        _errorMessage = 'An unexpected error occurred';
+        _errorMessage = l10n.calendarPermissionError;
         _isLoading = false;
       });
     }
@@ -57,11 +59,12 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Calendar Import',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          l10n.calendarPermissionTitle,
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
@@ -79,9 +82,9 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
                 color: Color(0xFF4CAF50),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Connect Google Calendar',
-                style: TextStyle(
+              Text(
+                l10n.calendarPermissionHeading,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -89,9 +92,7 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Friendsheet needs read-only access to your Google Calendar '
-                'to import past events as meetings. No data is stored — '
-                'only event titles, dates, and attendee names are used.',
+                l10n.calendarPermissionDescription,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),
@@ -109,11 +110,11 @@ class _CalendarPermissionScreenState extends State<CalendarPermissionScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _isLoading ? null : _handleConnect,
-                child: const Text('Connect Google Calendar'),
+                child: Text(l10n.calendarPermissionConnectButton),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Not now'),
+                child: Text(l10n.calendarPermissionNotNow),
               ),
             ],
           ),

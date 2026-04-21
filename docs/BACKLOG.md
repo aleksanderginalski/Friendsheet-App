@@ -4304,7 +4304,7 @@ Default writing style (developer task, not user-facing):
 **Story Points:** 8
 **Priority:** P3
 **Labels:** `localization`, `ux`, `infrastructure`
-**Status:** 📋 Planned
+**Status:** 🔄 In Progress
 
 **Context:**
 Current UI is in English. This US extracts all UI strings into ARB files and adds a language selector independent of Buddy's language (US-113).
@@ -4316,15 +4316,18 @@ Current UI is in English. This US extracts all UI strings into ARB files and add
 - [ ] Language change takes effect immediately without app restart
 - [ ] No date/number format changes in scope — text strings only
 - [ ] `flutter_localizations` and `intl` packages configured
+- [ ] `AppLocaleProvider` (ChangeNotifier) created in `lib/presentation/providers/` — holds current `Locale`, reads/writes SharedPreferences key `app_language`
+- [ ] `FriendsheetApp` wraps `MaterialApp` in `Consumer<AppLocaleProvider>` so locale change propagates without restart
 
 **Tasks:**
-- [ ] **TASK-116.1:** Add `flutter_localizations` and `intl` to `pubspec.yaml`; configure `MaterialApp` with `localizationsDelegates` and `supportedLocales` — 1h
-- [ ] **TASK-116.2:** Audit all screens and extract hardcoded strings to `app_en.arb` and `app_pl.arb` — 4h
-- [ ] **TASK-116.3:** Replace hardcoded strings with `AppLocalizations.of(context)` calls throughout `lib/` — 2h
-- [ ] **TASK-116.4:** Add "App Language" selector tile to SettingsScreen; persist selection to SharedPreferences — 0.5h
-- [ ] **TASK-116.5:** Apply locale change at runtime without restart — 0.5h
+- [ ] **TASK-116.1:** Add `flutter_localizations` and `intl` to `pubspec.yaml`; add `generate: true` and `flutter.generate` to enable `flutter gen-l10n` — 0.5h
+- [ ] **TASK-116.2:** Create `lib/l10n/app_en.arb` and `lib/l10n/app_pl.arb` with all UI strings audited from all screens and widgets — 4h
+- [ ] **TASK-116.3:** Replace hardcoded strings with `AppLocalizations.of(context)!` calls throughout `lib/presentation/` — 2h
+- [ ] **TASK-116.4:** Create `AppLocaleProvider` in `lib/presentation/providers/app_locale_provider.dart`; reads `app_language` from SharedPreferences on init, exposes `setLocale(Locale)` — 0.5h
+- [ ] **TASK-116.5:** Wrap `MaterialApp` in `Consumer<AppLocaleProvider>` in `main.dart`; add `localizationsDelegates`, `supportedLocales`, `locale` — 0.5h
+- [ ] **TASK-116.6:** Add "App Language" selector tile to SettingsScreen; tapping opens a dialog with "English" / "Polski" options; calls `AppLocaleProvider.setLocale()` — 0.5h
 
-**Dependencies:** US-113 (language settings infrastructure)
+**Dependencies:** None (design context: US-113 adds a separate Buddy language selector to the same screen)
 **Blocks:** None
 
 ---

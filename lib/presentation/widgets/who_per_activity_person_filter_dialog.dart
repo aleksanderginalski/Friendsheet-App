@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/person_sort.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Dialog for managing person visibility in the Who Per Activity chart.
 /// All entries are shown as a flat checkbox list — persons have no hierarchy.
@@ -89,6 +90,7 @@ class _WhoPerActivityPersonFilterDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Three-state selection: all selected, none selected, or partial.
     final allSelected = _hidden.isEmpty;
     final noneSelected = widget.allEntries.isNotEmpty &&
@@ -97,17 +99,17 @@ class _WhoPerActivityPersonFilterDialogState
     final String toggleTooltip;
     if (allSelected) {
       toggleIcon = Icons.check_box;
-      toggleTooltip = 'Deselect all';
+      toggleTooltip = l10n.visibilityDeselectAll;
     } else if (noneSelected) {
       toggleIcon = Icons.check_box_outline_blank;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     } else {
       toggleIcon = Icons.indeterminate_check_box;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     }
 
     return AlertDialog(
-      title: const Text('Filter persons'),
+      title: Text(l10n.whoPerActivityPersonFilterDialogTitle),
       // SingleChildScrollView + Column required — ListView crashes inside
       // AlertDialog due to IntrinsicWidth incompatibility.
       content: SingleChildScrollView(
@@ -119,7 +121,7 @@ class _WhoPerActivityPersonFilterDialogState
               children: [
                 TextButton(
                   onPressed: _applyTop10,
-                  child: const Text('Auto-select top 10'),
+                  child: Text(l10n.visibilityAutoSelectTop10),
                 ),
                 IconButton(
                   icon: Icon(toggleIcon),
@@ -135,8 +137,7 @@ class _WhoPerActivityPersonFilterDialogState
               final isVisible = !_hidden.contains(entry.personId);
               final isDisabled = _isLastVisible(entry.personId);
               return Tooltip(
-                message:
-                    isDisabled ? 'At least one person must remain visible' : '',
+                message: isDisabled ? l10n.visibilityMinOnePerson : '',
                 child: CheckboxListTile(
                   value: isVisible,
                   onChanged: isDisabled ? null : (_) => _toggle(entry.personId),
@@ -152,7 +153,7 @@ class _WhoPerActivityPersonFilterDialogState
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CLOSE'),
+          child: Text(l10n.dialogClose),
         ),
       ],
     );
