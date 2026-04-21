@@ -4,6 +4,25 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.14 — US-111: Offline-First App (April 21, 2026)
+- ✅ `lib/data/services/connectivity_service.dart` (NEW) — `ConnectivityService` singleton: `ValueNotifier<bool> isOnlineNotifier`, `initialize()` subscribes to `connectivity_plus` stream, `isOnline` getter; safe to call from any widget without polling
+- ✅ `lib/presentation/widgets/offline_banner_widget.dart` (NEW) — `OfflineBannerWidget`: `ValueListenableBuilder` on `ConnectivityService().isOnlineNotifier`; amber banner with wifi-off icon; `AnimatedSwitcher` for smooth appear/disappear
+- ✅ `lib/data/repositories/meeting_repository.dart` (MODIFIED) — `saveMeeting`: cache-first (generates doc ID locally via `doc()`, writes to `LocalCacheService` immediately, Firestore write fire-and-forget); `updateMeeting` / `deleteMeeting`: same cache-first pattern — callers never blocked by network latency when offline
+- ✅ `lib/presentation/providers/meetings_list_provider.dart` (MODIFIED) — `hasPendingWrites` field; separate `_metaSubscription` on `getMeetingsSnapshot` (metadata-aware, `includeMetadataChanges: true`); `_loadFromCache()` renders from Hive immediately on `initialize()` — no spinner when cache is warm
+- ✅ `lib/presentation/providers/home_provider.dart` (MODIFIED) — cache-first `initialize()`: renders from `LocalCacheService` immediately before Firestore stream starts
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `ConnectivityService().initialize()` called first in `addPostFrameCallback`; body extracted to `_buildBody()` and wrapped in `Column([OfflineBannerWidget(), Expanded(_buildBody())])`; Buddy and Google Calendar drawer tiles guarded with connectivity check + SnackBar
+- ✅ `lib/presentation/screens/meetings_list_screen.dart` (MODIFIED) — pending sync indicator (`Icons.sync`) in AppBar when `provider.hasPendingWrites`
+- ✅ `lib/presentation/screens/home_screen.dart` (MODIFIED) — all 4 Buddy callbacks guarded with `ConnectivityService().isOnline` check + `_showOfflineSnackBar` top-level function
+- ✅ `lib/main.dart` (MODIFIED) — removed explicit `Settings(persistenceEnabled: true)` (default on Android; explicit call caused write hang when offline)
+- ✅ `pubspec.yaml` (MODIFIED) — added `connectivity_plus: ^6.1.4`
+- ✅ `test/data/services/connectivity_service_test.dart` (NEW) — 3 tests: default isOnline, notifier reflection, singleton identity
+- ✅ `test/data/repositories/meeting_repository_test.dart` (MODIFIED) — Hive initialized in setUp/tearDown; +6 new tests: cache-first saveMeeting (×2), updateMeeting (×2), deleteMeeting (×2)
+- ✅ `test/presentation/providers/meetings_list_provider_test.dart` (MODIFIED) — setUp stubs `getMeetingsSnapshot` with `Stream.empty()` for metadata subscription
+- ✅ All mock files regenerated via build_runner (`getMeetingsSnapshot` added to `MockMeetingRepository`)
+- ✅ 1038 Flutter tests passing (+9 new tests)
+
+---
+
 ### v4.5.13 — US-126: Friends-Quest Completion & Meeting Link (April 20, 2026)
 - ✅ `lib/presentation/friends_quest/friends_quest_provider.dart` (MODIFIED) — added `MeetingRepository` dep; new methods: `linkToMeeting`, `completeTask` (archives linked Catch-up Topic), `completeQuest` (appends completed task texts as meeting notes, marks quest completed)
 - ✅ `lib/presentation/friends_quest/meeting_picker_sheet.dart` (NEW) — `MeetingPickerSheet`: `DraggableScrollableSheet` with search (name or `dd/mm/yyyy` date), grouped collapsible year → month → meeting list, descending sort, all sections expanded by default
