@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/activity_category.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/shared_search_bar.dart';
 import 'activities_list_provider.dart';
@@ -114,22 +115,21 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
 
     if (target == null || !context.mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Merge categories?'),
-        content: Text(
-          'Merge "${source.name}" into "${target.name}"?\n\n'
-          'All meetings will be updated. "${source.name}" will be deleted.',
-        ),
+        title: Text(l10n.activitiesListMergeTitle),
+        content:
+            Text(l10n.activitiesListMergeContent(source.name, target.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('MERGE'),
+            child: Text(l10n.activitiesListMergeConfirm),
           ),
         ],
       ),
@@ -145,7 +145,10 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Merged "${source.name}" into "${target.name}"'),
+            content: Text(
+              AppLocalizations.of(context)!
+                  .activitiesListMergedSuccess(source.name, target.name),
+            ),
           ),
         );
       }
@@ -153,7 +156,10 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Merge failed: $e'),
+            content: Text(
+              AppLocalizations.of(context)!
+                  .activitiesListMergeError(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -163,19 +169,20 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
 
   Future<void> _confirmDelete(
       BuildContext context, ActivityCategory category) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Activity?'),
-        content: Text('Delete "${category.name}"? This cannot be undone.'),
+        title: Text(l10n.activitiesListDeleteTitle),
+        content: Text(l10n.activitiesListDeleteContent(category.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('DELETE'),
+            child: Text(l10n.personsListDeleteGroupConfirm),
           ),
         ],
       ),
@@ -192,7 +199,10 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to delete: $e'),
+            content: Text(
+              AppLocalizations.of(context)!
+                  .activitiesListDeleteError(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -206,16 +216,18 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
       builder: (context, provider, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Activities'),
+            title: Text(AppLocalizations.of(context)!.activitiesListTitle),
             actions: [
               IconButton(
                 icon: const Icon(Icons.add),
-                tooltip: 'Add activity category',
+                tooltip: AppLocalizations.of(context)!.activitiesListAddTooltip,
                 onPressed: () => _openAddRootDialog(context),
               ),
               IconButton(
                 icon: Icon(_isSearchActive ? Icons.search_off : Icons.search),
-                tooltip: _isSearchActive ? 'Close search' : 'Search',
+                tooltip: _isSearchActive
+                    ? AppLocalizations.of(context)!.activitiesListSearchClose
+                    : AppLocalizations.of(context)!.activitiesListSearch,
                 onPressed: _toggleSearch,
               ),
             ],
@@ -225,7 +237,8 @@ class _ActivitiesListScreenState extends State<ActivitiesListScreen> {
               if (_isSearchActive)
                 SharedSearchBar(
                   controller: _searchController,
-                  hintText: 'Search activities...',
+                  hintText:
+                      AppLocalizations.of(context)!.activitiesListSearchHint,
                   onChanged: provider.setSearchQuery,
                 ),
               Expanded(
@@ -282,7 +295,7 @@ class _ActivitiesBody extends StatelessWidget {
                 final userId = AuthService().currentUserId;
                 if (userId != null) provider.initialize(userId);
               },
-              child: const Text('Retry'),
+              child: Text(AppLocalizations.of(context)!.activitiesListRetry),
             ),
           ],
         ),
@@ -291,18 +304,19 @@ class _ActivitiesBody extends StatelessWidget {
 
     final roots = provider.rootCategories;
 
+    final l10n = AppLocalizations.of(context)!;
     if (roots.isEmpty) {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         imagePath: 'assets/images/empty_state_activities.png',
-        message: 'No activities yet — tap + to create your first category!',
+        message: l10n.activitiesListEmpty,
       );
     }
 
     // Search is active but no child categories match — show empty state.
     if (provider.searchQuery.isNotEmpty && !provider.hasSearchResults) {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         imagePath: 'assets/images/empty_state_activities.png',
-        message: 'No activities found',
+        message: l10n.activitiesListNoResults,
       );
     }
 
@@ -353,7 +367,7 @@ class _RootCategoryTile extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit'),
+              title: Text(AppLocalizations.of(context)!.activitiesListEdit),
               onTap: () {
                 Navigator.of(context).pop();
                 onEdit(category);
@@ -361,7 +375,10 @@ class _RootCategoryTile extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              title: Text(
+                AppLocalizations.of(context)!.activitiesListDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 onDelete(category);
@@ -370,7 +387,8 @@ class _RootCategoryTile extends StatelessWidget {
             if (hasNoChildren)
               ListTile(
                 leading: const Icon(Icons.merge_type),
-                title: const Text('Merge into\u2026'),
+                title:
+                    Text(AppLocalizations.of(context)!.activitiesListMergeInto),
                 onTap: () {
                   Navigator.of(context).pop();
                   onMerge(category);
@@ -414,7 +432,8 @@ class _RootCategoryTile extends StatelessWidget {
               ),
             IconButton(
               icon: const Icon(Icons.add),
-              tooltip: 'Add child activity',
+              tooltip:
+                  AppLocalizations.of(context)!.activitiesListAddChildTooltip,
               onPressed: () => onAddChild(category.id),
             ),
             // ExpansionTile renders its own arrow after trailing, so we use
@@ -465,7 +484,7 @@ class _ActivityLeafTile extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit'),
+              title: Text(AppLocalizations.of(context)!.activitiesListEdit),
               onTap: () {
                 Navigator.of(context).pop();
                 onEdit(category);
@@ -473,7 +492,10 @@ class _ActivityLeafTile extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              title: Text(
+                AppLocalizations.of(context)!.activitiesListDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 onDelete(category);
@@ -481,7 +503,8 @@ class _ActivityLeafTile extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.merge_type),
-              title: const Text('Merge into\u2026'),
+              title:
+                  Text(AppLocalizations.of(context)!.activitiesListMergeInto),
               onTap: () {
                 Navigator.of(context).pop();
                 onMerge(category);

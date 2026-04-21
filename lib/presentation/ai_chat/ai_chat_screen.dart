@@ -8,6 +8,7 @@ import '../../data/repositories/ai_key_repository.dart';
 import '../../data/services/buddy_write_service.dart';
 import '../../data/services/context_builder_service.dart';
 import '../../data/services/open_ai_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/ai_settings_provider.dart';
 import '../screens/ai_consent_screen.dart';
 import '../screens/ai_settings_screen.dart';
@@ -298,12 +299,18 @@ class _ErrorBanner extends StatelessWidget {
           if (isInvalidKey)
             TextButton(
               onPressed: onSettings,
-              child: const Text('Go to Settings'),
+              child: Text(AppLocalizations.of(context)!.aiChatGoToSettings),
             )
           else if (isQuota)
-            TextButton(onPressed: onDismiss, child: const Text('Dismiss'))
+            TextButton(
+              onPressed: onDismiss,
+              child: Text(AppLocalizations.of(context)!.aiChatDismiss),
+            )
           else
-            TextButton(onPressed: onRetry, child: const Text('Retry')),
+            TextButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context)!.aiChatRetry),
+            ),
         ],
       ),
     );

@@ -1,8 +1,8 @@
 # Friendsheet — Manual Test Cases
 
-**Version:** 2.1
-**Date:** March 2026
-**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox · INF Multi-Agent System  
+**Version:** 2.2
+**Date:** April 2026
+**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox · INF Multi-Agent System · US-116 App UI Localization  
 **Tester:** QA Engineer  
 **Environment:** Android physical device / emulator (API 21+)
 
@@ -2105,3 +2105,18 @@ Run after every release or hotfix:
 | UT-111-007 | updateMeeting — updates meeting in local cache | cached meeting name equals 'Updated' |
 | UT-111-008 | deleteMeeting — removes document from Firestore | `doc.exists` is false after delete |
 | UT-111-009 | deleteMeeting — removes meeting from local cache | `getAllMeetings` does not contain deleted id |
+
+---
+
+## US-116 — App UI Localization
+
+### Automated tests — `test/presentation/providers/app_locale_provider_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-116-001 | default locale is English | `locale` returns `Locale('en')` on fresh instance |
+| UT-116-002 | loadSavedLocale with no stored value keeps English | `locale` stays `Locale('en')` |
+| UT-116-003 | loadSavedLocale restores persisted locale | `locale` becomes `Locale('pl')` when `app_language=pl` in prefs |
+| UT-116-004 | setLocale updates locale and persists it | `locale` is `Locale('pl')` and prefs key `app_language` equals `pl` |
+| UT-116-005 | setLocale with same locale does not notify | listener not called when locale unchanged |
+| UT-116-006 | full cycle: set Polish, reload, verify restored | second provider instance reads `Locale('pl')` from prefs |

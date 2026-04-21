@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/activity_category.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 import '../activities/activity_icons.dart';
 
 /// One row in the hierarchical visibility list.
@@ -174,6 +175,7 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
   @override
   Widget build(BuildContext context) {
     final rows = _buildTree();
+    final l10n = AppLocalizations.of(context)!;
     // Three-state selection: all selected, none selected, or partial.
     final allSelected = _hidden.isEmpty;
     final noneSelected = widget.entries.isNotEmpty &&
@@ -182,17 +184,17 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
     final String toggleTooltip;
     if (allSelected) {
       toggleIcon = Icons.check_box;
-      toggleTooltip = 'Deselect all';
+      toggleTooltip = l10n.visibilityDeselectAll;
     } else if (noneSelected) {
       toggleIcon = Icons.check_box_outline_blank;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     } else {
       toggleIcon = Icons.indeterminate_check_box;
-      toggleTooltip = 'Select all';
+      toggleTooltip = l10n.visibilitySelectAll;
     }
 
     return AlertDialog(
-      title: const Text('Activity Visibility'),
+      title: Text(l10n.activityVisibilityDialogTitle),
       // SingleChildScrollView + Column required — ListView crashes inside
       // AlertDialog due to IntrinsicWidth incompatibility.
       content: SingleChildScrollView(
@@ -204,7 +206,7 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
               children: [
                 OutlinedButton(
                   onPressed: _applyTop10,
-                  child: const Text('Auto-select top 10'),
+                  child: Text(l10n.visibilityAutoSelectTop10),
                 ),
                 IconButton(
                   icon: Icon(toggleIcon),
@@ -221,7 +223,7 @@ class _ActivityVisibilityDialogState extends State<ActivityVisibilityDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('CLOSE'),
+          child: Text(l10n.dialogClose),
         ),
       ],
     );

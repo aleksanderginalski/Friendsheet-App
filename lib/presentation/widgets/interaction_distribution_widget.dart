@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Fixed heights for bar column sections.
 const _kDeltaHeight = 20.0;
@@ -126,18 +127,18 @@ class _InteractionDistributionWidgetState
   void _showInfoDialog(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        content: const Text(
-          'A meeting with multiple people counts toward each person\'s total. '
-          'This means percentages across all persons can exceed 100%.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+      builder: (_) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          content: Text(l10n.interactionDistributionInfo),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.dialogOk),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -161,9 +162,10 @@ class _InteractionDistributionWidgetState
           children: [
             Row(
               children: [
-                const Text(
-                  'Interaction Distribution',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                Text(
+                  AppLocalizations.of(context)!.interactionDistributionTitle,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 if (widget.isLoading) ...[
                   const SizedBox(width: 8),
@@ -196,7 +198,9 @@ class _InteractionDistributionWidgetState
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
-                    widget.isCumulativeMode ? 'Cumulative' : 'Yearly',
+                    widget.isCumulativeMode
+                        ? AppLocalizations.of(context)!.interactionCumulative
+                        : AppLocalizations.of(context)!.interactionYearly,
                     style: const TextStyle(fontSize: 12),
                   ),
                 ),
@@ -220,7 +224,8 @@ class _InteractionDistributionWidgetState
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              '${widget.hiddenPersons.length} persons hidden',
+              AppLocalizations.of(context)!
+                  .personsHiddenCount(widget.hiddenPersons.length),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
@@ -229,9 +234,9 @@ class _InteractionDistributionWidgetState
         // chart never flashes an empty state during the loading gap between
         // year changes.
         if (_computeVisible(_displayedEntries, widget.hiddenPersons).isEmpty)
-          const Text(
-            'No visible persons.',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.noVisiblePersons,
+            style: const TextStyle(color: Colors.grey),
           )
         else
           SizedBox(
@@ -450,9 +455,9 @@ class _PersonDeltaLabel extends StatelessWidget {
 
     // New person this year — no previous data to compute percentage against.
     if (entry.previousYearWeight == 0) {
-      return const Text(
-        'NEW',
-        style: TextStyle(color: Colors.grey, fontSize: 9),
+      return Text(
+        AppLocalizations.of(context)!.statDeltaNew,
+        style: const TextStyle(color: Colors.grey, fontSize: 9),
       );
     }
 

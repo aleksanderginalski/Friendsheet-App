@@ -1,30 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/meeting.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../meetings/meeting_detail_screen.dart';
 import '../providers/meetings_list_provider.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/meeting_card.dart';
 import '../widgets/shared_search_bar.dart';
-
-// Month name lookup by 1-based index (index 0 unused).
-const _monthNames = [
-  '',
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
 
 /// Screen that displays all meetings for the current user, grouped by year
 /// then by month. Provides and owns [MeetingsListProvider] scoped to this screen.
@@ -83,6 +68,7 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ChangeNotifierProvider.value(
       value: _provider,
       child: Consumer<MeetingsListProvider>(
@@ -93,21 +79,24 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
 
           return Scaffold(
             appBar: AppBar(
-              title: const Text('My Meetings'),
+              title: Text(l10n.meetingsListTitle),
               actions: [
                 if (provider.hasPendingWrites)
-                  const Tooltip(
-                    message: 'Syncing...',
-                    child: Padding(
+                  Tooltip(
+                    message: l10n.meetingsListSyncing,
+                    child: const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8),
                       child: Icon(Icons.sync, size: 18),
                     ),
                   ),
                 if (hasMeetings)
                   IconButton(
-                    icon:
-                        Icon(_isSearchActive ? Icons.search_off : Icons.search),
-                    tooltip: _isSearchActive ? 'Close search' : 'Search',
+                    icon: Icon(
+                      _isSearchActive ? Icons.search_off : Icons.search,
+                    ),
+                    tooltip: _isSearchActive
+                        ? l10n.meetingsListSearchClose
+                        : l10n.meetingsListSearch,
                     onPressed: _toggleSearch,
                   ),
               ],
@@ -117,7 +106,7 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
                 if (_isSearchActive)
                   SharedSearchBar(
                     controller: _searchController,
-                    hintText: 'Search meetings...',
+                    hintText: l10n.meetingsListSearchHint,
                     onChanged: provider.setSearchQuery,
                   ),
                 Expanded(child: _buildContent(context, provider)),
@@ -130,6 +119,7 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
   }
 
   Widget _buildContent(BuildContext context, MeetingsListProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -140,24 +130,25 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
 
     final baseMap = provider.meetingsByYear;
     if (baseMap.isEmpty) {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         imagePath: 'assets/images/empty_state_meetings.png',
-        message: 'No meetings yet — tap + to add your first one!',
+        message: l10n.meetingsListEmpty,
       );
     }
 
     if (provider.isSearchActive) {
-      return _buildFlatSearchResults(provider.filteredMeetings);
+      return _buildFlatSearchResults(provider.filteredMeetings, l10n);
     }
 
     final filteredMap = provider.meetingsByYearAndMonth;
     if (filteredMap.isEmpty) {
       return EmptyStateWidget(
         imagePath: 'assets/images/empty_state_meetings.png',
-        message: 'No results for "${provider.searchQuery}"',
+        message: l10n.meetingsListNoResults(provider.searchQuery),
       );
     }
 
+    final locale = Localizations.localeOf(context).languageCode;
     return ListView(
       children: [
         for (final yearEntry in filteredMap.entries) ...[
@@ -185,6 +176,7 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
                 month: monthEntry.key,
                 meetingCount: monthEntry.value.length,
                 provider: provider,
+                locale: locale,
               ),
               if (provider.isMonthExpanded(
                 '${yearEntry.key}-${monthEntry.key.toString().padLeft(2, '0')}',
@@ -218,11 +210,12 @@ class _MeetingsListScreenState extends State<MeetingsListScreen> {
 
   // Renders a flat scrollable list of meetings for active search queries.
   // Shows an inline message when no meetings match the query.
-  Widget _buildFlatSearchResults(List<Meeting> meetings) {
+  Widget _buildFlatSearchResults(
+      List<Meeting> meetings, AppLocalizations l10n) {
     if (meetings.isEmpty) {
       return EmptyStateWidget(
         imagePath: 'assets/images/empty_state_meetings.png',
-        message: 'No results for "${_provider.searchQuery}"',
+        message: l10n.meetingsListNoResults(_provider.searchQuery),
       );
     }
     return ListView.builder(
@@ -252,20 +245,24 @@ class _MonthHeader extends StatelessWidget {
   final int month;
   final int meetingCount;
   final MeetingsListProvider provider;
+  final String locale;
 
   const _MonthHeader({
     required this.year,
     required this.month,
     required this.meetingCount,
     required this.provider,
+    required this.locale,
   });
 
   @override
   Widget build(BuildContext context) {
     final monthKey = '$year-${month.toString().padLeft(2, '0')}';
     final isExpanded = provider.isMonthExpanded(monthKey);
+    final monthName = DateFormat('MMMM', locale).format(DateTime(year, month));
+    final l10n = AppLocalizations.of(context)!;
     final label =
-        '${_monthNames[month]} $year · $meetingCount ${meetingCount == 1 ? 'meeting' : 'meetings'}';
+        '$monthName $year · ${l10n.meetingsListMeetingCount(meetingCount)}';
 
     return Padding(
       padding: const EdgeInsets.only(left: 16),

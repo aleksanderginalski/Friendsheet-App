@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/widgets/who_per_activity_person_filter_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,6 +45,12 @@ void main() {
     VoidCallback? onAutoSelectTop10,
   }) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Center(
           child: WhoPerActivityPersonFilterDialog(
@@ -163,6 +171,12 @@ void main() {
       var called = false;
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (ctx) => TextButton(
@@ -191,7 +205,7 @@ void main() {
 
       expect(called, isTrue);
       // Dialog dismissed after tap.
-      expect(find.text('Filter persons'), findsNothing);
+      expect(find.text('Filter by Person'), findsNothing);
     });
 
     testWidgets('renders persons in alphabetical order with Polish diacritics',
@@ -216,6 +230,12 @@ void main() {
     testWidgets('"CLOSE" button dismisses the dialog', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (ctx) => TextButton(
@@ -238,11 +258,11 @@ void main() {
 
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      expect(find.text('Filter persons'), findsOneWidget);
+      expect(find.text('Filter by Person'), findsOneWidget);
 
       await tester.tap(find.text('CLOSE'));
       await tester.pumpAndSettle();
-      expect(find.text('Filter persons'), findsNothing);
+      expect(find.text('Filter by Person'), findsNothing);
     });
   });
 }

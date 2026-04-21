@@ -1,9 +1,11 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/activities/activities_list_provider.dart';
 import 'package:friendsheet/presentation/activities/activities_list_screen.dart';
 import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
@@ -31,6 +33,12 @@ void main() {
 
   Widget buildScreen(_StubActivitiesListProvider stub) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: ChangeNotifierProvider<ActivitiesListProvider>.value(
         value: stub,
         child: const ActivitiesListScreen(),

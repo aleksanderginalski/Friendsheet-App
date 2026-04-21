@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/activity_category.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/statistics_provider.dart';
 import 'activity_breakdown_widget.dart';
 import 'activity_selector_dialog.dart';
@@ -192,18 +193,19 @@ class _StatisticsSectionState extends State<StatisticsSection> {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.bar_chart_outlined, size: 48),
           const SizedBox(height: 8),
-          const Text('All statistics hidden'),
+          Text(l10n.statisticsAllHidden),
           const SizedBox(height: 16),
           TextButton(
             onPressed: () =>
                 context.read<StatisticsProvider>().restoreAllCards(),
-            child: const Text('Restore all'),
+            child: Text(l10n.statisticsRestoreAll),
           ),
         ],
       ),
@@ -213,6 +215,7 @@ class _StatisticsSectionState extends State<StatisticsSection> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<StatisticsProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,10 +232,11 @@ class _StatisticsSectionState extends State<StatisticsSection> {
                     : null,
               ),
             ),
-            const Expanded(
+            Expanded(
               child: Text(
-                'Statistics',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                l10n.statisticsTitle,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -240,7 +244,7 @@ class _StatisticsSectionState extends State<StatisticsSection> {
               label: 'Statistics card visibility',
               child: IconButton(
                 icon: const Icon(Icons.tune),
-                tooltip: 'Show/hide statistics cards',
+                tooltip: l10n.statisticsVisibilityDialogTitle,
                 onPressed: () => _openCardsVisibilityDialog(context, provider),
               ),
             ),
@@ -260,7 +264,7 @@ class _StatisticsSectionState extends State<StatisticsSection> {
         if (provider.isLoading)
           const CircularProgressIndicator()
         else if (!provider.hasData)
-          const Text('No meetings found')
+          Text(l10n.statisticsNoMeetings)
         else ...[
           YearStepper(
             selectedYear: provider.selectedYear!,

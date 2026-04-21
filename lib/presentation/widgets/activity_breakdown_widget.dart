@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
 import '../../data/repositories/statistics_repository.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Fixed heights for bar column sections.
 const _kDeltaHeight = 20.0;
@@ -133,9 +134,9 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Activity Breakdown',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Text(
+              AppLocalizations.of(context)!.activityBreakdownTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             IconButton(
               icon: Image.asset(
@@ -155,7 +156,8 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              '${widget.hiddenActivities.length} activities hidden',
+              AppLocalizations.of(context)!
+                  .activitiesHiddenCount(widget.hiddenActivities.length),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
@@ -164,9 +166,9 @@ class _ActivityBreakdownWidgetState extends State<ActivityBreakdownWidget>
         // chart never flashes an empty state during the loading gap between
         // year changes.
         if (_computeVisible(_displayedEntries, widget.hiddenActivities).isEmpty)
-          const Text(
-            'No visible activities.',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            AppLocalizations.of(context)!.noVisibleActivities,
+            style: const TextStyle(color: Colors.grey),
           )
         else
           SizedBox(
@@ -367,9 +369,9 @@ class _DeltaLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     // New activity this year — no previous data to compute percentage against.
     if (entry.previousYearWeight == 0) {
-      return const Text(
-        'NEW',
-        style: TextStyle(color: Colors.grey, fontSize: 9),
+      return Text(
+        AppLocalizations.of(context)!.statDeltaNew,
+        style: const TextStyle(color: Colors.grey, fontSize: 9),
       );
     }
 

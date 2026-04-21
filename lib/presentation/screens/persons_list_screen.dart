@@ -7,6 +7,7 @@ import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/person_repository.dart';
 import '../../data/repositories/sharing_token_repository.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../persons/add_edit_group_dialog.dart';
 import '../persons/assign_persons_bottom_sheet.dart';
 import '../persons/friend_groups_provider.dart';
@@ -57,18 +58,21 @@ class _PersonsListViewState extends State<_PersonsListView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MY PEOPLE'),
+        title: Text(l10n.personsListTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'Add',
+            tooltip: l10n.personsListAdd,
             onPressed: () => _showAddBottomSheet(context),
           ),
           IconButton(
             icon: Icon(_isSearchActive ? Icons.search_off : Icons.search),
-            tooltip: _isSearchActive ? 'Close search' : 'Search',
+            tooltip: _isSearchActive
+                ? l10n.personsListSearchClose
+                : l10n.personsListSearch,
             onPressed: _toggleSearch,
           ),
         ],
@@ -78,7 +82,7 @@ class _PersonsListViewState extends State<_PersonsListView> {
           if (_isSearchActive)
             SharedSearchBar(
               controller: _searchController,
-              hintText: 'Search friends...',
+              hintText: l10n.personsListSearchHint,
               onChanged: (value) =>
                   context.read<PersonsListProvider>().setSearchQuery(value),
             ),
@@ -90,6 +94,7 @@ class _PersonsListViewState extends State<_PersonsListView> {
 
   // Bottom sheet for choosing between adding a person or a group.
   void _showAddBottomSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetCtx) => SafeArea(
@@ -98,7 +103,7 @@ class _PersonsListViewState extends State<_PersonsListView> {
           children: [
             ListTile(
               leading: const Icon(Icons.person_add),
-              title: const Text('Add Person'),
+              title: Text(l10n.personsListAddPerson),
               onTap: () {
                 Navigator.pop(sheetCtx);
                 _showAddPersonDialog(context);
@@ -106,7 +111,7 @@ class _PersonsListViewState extends State<_PersonsListView> {
             ),
             ListTile(
               leading: const Icon(Icons.group_add),
-              title: const Text('Add Group'),
+              title: Text(l10n.personsListAddGroup),
               onTap: () {
                 Navigator.pop(sheetCtx);
                 _showAddGroupDialog(context);
@@ -151,8 +156,8 @@ class _PersonsListViewState extends State<_PersonsListView> {
     if (personAdded) {
       provider.initialize();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Person added'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.personsListPersonAdded),
           backgroundColor: Colors.green,
         ),
       );
@@ -225,7 +230,7 @@ class _PersonsListBody extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('Edit group'),
+                title: Text(AppLocalizations.of(context)!.personsListEditGroup),
                 onTap: () {
                   Navigator.pop(sheetCtx);
                   _showEditGroupDialog(context, group);
@@ -234,7 +239,7 @@ class _PersonsListBody extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.delete, color: errorColor),
                 title: Text(
-                  'Delete group',
+                  AppLocalizations.of(context)!.personsListDeleteGroup,
                   style: TextStyle(color: errorColor),
                 ),
                 onTap: () {
@@ -264,22 +269,23 @@ class _PersonsListBody extends StatelessWidget {
 
   Future<void> _showDeleteGroupConfirmation(
       BuildContext context, FriendGroup group) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Group?'),
-        content: Text('Delete "${group.name}"?\nPersons will not be deleted.'),
+        title: Text(l10n.personsListDeleteGroupTitle),
+        content: Text(l10n.personsListDeleteGroupContent(group.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('DELETE'),
+            child: Text(l10n.personsListDeleteGroupConfirm),
           ),
         ],
       ),
@@ -295,8 +301,10 @@ class _PersonsListBody extends StatelessWidget {
         allPersons.where((p) => !group.personIds.contains(p.id)).toList();
     if (available.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All friends are already in this group'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.personsListAlreadyInGroup,
+          ),
         ),
       );
       return;
@@ -333,10 +341,11 @@ class _PersonsListBody extends StatelessWidget {
           return Center(child: Text(personsProvider.errorMessage!));
         }
         final allPersons = personsProvider.persons;
+        final l10n = AppLocalizations.of(context)!;
         if (allPersons.isEmpty && personsProvider.searchQuery.isEmpty) {
-          return const EmptyStateWidget(
+          return EmptyStateWidget(
             imagePath: 'assets/images/empty_state_friends.png',
-            message: 'No friends added yet — tap + to get started!',
+            message: l10n.personsListEmpty,
           );
         }
         // Search active: flat filtered results across all sections.
@@ -344,7 +353,7 @@ class _PersonsListBody extends StatelessWidget {
           if (allPersons.isEmpty) {
             return EmptyStateWidget(
               imagePath: 'assets/images/empty_state_friends.png',
-              message: 'No results for "${personsProvider.searchQuery}"',
+              message: l10n.personsListNoResults(personsProvider.searchQuery),
             );
           }
           return ListView.builder(

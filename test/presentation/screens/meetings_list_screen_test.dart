@@ -2,9 +2,11 @@
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/providers/meetings_list_provider.dart';
 import 'package:friendsheet/presentation/screens/meetings_list_screen.dart';
 import 'package:friendsheet/presentation/widgets/empty_state_widget.dart';
@@ -40,6 +42,12 @@ void main() {
   // Helper: wraps MeetingsListScreen with the given stub in a MaterialApp.
   Widget buildScreen(_StubMeetingsListProvider stub) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: MeetingsListScreen(provider: stub),
     );
   }

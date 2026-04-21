@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../data/models/activity_category.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import 'activities_list_provider.dart';
 import 'activity_icons.dart';
 
@@ -200,7 +201,7 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
                   TextButton(
                     onPressed:
                         _isSaving ? null : () => Navigator.of(context).pop(),
-                    child: const Text('CANCEL'),
+                    child: Text(AppLocalizations.of(context)!.dialogCancel),
                   ),
                   const SizedBox(width: 8),
                   TextButton(
@@ -211,7 +212,7 @@ class _AddEditActivityDialogState extends State<AddEditActivityDialog> {
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('SAVE'),
+                        : Text(AppLocalizations.of(context)!.dialogSave),
                   ),
                 ],
               ),

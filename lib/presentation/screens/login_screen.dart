@@ -4,7 +4,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Login screen with Google Sign-In button
 class LoginScreen extends StatefulWidget {
@@ -79,9 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to sign in: $e'),
+          content: Text(l10n.loginSignInError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -95,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,9 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Track Your Social Life',
-                  style: TextStyle(
+                Text(
+                  l10n.loginTitle,
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.grey,
                   ),
@@ -152,9 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                         ),
-                        label: const Text(
-                          'Sign in with Google',
-                          style: TextStyle(
+                        label: Text(
+                          l10n.loginSignInButton,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
@@ -176,9 +180,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
 
                 // Encouraging message
-                const Text(
-                  'One tap to get started! 🚀',
-                  style: TextStyle(
+                Text(
+                  l10n.loginTagline,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
                   ),
@@ -191,20 +195,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   text: TextSpan(
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                     children: [
-                      const TextSpan(
-                        text: 'By signing in, you agree to our\n',
-                      ),
+                      TextSpan(text: '${l10n.loginTermsPrefix}\n'),
                       TextSpan(
-                        text: 'Terms of Service',
+                        text: l10n.loginTermsLink,
                         style: TextStyle(
                           color: primaryColor,
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: _tosRecognizer,
                       ),
-                      const TextSpan(text: ' and '),
+                      TextSpan(text: l10n.loginTermsMiddle),
                       TextSpan(
-                        text: 'Privacy Policy',
+                        text: l10n.loginPrivacyLink,
                         style: TextStyle(
                           color: primaryColor,
                           decoration: TextDecoration.underline,

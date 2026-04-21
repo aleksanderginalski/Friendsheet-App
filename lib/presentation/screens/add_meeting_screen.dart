@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/meeting.dart';
 import '../../data/services/auth_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../providers/add_meeting_provider.dart';
 import '../widgets/activity_autocomplete.dart';
 import '../widgets/meeting_date_field.dart';
@@ -64,10 +65,11 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
 
     if (!context.mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Meeting saved!'),
+        SnackBar(
+          content: Text(l10n.addMeetingSaved),
           backgroundColor: Colors.green,
         ),
       );
@@ -75,8 +77,8 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
       Navigator.of(context).pop(provider.savedMeeting);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save meeting. Check all fields.'),
+        SnackBar(
+          content: Text(l10n.addMeetingSaveError),
           backgroundColor: Colors.red,
         ),
       );
@@ -86,10 +88,15 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AddMeetingProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(provider.isEditMode ? 'Edit Meeting' : 'Add Meeting'),
+        title: Text(
+          provider.isEditMode
+              ? l10n.addMeetingTitleEdit
+              : l10n.addMeetingTitleAdd,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -105,7 +112,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
             const SizedBox(height: 24),
 
             // --- Meeting Weight ---
-            const _SectionHeader(title: 'Meeting Weight *'),
+            _SectionHeader(title: l10n.addMeetingWeightSection),
             const SizedBox(height: 8),
             MeetingWeightStepper(
               value: provider.weight,
@@ -117,7 +124,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
             const SizedBox(height: 24),
 
             // --- Participants ---
-            const _SectionHeader(title: 'Participants * (min. 1)'),
+            _SectionHeader(title: l10n.addMeetingParticipantsSection),
             const SizedBox(height: 8),
             PersonAutocomplete(
               selectedPersons: provider.selectedPersons,
@@ -131,7 +138,7 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
             const SizedBox(height: 24),
 
             // --- Activities ---
-            const _SectionHeader(title: 'Activities * (min. 1)'),
+            _SectionHeader(title: l10n.addMeetingActivitiesSection),
             const SizedBox(height: 8),
             ActivityAutocomplete(
               selectedCategories: provider.selectedCategories,
@@ -166,7 +173,9 @@ class _AddMeetingScreenViewState extends State<AddMeetingScreenView> {
                         ),
                       )
                     : Text(
-                        provider.isEditMode ? 'SAVE CHANGES' : 'SAVE MEETING',
+                        provider.isEditMode
+                            ? l10n.addMeetingSaveChanges
+                            : l10n.addMeetingSave,
                         style: const TextStyle(fontSize: 16),
                       ),
               ),

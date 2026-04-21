@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
@@ -11,6 +12,7 @@ import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
 import 'package:friendsheet/data/services/ltns_exclusion_service.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/friends_quest/friends_quest_provider.dart';
 import 'package:friendsheet/presentation/providers/buddy_widget_provider.dart';
 import 'package:friendsheet/presentation/providers/home_provider.dart';
@@ -166,6 +168,12 @@ void main() {
 
   Widget buildHomeScreen() {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: buddyWidgetProvider),

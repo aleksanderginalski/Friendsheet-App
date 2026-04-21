@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../data/services/auth_service.dart';
 import '../../data/services/google_calendar_service.dart';
+import '../../l10n/app_localizations.dart';
+import '../providers/app_locale_provider.dart';
 import '../providers/calendar_settings_provider.dart';
 import '../providers/delete_account_provider.dart';
 import '../providers/export_provider.dart';
@@ -82,21 +84,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _handleRevoke(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Disconnect Calendar?'),
-        content: const Text(
-          'This will remove Friendsheet\'s access to your Google Calendar.',
-        ),
+        title: Text(l10n.settingsCalendarDisconnectTitle),
+        content: Text(l10n.settingsCalendarDisconnectContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('DISCONNECT'),
+            child: Text(l10n.settingsCalendarDisconnect),
           ),
         ],
       ),
@@ -112,25 +113,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final userId = AuthService().currentUserId;
     if (userId == null) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text(
-          'This will permanently delete your account and all data including '
-          'meetings, friends and activities. This action cannot be undone.',
-        ),
+        title: Text(l10n.settingsDeleteAccountTitle),
+        content: Text(l10n.settingsDeleteAccountContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.dialogCancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            child: const Text('DELETE'),
+            child: Text(l10n.settingsDeleteAccountConfirm),
           ),
         ],
       ),
@@ -141,22 +140,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  String _currentLanguageName(AppLocalizations l10n) {
+    final locale = context.read<AppLocaleProvider>().locale;
+    if (locale.languageCode == 'pl') return l10n.languagePolish;
+    return l10n.languageEnglish;
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = context.read<AppLocaleProvider>().locale;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsAppLanguage),
+        content: RadioGroup<Locale>(
+          groupValue: current,
+          onChanged: (value) {
+            if (value == null) return;
+            context.read<AppLocaleProvider>().setLocale(value);
+            Navigator.pop(ctx);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<Locale>(
+                value: const Locale('en'),
+                title: Text(l10n.languageEnglish),
+              ),
+              RadioListTile<Locale>(
+                value: const Locale('pl'),
+                title: Text(l10n.languagePolish),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final exportProvider = context.watch<ExportProvider>();
     final calendarProvider = context.watch<CalendarSettingsProvider>();
     final deleteProvider = context.watch<DeleteAccountProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
+        title: Text(l10n.settingsTitle,
+            style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
       ),
       body: ListView(
         children: [
           _buildCalendarSection(context, calendarProvider),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(l10n.settingsAppLanguage),
+            subtitle: Text(_currentLanguageName(l10n)),
+            onTap: () => _showLanguageDialog(context),
+          ),
           const Divider(),
           ListTile(
             leading: exportProvider.isLoading
@@ -166,8 +212,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.download),
-            title: const Text('Export Data'),
-            subtitle: const Text('Save all data as JSON to device'),
+            title: Text(l10n.settingsExportData),
+            subtitle: Text(l10n.settingsExportSubtitle),
             enabled: !exportProvider.isLoading,
             onTap:
                 exportProvider.isLoading ? null : () => _handleExport(context),
@@ -182,11 +228,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : Icon(Icons.delete_forever, color: colorScheme.error),
             title: Text(
-              'Delete Account',
+              l10n.settingsDeleteAccount,
               style: TextStyle(color: colorScheme.error),
             ),
-            subtitle:
-                const Text('Permanently delete your account and all data'),
+            subtitle: Text(l10n.settingsDeleteAccountSubtitle),
             enabled: !deleteProvider.isLoading,
             onTap: deleteProvider.isLoading
                 ? null
@@ -201,14 +246,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     BuildContext context,
     CalendarSettingsProvider provider,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return ValueListenableBuilder<bool>(
       valueListenable: GoogleCalendarService().isConnectedNotifier,
       builder: (context, isConnected, _) {
+        final tileL10n = AppLocalizations.of(context)!;
         if (!isConnected) {
           return ListTile(
             leading: Icon(Icons.calendar_today, color: Colors.grey[600]),
-            title: const Text('Google Calendar'),
-            subtitle: const Text('Not connected'),
+            title: Text(tileL10n.settingsCalendarSection),
+            subtitle: Text(tileL10n.settingsCalendarNotConnected),
             trailing: TextButton(
               onPressed: () => Navigator.push(
                 context,
@@ -219,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-              child: const Text('Connect'),
+              child: Text(tileL10n.settingsCalendarConnect),
             ),
           );
         }
@@ -227,11 +274,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
               child: Text(
-                'GOOGLE CALENDAR',
-                style: TextStyle(
+                l10n.settingsCalendarSection,
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.grey,
                   fontWeight: FontWeight.w600,
@@ -240,9 +287,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.link_off, color: Colors.red),
-              title: const Text(
-                'Disconnect Calendar',
-                style: TextStyle(color: Colors.red),
+              title: Text(
+                l10n.settingsCalendarDisconnectTitle,
+                style: const TextStyle(color: Colors.red),
               ),
               onTap: () => _handleRevoke(context),
             ),

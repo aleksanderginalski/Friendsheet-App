@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/screens/login_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -19,6 +21,12 @@ void main() {
   // Helper: builds LoginScreen with injected mock
   Widget buildLoginScreen() {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: LoginScreen(authService: mockAuthService),
     );
   }
@@ -41,7 +49,7 @@ void main() {
 
     testWidgets('displays encouraging message', (tester) async {
       await tester.pumpWidget(buildLoginScreen());
-      expect(find.text('One tap to get started! 🚀'), findsOneWidget);
+      expect(find.text('One tap to get started!'), findsOneWidget);
     });
 
     testWidgets('displays terms of service and privacy policy links',

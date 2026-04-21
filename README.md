@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (1038)
+✅ All tests passing (1044)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,14 +174,13 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.14 — US-111: Offline-First App (April 21, 2026)
-- ✅ `ConnectivityService` (NEW) — singleton with `ValueNotifier<bool> isOnlineNotifier`; `connectivity_plus` stream subscription
-- ✅ `OfflineBannerWidget` (NEW) — animated amber banner shown automatically when offline
-- ✅ `MeetingRepository` (MODIFIED) — `saveMeeting`/`updateMeeting`/`deleteMeeting` cache-first: writes to Hive immediately, Firestore fire-and-forget (no hang when offline)
-- ✅ `MeetingsListProvider` (MODIFIED) — `hasPendingWrites` via metadata-aware snapshot; cache renders without spinner
-- ✅ `MainScreen` (MODIFIED) — offline banner wired; Buddy + Google Calendar connectivity-gated
-- ✅ `HomeScreen` (MODIFIED) — all 4 Buddy CTAs gated with connectivity check
-- ✅ 9 new tests (1038 total)
+### Latest: v4.5.15 — US-116: App UI Localization (April 21, 2026)
+- ✅ `app_en.arb` / `app_pl.arb` (NEW) — ~340 keys; full English + Polish translations
+- ✅ `AppLocaleProvider` (NEW) — ChangeNotifier with SharedPreferences persistence; immediate locale switch without restart
+- ✅ `SettingsScreen` (MODIFIED) — "App Language" tile with English / Polski dialog
+- ✅ All 37 `lib/presentation/` files (MODIFIED) — hardcoded strings replaced with `AppLocalizations.of(context)!` calls
+- ✅ All 40 widget test files (MODIFIED) — localization delegates added to every `MaterialApp` wrapper
+- ✅ 6 new tests (1044 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 

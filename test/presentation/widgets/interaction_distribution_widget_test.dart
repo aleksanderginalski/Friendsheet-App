@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/widgets/interaction_distribution_widget.dart';
 
 void main() {
@@ -30,6 +32,12 @@ void main() {
     VoidCallback? onToggleMode,
   }) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SingleChildScrollView(
           child: InteractionDistributionWidget(
@@ -127,7 +135,7 @@ void main() {
       expect(toggled, isTrue);
     });
 
-    testWidgets('shows "No visible persons." when all persons are hidden',
+    testWidgets('shows "No visible persons" when all persons are hidden',
         (tester) async {
       await tester.pumpWidget(buildWidget(
         entries: twoEntries(),
@@ -135,15 +143,15 @@ void main() {
       ));
       await tester.pump();
 
-      expect(find.text('No visible persons.'), findsOneWidget);
+      expect(find.text('No visible persons'), findsOneWidget);
     });
 
-    testWidgets('shows "No visible persons." when entries are empty',
+    testWidgets('shows "No visible persons" when entries are empty',
         (tester) async {
       await tester.pumpWidget(buildWidget());
       await tester.pump();
 
-      expect(find.text('No visible persons.'), findsOneWidget);
+      expect(find.text('No visible persons'), findsOneWidget);
     });
 
     testWidgets('tapping filter icon calls onOpenVisibilityDialog',

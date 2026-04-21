@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/google_calendar.dart';
+import '../../l10n/app_localizations.dart';
 import '../import/meeting_inbox_screen.dart';
 import '../providers/calendar_events_provider.dart';
 import '../providers/meeting_inbox_provider.dart';
@@ -97,11 +98,12 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
       value: _provider,
       child: Consumer<CalendarEventsProvider>(
         builder: (context, provider, _) {
+          final l10n = AppLocalizations.of(context)!;
           return Scaffold(
             appBar: AppBar(
-              title: const Text(
-                'Select Events',
-                style: TextStyle(color: Colors.white),
+              title: Text(
+                l10n.calendarEventsTitle,
+                style: const TextStyle(color: Colors.white),
               ),
               backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
@@ -111,7 +113,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
                       ? () => _handleImport(context, provider)
                       : null,
                   child: Text(
-                    'Import (${provider.selectedCount})',
+                    l10n.calendarEventsImport(provider.selectedCount),
                     style: TextStyle(
                       color: provider.selectedCount > 0
                           ? Colors.white
@@ -126,7 +128,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
                 _buildFilterPanel(context, provider),
                 if (provider.status == CalendarEventsStatus.loaded &&
                     provider.hasEvents)
-                  _buildSelectionRow(provider),
+                  _buildSelectionRow(context, provider),
                 Expanded(child: _buildContent(context, provider)),
               ],
             ),
@@ -141,21 +143,22 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
     CalendarEventsProvider provider,
   ) {
     final fmt = DateFormat('MMM dd, yyyy');
+    final l10n = AppLocalizations.of(context)!;
 
     return ExpansionTile(
-      title: const Text('Filters'),
+      title: Text(l10n.calendarEventsFilters),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              const Text('From: '),
+              Text(l10n.calendarEventsFrom),
               OutlinedButton(
                 onPressed: () => _selectDate(context, true),
                 child: Text(fmt.format(provider.dateFrom)),
               ),
               const SizedBox(width: 8),
-              const Text('To: '),
+              Text(l10n.calendarEventsTo),
               OutlinedButton(
                 onPressed: () => _selectDate(context, false),
                 child: Text(fmt.format(provider.dateTo)),
@@ -166,13 +169,13 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
         ...provider.availableCalendars.map(
           (cal) => CheckboxListTile(
             title: Text(cal.summary),
-            subtitle: cal.isPrimary ? const Text('Primary') : null,
+            subtitle: cal.isPrimary ? Text(l10n.calendarEventsPrimary) : null,
             value: provider.selectedCalendarIds.contains(cal.id),
             onChanged: (_) => provider.toggleCalendar(cal.id),
           ),
         ),
         SwitchListTile(
-          title: const Text('Exclude all-day events'),
+          title: Text(l10n.calendarEventsExcludeAllDay),
           value: provider.excludeAllDay,
           onChanged: provider.setExcludeAllDay,
         ),
@@ -182,14 +185,18 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
             onPressed: provider.status == CalendarEventsStatus.loading
                 ? null
                 : provider.loadEvents,
-            child: const Text('Apply Filters'),
+            child: Text(l10n.calendarEventsApplyFilters),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSelectionRow(CalendarEventsProvider provider) {
+  Widget _buildSelectionRow(
+    BuildContext context,
+    CalendarEventsProvider provider,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
@@ -198,7 +205,11 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
             onPressed: provider.allSelected
                 ? provider.deselectAll
                 : provider.selectAll,
-            child: Text(provider.allSelected ? 'Deselect All' : 'Select All'),
+            child: Text(
+              provider.allSelected
+                  ? l10n.calendarEventsDeselectAll
+                  : l10n.calendarEventsSelectAll,
+            ),
           ),
           const Spacer(),
           Text('${provider.selectedCount} selected'),
@@ -208,6 +219,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
   }
 
   Widget _buildContent(BuildContext context, CalendarEventsProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     switch (provider.status) {
       case CalendarEventsStatus.idle:
       case CalendarEventsStatus.loading:
@@ -228,7 +240,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: provider.loadEvents,
-                child: const Text('Retry'),
+                child: Text(l10n.calendarEventsRetry),
               ),
             ],
           ),
@@ -242,7 +254,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
               children: [
                 Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
-                const Text('No events found'),
+                Text(l10n.calendarEventsEmpty),
                 const SizedBox(height: 8),
                 Text(
                   'Try adjusting the date range or filters',
@@ -269,6 +281,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
   /// Shown when [CalendarEventsProvider.requiresReconnect] is true.
   /// The Reconnect button pops this screen and delegates to [widget.onReconnect].
   Widget _buildReconnectPrompt(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -277,15 +290,9 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
           children: [
             const Icon(Icons.link_off, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
-            const Text(
-              'Calendar access expired',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
             Text(
-              'Please reconnect Google Calendar to continue.',
-              style: TextStyle(color: Colors.grey[600]),
+              l10n.calendarEventsReconnectPrompt,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -298,7 +305,7 @@ class _CalendarEventsScreenState extends State<CalendarEventsScreen> {
                       widget.onReconnect!();
                     }
                   : null,
-              child: const Text('Reconnect'),
+              child: Text(l10n.calendarEventsReconnect),
             ),
           ],
         ),

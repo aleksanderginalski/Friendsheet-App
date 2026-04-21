@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/person.dart';
 import '../../data/repositories/person_repository.dart';
+import '../../l10n/app_localizations.dart';
 import 'friends_quest_provider.dart';
 
 class CreateQuestDialog extends StatefulWidget {
@@ -71,8 +72,9 @@ class _CreateQuestDialogState extends State<CreateQuestDialog> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredPersons;
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: const Text('New Quest'),
+      title: Text(l10n.questNewQuestTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
@@ -83,43 +85,43 @@ class _CreateQuestDialogState extends State<CreateQuestDialog> {
               controller: _nameController,
               autofocus: true,
               maxLength: 80,
-              decoration: const InputDecoration(
-                labelText: 'Quest name',
-                hintText: 'e.g. Weekend with the crew',
+              decoration: InputDecoration(
+                labelText: l10n.questNameLabel,
+                hintText: l10n.questNameHint,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Participants',
-              style: TextStyle(fontWeight: FontWeight.w600),
+            Text(
+              l10n.questParticipantsLabel,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             if (_loadingPersons)
               const Center(child: CircularProgressIndicator())
             else if (_persons.isEmpty)
-              const Text(
-                'No contacts yet.',
-                style: TextStyle(color: Colors.grey),
+              Text(
+                l10n.questNoContacts,
+                style: const TextStyle(color: Colors.grey),
               )
             else ...[
               TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Search participants...',
-                  prefixIcon: Icon(Icons.search, size: 20),
+                decoration: InputDecoration(
+                  hintText: l10n.questSearchParticipants,
+                  prefixIcon: const Icon(Icons.search, size: 20),
                   isDense: true,
-                  contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
                 ),
               ),
               const SizedBox(height: 4),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 200),
                 child: filtered.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Text(
-                          'No matches.',
-                          style: TextStyle(color: Colors.grey),
+                          l10n.questNoMatches,
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       )
                     : ListView.builder(
@@ -151,7 +153,7 @@ class _CreateQuestDialogState extends State<CreateQuestDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('CANCEL'),
+          child: Text(l10n.dialogCancel),
         ),
         TextButton(
           onPressed: _canCreate ? _create : null,
@@ -161,7 +163,7 @@ class _CreateQuestDialogState extends State<CreateQuestDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('CREATE'),
+              : Text(l10n.dialogCreate),
         ),
       ],
     );

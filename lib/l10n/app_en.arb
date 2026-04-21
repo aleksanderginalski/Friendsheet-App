@@ -1,0 +1,400 @@
+{
+  "@@locale": "en",
+
+  "loginTitle": "Track Your Social Life",
+  "loginSignInButton": "Sign in with Google",
+  "loginTagline": "One tap to get started!",
+  "loginTermsPrefix": "By signing in you agree to our ",
+  "loginTermsLink": "Terms of Service",
+  "loginTermsMiddle": " and ",
+  "loginPrivacyLink": "Privacy Policy",
+  "loginSignInError": "Failed to sign in: {error}",
+  "@loginSignInError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "settingsTitle": "Settings",
+  "settingsCalendarSection": "GOOGLE CALENDAR",
+  "settingsCalendarNotConnected": "Not connected",
+  "settingsCalendarConnect": "Connect",
+  "settingsCalendarDisconnectTitle": "Disconnect Calendar",
+  "settingsCalendarDisconnectContent": "Are you sure you want to disconnect Google Calendar?",
+  "settingsCalendarDisconnect": "DISCONNECT",
+  "settingsAppLanguage": "App Language",
+  "settingsExportData": "Export Data",
+  "settingsExportSubtitle": "Save all data as JSON to device",
+  "settingsDeleteAccount": "Delete Account",
+  "settingsDeleteAccountSubtitle": "Permanently delete your account and data",
+  "settingsDeleteAccountTitle": "Delete Account?",
+  "settingsDeleteAccountContent": "This will permanently delete your account and all your data. This action cannot be undone.",
+  "settingsDeleteAccountConfirm": "DELETE",
+  "settingsDeleteAccountSuccess": "Account deleted.",
+  "settingsDeleteAccountError": "Failed to delete account: {error}",
+  "@settingsDeleteAccountError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "mainImportShare": "Import & Share",
+  "mainShareMeetings": "Share meetings with a friend",
+  "mainBrowseImport": "Browse & Import Events",
+  "mainImportFromCalendar": "Import from Calendar",
+  "mainBuddy": "Buddy",
+  "mainFriendsQuest": "Friends-Quest",
+  "mainPendingMeetings": "Pending Meetings ({count})",
+  "@mainPendingMeetings": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "mainSettingsTitle": "Settings",
+  "mainLogOut": "Log Out",
+  "mainLogOutTitle": "Log Out?",
+  "mainLogOutContent": "Are you sure you want to log out?\n\nYou'll need to sign in again to access your meetings.",
+  "mainLogOutConfirm": "LOG OUT",
+  "mainLogOutError": "Failed to log out: {error}",
+  "@mainLogOutError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "mainCalendarOfflineMessage": "Google Calendar requires an internet connection",
+  "mainCalendarAuthExpired": "Calendar access expired — please reconnect",
+  "mainCalendarLoadError": "Could not load calendars. Check your connection.",
+
+  "mainNavHome": "Home",
+  "mainNavMeetings": "Meetings",
+  "mainNavFriends": "Friends",
+  "mainNavActivities": "Activities",
+
+  "homeOfflineMessage": "Buddy requires an internet connection",
+  "homeCalendarAccessDenied": "Calendar access denied",
+
+  "meetingsListTitle": "My Meetings",
+  "meetingsListSyncing": "Syncing...",
+  "meetingsListSearchHint": "Search meetings...",
+  "meetingsListSearchClose": "Close search",
+  "meetingsListSearch": "Search",
+  "meetingsListEmpty": "No meetings yet — tap + to add your first one!",
+  "meetingsListNoResults": "No results for \"{query}\"",
+  "@meetingsListNoResults": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "meetingsListMeetingCount": "{count, plural, =1{1 meeting} other{{count} meetings}}",
+  "@meetingsListMeetingCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "addMeetingTitleEdit": "Edit Meeting",
+  "addMeetingTitleAdd": "Add Meeting",
+  "addMeetingWeightSection": "Meeting Weight *",
+  "addMeetingParticipantsSection": "Participants * (min. 1)",
+  "addMeetingActivitiesSection": "Activities * (min. 1)",
+  "addMeetingSaveChanges": "SAVE CHANGES",
+  "addMeetingSave": "SAVE MEETING",
+  "addMeetingSaved": "Meeting saved!",
+  "addMeetingSaveError": "Failed to save meeting...",
+
+  "personsListTitle": "MY PEOPLE",
+  "personsListAddPerson": "Add Person",
+  "personsListAddGroup": "Add Group",
+  "personsListEditGroup": "Edit group",
+  "personsListDeleteGroup": "Delete group",
+  "personsListDeleteGroupTitle": "Delete group?",
+  "personsListDeleteGroupContent": "Delete \"{name}\"?\nPersons will not be deleted.",
+  "@personsListDeleteGroupContent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "personsListDeleteGroupContentSimple": "Are you sure you want to delete this group?",
+  "personsListSearchHint": "Search friends...",
+  "personsListSearchClose": "Close search",
+  "personsListSearch": "Search",
+  "personsListAdd": "Add",
+  "personsListNoResults": "No results for \"{query}\"",
+  "@personsListNoResults": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "personsListDeleteGroupConfirm": "DELETE",
+  "personsListPersonAdded": "Person added",
+  "personsListEmpty": "No friends yet — tap + to add your first one!",
+  "personsListGroupEmpty": "No friends in this group.",
+  "personsListAlreadyInGroup": "All friends are already in this group",
+
+  "calendarPermissionTitle": "Calendar Import",
+  "calendarPermissionHeading": "Connect Google Calendar",
+  "calendarPermissionDescription": "Friendsheet can import your Google Calendar events as meeting suggestions. You choose which events to import.",
+  "calendarPermissionConnectButton": "Connect Google Calendar",
+  "calendarPermissionNotNow": "Not now",
+  "calendarPermissionError": "An unexpected error occurred",
+
+  "calendarEventsTitle": "Select Events",
+  "calendarEventsImport": "Import ({count})",
+  "@calendarEventsImport": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "calendarEventsFilters": "Filters",
+  "calendarEventsFrom": "From:",
+  "calendarEventsTo": "To:",
+  "calendarEventsPrimary": "Primary",
+  "calendarEventsExcludeAllDay": "Exclude all-day events",
+  "calendarEventsApplyFilters": "Apply Filters",
+  "calendarEventsSelectAll": "Select All",
+  "calendarEventsDeselectAll": "Deselect All",
+  "calendarEventsEmpty": "No events found",
+  "calendarEventsReconnectPrompt": "Calendar disconnected. Reconnect to import events.",
+  "calendarEventsRetry": "Retry",
+  "calendarEventsReconnect": "Reconnect",
+
+  "aiSettingsTitle": "AI Assistant",
+  "aiSettingsDeleteKeyTitle": "Delete API Key?",
+  "aiSettingsDeleteKeyContent": "Your OpenAI API key will be removed from this device.",
+  "aiSettingsDeleteKeyConfirm": "DELETE",
+  "aiSettingsApiKeyLabel": "API Key",
+  "aiSettingsApiKeyHint": "sk-...",
+  "aiSettingsSave": "Save",
+  "aiSettingsDeleteKey": "Delete Key",
+  "aiSettingsApiKeySection": "API Key",
+
+  "aiConsentTitle": "AI Assistant — Privacy",
+  "aiConsentAlwaysSent": "Always sent to OpenAI",
+  "aiConsentSentWhenAsked": "Sent only when you explicitly ask",
+  "aiConsentNeverSent": "Never sent to OpenAI",
+  "aiConsentPrivacyPolicy": "Read full Privacy Policy",
+  "aiConsentAgree": "I understand and agree",
+
+  "buddyMenuTitle": "AI Assistant",
+  "buddyMenuChatSubtitle": "Chat with your AI social assistant",
+  "buddyMenuApiKey": "API Key",
+  "buddyMenuApiKeySubtitle": "Manage your OpenAI API key",
+  "buddyMenuLtnsFilters": "LTNS Filters",
+  "buddyMenuLtnsFiltersSubtitle": "Choose who appears in Long Time No See",
+
+  "ltnsFilterTitle": "LTNS Filters",
+  "ltnsFilterDescription": "Choose who appears in the Long Time No See section on your home screen.",
+  "ltnsFilterSearchHint": "Search by name or nickname…",
+
+  "meetingDetailTitle": "Meeting Detail",
+  "meetingDetailNoParticipantsWarning": "This meeting has no participants. Tap edit to add someone.",
+  "meetingDetailNoParticipants": "This meeting has no participants...",
+  "meetingDetailParticipants": "Participants",
+  "meetingDetailActivities": "Activities",
+  "meetingDetailNoParticipantsLabel": "No participants.",
+  "meetingDetailNoActivities": "No activities.",
+  "meetingDetailEditButton": "Edit Meeting",
+  "meetingDetailDeleteTitle": "Delete Meeting",
+  "meetingDetailDeleteContent": "Are you sure you want to delete this meeting? This action cannot be undone.",
+  "meetingDetailDeleteCancel": "Cancel",
+  "meetingDetailDeleteConfirm": "Delete",
+  "meetingDetailDeleteError": "Failed to delete meeting. Please try again.",
+
+  "activitiesListTitle": "Activities",
+  "activitiesListEmpty": "No activities yet — tap + to create your first category!",
+  "activitiesListNoResults": "No activities found",
+  "activitiesListAddTooltip": "Add activity category",
+  "activitiesListAddChildTooltip": "Add child activity",
+  "activitiesListSearchHint": "Search activities...",
+  "activitiesListSearchClose": "Close search",
+  "activitiesListSearch": "Search",
+  "activitiesListRetry": "Retry",
+  "activitiesListMergeContent": "Merge \"{source}\" into \"{target}\"?\n\nAll meetings will be updated. \"{source}\" will be deleted.",
+  "@activitiesListMergeContent": {
+    "placeholders": {
+      "source": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "activitiesListMergeTitle": "Merge categories?",
+  "activitiesListMergedSuccess": "Merged \"{source}\" into \"{target}\"",
+  "@activitiesListMergedSuccess": {
+    "placeholders": {
+      "source": { "type": "String" },
+      "target": { "type": "String" }
+    }
+  },
+  "activitiesListDeleteTitle": "Delete Activity?",
+  "activitiesListDeleteContent": "Delete \"{name}\"? This cannot be undone.",
+  "@activitiesListDeleteContent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "activitiesListDeleteError": "Failed to delete: {error}",
+  "@activitiesListDeleteError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "activitiesListMergeConfirm": "MERGE",
+  "activitiesListMergeError": "Merge failed: {error}",
+  "@activitiesListMergeError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "activitiesListEdit": "Edit",
+  "activitiesListDelete": "Delete",
+  "activitiesListMergeInto": "Merge into\u2026",
+
+  "meetingInboxTitle": "Pending Meetings",
+  "meetingInboxDeletePackageTitle": "Delete package?",
+  "meetingInboxDeletePackageContent": "Are you sure you want to delete this package? It cannot be recovered.",
+  "meetingInboxEmptyTitle": "No pending meetings",
+  "meetingInboxEmptySubtitle": "Import events from your calendar or receive shared meetings from a friend to get started.",
+  "meetingInboxProgress": "{reviewed} of {total} reviewed",
+  "@meetingInboxProgress": {
+    "placeholders": {
+      "reviewed": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "meetingInboxSharedByFriends": "Shared by friends",
+  "meetingInboxConflictCount": "⚠️ {count} conflict(s)",
+  "@meetingInboxConflictCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "offlineBannerMessage": "No internet connection",
+
+  "statisticsTitle": "Statistics",
+  "activityBreakdownTitle": "Activity Breakdown",
+  "whoPerActivityTitle": "Who Per Activity",
+  "interactionDistributionTitle": "Interaction Distribution",
+
+  "friendsQuestSummaryTitle": "Friends-Quest",
+  "sharingCtaTitle": "Save Your Memories",
+  "sharingCtaSubtitle": "Share your meetings with a friend",
+  "sharingCtaCardTitle": "Request meetings from a friend",
+  "sharingCtaCardSubtitle": "Have a friend who uses Friendsheet? Ask them to share your meetings.",
+  "sharingCtaCardButton": "Generate token",
+  "buildMeetingBaseCtaTitle": "Build your meeting base",
+  "buildMeetingBaseCtaSubtitle": "Add your first meeting to see statistics",
+  "buildMeetingBaseCardSubtitle": "You have fewer than 50 meetings. Import from Google Calendar or ask a friend to share your meetings.",
+  "buildMeetingBaseCardRequest": "Request from a friend",
+  "onboardingCalendarCtaTitle": "Import from Calendar",
+  "onboardingCalendarCtaSubtitle": "Connect Google Calendar to import events",
+  "onboardingCalendarCardTitle": "Import your past meetings",
+  "onboardingCalendarCardSubtitle": "You have fewer than 50 meetings. Import from Google Calendar to get started faster.",
+
+  "activitySelectorDialogTitle": "Select Activities",
+  "activityVisibilityDialogTitle": "Show / Hide Activities",
+  "statisticsVisibilityDialogTitle": "Show / Hide Statistics",
+  "personVisibilityDialogTitle": "Show / Hide Friends",
+  "whoPerActivityPersonFilterDialogTitle": "Filter by Person",
+
+  "noVisibleActivities": "No visible activities",
+  "noVisiblePersons": "No visible persons",
+  "activitiesHiddenCount": "{count} activities hidden",
+  "@activitiesHiddenCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "personsHiddenCount": "{count} persons hidden",
+  "@personsHiddenCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statisticsAllHidden": "All statistics hidden",
+  "statisticsRestoreAll": "Restore all",
+  "statisticsNoMeetings": "No meetings found",
+  "statisticsMinOneCard": "At least one card must remain visible",
+  "visibilityAutoSelectTop10": "Auto-select top 10",
+  "visibilityMinOnePerson": "At least one person must remain visible",
+  "visibilitySelectAll": "Select all",
+  "visibilityDeselectAll": "Deselect all",
+  "interactionDistributionInfo": "A meeting with multiple people counts toward each person's total. This means percentages across all persons can exceed 100%.",
+  "interactionCumulative": "Cumulative",
+  "interactionYearly": "Yearly",
+  "whoSelectActivity": "Select an activity above to see the ranking.",
+  "whoNoData": "No data for this activity.",
+  "meetingCardNoParticipants": "No participants",
+  "meetingCardPeople": "{count} people",
+  "@meetingCardPeople": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "friendsQuestViewAll": "View all \u2192",
+  "friendsQuestActiveQuests": "{count, plural, =1{1 active quest} other{{count} active quests}}",
+  "@friendsQuestActiveQuests": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "statDeltaNew": "NEW",
+
+  "dialogCancel": "CANCEL",
+  "dialogClose": "CLOSE",
+  "dialogOk": "OK",
+  "dialogSave": "SAVE",
+  "dialogCreate": "CREATE",
+  "dialogAdd": "ADD",
+  "dialogDelete": "DELETE",
+
+  "aiChatGoToSettings": "Go to Settings",
+  "aiChatDismiss": "Dismiss",
+  "aiChatRetry": "Retry",
+
+  "personDialogTitle": "Add New Person",
+  "personDialogFirstName": "First name *",
+  "personDialogLastName": "Last name (optional)",
+  "personDialogNickname": "Nickname (required to distinguish)",
+
+  "questScreenTitle": "Friends-Quests",
+  "questNewQuestTitle": "New Quest",
+  "questNameLabel": "Quest name",
+  "questNameHint": "e.g. Weekend with the crew",
+  "questParticipantsLabel": "Participants",
+  "questNoContacts": "No contacts yet.",
+  "questSearchParticipants": "Search participants...",
+  "questNoMatches": "No matches.",
+  "questEditTaskTitle": "Edit task",
+  "questTaskText": "Task text",
+  "questCompleteTitle": "Complete Quest",
+  "questCompleteContent": "This quest is not linked to a meeting. Complete without saving notes, or select a meeting first?",
+  "questWithoutNotes": "WITHOUT NOTES",
+  "questSelectMeeting": "SELECT MEETING",
+  "questLinkToMeeting": "Link to meeting",
+  "questTapToChange": "Tap to change",
+  "questMeetingLinked": "Meeting linked",
+  "questNoTasks": "No tasks yet. Add one with the + button.",
+  "questDeleteTitle": "Delete Quest",
+  "questDeleteContent": "Delete \"{name}\"? This cannot be undone.",
+  "@questDeleteContent": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "questNewTaskTitle": "New task",
+  "questAssignTo": "Assign to (optional)",
+  "questAddParticipantsTitle": "Add participants",
+  "questSearch": "Search...",
+  "questAllContactsAdded": "All contacts already added.",
+  "questParticipantsCount": "Participants ({count})",
+  "@questParticipantsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "questNoParticipants": "No participants.",
+  "questAddParticipant": "Add participant",
+
+  "languageEnglish": "English",
+  "languagePolish": "Polski"
+}

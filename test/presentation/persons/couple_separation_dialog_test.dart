@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/catch_up_topic.dart';
 import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart';
+import 'package:friendsheet/l10n/app_localizations.dart';
 import 'package:friendsheet/presentation/persons/couple_separation_dialog.dart';
 
 void main() {
@@ -25,6 +27,12 @@ void main() {
     Map<String, TopicRedistributionDecision>? result;
 
     await tester.pumpWidget(MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Builder(
         builder: (ctx) => TextButton(
           onPressed: () async {
