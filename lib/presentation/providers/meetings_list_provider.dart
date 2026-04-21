@@ -150,8 +150,7 @@ class MeetingsListProvider extends ChangeNotifier {
   // interface (getMeetingsByUser) stays unchanged.
   void _subscribeToMetadata(String userId) {
     _metaSubscription?.cancel();
-    _metaSubscription =
-        _meetingRepository.getMeetingsSnapshot(userId).listen(
+    _metaSubscription = _meetingRepository.getMeetingsSnapshot(userId).listen(
       (snapshot) {
         final pending = snapshot.metadata.hasPendingWrites;
         if (_hasPendingWrites != pending) {

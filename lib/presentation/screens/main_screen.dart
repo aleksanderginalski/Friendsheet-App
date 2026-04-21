@@ -528,8 +528,7 @@ class _MainScreenState extends State<MainScreen> {
                   ScaffoldMessenger.of(appNavigatorKey.currentContext!)
                       .showSnackBar(
                     const SnackBar(
-                      content:
-                          Text('Buddy requires an internet connection'),
+                      content: Text('Buddy requires an internet connection'),
                     ),
                   );
                   return;
