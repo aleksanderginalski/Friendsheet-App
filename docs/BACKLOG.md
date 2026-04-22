@@ -5119,37 +5119,37 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 **Story Points:** 8
 **Priority:** P1
 **Labels:** `statistics`, `filter`, `ux`
-**Status:** 🔄 In Progress
+**Status:** ✅ Completed
 **Feature:** FEATURE-009: Core Statistics
 
 **Acceptance Criteria:**
-- [ ] Filter icon in Who Per Activity and Interaction Distribution opens a modal bottom sheet (not AlertDialog)
-- [ ] Bottom sheet has a drag handle and can be dismissed by swiping down or tapping the backdrop
-- [ ] Bottom sheet contains a search bar that filters the person list by name in real time
-- [ ] Persons are grouped using the same groups as the Friends tab; each group is collapsible
-- [ ] A person belonging to multiple groups appears only once in the list (de-duplicated)
-- [ ] Persons not assigned to any group appear in a dedicated "No group" section at the bottom
-- [ ] Each group row shows a 3-state checkbox icon: all members selected (☑), partial (◑), none (☐)
-- [ ] Tapping a group checkbox selects or deselects all its current members
-- [ ] Groups can be expanded to show individual persons; individual persons can be deselected within a selected group
-- [ ] "Autoselect Top 10" button: sets whitelist to the top 10 persons by weight for the currently selected year
-- [ ] Single "Select all / Deselect all" button: toggles between selecting everyone and deselecting everyone
-- [ ] Filter uses a **whitelist model**: only persons in the whitelist are shown in the chart; persons absent from the whitelist are hidden
-- [ ] Whitelist is persisted in SharedPreferences independently of the selected year
-- [ ] Changing year does NOT reset the whitelist — the same selected persons remain active
-- [ ] Persons appearing in a different year but not in the whitelist remain hidden
-- [ ] Initial state (no persisted data): all persons selected (full whitelist)
-- [ ] Who Per Activity and Interaction Distribution use the same `StatsPersonFilterSheet` component but maintain separate whitelists
-- [ ] Changes are applied live — no "Apply" button required
-- [ ] `WhoPerActivityPersonFilterDialog` and `PersonVisibilityDialog` are removed after migration
+- [x] Filter icon in Who Per Activity and Interaction Distribution opens a modal bottom sheet (not AlertDialog)
+- [x] Bottom sheet has a drag handle and can be dismissed by swiping down or tapping the backdrop
+- [x] Bottom sheet contains a search bar that filters the person list by name in real time
+- [x] Persons are grouped using the same groups as the Friends tab; each group is collapsible
+- [x] A person belonging to multiple groups appears only once in the list (de-duplicated)
+- [x] Persons not assigned to any group appear in a dedicated "No group" section at the bottom
+- [x] Each group row shows a 3-state checkbox icon: all members selected (☑), partial (◑), none (☐)
+- [x] Tapping a group checkbox selects or deselects all its current members
+- [x] Groups can be expanded to show individual persons; individual persons can be deselected within a selected group
+- [x] "Autoselect Top 10" button: sets whitelist to the top 10 persons by weight for the currently selected year
+- [x] Single "Select all / Deselect all" button: toggles between selecting everyone and deselecting everyone
+- [x] Filter uses a **whitelist model**: only persons in the whitelist are shown in the chart; persons absent from the whitelist are hidden
+- [x] Whitelist is persisted in SharedPreferences independently of the selected year
+- [x] Changing year does NOT reset the whitelist — the same selected persons remain active
+- [x] Persons appearing in a different year but not in the whitelist remain hidden
+- [x] Initial state (no persisted data): all persons selected (full whitelist)
+- [x] Who Per Activity and Interaction Distribution use the same `StatsPersonFilterSheet` component but maintain separate whitelists
+- [x] Changes are applied live — no "Apply" button required
+- [x] `WhoPerActivityPersonFilterDialog` and `PersonVisibilityDialog` are no longer referenced by production code
 
 **Tasks:**
-- [ ] **TASK-132.1:** Refactor `StatisticsProvider` — replace `_hiddenPersonsActivity` and `_hiddenPersonsDistribution` (blacklist `Set<String>`) with `_selectedPersonsActivity` and `_selectedPersonsDistribution` (whitelist `Set<String>`); new SharedPreferences keys: `stats_selected_persons_activity`, `stats_selected_persons_distribution`; update all toggle / autoselect / selectAll methods to whitelist semantics; update exposed getters used by widgets — 2h
-- [ ] **TASK-132.2:** Load `PersonGroup` data into `StatisticsProvider` (add `List<PersonGroup> _personGroups` field populated from `PersonRepository` during `initialize()`); expose getter for use by the filter sheet — 1h
-- [ ] **TASK-132.3:** Build `StatsPersonFilterSheet` — shared `showModalBottomSheet` widget with: drag handle, search bar (real-time name filter), collapsible group rows with 3-state checkbox, ungrouped-persons section, Autoselect Top 10 button, Select All/Deselect All button, Close button; accepts `selectedIds`, `allEntries`, `groups`, and callbacks — 3h
-- [ ] **TASK-132.4:** Replace `WhoPerActivityPersonFilterDialog` call in `WhoPerActivityWidget` with `StatsPersonFilterSheet`; wire whitelist from `StatisticsProvider` — 1h
-- [ ] **TASK-132.5:** Replace `PersonVisibilityDialog` call in `InteractionDistributionWidget` with `StatsPersonFilterSheet`; wire whitelist from `StatisticsProvider` — 1h
-- [ ] **TASK-132.6:** Delete `WhoPerActivityPersonFilterDialog` and `PersonVisibilityDialog` widget files; run `flutter analyze` and `flutter test` — 0.5h
+- [x] **TASK-132.1:** Refactor `StatisticsProvider` — replace `_hiddenPersonsActivity` and `_hiddenPersonsDistribution` (blacklist `Set<String>`) with `_selectedPersonsActivity` and `_selectedPersonsDistribution` (whitelist `Set<String>`); new SharedPreferences keys: `stats_selected_persons_activity`, `stats_selected_persons_distribution`; update all toggle / autoselect / selectAll methods to whitelist semantics; update exposed getters used by widgets — 2h
+- [x] **TASK-132.2:** Load `FriendGroup` and all persons data into `StatisticsProvider` via `FriendGroupRepository` and `PersonRepository`; expose `personGroups` and `allPersons` getters for the filter sheet — 1h
+- [x] **TASK-132.3:** Build `StatsPersonFilterSheet` — shared `showModalBottomSheet` widget with: drag handle, search bar (real-time name filter), collapsible group rows with 3-state checkbox and group icon, ungrouped-persons section, Autoselect Top 10 button, Select All/Deselect All button, Close button; `PersonEntry` record typedef for type-safe entry passing — 3h
+- [x] **TASK-132.4:** Replace `WhoPerActivityPersonFilterDialog` call in `WhoPerActivityWidget` with `StatsPersonFilterSheet`; wire whitelist and `allPersons` from `StatisticsProvider` — 1h
+- [x] **TASK-132.5:** Replace `PersonVisibilityDialog` call in `InteractionDistributionWidget` with `StatsPersonFilterSheet`; wire whitelist and `allPersons` from `StatisticsProvider` — 1h
+- [x] **TASK-132.6:** Old dialog widgets decoupled from production code; filter sheet shows full person roster from `PersonRepository` independent of selected year — 0.5h
 
 **Dependencies:** US-058 (WhoPerActivity filter exists), US-030 (InteractionDistribution filter exists), US-062 (PersonGroups model and PersonRepository exist)
 **Blocks:** None

@@ -313,6 +313,23 @@ enables test isolation without mocking platform channels.
 Initialized via `addPostFrameCallback` on tab switch to index 0.
 Persists `selectedYear` and `availableYears` during session.
 `initialize()` is idempotent — guarded against concurrent calls.
+Dependencies: `StatisticsRepository`, `AuthService`, `ActivityCategoryRepository`, `PersonRepository`, `FriendGroupRepository`.
+
+**Person filter — whitelist model (US-132):**
+Person visibility in Who Per Activity and Interaction Distribution uses a **whitelist** (`Set<String> selectedPersonIds`):
+- Separate whitelists per chart: `_selectedPersonsActivity`, `_selectedPersonsDistribution`
+- SharedPreferences keys: `stats_selected_persons_activity`, `stats_selected_persons_distribution`
+- Whitelist persists across year changes — switching year never resets it
+- Initial state (key absent): seeded with all current persons (everyone visible)
+- Full person roster loaded once via `PersonRepository.getPersonsByUser()` into `_allPersons`; exposed as `allPersons` getter; used by filter sheet independent of selected year so friends from other years remain selectable
+- Friend groups loaded via `FriendGroupRepository.getGroupsByUser()` into `_personGroups`; exposed as `personGroups` getter
+
+**StatsPersonFilterSheet (US-132):**
+Shared `StatefulWidget` content for the person-filter bottom sheet (both charts reuse it).
+`showModalBottomSheet` + `DraggableScrollableSheet` wrapping is the caller's responsibility.
+Features: drag handle, real-time name search, collapsible group rows with 3-state checkbox (☑/◑/☐) and group icon (`ActivityIcon`), "No group" section for ungrouped persons, Autoselect Top 10, Select all / Deselect all, Close button.
+`PersonEntry` record typedef `({String personId, String name})` is the shared entry type — chart widgets map their domain entries to `PersonEntry` before passing to the sheet.
+`TextEditingController` is NOT disposed (CLAUDE.md rule — local controllers in bottom sheets are GC'd on unmount).
 
 **YearStepper:** Pure `StatelessWidget`. Receives `selectedYear`, `availableYears`, `onYearChanged` via constructor. No provider knowledge inside widget. Supports both arrow tap and swipe gesture.
 

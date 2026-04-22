@@ -4,6 +4,26 @@ All notable changes to Friendsheet are documented here.
 
 ---
 
+### v4.5.16 — US-132: Statistics Filter — Grouped Person Picker (April 22, 2026)
+- ✅ `lib/presentation/widgets/stats_person_filter_sheet.dart` (NEW) — `StatsPersonFilterSheet` shared content widget: drag handle, real-time name search, collapsible group rows with 3-state checkbox (☑/◑/☐) and group icon matching Friends tab, "No group" ungrouped section, Autoselect Top 10, Select all / Deselect all, Close button; `PersonEntry` record typedef for type-safe entry passing; no `dispose()` call on `TextEditingController` per CLAUDE.md rule
+- ✅ `lib/presentation/providers/statistics_provider.dart` (MODIFIED) — blacklist model (`_hiddenPersonsActivity`, `_hiddenPersonsDistribution`) replaced with whitelist (`_selectedPersonsActivity`, `_selectedPersonsDistribution`); new SharedPreferences keys `stats_selected_persons_activity` / `stats_selected_persons_distribution`; `_loadAllPersons()` populates full person roster from `PersonRepository` independent of selected year; `allPersons` getter exposed; `setSelectedPersonsActivity()`, `setSelectedPersonsDistribution()` batch-write methods; `FriendGroupRepository` + `PersonRepository` both actively used
+- ✅ `lib/presentation/widgets/who_per_activity_widget.dart` (MODIFIED) — replaced `WhoPerActivityPersonFilterDialog` call with `StatsPersonFilterSheet` via `showModalBottomSheet`; new `allPersons` parameter; filter sheet populated from full person roster so persons from other years are visible in the filter
+- ✅ `lib/presentation/widgets/interaction_distribution_widget.dart` (MODIFIED) — replaced `PersonVisibilityDialog` call with `StatsPersonFilterSheet` via `showModalBottomSheet`; new `allPersons` parameter; same full-roster pattern
+- ✅ `lib/presentation/widgets/statistics_section.dart` (MODIFIED) — passes `allPersons: provider.allPersons` and whitelist callbacks to both chart widgets; removed old dialog-opening methods
+- ✅ `lib/presentation/screens/main_screen.dart` (MODIFIED) — `FriendGroupRepository()` passed to `StatisticsProvider` constructor
+- ✅ `lib/l10n/app_en.arb` + `app_pl.arb` (MODIFIED) — 8 new keys: `statsFilterSheetTitle`, `statsFilterNoGroup`, `statsFilterSelectAll`, `statsFilterDeselectAll`, `statsFilterSearch`, `statsFilterAutoSelectTop10`, `statsFilterClose`, `statsFilterHiddenHint`
+- ✅ `lib/l10n/app_localizations*.dart` (MODIFIED) — generated localizations for 8 new keys
+- ✅ `test/presentation/widgets/stats_person_filter_sheet_test.dart` (NEW) — 17 widget tests: title render, ungrouped label, group row, expand/collapse, 3-state checkboxes, group toggle callbacks, person toggle callback, hidden hint, search filter, Select all, Deselect all, Autoselect Top 10, ungrouped-vs-grouped split
+- ✅ `test/presentation/providers/statistics_provider_visibility_test.dart` (MODIFIED) — 1 new test: `initialize()` populates `allPersons` from `PersonRepository`; all existing tests updated to whitelist semantics and new stub for `getPersonsByUser`
+- ✅ `test/presentation/providers/statistics_provider_distribution_test.dart` (MODIFIED) — whitelist semantics, `getPersonsByUser` stub
+- ✅ `test/presentation/providers/statistics_provider_year_test.dart` (MODIFIED) — `getPersonsByUser` stub
+- ✅ `test/presentation/widgets/interaction_distribution_widget_test.dart` (MODIFIED) — new `allPersons` parameter; whitelist API
+- ✅ `test/presentation/widgets/statistics_section_test.dart` (MODIFIED) — `getPersonsByUser` stub
+- ✅ `test/presentation/screens/home_screen_test.dart` (MODIFIED) — `FriendGroupRepository` mock + `getPersonsByUser` stub
+- ✅ 1062 Flutter tests passing (+18 new tests)
+
+---
+
 ### v4.5.15 — US-116: App UI Localization (April 21, 2026)
 - ✅ `lib/l10n/app_en.arb` (NEW) — English ARB with ~340 keys covering all screens, widgets, dialogs, buttons, empty states, and error messages
 - ✅ `lib/l10n/app_pl.arb` (NEW) — Polish translation for every key in `app_en.arb`; informal "ty" form, ALL CAPS dialog buttons, Title Case AppBar titles

@@ -108,7 +108,7 @@ flutter format --set-exit-if-changed .
 
 **Current Test Status:**
 ```
-✅ All tests passing (1044)
+✅ All tests passing (1062)
 ✅ Code formatted correctly
 ✅ Firebase connected successfully
 ✅ CI/CD pipeline operational
@@ -174,13 +174,12 @@ Project Link: [https://github.com/aleksanderginalski/Friendsheet-App](https://gi
 
 Full version history is available in [CHANGELOG.md](CHANGELOG.md).
 
-### Latest: v4.5.15 — US-116: App UI Localization (April 21, 2026)
-- ✅ `app_en.arb` / `app_pl.arb` (NEW) — ~340 keys; full English + Polish translations
-- ✅ `AppLocaleProvider` (NEW) — ChangeNotifier with SharedPreferences persistence; immediate locale switch without restart
-- ✅ `SettingsScreen` (MODIFIED) — "App Language" tile with English / Polski dialog
-- ✅ All 37 `lib/presentation/` files (MODIFIED) — hardcoded strings replaced with `AppLocalizations.of(context)!` calls
-- ✅ All 40 widget test files (MODIFIED) — localization delegates added to every `MaterialApp` wrapper
-- ✅ 6 new tests (1044 total)
+### Latest: v4.5.16 — US-132: Statistics Filter — Grouped Person Picker (April 22, 2026)
+- ✅ `StatsPersonFilterSheet` (NEW) — shared modal bottom sheet with collapsible groups, 3-state checkboxes, group icons, real-time search, Select all / Deselect all, Autoselect Top 10
+- ✅ `StatisticsProvider` (MODIFIED) — blacklist → whitelist model for person filters; full person roster loaded from `PersonRepository` independent of selected year; `allPersons` getter
+- ✅ `WhoPerActivityWidget` + `InteractionDistributionWidget` (MODIFIED) — replaced AlertDialog filters with `StatsPersonFilterSheet`; filter shows all friends regardless of selected year
+- ✅ 8 new ARB l10n keys (`statsFilterSheetTitle`, `statsFilterNoGroup`, `statsFilterSearch`, etc.)
+- ✅ 18 new tests (1062 total)
 
 See [CHANGELOG.md](CHANGELOG.md) for all previous versions.
 
