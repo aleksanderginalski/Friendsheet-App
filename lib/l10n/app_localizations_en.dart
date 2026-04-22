@@ -866,4 +866,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languagePolish => 'Polski';
+
+  @override
+  String get statsFilterSheetTitle => 'Filter persons';
+
+  @override
+  String get statsFilterNoGroup => 'No group';
+
+  @override
+  String get statsFilterSelectAll => 'Select all';
+
+  @override
+  String get statsFilterDeselectAll => 'Deselect all';
+
+  @override
+  String get statsFilterSearch => 'Search person...';
+
+  @override
+  String get statsFilterAutoSelectTop10 => 'Autoselect Top 10';
+
+  @override
+  String get statsFilterClose => 'Close';
+
+  @override
+  String statsFilterHiddenHint(int count) {
+    return '$count persons hidden';
+  }
 }

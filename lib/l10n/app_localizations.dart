@@ -1639,6 +1639,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Polski'**
   String get languagePolish;
+
+  /// No description provided for @statsFilterSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter persons'**
+  String get statsFilterSheetTitle;
+
+  /// No description provided for @statsFilterNoGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'No group'**
+  String get statsFilterNoGroup;
+
+  /// No description provided for @statsFilterSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get statsFilterSelectAll;
+
+  /// No description provided for @statsFilterDeselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get statsFilterDeselectAll;
+
+  /// No description provided for @statsFilterSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search person...'**
+  String get statsFilterSearch;
+
+  /// No description provided for @statsFilterAutoSelectTop10.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoselect Top 10'**
+  String get statsFilterAutoSelectTop10;
+
+  /// No description provided for @statsFilterClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get statsFilterClose;
+
+  /// No description provided for @statsFilterHiddenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} persons hidden'**
+  String statsFilterHiddenHint(int count);
 }
 
 class _AppLocalizationsDelegate

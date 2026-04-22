@@ -25,10 +25,9 @@ void main() {
   // Helper: wraps the widget in a minimal scrollable app.
   Widget buildWidget({
     List<InteractionDistributionEntry> entries = const [],
-    Set<String> hiddenPersons = const {},
+    Set<String> selectedPersonIds = const {},
     bool isCumulativeMode = false,
     bool isLoading = false,
-    VoidCallback? onOpenVisibilityDialog,
     VoidCallback? onToggleMode,
   }) {
     return MaterialApp(
@@ -42,11 +41,15 @@ void main() {
         body: SingleChildScrollView(
           child: InteractionDistributionWidget(
             entries: entries,
-            hiddenPersons: hiddenPersons,
+            allPersons: const [],
+            selectedPersonIds: selectedPersonIds,
+            groups: const [],
             isCumulativeMode: isCumulativeMode,
             isLoading: isLoading,
-            onOpenVisibilityDialog: onOpenVisibilityDialog ?? () {},
             onToggleMode: onToggleMode ?? () {},
+            onTogglePerson: (_) {},
+            onReplaceSelection: (_) {},
+            onAutoSelectTop10: () {},
           ),
         ),
       ),
@@ -62,7 +65,11 @@ void main() {
     });
 
     testWidgets('shows person name for each visible entry', (tester) async {
-      await tester.pumpWidget(buildWidget(entries: twoEntries()));
+      final entries = twoEntries();
+      await tester.pumpWidget(buildWidget(
+        entries: entries,
+        selectedPersonIds: {for (final e in entries) e.personId},
+      ));
       // Advance past the entrance animation so opacity reaches 1.
       await tester.pump(const Duration(milliseconds: 1100));
 
@@ -70,20 +77,24 @@ void main() {
       expect(find.text('Bob'), findsOneWidget);
     });
 
-    testWidgets('shows "X persons hidden" hint when hiddenPersons non-empty',
+    testWidgets('shows "X persons hidden" hint when some persons not selected',
         (tester) async {
       await tester.pumpWidget(buildWidget(
         entries: twoEntries(),
-        hiddenPersons: const {'p-2'},
+        selectedPersonIds: const {'p-1'},
       ));
       await tester.pump();
 
       expect(find.text('1 persons hidden'), findsOneWidget);
     });
 
-    testWidgets('does not show hidden hint when no persons are hidden',
+    testWidgets('does not show hidden hint when all persons are selected',
         (tester) async {
-      await tester.pumpWidget(buildWidget(entries: twoEntries()));
+      final entries = twoEntries();
+      await tester.pumpWidget(buildWidget(
+        entries: entries,
+        selectedPersonIds: {for (final e in entries) e.personId},
+      ));
       await tester.pump();
 
       expect(find.textContaining('hidden'), findsNothing);
@@ -135,11 +146,11 @@ void main() {
       expect(toggled, isTrue);
     });
 
-    testWidgets('shows "No visible persons" when all persons are hidden',
+    testWidgets('shows "No visible persons" when selectedPersonIds is empty',
         (tester) async {
       await tester.pumpWidget(buildWidget(
         entries: twoEntries(),
-        hiddenPersons: const {'p-1', 'p-2'},
+        selectedPersonIds: const {},
       ));
       await tester.pump();
 
@@ -154,18 +165,18 @@ void main() {
       expect(find.text('No visible persons'), findsOneWidget);
     });
 
-    testWidgets('tapping filter icon calls onOpenVisibilityDialog',
-        (tester) async {
-      var opened = false;
+    testWidgets('tapping filter icon opens bottom sheet', (tester) async {
+      final entries = twoEntries();
       await tester.pumpWidget(buildWidget(
-        entries: twoEntries(),
-        onOpenVisibilityDialog: () => opened = true,
+        entries: entries,
+        selectedPersonIds: {for (final e in entries) e.personId},
       ));
       await tester.pump();
 
       await tester.tap(find.byType(IconButton).last);
+      await tester.pumpAndSettle();
 
-      expect(opened, isTrue);
+      expect(find.text('Filter persons'), findsOneWidget);
     });
 
     testWidgets('isLoading: true renders CircularProgressIndicator in header',

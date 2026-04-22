@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/meeting.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
 import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart';
+import 'package:friendsheet/data/repositories/friend_group_repository.dart';
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart';
 import 'package:friendsheet/data/repositories/meeting_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
@@ -88,6 +89,7 @@ const Widget _stubImage = SizedBox(key: Key('stub_image'), height: 120);
   LtnsExclusionService,
   FriendsQuestRepository,
   CatchUpTopicRepository,
+  FriendGroupRepository,
 ])
 void main() {
   late MockStatisticsRepository mockRepository;
@@ -98,6 +100,7 @@ void main() {
   late MockLtnsExclusionService mockLtnsExclusionService;
   late MockFriendsQuestRepository mockFriendsQuestRepository;
   late MockCatchUpTopicRepository mockCatchUpTopicRepository;
+  late MockFriendGroupRepository mockFriendGroupRepository;
   late StatisticsProvider statisticsProvider;
   late HomeProvider homeProvider;
   late BuddyWidgetProvider buddyWidgetProvider;
@@ -128,7 +131,11 @@ void main() {
         .thenAnswer((_) async => <String>{});
     mockFriendsQuestRepository = MockFriendsQuestRepository();
     mockCatchUpTopicRepository = MockCatchUpTopicRepository();
+    mockFriendGroupRepository = MockFriendGroupRepository();
     when(mockFriendsQuestRepository.getAll(any)).thenReturn([]);
+    // ignore: argument_type_not_assignable
+    when(mockFriendGroupRepository.getGroupsByUser(any))
+        .thenAnswer((_) async => []);
     friendsQuestProvider = FriendsQuestProvider(
       repository: mockFriendsQuestRepository,
       catchUpRepo: mockCatchUpTopicRepository,
@@ -146,6 +153,7 @@ void main() {
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
+      friendGroupRepository: mockFriendGroupRepository,
     );
     // Default stubs: return empty lists unless overridden per test.
     // ignore: argument_type_not_assignable

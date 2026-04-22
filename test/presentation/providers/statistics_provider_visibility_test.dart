@@ -1,7 +1,7 @@
 // test/presentation/providers/statistics_provider_visibility_test.dart
 //
-// Tests for StatisticsProvider hidden activities, hidden persons, auto-select
-// top 10, and StatisticsVisibilityDialog state (carousel card visibility).
+// Tests for StatisticsProvider hidden activities, selected persons (whitelist),
+// auto-select top 10, and StatisticsVisibilityDialog state (carousel card visibility).
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
@@ -22,6 +22,7 @@ void main() {
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockFriendGroupRepository mockFriendGroupRepository;
   late StatisticsProvider provider;
 
   const emptyBundle = StatsDataBundle(
@@ -37,11 +38,13 @@ void main() {
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
+    mockFriendGroupRepository = MockFriendGroupRepository();
     provider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
+      friendGroupRepository: mockFriendGroupRepository,
     );
     // ignore: argument_type_not_assignable
     when(mockRepository.getAvailableYears(any)).thenAnswer((_) async => []);
@@ -69,6 +72,12 @@ void main() {
     // ignore: argument_type_not_assignable
     when(mockCategoryRepository.getAllCategories(any))
         .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockFriendGroupRepository.getGroupsByUser(any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockPersonRepository.getPersonsByUser(any))
+        .thenAnswer((_) async => []);
   });
 
   tearDown(() {
@@ -95,9 +104,6 @@ void main() {
     group('applyTop10Selection()', () {
       test('replaces hidden set with all except top 10 leaf activities',
           () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_activities_breakdown': <String>[],
-        });
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -146,42 +152,49 @@ void main() {
       });
     });
 
-    group('toggleHiddenPerson()', () {
-      test('adds, removes, and persists to SharedPreferences', () async {
-        await provider.toggleHiddenPerson('person-1');
-        expect(provider.hiddenPersonsActivity, contains('person-1'));
+    group('toggleSelectedPerson()', () {
+      test('adds to and removes from whitelist, persists to SharedPreferences',
+          () async {
+        await provider.toggleSelectedPerson('person-1');
+        expect(provider.selectedPersonsActivity, contains('person-1'));
 
         final prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('stats_hidden_persons_activity'),
+          prefs.getStringList('stats_selected_persons_activity'),
           contains('person-1'),
         );
 
-        await provider.toggleHiddenPerson('person-1');
-        expect(provider.hiddenPersonsActivity, isNot(contains('person-1')));
+        await provider.toggleSelectedPerson('person-1');
+        expect(
+          provider.selectedPersonsActivity,
+          isNot(contains('person-1')),
+        );
       });
     });
 
-    group('togglePersonDistributionVisibility()', () {
-      test('adds, removes, and persists to SharedPreferences', () async {
-        await provider.togglePersonDistributionVisibility('p-1');
-        expect(provider.hiddenPersonsDistribution, contains('p-1'));
+    group('toggleSelectedPersonDistribution()', () {
+      test('adds to and removes from whitelist, persists to SharedPreferences',
+          () async {
+        await provider.toggleSelectedPersonDistribution('p-1');
+        expect(provider.selectedPersonsDistribution, contains('p-1'));
 
         final prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('stats_hidden_persons_distribution'),
+          prefs.getStringList('stats_selected_persons_distribution'),
           contains('p-1'),
         );
 
-        await provider.togglePersonDistributionVisibility('p-1');
-        expect(provider.hiddenPersonsDistribution, isNot(contains('p-1')));
+        await provider.toggleSelectedPersonDistribution('p-1');
+        expect(
+          provider.selectedPersonsDistribution,
+          isNot(contains('p-1')),
+        );
       });
     });
 
-    group('loadHiddenPersonsDistribution() — first launch', () {
-      test('auto-applies top 10 when SharedPreferences key is absent',
+    group('loadSelectedPersonsDistribution() — first launch', () {
+      test('seeds whitelist with all persons when SharedPreferences key absent',
           () async {
-        SharedPreferences.setMockInitialValues({});
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -200,13 +213,12 @@ void main() {
 
         await provider.initialize();
 
-        expect(provider.hiddenPersonsDistribution, hasLength(2));
-        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
+        expect(provider.selectedPersonsDistribution, hasLength(12));
       });
 
-      test('restores stored hidden set on subsequent launch', () async {
+      test('restores stored whitelist on subsequent launch', () async {
         SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_distribution': ['p-5', 'p-6'],
+          'stats_selected_persons_distribution': ['p-5', 'p-6'],
         });
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
@@ -214,16 +226,16 @@ void main() {
 
         await provider.initialize();
 
-        expect(provider.hiddenPersonsDistribution, containsAll(['p-5', 'p-6']));
-        expect(provider.hiddenPersonsDistribution, hasLength(2));
+        expect(
+          provider.selectedPersonsDistribution,
+          containsAll(['p-5', 'p-6']),
+        );
+        expect(provider.selectedPersonsDistribution, hasLength(2));
       });
     });
 
     group('autoSelectTop10ForActivity()', () {
-      test('hides all except top 10 when more than 10 persons exist', () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_activity': <String>[],
-        });
+      test('whitelist set to top 10 persons when more than 10 exist', () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -252,17 +264,15 @@ void main() {
         await provider.selectActivity('cat-a');
         await provider.autoSelectTop10ForActivity();
 
-        expect(provider.hiddenPersonsActivity, hasLength(2));
-        expect(provider.hiddenPersonsActivity, containsAll(['p-1', 'p-2']));
-        expect(provider.hiddenPersonsActivity, isNot(contains('p-12')));
+        expect(provider.selectedPersonsActivity, hasLength(10));
+        expect(provider.selectedPersonsActivity, isNot(contains('p-1')));
+        expect(provider.selectedPersonsActivity, isNot(contains('p-2')));
+        expect(provider.selectedPersonsActivity, contains('p-12'));
       });
     });
 
     group('autoSelectTopPersonsDistribution()', () {
-      test('hides all except top 10 by currentYearWeight', () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_distribution': <String>[],
-        });
+      test('whitelist set to top 10 persons by currentYearWeight', () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -280,23 +290,26 @@ void main() {
             .thenReturn(entries);
 
         await provider.initialize();
-        await provider.togglePersonDistributionVisibility('p-12');
-        expect(provider.hiddenPersonsDistribution, contains('p-12'));
+
+        // Deselect one person from the full whitelist then re-apply top 10.
+        await provider.toggleSelectedPersonDistribution('p-12');
+        expect(
+          provider.selectedPersonsDistribution,
+          isNot(contains('p-12')),
+        );
 
         await provider.autoSelectTopPersonsDistribution();
 
-        expect(provider.hiddenPersonsDistribution, hasLength(2));
-        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
-        expect(provider.hiddenPersonsDistribution, isNot(contains('p-12')));
+        expect(provider.selectedPersonsDistribution, hasLength(10));
+        expect(provider.selectedPersonsDistribution, isNot(contains('p-1')));
+        expect(provider.selectedPersonsDistribution, isNot(contains('p-2')));
+        expect(provider.selectedPersonsDistribution, contains('p-12'));
       });
     });
 
     group('setAllActivitiesVisibility()', () {
       test('false hides all, true shows all, both persist to SharedPreferences',
           () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_activities_breakdown': <String>[],
-        });
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -338,12 +351,10 @@ void main() {
       });
     });
 
-    group('setAllPersonsVisibility()', () {
-      test('false hides all, true shows all, both persist to SharedPreferences',
-          () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_distribution': <String>[],
-        });
+    group('setAllPersonsDistributionSelected()', () {
+      test(
+          'false deselects all (whitelist empty), true selects all, '
+          'both persist to SharedPreferences', () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -365,22 +376,23 @@ void main() {
 
         await provider.initialize();
 
-        final returned = await provider.setAllPersonsVisibility(false);
-        expect(provider.hiddenPersonsDistribution, containsAll(['p-1', 'p-2']));
-        expect(returned, containsAll(['p-1', 'p-2']));
+        await provider.setAllPersonsDistributionSelected(false);
+        expect(provider.selectedPersonsDistribution, isEmpty);
         var prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('stats_hidden_persons_distribution'),
-          containsAll(['p-1', 'p-2']),
+          prefs.getStringList('stats_selected_persons_distribution'),
+          isEmpty,
         );
 
-        final returned2 = await provider.setAllPersonsVisibility(true);
-        expect(provider.hiddenPersonsDistribution, isEmpty);
-        expect(returned2, isEmpty);
+        await provider.setAllPersonsDistributionSelected(true);
+        expect(
+          provider.selectedPersonsDistribution,
+          containsAll(['p-1', 'p-2']),
+        );
         prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('stats_hidden_persons_distribution'),
-          isEmpty,
+          prefs.getStringList('stats_selected_persons_distribution'),
+          containsAll(['p-1', 'p-2']),
         );
       });
     });

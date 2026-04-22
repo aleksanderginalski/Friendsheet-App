@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/repositories/activity_category_repository.dart';
+import 'package:friendsheet/data/repositories/friend_group_repository.dart';
 import 'package:friendsheet/data/repositories/person_repository.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/data/services/auth_service.dart';
@@ -22,12 +23,14 @@ import 'statistics_section_test.mocks.dart';
   AuthService,
   ActivityCategoryRepository,
   PersonRepository,
+  FriendGroupRepository,
 ])
 void main() {
   late MockStatisticsRepository mockRepository;
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockFriendGroupRepository mockFriendGroupRepository;
   late StatisticsProvider statisticsProvider;
 
   setUp(() {
@@ -36,12 +39,20 @@ void main() {
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
+    mockFriendGroupRepository = MockFriendGroupRepository();
     statisticsProvider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
+      friendGroupRepository: mockFriendGroupRepository,
     );
+    // ignore: argument_type_not_assignable
+    when(mockFriendGroupRepository.getGroupsByUser(any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockPersonRepository.getPersonsByUser(any))
+        .thenAnswer((_) async => []);
     // Default stubs — return empty lists unless overridden per test.
     // ignore: argument_type_not_assignable
     when(mockRepository.getActivityWeightBreakdown(any, any))

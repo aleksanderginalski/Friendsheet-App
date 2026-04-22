@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
+import '../../data/models/friend_group.dart';
+import '../../data/models/person.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../l10n/app_localizations.dart';
+import 'stats_person_filter_sheet.dart';
 
 /// Fixed heights for bar column sections.
 const _kDeltaHeight = 20.0;
@@ -26,9 +29,9 @@ const _kAnimationDuration = AppConstants.chartAnimationDuration;
 
 List<InteractionDistributionEntry> _computeVisible(
   List<InteractionDistributionEntry> entries,
-  Set<String> hidden,
+  Set<String> selected,
 ) =>
-    entries.where((e) => !hidden.contains(e.personId)).toList();
+    entries.where((e) => selected.contains(e.personId)).toList();
 
 int _maxWeight(List<InteractionDistributionEntry> visible) => visible.fold<int>(
       1,
@@ -45,20 +48,28 @@ double _barHeight(int weight, int maxW) =>
 /// Supports yearly mode (with year-over-year delta) and cumulative mode.
 class InteractionDistributionWidget extends StatefulWidget {
   final List<InteractionDistributionEntry> entries;
-  final Set<String> hiddenPersons;
+  final List<Person> allPersons;
+  final Set<String> selectedPersonIds;
+  final List<FriendGroup> groups;
   final bool isCumulativeMode;
   final bool isLoading;
-  final VoidCallback onOpenVisibilityDialog;
   final VoidCallback onToggleMode;
+  final void Function(String personId) onTogglePerson;
+  final void Function(Set<String> newIds) onReplaceSelection;
+  final VoidCallback onAutoSelectTop10;
 
   const InteractionDistributionWidget({
     super.key,
     required this.entries,
-    required this.hiddenPersons,
+    required this.allPersons,
+    required this.selectedPersonIds,
+    required this.groups,
     required this.isCumulativeMode,
     required this.isLoading,
-    required this.onOpenVisibilityDialog,
     required this.onToggleMode,
+    required this.onTogglePerson,
+    required this.onReplaceSelection,
+    required this.onAutoSelectTop10,
   });
 
   @override
@@ -124,6 +135,33 @@ class _InteractionDistributionWidgetState
     super.dispose();
   }
 
+  void _openFilterSheet(BuildContext context) {
+    final allEntries = widget.allPersons
+        .map((p) => (personId: p.id, name: p.fullName))
+        .toList();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (_, __) => StatsPersonFilterSheet(
+          allEntries: allEntries,
+          selectedPersonIds: widget.selectedPersonIds,
+          groups: widget.groups,
+          onTogglePerson: widget.onTogglePerson,
+          onReplaceSelection: widget.onReplaceSelection,
+          onAutoSelectTop10: widget.onAutoSelectTop10,
+        ),
+      ),
+    );
+  }
+
   void _showInfoDialog(BuildContext context) {
     showDialog<void>(
       context: context,
@@ -148,7 +186,7 @@ class _InteractionDistributionWidgetState
     // ensures targetLeft indices are stable across parent rebuilds that
     // happen mid-animation.
     final visibleEntries =
-        _computeVisible(_animatingEntries, widget.hiddenPersons);
+        _computeVisible(_animatingEntries, widget.selectedPersonIds);
     final maxW = _maxWeight(visibleEntries);
 
     return Column(
@@ -210,7 +248,7 @@ class _InteractionDistributionWidgetState
                     width: 40,
                     height: 40,
                   ),
-                  onPressed: widget.onOpenVisibilityDialog,
+                  onPressed: () => _openFilterSheet(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   tooltip: 'Manage person visibility',
@@ -219,13 +257,17 @@ class _InteractionDistributionWidgetState
             ),
           ],
         ),
-        // Hint showing how many persons are hidden.
-        if (widget.hiddenPersons.isNotEmpty)
+        // Hint showing how many persons are hidden (not in whitelist).
+        if (_computeVisible(widget.entries, widget.selectedPersonIds).length <
+            widget.entries.length)
           Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Text(
-              AppLocalizations.of(context)!
-                  .personsHiddenCount(widget.hiddenPersons.length),
+              AppLocalizations.of(context)!.personsHiddenCount(
+                widget.entries.length -
+                    _computeVisible(widget.entries, widget.selectedPersonIds)
+                        .length,
+              ),
               style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
@@ -233,7 +275,8 @@ class _InteractionDistributionWidgetState
         // Use _displayedEntries (last non-empty data) for the guard so the
         // chart never flashes an empty state during the loading gap between
         // year changes.
-        if (_computeVisible(_displayedEntries, widget.hiddenPersons).isEmpty)
+        if (_computeVisible(_displayedEntries, widget.selectedPersonIds)
+            .isEmpty)
           Text(
             AppLocalizations.of(context)!.noVisiblePersons,
             style: const TextStyle(color: Colors.grey),

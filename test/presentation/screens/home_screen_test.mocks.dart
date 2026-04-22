@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' as _i16;
 import 'package:firebase_auth/firebase_auth.dart' as _i10;
 import 'package:friendsheet/data/models/activity_category.dart' as _i3;
 import 'package:friendsheet/data/models/catch_up_topic.dart' as _i20;
+import 'package:friendsheet/data/models/friend_group.dart' as _i22;
 import 'package:friendsheet/data/models/friends_quest.dart' as _i5;
 import 'package:friendsheet/data/models/meeting.dart' as _i8;
 import 'package:friendsheet/data/models/person.dart' as _i4;
@@ -18,6 +19,8 @@ import 'package:friendsheet/data/repositories/activity_category_repository.dart'
 import 'package:friendsheet/data/repositories/cache_invalidator.dart' as _i12;
 import 'package:friendsheet/data/repositories/catch_up_topic_repository.dart'
     as _i19;
+import 'package:friendsheet/data/repositories/friend_group_repository.dart'
+    as _i21;
 import 'package:friendsheet/data/repositories/friends_quest_repository.dart'
     as _i18;
 import 'package:friendsheet/data/repositories/meeting_repository.dart' as _i14;
@@ -1178,6 +1181,133 @@ class MockCatchUpTopicRepository extends _i1.Mock
             partnerId,
             postLinkTopics,
             decisions,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [FriendGroupRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFriendGroupRepository extends _i1.Mock
+    implements _i21.FriendGroupRepository {
+  MockFriendGroupRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i7.Future<List<_i22.FriendGroup>> getGroupsByUser(String? userId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getGroupsByUser,
+          [userId],
+        ),
+        returnValue:
+            _i7.Future<List<_i22.FriendGroup>>.value(<_i22.FriendGroup>[]),
+      ) as _i7.Future<List<_i22.FriendGroup>>);
+
+  @override
+  _i7.Future<void> addGroup(
+    String? userId,
+    _i22.FriendGroup? group,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addGroup,
+          [
+            userId,
+            group,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateGroup(
+    String? userId,
+    _i22.FriendGroup? group,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateGroup,
+          [
+            userId,
+            group,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> deleteGroup(
+    String? userId,
+    String? groupId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #deleteGroup,
+          [
+            userId,
+            groupId,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> addPersonToGroup(
+    String? userId,
+    String? groupId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addPersonToGroup,
+          [
+            userId,
+            groupId,
+            personId,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> removePersonFromGroup(
+    String? userId,
+    String? groupId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromGroup,
+          [
+            userId,
+            groupId,
+            personId,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> removePersonFromAllGroups(
+    String? userId,
+    String? personId,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #removePersonFromAllGroups,
+          [
+            userId,
+            personId,
           ],
         ),
         returnValue: _i7.Future<void>.value(),
