@@ -22,6 +22,7 @@ void main() {
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockFriendGroupRepository mockFriendGroupRepository;
   late StatisticsProvider provider;
 
   const emptyBundle = StatsDataBundle(
@@ -37,13 +38,21 @@ void main() {
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
+    mockFriendGroupRepository = MockFriendGroupRepository();
     provider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
+      friendGroupRepository: mockFriendGroupRepository,
     );
     // Default stubs — return empty data unless overridden per test.
+    // ignore: argument_type_not_assignable
+    when(mockFriendGroupRepository.getGroupsByUser(any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockPersonRepository.getPersonsByUser(any))
+        .thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
     when(mockRepository.getAvailableYears(any)).thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
@@ -180,11 +189,8 @@ void main() {
     });
 
     group('hiddenCountForActivity', () {
-      test('returns correct count of hidden persons present in whoPerActivity',
+      test('returns correct count of deselected persons in whoPerActivity',
           () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_activity': <String>[],
-        });
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -209,18 +215,16 @@ void main() {
         await provider.initialize();
         expect(provider.hiddenCountForActivity, equals(0));
 
-        await provider.toggleHiddenPerson('p-1');
-        await provider.toggleHiddenPerson('p-3');
+        await provider.toggleSelectedPerson('p-1');
+        await provider.toggleSelectedPerson('p-3');
         expect(provider.hiddenCountForActivity, equals(2));
       });
     });
 
-    group('setAllPersonsActivityVisibility()', () {
-      test('false hides all, true shows all, both persist to SharedPreferences',
-          () async {
-        SharedPreferences.setMockInitialValues({
-          'stats_hidden_persons_activity': <String>[],
-        });
+    group('setAllPersonsActivitySelected()', () {
+      test(
+          'false deselects all (whitelist empty), true selects all, '
+          'both persist to SharedPreferences', () async {
         when(mockAuthService.currentUserId).thenReturn('user-1');
         when(mockRepository.getAvailableYears('user-1'))
             .thenAnswer((_) async => [2026]);
@@ -242,19 +246,24 @@ void main() {
 
         await provider.initialize();
 
-        await provider.setAllPersonsActivityVisibility(false);
-        expect(provider.hiddenPersonsActivity, containsAll(['p-1', 'p-2']));
-        expect(provider.hiddenPersonsActivity, hasLength(2));
+        await provider.setAllPersonsActivitySelected(false);
+        expect(provider.selectedPersonsActivity, isEmpty);
         var prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('stats_hidden_persons_activity'),
-          containsAll(['p-1', 'p-2']),
+          prefs.getStringList('stats_selected_persons_activity'),
+          isEmpty,
         );
 
-        await provider.setAllPersonsActivityVisibility(true);
-        expect(provider.hiddenPersonsActivity, isEmpty);
+        await provider.setAllPersonsActivitySelected(true);
+        expect(
+          provider.selectedPersonsActivity,
+          containsAll(['p-1', 'p-2']),
+        );
         prefs = await SharedPreferences.getInstance();
-        expect(prefs.getStringList('stats_hidden_persons_activity'), isEmpty);
+        expect(
+          prefs.getStringList('stats_selected_persons_activity'),
+          containsAll(['p-1', 'p-2']),
+        );
       });
     });
 

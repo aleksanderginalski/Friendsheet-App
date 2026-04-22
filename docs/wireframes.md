@@ -186,6 +186,57 @@ Each card:
 - Changes apply immediately — no confirm step
 - Persistence: SharedPreferences key `stats_carousel_hidden_cards`
 
+### StatsPersonFilterSheet (US-132)
+
+Shared modal bottom sheet used by Who Per Activity and Interaction Distribution filter icons.
+
+```
+╔═════════════════════════════════╗
+║  ▬▬▬  (drag handle)            ║
+║─────────────────────────────────║
+║  👥 Filter persons              ║
+║─────────────────────────────────║
+║  🔍  Search person...           ║
+║─────────────────────────────────║
+║  [Autoselect Top 10] [Select all]║
+║─────────────────────────────────║
+║                                 ║
+║  ☑  Work              ▶ expand  ║
+║  ◑  Family            ▼ collapse║
+║    ├ ☑  Mum                     ║
+║    ├ ☑  Dad                     ║
+║    └ ☐  Sister                  ║
+║  ☐  Gym friends        ▶        ║
+║                                 ║
+║  ─── No group ───               ║
+║  ☑  Jan Kowalski                ║
+║  ☐  Anna Nowak                  ║
+║                                 ║
+║  [         Close            ]   ║
+╚═════════════════════════════════╝
+```
+
+**Group checkbox states:**
+
+| Icon | Meaning |
+|------|---------|
+| `check_box` | All group members selected |
+| `indeterminate_check_box` | Some members selected |
+| `check_box_outline_blank` | No members selected |
+
+**Behavior:**
+- Persons in multiple groups appear once only (de-duplicated across all sections)
+- Tapping group checkbox selects/deselects all current group members
+- Groups can be expanded independently; individual persons can be toggled within an expanded group
+- "Autoselect Top 10" sets whitelist to top 10 persons by weight for the current year
+- "Select all / Deselect all" button label changes based on current state
+- Filter model: **whitelist** — only persons in `selectedPersonIds` are visible in the chart
+- Whitelist persists across year changes (SharedPreferences); new persons default to hidden
+- Changes applied live — no confirm step
+- Each chart maintains its own separate whitelist:
+  - Who Per Activity: `stats_selected_persons_activity`
+  - Interaction Distribution: `stats_selected_persons_distribution`
+
 ---
 
 ## Screen 3: MeetingsListScreen

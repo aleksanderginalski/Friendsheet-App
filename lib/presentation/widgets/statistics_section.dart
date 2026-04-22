@@ -8,9 +8,7 @@ import 'activity_breakdown_widget.dart';
 import 'activity_selector_dialog.dart';
 import 'activity_visibility_dialog.dart';
 import 'interaction_distribution_widget.dart';
-import 'person_visibility_dialog.dart';
 import 'statistics_visibility_dialog.dart';
-import 'who_per_activity_person_filter_dialog.dart';
 import 'who_per_activity_widget.dart';
 import 'year_stepper.dart';
 
@@ -75,41 +73,6 @@ class _StatisticsSectionState extends State<StatisticsSection> {
     );
   }
 
-  void _openPersonVisibilityDialog(
-    BuildContext context,
-    StatisticsProvider provider,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => PersonVisibilityDialog(
-        allEntries: provider.distributionEntries,
-        hiddenPersons: provider.hiddenPersonsDistribution,
-        onToggle: provider.togglePersonDistributionVisibility,
-        onAutoSelectTop10: provider.autoSelectTopPersonsDistribution,
-        onToggleSelectAll: () => provider.hiddenPersonsDistribution.isEmpty
-            ? provider.setAllPersonsVisibility(false)
-            : provider.setAllPersonsVisibility(true),
-      ),
-    );
-  }
-
-  void _openWhoPerActivityFilterDialog(
-    BuildContext context,
-    StatisticsProvider provider,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => WhoPerActivityPersonFilterDialog(
-        allEntries: provider.whoPerActivity,
-        hiddenPersonIds: provider.hiddenPersonsActivity,
-        onTogglePersonVisibility: provider.toggleHiddenPerson,
-        onToggleSelectAll: (bool selectAll) =>
-            provider.setAllPersonsActivityVisibility(selectAll),
-        onAutoSelectTop10: provider.autoSelectTop10ForActivity,
-      ),
-    );
-  }
-
   // Navigates the carousel by [direction] steps (-1 = left, +1 = right),
   // wrapping around and skipping hidden cards.
   void _navigateCarousel(int direction, int visibleCount) {
@@ -163,20 +126,26 @@ class _StatisticsSectionState extends State<StatisticsSection> {
           entries: provider.whoPerActivity,
           categories: provider.allCategories,
           selectedCategoryId: provider.selectedActivityId,
-          hiddenPersonIds: provider.hiddenPersonsActivity,
+          allPersons: provider.allPersons,
+          selectedPersonIds: provider.selectedPersonsActivity,
+          groups: provider.personGroups,
           onSelectActivity: () => _openActivitySelector(context, provider),
-          onOpenFilterDialog: () =>
-              _openWhoPerActivityFilterDialog(context, provider),
+          onTogglePerson: provider.toggleSelectedPerson,
+          onReplaceSelection: provider.setSelectedPersonsActivity,
+          onAutoSelectTop10: provider.autoSelectTop10ForActivity,
         );
       case StatCardType.interactionDistribution:
         return InteractionDistributionWidget(
           entries: provider.distributionEntries,
-          hiddenPersons: provider.hiddenPersonsDistribution,
+          allPersons: provider.allPersons,
+          selectedPersonIds: provider.selectedPersonsDistribution,
+          groups: provider.personGroups,
           isCumulativeMode: provider.isCumulativeMode,
           isLoading: provider.isDistributionLoading,
-          onOpenVisibilityDialog: () =>
-              _openPersonVisibilityDialog(context, provider),
           onToggleMode: provider.toggleDistributionMode,
+          onTogglePerson: provider.toggleSelectedPersonDistribution,
+          onReplaceSelection: provider.setSelectedPersonsDistribution,
+          onAutoSelectTop10: provider.autoSelectTopPersonsDistribution,
         );
     }
   }

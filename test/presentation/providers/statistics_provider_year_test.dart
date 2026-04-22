@@ -22,6 +22,7 @@ void main() {
   late MockAuthService mockAuthService;
   late MockActivityCategoryRepository mockCategoryRepository;
   late MockPersonRepository mockPersonRepository;
+  late MockFriendGroupRepository mockFriendGroupRepository;
   late StatisticsProvider provider;
 
   const emptyBundle = StatsDataBundle(
@@ -37,12 +38,20 @@ void main() {
     mockAuthService = MockAuthService();
     mockCategoryRepository = MockActivityCategoryRepository();
     mockPersonRepository = MockPersonRepository();
+    mockFriendGroupRepository = MockFriendGroupRepository();
     provider = StatisticsProvider(
       repository: mockRepository,
       authService: mockAuthService,
       categoryRepository: mockCategoryRepository,
       personRepository: mockPersonRepository,
+      friendGroupRepository: mockFriendGroupRepository,
     );
+    // ignore: argument_type_not_assignable
+    when(mockFriendGroupRepository.getGroupsByUser(any))
+        .thenAnswer((_) async => []);
+    // ignore: argument_type_not_assignable
+    when(mockPersonRepository.getPersonsByUser(any))
+        .thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
     when(mockRepository.getAvailableYears(any)).thenAnswer((_) async => []);
     // ignore: argument_type_not_assignable
@@ -90,7 +99,7 @@ void main() {
         expect(provider.selectedActivityId, isNull);
         expect(provider.distributionEntries, isEmpty);
         expect(provider.isCumulativeMode, isFalse);
-        expect(provider.hiddenPersonsDistribution, isEmpty);
+        expect(provider.selectedPersonsDistribution, isEmpty);
         expect(provider.isDistributionLoading, isFalse);
       });
     });

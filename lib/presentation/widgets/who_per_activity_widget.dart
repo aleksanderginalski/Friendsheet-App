@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/chart_colors.dart';
 import '../../data/models/activity_category.dart';
+import '../../data/models/friend_group.dart';
+import '../../data/models/person.dart';
 import '../../data/repositories/statistics_repository.dart';
 import '../../l10n/app_localizations.dart';
+import 'stats_person_filter_sheet.dart';
 
 /// Maximum rendered height for a single bar, in logical pixels.
 const _kMaxBarHeight = 110.0;
@@ -27,24 +30,32 @@ double _barHeight(int weight, int maxW) =>
     (weight / maxW * _kMaxBarHeight).clamp(2.0, _kMaxBarHeight);
 
 /// Displays a vertical bar chart of persons ranked by meeting weight for
-/// the selected activity. Person visibility is managed via the filter dialog
+/// the selected activity. Person visibility is managed via the filter sheet
 /// opened by the filter icon in the header.
 class WhoPerActivityWidget extends StatelessWidget {
   final List<PersonActivityEntry> entries;
   final List<ActivityCategory> categories;
   final String? selectedCategoryId;
-  final Set<String> hiddenPersonIds;
+  final List<Person> allPersons;
+  final Set<String> selectedPersonIds;
+  final List<FriendGroup> groups;
   final VoidCallback onSelectActivity;
-  final VoidCallback onOpenFilterDialog;
+  final void Function(String personId) onTogglePerson;
+  final void Function(Set<String> newIds) onReplaceSelection;
+  final VoidCallback onAutoSelectTop10;
 
   const WhoPerActivityWidget({
     super.key,
     required this.entries,
     required this.categories,
     required this.selectedCategoryId,
-    required this.hiddenPersonIds,
+    required this.allPersons,
+    required this.selectedPersonIds,
+    required this.groups,
     required this.onSelectActivity,
-    required this.onOpenFilterDialog,
+    required this.onTogglePerson,
+    required this.onReplaceSelection,
+    required this.onAutoSelectTop10,
   });
 
   String _selectedName() {
@@ -56,10 +67,36 @@ class WhoPerActivityWidget extends StatelessWidget {
     }
   }
 
+  void _openFilterSheet(BuildContext context) {
+    final allEntries =
+        allPersons.map((p) => (personId: p.id, name: p.fullName)).toList();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (_, __) => StatsPersonFilterSheet(
+          allEntries: allEntries,
+          selectedPersonIds: selectedPersonIds,
+          groups: groups,
+          onTogglePerson: onTogglePerson,
+          onReplaceSelection: onReplaceSelection,
+          onAutoSelectTop10: onAutoSelectTop10,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final visibleEntries =
-        entries.where((e) => !hiddenPersonIds.contains(e.personId)).toList();
+        entries.where((e) => selectedPersonIds.contains(e.personId)).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +116,7 @@ class WhoPerActivityWidget extends StatelessWidget {
                 height: 40,
               ),
               tooltip: 'Filter persons',
-              onPressed: onOpenFilterDialog,
+              onPressed: () => _openFilterSheet(context),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),

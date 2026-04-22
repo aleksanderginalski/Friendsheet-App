@@ -396,5 +396,19 @@
   "questAddParticipant": "Add participant",
 
   "languageEnglish": "English",
-  "languagePolish": "Polski"
+  "languagePolish": "Polski",
+
+  "statsFilterSheetTitle": "Filter persons",
+  "statsFilterNoGroup": "No group",
+  "statsFilterSelectAll": "Select all",
+  "statsFilterDeselectAll": "Deselect all",
+  "statsFilterSearch": "Search person...",
+  "statsFilterAutoSelectTop10": "Autoselect Top 10",
+  "statsFilterClose": "Close",
+  "statsFilterHiddenHint": "{count} persons hidden",
+  "@statsFilterHiddenHint": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

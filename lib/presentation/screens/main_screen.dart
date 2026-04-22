@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import '../../data/models/google_calendar.dart';
 import '../../data/repositories/activity_category_repository.dart';
 import '../../data/repositories/ai_key_repository.dart';
+import '../../data/repositories/friend_group_repository.dart';
 import '../../data/repositories/meeting_repository.dart';
 import '../../data/repositories/pending_meeting_package_repository.dart';
 import '../../data/repositories/person_repository.dart';
@@ -110,6 +111,7 @@ class _MainScreenState extends State<MainScreen> {
       authService: AuthService(),
       categoryRepository: activityCategoryRepository,
       personRepository: personRepository,
+      friendGroupRepository: FriendGroupRepository(),
     );
     _calendarSettingsProvider = CalendarSettingsProvider(
       calendarService: GoogleCalendarService(),

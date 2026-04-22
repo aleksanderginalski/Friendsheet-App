@@ -1,8 +1,8 @@
 # Friendsheet — Manual Test Cases
 
-**Version:** 2.2
+**Version:** 2.3
 **Date:** April 2026
-**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox · INF Multi-Agent System · US-116 App UI Localization  
+**Scope:** M1 · M2 · M3 · M3.5 (through US-062) · M5 Calendar Import + Meeting Inbox · INF Multi-Agent System · US-116 App UI Localization · US-132 Statistics Filter Grouped Person Picker  
 **Tester:** QA Engineer  
 **Environment:** Android physical device / emulator (API 21+)
 
@@ -2120,3 +2120,36 @@ Run after every release or hotfix:
 | UT-116-004 | setLocale updates locale and persists it | `locale` is `Locale('pl')` and prefs key `app_language` equals `pl` |
 | UT-116-005 | setLocale with same locale does not notify | listener not called when locale unchanged |
 | UT-116-006 | full cycle: set Polish, reload, verify restored | second provider instance reads `Locale('pl')` from prefs |
+
+---
+
+## US-132 — Statistics Filter: Grouped Person Picker
+
+### Automated tests — `test/presentation/widgets/stats_person_filter_sheet_test.dart` (NEW)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-132-001 | renders title and search field | "Filter persons" text and TextField visible |
+| UT-132-002 | shows "No group" label for ungrouped person | "No group" header and person name visible |
+| UT-132-003 | shows group row with group name | group name rendered in list |
+| UT-132-004 | group members hidden until expanded; expand_more → expand_less | members invisible before expand, visible after; icon toggles |
+| UT-132-005 | group checkbox: check_box when all members selected | `Icons.check_box` present |
+| UT-132-006 | group checkbox: check_box_outline_blank when none selected | `Icons.check_box_outline_blank` present |
+| UT-132-007 | group checkbox: indeterminate_check_box when partial selection | `Icons.indeterminate_check_box` present |
+| UT-132-008 | tapping group checkbox (all→none) calls onReplaceSelection without members | replaced set does not contain group member IDs |
+| UT-132-009 | tapping group checkbox (none→all) calls onReplaceSelection with all members | replaced set contains all group member IDs |
+| UT-132-010 | tapping person checkbox calls onTogglePerson with correct id | callback receives correct person ID |
+| UT-132-011 | hidden hint shown when some persons are not selected | "persons hidden" text visible |
+| UT-132-012 | hidden hint absent when all persons are selected | "persons hidden" text not found |
+| UT-132-013 | search filters list to matching persons only | only matching name visible; non-matching hidden |
+| UT-132-014 | "Deselect all" calls onReplaceSelection with empty set | replaced set is empty |
+| UT-132-015 | "Select all" calls onReplaceSelection with all IDs | replaced set contains all person IDs |
+| UT-132-016 | "Autoselect Top 10" calls onAutoSelectTop10 | callback invoked |
+| UT-132-017 | ungrouped persons not shown in group section | ungrouped person in "No group"; grouped members absent until expanded |
+
+### Automated tests — `test/presentation/providers/statistics_provider_visibility_test.dart` (UPDATED)
+
+| ID | Test name | Expected |
+|----|-----------|---------|
+| UT-132-018 | initialize() populates allPersons from PersonRepository | `allPersons` contains all persons returned by repository |
+
