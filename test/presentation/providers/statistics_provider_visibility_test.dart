@@ -5,6 +5,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:friendsheet/data/models/activity_category.dart';
+import 'package:friendsheet/data/models/person.dart';
 import 'package:friendsheet/data/models/stats_data_bundle.dart';
 import 'package:friendsheet/data/repositories/statistics_repository.dart';
 import 'package:friendsheet/presentation/providers/statistics_provider.dart';
@@ -444,6 +445,38 @@ void main() {
         expect(
           provider.visibleCards,
           contains(StatCardType.interactionDistribution),
+        );
+      });
+    });
+
+    group('allPersons', () {
+      test('initialize() populates allPersons from PersonRepository', () async {
+        when(mockAuthService.currentUserId).thenReturn('user-1');
+        when(mockRepository.getAvailableYears('user-1'))
+            .thenAnswer((_) async => []);
+        final persons = [
+          Person(
+            id: 'p-1',
+            userId: 'user-1',
+            firstName: 'Alice',
+            createdAt: DateTime(2024),
+          ),
+          Person(
+            id: 'p-2',
+            userId: 'user-1',
+            firstName: 'Bob',
+            createdAt: DateTime(2024),
+          ),
+        ];
+        when(mockPersonRepository.getPersonsByUser('user-1'))
+            .thenAnswer((_) async => persons);
+
+        await provider.initialize();
+
+        expect(provider.allPersons, hasLength(2));
+        expect(
+          provider.allPersons.map((p) => p.id),
+          containsAll(['p-1', 'p-2']),
         );
       });
     });
