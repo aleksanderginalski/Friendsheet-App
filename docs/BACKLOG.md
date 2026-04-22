@@ -5110,6 +5110,52 @@ Firestore SDK on Flutter mobile has built-in offline persistence enabled by defa
 
 ---
 
+### US-132: Statistics Filter — Grouped Person Picker
+
+**As a** user
+**I want to** filter persons in statistics charts using a bottom sheet with groups, search, and stable selections across year changes
+**So that** I can quickly narrow down which friends I see in the chart without losing my selection when I switch year
+
+**Story Points:** 8
+**Priority:** P1
+**Labels:** `statistics`, `filter`, `ux`
+**Status:** 📋 Planned
+**Feature:** FEATURE-009: Core Statistics
+
+**Acceptance Criteria:**
+- [ ] Filter icon in Who Per Activity and Interaction Distribution opens a modal bottom sheet (not AlertDialog)
+- [ ] Bottom sheet has a drag handle and can be dismissed by swiping down or tapping the backdrop
+- [ ] Bottom sheet contains a search bar that filters the person list by name in real time
+- [ ] Persons are grouped using the same groups as the Friends tab; each group is collapsible
+- [ ] A person belonging to multiple groups appears only once in the list (de-duplicated)
+- [ ] Persons not assigned to any group appear in a dedicated "No group" section at the bottom
+- [ ] Each group row shows a 3-state checkbox icon: all members selected (☑), partial (◑), none (☐)
+- [ ] Tapping a group checkbox selects or deselects all its current members
+- [ ] Groups can be expanded to show individual persons; individual persons can be deselected within a selected group
+- [ ] "Autoselect Top 10" button: sets whitelist to the top 10 persons by weight for the currently selected year
+- [ ] Single "Select all / Deselect all" button: toggles between selecting everyone and deselecting everyone
+- [ ] Filter uses a **whitelist model**: only persons in the whitelist are shown in the chart; persons absent from the whitelist are hidden
+- [ ] Whitelist is persisted in SharedPreferences independently of the selected year
+- [ ] Changing year does NOT reset the whitelist — the same selected persons remain active
+- [ ] Persons appearing in a different year but not in the whitelist remain hidden
+- [ ] Initial state (no persisted data): all persons selected (full whitelist)
+- [ ] Who Per Activity and Interaction Distribution use the same `StatsPersonFilterSheet` component but maintain separate whitelists
+- [ ] Changes are applied live — no "Apply" button required
+- [ ] `WhoPerActivityPersonFilterDialog` and `PersonVisibilityDialog` are removed after migration
+
+**Tasks:**
+- [ ] **TASK-132.1:** Refactor `StatisticsProvider` — replace `_hiddenPersonsActivity` and `_hiddenPersonsDistribution` (blacklist `Set<String>`) with `_selectedPersonsActivity` and `_selectedPersonsDistribution` (whitelist `Set<String>`); new SharedPreferences keys: `stats_selected_persons_activity`, `stats_selected_persons_distribution`; update all toggle / autoselect / selectAll methods to whitelist semantics; update exposed getters used by widgets — 2h
+- [ ] **TASK-132.2:** Load `PersonGroup` data into `StatisticsProvider` (add `List<PersonGroup> _personGroups` field populated from `PersonRepository` during `initialize()`); expose getter for use by the filter sheet — 1h
+- [ ] **TASK-132.3:** Build `StatsPersonFilterSheet` — shared `showModalBottomSheet` widget with: drag handle, search bar (real-time name filter), collapsible group rows with 3-state checkbox, ungrouped-persons section, Autoselect Top 10 button, Select All/Deselect All button, Close button; accepts `selectedIds`, `allEntries`, `groups`, and callbacks — 3h
+- [ ] **TASK-132.4:** Replace `WhoPerActivityPersonFilterDialog` call in `WhoPerActivityWidget` with `StatsPersonFilterSheet`; wire whitelist from `StatisticsProvider` — 1h
+- [ ] **TASK-132.5:** Replace `PersonVisibilityDialog` call in `InteractionDistributionWidget` with `StatsPersonFilterSheet`; wire whitelist from `StatisticsProvider` — 1h
+- [ ] **TASK-132.6:** Delete `WhoPerActivityPersonFilterDialog` and `PersonVisibilityDialog` widget files; run `flutter analyze` and `flutter test` — 0.5h
+
+**Dependencies:** US-058 (WhoPerActivity filter exists), US-030 (InteractionDistribution filter exists), US-062 (PersonGroups model and PersonRepository exist)
+**Blocks:** None
+
+---
+
 # 📦 EPIC-INF: Developer Experience & AI Tooling
 
 **Goal:** Build a complete multi-agent development system in Claude Code covering the full lifecycle — discovery, planning, implementation, testing, documentation, and retrospective. Continuously improve the system based on real usage.

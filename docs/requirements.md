@@ -17,6 +17,7 @@
 - v2.7 — FR-035 added: Buddy Language Selection (US-113); FR-036 added: Buddy Onboarding (US-114); FR-037 added: Buddy Birthday Message Quality (US-115); FR-038 added: App UI Localization (US-116); FR-039 added: User-Defined Writing Style (US-117)
 - v2.8 — FR-040 added: Catch-up Topics per Person (US-120, US-121); FR-041 added: Couple/Family Link in Social Graph (US-122, US-123); FR-042 added: Friends-Quest pre-meeting tool (US-124, US-125, US-126, US-127)
 - v2.9 — FR-043 added: Person Recognition — Bonus Points (US-130, US-131)
+- v3.0 — FR-044 added: Statistics Person Filter — Grouped Picker with Whitelist (US-132)
 
 ---
 
@@ -633,6 +634,9 @@ User can create named Friends-Quests (multiple active simultaneously), add parti
 
 ### FR-043: Person Recognition — Bonus Points (M8)
 User can award bonus points (1–3) with a mandatory comment to individual meeting participants from the Meeting Detail screen. Multiple bonuses can be added per person per meeting; they all stack. Effective weight for a person in a meeting = `meeting.weight + sum of their bonuses`. Each bonus auto-appends to meeting notes as `"[FirstName] +[N]: [comment]"`. Deletion of a bonus removes its notes entry. Bonus points affect Interaction Distribution and Relationship Score statistics; Activity Breakdown is unaffected (uses flat meeting weight). Implemented in US-130–US-131.
+
+### FR-044: Statistics Person Filter — Grouped Picker with Whitelist (M3)
+Person filter in Who Per Activity and Interaction Distribution uses a modal bottom sheet instead of an AlertDialog. The sheet displays persons grouped by friend groups (collapsible, with 3-state checkbox per group), a real-time search bar, and an ungrouped-persons section. Persons belonging to multiple groups appear only once. Filter model is a whitelist (`Set<String> selectedPersonIds`) — only listed persons are shown. The whitelist persists across year changes; switching year does not reset it. New persons not in the whitelist default to hidden. "Autoselect Top 10" sets the whitelist to the top 10 by weight for the current year. "Select all / Deselect all" toggles between full and empty whitelist. Both charts share the same `StatsPersonFilterSheet` component with separate whitelists. Implemented in US-132.
 
 ---
 
