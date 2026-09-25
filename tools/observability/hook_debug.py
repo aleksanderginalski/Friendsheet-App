@@ -10,7 +10,7 @@ import os
 import sys
 from datetime import datetime
 
-LOG_PATH = r'C:\Programowanie\Friendsheet-App\tools\observability\hook_debug.log'
+LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hook_debug.log')
 
 try:
     raw = sys.stdin.read()
