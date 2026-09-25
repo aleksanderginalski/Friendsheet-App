@@ -1,0 +1,16 @@
+// Static landing page for friendsheet.app, served by Cloudflare Workers static assets.
+// Deploy from this folder: npx wrangler deploy
+// Worker name is the one Cloudflare generated for the friendsheet.app custom domain.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bitter-firefly-308a",
+  "compatibility_date": "2026-09-01",
+  // Serve only on the custom domain — no duplicate workers.dev / preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    // Unknown paths get 404.html with HTTP 404 (fixes Search Console "soft 404").
+    "not_found_handling": "404-page"
+  }
+}
