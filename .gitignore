@@ -99,3 +99,7 @@ scripts/migration/.venv/
 tools/observability/logs/
 tools/observability/reports/
 tools/observability/__pycache__/
+
+# Cloudflare Wrangler local cache (contains account id)
+.wrangler/
+website/node_modules/
