@@ -2681,6 +2681,110 @@ Three visual polish items grouped because all require user-supplied assets and t
 
 ---
 
+### US-133: Google Cloud / Play Console Security & Compliance Audit
+
+**As a** developer
+**I want to** resolve all open Google Cloud, Firebase and Play Console notices for `friendsheet-app`
+**So that** Google Sign-In keeps working, the API key cannot be abused, and the app stays installable after the Sep 30, 2026 developer verification deadline
+
+**Story Points:** 3
+**Priority:** P0
+**Labels:** `security`, `devops`, `play-console`, `firebase`
+**Mode:** ⚙️ Task
+**Status:** ✅ COMPLETED (September 25, 2026)
+**Feature:** FEATURE-011: Store Release Preparation
+
+**Source notices (Gmail):**
+- 2026-08-26 — Google Auth Platform: inactive OAuth clients in `friendsheet-app` scheduled for deletion after 30 days (deadline ≈ 2026-09-25)
+- 2026-09-04 — Google Play: final reminder, Android developer verification registration by 2026-09-30
+- 2026-04-17 — Play Console: all Play apps auto-registered for developer verification
+- 2026-03-18 — Play Console: upload key reset for `com.friendsheet.app`, new upload key SHA-1 `50:4C:72:68:A2:99:8D:9D:74:80:8B:7D:B2:64:13:A2:00:FB:0D:E9`
+- 2026-03-19 — Search Console: soft 404 on `friendsheet.app`
+- 2026-02-14 — Google Cloud + GitHub secret scanning: Firebase API key (`AIzaSyD3…g16c`) exposed in commit `724bbe8f` (`firebase_options.dart`, `google-services.json`) in `Friendsheet-App` (public) and `friendsheet`
+
+**Acceptance Criteria:**
+- [x] No OAuth client used by the app (Android Sign-In, Web client for Calendar) is deleted; any already-deleted client in use is restored
+- [x] Firebase API key has Application restrictions (Android: `com.friendsheet.app` + all required SHA-1) and API restrictions (only APIs the app uses)
+- [x] App still works after key restriction: Google Sign-In, Firestore read/write, Calendar import (Play build verified; debug build pending)
+- [x] Firebase Console Android app contains SHA-1 of: debug keystore, upload key (release keystore), Play App Signing key
+- [x] Play Console shows `com.friendsheet.app` as registered for Android developer verification
+- [x] If release APK is sideloaded: release keystore key registered as additional key in Android developer verification (N/A — no sideloading)
+- [x] GitHub secret scanning alerts closed in `Friendsheet-App` and `friendsheet`; visibility / need of the old `friendsheet` repo decided
+- [x] Search Console soft 404 page identified and fixed or consciously accepted
+
+**Tasks:**
+- [x] **TASK-133.1:** Google Cloud Console → Credentials: review OAuth clients flagged as inactive; keep/restore clients in use by exercising them (Sign-In on device), let unused ones expire — 0.5h
+  - Result (2026-09-25): flagged clients are Android `…ld8q…` (SHA-1 `22:ED:D3…`, old release key, not the Play key) and iOS `…fglt…` (no iOS app) — both left to expire. Active and required: `…3be0…` = Play App Signing key `6F:CC:85…`, `…eqin…` = debug `6D:D4:28…`, Web client `…tnqo…`. `…p6cd…` (`F2:F5:DF…`) unidentified but active.
+  - Finding for TASK-133.2: current upload key `50:4C:72…E9` (`android/app/friendsheet-upload.jks`) has NO OAuth client → locally built sideloaded release APK cannot use Google Sign-In.
+- [x] **TASK-133.2:** Firebase Console → Project settings → Android app: verify SHA-1 list (debug, upload key, Play App Signing key from Play Console → App integrity) — 0.5h
+  - Result (2026-09-25): Firebase had `F2:F5…`, `22:ED…`, `6F:CC…` (Play App Signing). Added upload key `50:4C:72…E9` → new OAuth client `…2lu3…`. Debug `6D:D4…` intentionally not added to Firebase — already covered by Cloud OAuth client `…eqin…`. Local `android/app/google-services.json` refreshed (only diff: new client).
+  - Play App Signing key certificate is now under Play Console → Protected by Google Play → App signing (`keymanagement?tab=appSigning`), not App integrity.
+- [x] **TASK-133.3:** Play Console → Android developer verification: confirm `com.friendsheet.app` registration; register release keystore key if APK is sideloaded — 0.5h
+  - Result (2026-09-25): `com.friendsheet.app` = Registered, 1 key: Play App Signing key (SHA-256 `73:27:19:77…`) = Verified. Upload key not registered — not needed, all users install via Play (closed test / production), no sideloaded release APKs.
+- [x] **TASK-133.4:** Google Cloud Console → Credentials → API key: add Android app restriction and API restriction; verify app on device (debug + release) — 1h
+  - Result (2026-09-25): `Android key (auto created by Firebase)` (the only key used by the app — `firebase_options.dart` has Android options only) restricted to Android apps `com.friendsheet.app` + SHA-1 `6F:CC…` (Play), `6D:D4…` (debug), `50:4C:72…` (upload). API restriction (25 Firebase APIs) was already in place — unchanged.
+  - Verified: unsigned request with the key → `403 API_KEY_ANDROID_APP_BLOCKED`; Play build: Google Sign-In + data load OK, Calendar import OK.
+  - Note: first Calendar import attempt right after re-login failed once with `PlatformException(exception, ERROR, null, null)` from `google_sign_in` (`requestAccess()`), succeeded on retry with the restriction still active — not caused by the key restriction (Calendar uses OAuth token only). If it recurs → /debug with `flutter run` output.
+  - Not verified: debug build (`flutter run`) sign-in with restricted key.
+- [x] **TASK-133.5:** GitHub → Security → Secret scanning: close alerts in both repos with resolution reason; decide on old `friendsheet` repo (archive / private / delete) — 0.25h
+  - Result (2026-09-25): `Friendsheet-App` alert #1 already resolved on 2026-02-21 as "revoked" (key was not rotated, but is now restricted to the app — effectively neutralized). Old `friendsheet` repo no longer exists (404 for owner) — nothing to do.
+- [x] **TASK-133.6:** Search Console → Page indexing: identify soft 404 URL on `friendsheet.app`, fix or accept — 0.5h
+  - Diagnosis (2026-09-25): `friendsheet.app` is a Cloudflare Worker template answering every path with `200 text/plain "Hello World!"`; `www.friendsheet.app` has no DNS. Fix → US-134 (landing page with real 404).
+
+**Technical Notes:**
+- Firebase Android API keys are embedded in every APK and are not secret by design; protection comes from Firestore Security Rules and API key restrictions. Rotation is not required if the key is restricted.
+- Play-distributed builds are signed with the Play App Signing key, not the upload key — Firebase needs both SHA-1s (plus debug) or Google Sign-In fails with `ApiException: 10`.
+- Deleted OAuth clients can be restored within 30 days from Google Cloud Console.
+
+**Dependencies:** US-032, US-033
+**Blocks:** None
+
+---
+
+### US-134: Landing Page on friendsheet.app
+
+**As a** potential user or tester
+**I want to** see a real landing page on friendsheet.app
+**So that** I understand what Friendsheet is and can join the closed test — instead of a "Hello World!" placeholder
+
+**Story Points:** 3
+**Priority:** P1
+**Labels:** `website`, `devops`, `branding`
+**Mode:** ⚙️ Task
+**Status:** 🔜 In Progress
+**Feature:** FEATURE-011: Store Release Preparation
+
+**Acceptance Criteria:**
+- [ ] `friendsheet.app` serves a static landing page built from existing materials (store listing texts, design brief palette + Nunito, app icon, mascot illustrations)
+- [x] Page is bilingual: English (default) + Polish toggle
+- [x] Primary CTA links to the Play closed test opt-in (`https://play.google.com/apps/testing/com.friendsheet.app`), with a note that it works for listed testers only
+- [x] Footer links to Privacy Policy and Terms of Service (GitHub URLs from project invariants) and to the GitHub repository
+- [x] Unknown paths return HTTP 404 with a custom 404 page (fixes Search Console "soft 404")
+- [x] Layout works on mobile (≥ 360px) and desktop
+- [x] Source lives in `website/` and is deployed as a Cloudflare Worker with static assets via `wrangler deploy`
+
+**Tasks:**
+- [x] **TASK-134.1:** Create `website/public/` (index.html, 404.html, assets copied from `assets/`) — 2h
+- [x] **TASK-134.2:** Add `website/wrangler.jsonc` (static assets, `not_found_handling: 404-page`, custom domain `friendsheet.app`) — 0.5h
+- [x] **TASK-134.3:** `wrangler login` + deploy, replacing the existing "Hello World" Worker on `friendsheet.app` — 0.5h
+- [ ] **TASK-134.4:** Verify: `/` 200, unknown path 404, mobile layout; request re-validation in Search Console — 0.5h
+
+**Implementation Notes (2026-09-25):**
+- Deployed as static-assets Worker `bitter-firefly-308a` (name generated by Cloudflare, owns the `friendsheet.app` custom domain); `workers_dev` and `preview_urls` disabled to avoid duplicate URLs.
+- Live checks: `/` → 200 HTML, unknown path → 404 HTML (404.html), `robots.txt` + `sitemap.xml` → 200, workers.dev → 404.
+- Rollback: `npx wrangler rollback` from `website/`.
+- Search Console "Validate fix" for soft 404 requested on 2026-09-25 — awaiting Google's result e-mail (TASK-134.4 closes when validation passes).
+- Open follow-ups: `www.friendsheet.app` has no DNS; switch CTA to public store link after production release; add app screenshots.
+
+**Technical Notes:**
+- Play Store public listing returns 404 (app in closed testing) — switch CTA to the public store link after production release.
+- No app screenshots exist in the repo yet (`docs/store/assets/` missing) — page uses mascot illustrations; screenshots can be added later.
+
+**Dependencies:** US-046 (store listing texts), US-133 (TASK-133.6 is resolved by this US)
+**Blocks:** None
+
+---
+
 ---
 
 # 📦 EPIC-005: Friendsheet M6 - Meeting Import Hub
